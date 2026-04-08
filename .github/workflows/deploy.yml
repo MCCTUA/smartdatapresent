@@ -26,9 +26,9 @@ jobs:
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          server: 27.254.145.134
+          username: git_depoly_6
+          password: 9NjjZ#Rbyg9v!2np
           local-dir: ./dist/public/
           server-dir: ./
           protocol: ftp
