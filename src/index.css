@@ -1,12 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* ตั้งค่า Font เริ่มต้นให้ดูเป็น Apple */
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   font-family: var(--font-sans);
   margin: 0;
-  background-color: #f5f5f7; /* สี Light Gray จาก DESIGN.md */
+  background-color: #000;
+}
+
+/* Smooth anchor scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove default link styles used inside nav/footer */
+a {
+  text-decoration: none;
 }
