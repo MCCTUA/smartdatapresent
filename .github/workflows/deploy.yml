@@ -27,8 +27,8 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: 27.254.145.134
-          username: git_depoly_6
-          password: 9NjjZ#Rbyg9v!2np
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
           server-dir: ./smartdata.webdemona.com/
           protocol: ftp
