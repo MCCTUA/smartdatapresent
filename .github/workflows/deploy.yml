@@ -30,6 +30,6 @@ jobs:
           username: git_depoly_63
           password: tyhwAm-5gicte-kumsiz
           local-dir: ./dist/
-          server-dir: /httpdocs/
+          server-dir: ./
           protocol: ftp
           dangerous-clean-slate: false
