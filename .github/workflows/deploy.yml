@@ -23,6 +23,6 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: /httpdocs/
+          server-dir: ./
           protocol: ftp
           dangerous-clean-slate: false
