@@ -1,38 +1,27 @@
-name: Deploy to Hostatom
+name: 🚀 Deploy to HostAtom Subdomain
 on:
   push:
     branches: [main]
+
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - name: 🛠️ Install and Build
+        run: |
+          npm install
+          npm run build
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Fix lightningcss for Linux
-        run: pnpm add -D lightningcss-linux-x64-gnu
-
-      - name: Build Static HTML
-        run: pnpm run build
-
-      - name: Deploy via FTP
+      - name: 📂 Sync files via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/public/
+          local-dir: ./dist/
           server-dir: ./
           protocol: ftp
           dangerous-clean-slate: false
