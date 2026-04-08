@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<html class="light" lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>จัดการเจ้าหน้าที่ | The Digital Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;family=Inter:wght@300;400;500;600;700&amp;family=Sarabun:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#9f403d",
+                        "primary": "#255dad",
+                        "secondary-container": "#cbe7f5",
+                        "on-secondary-fixed-variant": "#455f6b",
+                        "background": "#f8f9fa",
+                        "on-tertiary": "#fcf7ff",
+                        "on-surface": "#2b3437",
+                        "secondary": "#49636f",
+                        "on-tertiary-fixed": "#35334d",
+                        "primary-dim": "#1151a0",
+                        "secondary-dim": "#3d5762",
+                        "error-container": "#fe8983",
+                        "outline-variant": "#abb3b7",
+                        "secondary-fixed-dim": "#bdd9e6",
+                        "on-tertiary-container": "#484661",
+                        "inverse-surface": "#0c0f10",
+                        "on-primary-container": "#0f509f",
+                        "on-secondary-container": "#3c5561",
+                        "on-tertiary-fixed-variant": "#52506b",
+                        "inverse-primary": "#73a3f8",
+                        "primary-fixed": "#d7e2ff",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#737c7f",
+                        "surface-bright": "#f8f9fa",
+                        "tertiary-fixed-dim": "#c7c3e3",
+                        "inverse-on-surface": "#9b9d9e",
+                        "error-dim": "#4e0309",
+                        "on-secondary-fixed": "#29434e",
+                        "on-surface-variant": "#586064",
+                        "tertiary-fixed": "#d5d1f2",
+                        "on-primary": "#f7f7ff",
+                        "primary-fixed-dim": "#c1d5ff",
+                        "on-primary-fixed-variant": "#215aaa",
+                        "tertiary-dim": "#52506b",
+                        "on-background": "#2b3437",
+                        "surface-container": "#eaeff1",
+                        "surface": "#f8f9fa",
+                        "on-secondary": "#f2faff",
+                        "on-error-container": "#752121",
+                        "surface-variant": "#dbe4e7",
+                        "surface-container-highest": "#dbe4e7",
+                        "surface-container-high": "#e3e9ec",
+                        "surface-dim": "#d1dce0",
+                        "surface-container-low": "#f1f4f6",
+                        "secondary-fixed": "#cbe7f5",
+                        "primary-container": "#d7e2ff",
+                        "tertiary": "#5e5c78",
+                        "surface-tint": "#255dad",
+                        "on-error": "#fff7f6",
+                        "tertiary-container": "#d5d1f2",
+                        "on-primary-fixed": "#003e81"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Sarabun", "Public Sans", "sans-serif"],
+                        "body": ["Sarabun", "Inter", "sans-serif"],
+                        "label": ["Sarabun", "Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .premium-gradient {
+            background: linear-gradient(135deg, #255dad 0%, #1151a0 100%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+        }
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low font-body text-on-surface antialiased">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-6 pl-4 pr-0 overflow-y-auto bg-slate-100 dark:bg-slate-950 h-screen w-72 border-r-0 z-40">
+<div class="flex items-center gap-3 px-4 mb-10">
+<div class="w-10 h-10 rounded-full premium-gradient flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-slate-900 dark:text-white uppercase font-headline leading-tight">ระบบจัดการค่าธรรมเนียม</h1>
+<p class="text-xs font-label tracking-widest text-secondary">พอร์ทัลอย่างเป็นทางการ</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:translate-x-1 transition-all font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>แดชบอร์ด</span>
+</a>
+<!-- Billing Management -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:translate-x-1 transition-all font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span>จัดการการเรียกเก็บเงิน</span>
+</a>
+<!-- Resident Directory -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:translate-x-1 transition-all font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="home_work">home_work</span>
+<span>รายชื่อผู้อยู่อาศัย</span>
+</a>
+<!-- Notification Center -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:translate-x-1 transition-all font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="send_and_archive">send_and_archive</span>
+<span>ศูนย์การแจ้งเตือน</span>
+</a>
+<!-- Officer Management (ACTIVE) -->
+<a class="flex items-center gap-4 px-4 py-3 bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 rounded-l-xl shadow-sm font-semibold tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span>จัดการเจ้าหน้าที่</span>
+</a>
+</nav>
+<div class="mt-auto px-4 space-y-4">
+<button class="w-full py-3 premium-gradient text-white rounded-xl font-bold text-sm shadow-lg hover:opacity-90 transition-opacity">
+            สร้างใบแจ้งหนี้ใหม่
+        </button>
+<div class="pt-6 border-t border-slate-200/50">
+<a class="flex items-center gap-4 px-4 py-2 text-slate-600 hover:text-blue-600 transition-colors text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="lock">lock</span>
+<span>ตั้งค่าความปลอดภัย</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-2 text-slate-600 hover:text-blue-600 transition-colors text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>บันทึกระบบ</span>
+</a>
+</div>
+</div>
+<div class="bg-slate-200 dark:bg-slate-800 w-[1px] absolute right-0 top-0 bottom-0 opacity-20"></div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-72 min-h-screen pb-12">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-30 flex justify-between items-center w-full px-8 py-4 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md antialiased">
+<div class="flex items-center gap-8">
+<h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">มอบหมายงานเจ้าหน้าที่</h2>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all outline-none" placeholder="ค้นหาเจ้าหน้าที่หรือโซน..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="text-xs font-semibold text-primary uppercase tracking-widest bg-primary-container px-3 py-1 rounded-full">สถานะความปลอดภัย: ปกติ</span>
+<div class="flex items-center gap-3">
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<img alt="โปรไฟล์ผู้ดูแลระบบ" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" data-alt="Close-up portrait of a professional male administrator in a clean office environment with natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZTRp-bu26ooA_OQrTBPWHO-Dc4n7_JNFmiEEW-4q2gHDS3U5om3y8_piMo6HBxjk8l_4-1TJYSl2i67D3lGaV4NjS57A8A_tlKB3jFCXOz8hu_mfsk0VQhdqjJmkzUu2aHMbl4Meb4Pp-c-6cDCsCDT-0nj-2NjLhI81Vn9B462mlt7xkq3nNAjoZaLNTzAaBDOZzY_pn2pfvVM6YvoRrWeLjpCPISxc796xxxFIJR6G2s0ZJaoBCTBdZZoGw_qaFUlaLkKD1XqNY"/>
+</div>
+</div>
+<div class="bg-slate-200 dark:bg-slate-800 h-[1px] w-full absolute bottom-0 opacity-20"></div>
+</header>
+<!-- Content Body -->
+<div class="px-8 py-8 max-w-[1400px] mx-auto">
+<div class="grid grid-cols-12 gap-8">
+<!-- Officer Directory & Table (Asymmetric Layout) -->
+<div class="col-span-8 flex flex-col gap-8">
+<!-- Stats / Overview Header -->
+<div class="flex justify-between items-end">
+<div>
+<h3 class="text-3xl font-headline font-bold text-on-surface">การควบคุมเจ้าหน้าที่ลงพื้นที่</h3>
+<p class="text-on-surface-variant mt-1">จัดการและมอบหมายบุคลากรที่ยืนยันตัวตนแล้วไปยังโซนจัดเก็บ</p>
+</div>
+<div class="flex gap-4">
+<div class="text-right">
+<span class="block text-xs font-label uppercase tracking-widest text-secondary">กำลังปฏิบัติงาน</span>
+<span class="text-2xl font-bold text-primary">12 / 15 เจ้าหน้าที่</span>
+</div>
+</div>
+</div>
+<!-- Officers Table Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_24px_48px_rgba(43,52,55,0.06)] overflow-hidden">
+<div class="p-6 bg-surface-container-low flex justify-between items-center border-b border-outline-variant/10">
+<h4 class="font-headline font-bold text-on-surface">เจ้าหน้าที่ที่ลงทะเบียน</h4>
+<div class="flex gap-2">
+<button class="px-4 py-2 text-sm font-semibold bg-white border border-outline-variant/20 rounded-lg hover:bg-surface-container transition-colors">กรองตามแผนก</button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-xs font-label uppercase tracking-widest text-secondary">บุคลากร</th>
+<th class="px-6 py-4 text-xs font-label uppercase tracking-widest text-secondary">รหัสเจ้าหน้าที่</th>
+<th class="px-6 py-4 text-xs font-label uppercase tracking-widest text-secondary">แผนก</th>
+<th class="px-6 py-4 text-xs font-label uppercase tracking-widest text-secondary">สถานะ</th>
+<th class="px-6 py-4 text-xs font-label uppercase tracking-widest text-secondary text-right">ดำเนินการ</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="เจ้าหน้าที่ สมชาย" class="w-10 h-10 rounded-full object-cover" data-alt="Professional headshot of a mature officer with a friendly yet authoritative expression, uniform collar visible" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvvR-y2iTMZQp7YjEAUFSDb4N4D2ioyqn-gOwvgW6q40bz6AjxIYIIyK1hBZX70cMMmXjM7V79-BRoRrRmjm6y0mpaO23Rm2eYNiUk6-snDNo6RBJI-qG1dJn1duuDE9vqmeuLCgn9ANk3kyMXvpS6aRNAkZATHKq-yFGqYNdn5sDiX3bsXkFJEWpfvISaXlRH7E4YVTVQabXV23oKINvgVfDgWeKqrTAzEQVlyB3-XG10PWDBGzs8zTbKisDtjnBNNVpZadbH-lKf"/>
+<span class="font-semibold text-on-surface">สมชาย พ.</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-sm text-secondary">#OFF-0442</td>
+<td class="px-6 py-4 text-on-surface-variant">ฝ่ายจัดเก็บรายได้</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-on-primary-container"></span>
+                                    ยืนยันตัวตนแล้ว
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:bg-primary-container/30 p-2 rounded-lg transition-all">
+<span class="material-symbols-outlined" data-icon="calendar_add_on">calendar_add_on</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-primary-fixed-dim/10">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="เจ้าหน้าที่ อนัญญา" class="w-10 h-10 rounded-full object-cover" data-alt="Confidence female field officer in a semi-formal professional attire, soft indoor office lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWqh_wiSHHqazPEWyS5J8wOHRMDHzMXP8ppxomYh5XPPLZp0sDMKLkc5_zHoDDr_BuNS1YQKZrfRRxynkaO7Dr-UXdYczjYW7nxF5KaEJBiQ4dCwmE4UqFqxkJIALs-hEm1wHe833OYth8i2-PjAH6aNyhsRaT1Y8TJm1Ad3MHTNkQ8EZQDBKr26HvRIrBHq7E2M5AGexKRTkLj_v8K2jy1pXmiqTKjhYlfEfD-DXwXzZbbcLEeNezry4Usl4KzQvhdOEw8uYyy7QK"/>
+<span class="font-semibold text-on-surface">อนัญญา ก.</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-sm text-secondary">#OFF-0921</td>
+<td class="px-6 py-4 text-on-surface-variant">ฝ่ายตรวจสอบภาคสนาม</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-on-secondary-container"></span>
+                                    ปฏิบัติหน้าที่
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:bg-primary-container/30 p-2 rounded-lg transition-all">
+<span class="material-symbols-outlined" data-icon="calendar_add_on">calendar_add_on</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="เจ้าหน้าที่ กิตติศักดิ์" class="w-10 h-10 rounded-full object-cover" data-alt="Male government employee headshot with a neutral expression and professional background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDi0piOMU4Gp_R9dUsM0OBIPV5VGzBtW7QDZMqOwPqpli5VgUlaF7EIMXPDl6lXOK7iCQxK-Wlj4SrgRMnelmE6CydbqGTxkERenhbIWQxDVPCaV1x9PMSH21YxivmREyHN11CL-GfRIy50Bt0kDLGb18kFRPZSRSpuxYpb_Qhszp3RsXX6rpgs-HBOxkbE0LaZjAytMf1vzSZHERQHDWsjZssMKlDf5fE7K2TyT3gE58ohK-LF1BhsSS8yBtnAyUCzlIR7Zh__nmgG"/>
+<span class="font-semibold text-on-surface">กิตติศักดิ์ ส.</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-sm text-secondary">#OFF-1283</td>
+<td class="px-6 py-4 text-on-surface-variant">ฝ่ายจัดเก็บรายได้</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant"></span>
+                                    นอกเวลาปฏิบัติงาน
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:bg-primary-container/30 p-2 rounded-lg transition-all">
+<span class="material-symbols-outlined" data-icon="calendar_add_on">calendar_add_on</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-6 bg-surface-container-lowest flex justify-center">
+<button class="flex items-center gap-2 text-primary font-bold text-sm hover:underline">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                            ดูบุคลากรทั้งหมด 24 ท่าน
+                        </button>
+</div>
+</div>
+</div>
+<!-- Scheduling & Verification Panel (Sidebar Content) -->
+<div class="col-span-4 flex flex-col gap-8">
+<!-- Assign Zone Action Card -->
+<div class="bg-primary-container rounded-2xl p-6 relative overflow-hidden">
+<div class="relative z-10">
+<h4 class="text-on-primary-container font-headline font-bold text-lg mb-2">มอบหมายโซนและตารางเวลา</h4>
+<p class="text-sm text-on-primary-container/80 mb-6">จัดสรรทีมจัดเก็บไปยังเขตพื้นที่เฉพาะสำหรับการรอบการดำเนินงานถัดไป</p>
+<button class="w-full py-4 premium-gradient text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg">
+<span class="material-symbols-outlined" data-icon="add_location">add_location</span>
+                            เริ่มขั้นตอนการมอบหมาย
+                        </button>
+</div>
+<div class="absolute -right-10 -bottom-10 opacity-10">
+<span class="material-symbols-outlined text-[180px]" data-icon="map">map</span>
+</div>
+</div>
+<!-- Upcoming Area Visits -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10">
+<div class="flex justify-between items-center mb-6">
+<h4 class="font-headline font-bold text-on-surface">ตารางการลงพื้นที่</h4>
+<span class="text-[10px] font-label uppercase tracking-tighter text-secondary">มกราคม 2567</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-start gap-4 p-3 rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="bg-primary-container text-on-primary-container w-10 h-10 shrink-0 rounded-lg flex flex-col items-center justify-center">
+<span class="text-xs font-bold">15</span>
+<span class="text-[8px] uppercase">ม.ค.</span>
+</div>
+<div>
+<p class="font-bold text-sm text-on-surface">โซน A: ตลาดกลาง</p>
+<p class="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-xs" data-icon="person">person</span>
+                                    เจ้าหน้าที่ สมชาย พ.
+                                </p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-3 rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="bg-surface-container-high text-secondary w-10 h-10 shrink-0 rounded-lg flex flex-col items-center justify-center">
+<span class="text-xs font-bold">18</span>
+<span class="text-[8px] uppercase">ม.ค.</span>
+</div>
+<div>
+<p class="font-bold text-sm text-on-surface">โซน B: นิคมอุตสาหกรรม</p>
+<p class="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-xs" data-icon="person">person</span>
+                                    เจ้าหน้าที่ อนัญญา ก.
+                                </p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-3 rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="bg-surface-container-high text-secondary w-10 h-10 shrink-0 rounded-lg flex flex-col items-center justify-center">
+<span class="text-xs font-bold">22</span>
+<span class="text-[8px] uppercase">ม.ค.</span>
+</div>
+<div>
+<p class="font-bold text-sm text-on-surface">โซน C: ที่พักอาศัยฝั่งตะวันออก</p>
+<p class="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-xs" data-icon="person">person</span>
+                                    รอมอบหมาย
+                                </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Digital Identity Card Preview -->
+<div class="bg-white rounded-2xl p-6 shadow-xl border border-outline-variant/10 relative">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="qr_code_scanner">qr_code_scanner</span>
+<h4 class="font-headline font-bold text-on-surface text-sm uppercase tracking-wider">ตัวอย่างบัตรประจำตัว</h4>
+</div>
+<!-- The QR Card itself -->
+<div class="bg-surface-container-low rounded-xl p-4 border border-outline-variant/20 flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md mb-3">
+<img alt="รูปเจ้าหน้าที่" class="w-full h-full object-cover" data-alt="Round avatar of an officer for an ID card preview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3NFYloRjO8RKGN4edlSkC71tAeHWzLdZdDKfZYC5LxkcYXbtEOO4JUuJjti4IZ3dGfhUQflxMYehWtYKI1rmYClJJ3gQwHxs8kouoxi15L7e4ZK7cg21LtmOe3fedG5rwqBebzzPUCtVq6KiUE4DCF1OL_4f8RJzGZMQTushkCrrmq95alnZh2sZ3bztoHWkhdGeW8_zAvPrUTMLS544RwoTd9SKQq4cpOT9lOnedPyflbFEjjapakJi1WSEIR02LOxxXHbEONPYn"/>
+</div>
+<h5 class="font-bold text-on-surface text-sm">สมชาย พ.</h5>
+<p class="text-[10px] text-secondary font-label uppercase tracking-widest mb-4">เจ้าหน้าที่จัดเก็บอย่างเป็นทางการ</p>
+<div class="bg-white p-2 rounded-lg shadow-inner mb-4">
+<img alt="การยืนยันตัวตนด้วย QR" class="w-24 h-24" data-alt="Digital QR code on a clean white background for secure verification" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrh7DR574SNd5uA8e0WrMsi-kWhd_re8jyQ_SynysTNUcthxxfwxl7V8jQ7RxK6EXvxY-Yn7qrR4w_psZAbIz1EH5Fwt6-X1sgi6oZ6eDQ6ADW-vAj6cd_kwuNTJ65TMMYCMLz5gba5YEXqpsm8qp3_ijRXYhR5l4IoUEucmioZvGhDqeGTueITDmK-SVh9clgg83fYu-P3yFmuBx2GzBaiZ_-jb2dldyo28zVs3LOpsllkjqjuqUA2S_IJflQ-YTpQ_ZmjEnkpGG6"/>
+</div>
+<p class="text-[10px] text-on-surface-variant px-4 italic leading-tight">
+                            ผู้อยู่อาศัย: โปรดสแกนรหัสนี้เพื่อยืนยันตัวตนเจ้าหน้าที่ผ่านพอร์ทัล
+                        </p>
+</div>
+<div class="mt-4">
+<button class="w-full py-2 text-xs font-bold text-primary hover:bg-primary-container/30 rounded-lg transition-colors border border-primary/20">
+                            สร้างโทเค็นตัวตนใหม่
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Data Context Section -->
+<section class="mt-12 grid grid-cols-3 gap-8">
+<div class="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/5">
+<span class="material-symbols-outlined text-primary mb-2" data-icon="verified_user">verified_user</span>
+<h5 class="font-bold text-on-surface text-sm mb-1">โปรโตคอลป้องกันมิจฉาชีพ</h5>
+<p class="text-xs text-on-surface-variant leading-relaxed">ทุกการลงพื้นที่จัดเก็บจะได้รับการลงนามทางอิเล็กทรอนิกส์ ผู้อยู่อาศัยจะได้รับ SMS พร้อมรูปถ่ายเจ้าหน้าที่และรหัสเซสชันเฉพาะก่อนการเข้าถึงพื้นที่</p>
+</div>
+<div class="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/5">
+<span class="material-symbols-outlined text-primary mb-2" data-icon="route">route</span>
+<h5 class="font-bold text-on-surface text-sm mb-1">ติดตามโซนแบบเรียลไทม์</h5>
+<p class="text-xs text-on-surface-variant leading-relaxed">ตรวจสอบความครอบคลุมของการปฏิบัติงานในโซนระยะที่ 1 ข้อมูลการลงพื้นที่อัปเดตทุก 5 นาทีจากอุปกรณ์พกพาภาคสนาม</p>
+</div>
+<div class="bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/5">
+<span class="material-symbols-outlined text-primary mb-2" data-icon="history_edu">history_edu</span>
+<h5 class="font-bold text-on-surface text-sm mb-1">บันทึกเหตุการณ์ผิดปกติ</h5>
+<p class="text-xs text-on-surface-variant leading-relaxed">ความผิดปกติที่รายงานโดยผู้อยู่อาศัยจะถูกติดธงโดยอัตโนมัติเพื่อให้หัวหน้าเจ้าหน้าที่ตรวจสอบและดำเนินการตรวจสอบวินัย</p>
+</div>
+</section>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,125 @@
+@startuml Improved_Local_Fee_System_Workflow
+autonumber
+
+actor "ประชาชน\n(Resident)" as Resident
+participant "เทศบาล/อบต.\n(Admin)" as Municipality
+participant "เจ้าหน้าที่เก็บเงิน\n(Field Officer)" as FieldOfficer
+participant "LINE OA\n(Verified Account)" as LineOA
+participant "ระบบจัดการ\n(System + Security)" as System
+participant "รถเก็บขยะ\n(Garbage Truck)" as GarbageTruck
+participant "เจ้าหน้าที่บัญชี\n(Accounting Officer)" as AccountingOfficer
+participant "กองคลัง\n(Finance Manager)" as FinanceManager
+participant "ธนาคาร\n(Bank API)" as Bank
+
+== Phase 1: การแจ้งเตือนและนัดหมาย (Anti-Scam) ==
+Municipality -> System: สร้างรอบบิล + สร้าง Dynamic QR Code\n(เฉพาะเจาะจงต่อบ้าน)
+System -> System: ฝัง Parameter: House ID, Resident Name\nในแต่ละ QR Code
+System --> Municipality: QR Code พร้อมข้อมูลบ้าน
+Municipality -> Resident: ส่งจดหมายแจ้งเก็บค่าธรรมเนียม\n+ Dynamic QR Code\n+ Reference Code สำหรับตรวจสอบ
+Municipality -> Resident: แจ้งนโยบาย: "ไม่รับเงินสด\nใช้ QR Code Payment เท่านั้น"
+Municipality -> Resident: แจ้งวัน/เวลา/พื้นที่ + ชื่อเจ้าหน้าที่\n(เพื่อให้ประชาชนตรวจสอบตัวตน)
+
+== Phase 2: การตรวจสอบตัวตนของเจ้าหน้าที่ ==
+FieldOfficer -> Resident: นำเสนอบัตรประจำตัวที่มี QR Code
+Resident -> Resident: สแกน QR Code บนบัตรด้วยแอปทั่วไป
+System --> Resident: แสดง: รูปถ่าย + ชื่อ + สถานะการปฏิบัติงานวันนี้\n(ยืนยันว่าเป็นเจ้าหน้าที่จริง)
+
+== Phase 3: การชำระเงิน (Digital Payment Only) ==
+alt ช่องทาง A: ชำระผ่าน QR Code Payment (PromptPay)
+    FieldOfficer -> Resident: แสดง QR Code Payment\n(ผูกกับบัญชีเทศบาล)
+    Resident -> Resident: สแกน QR Code ด้วย Mobile Banking App
+    Resident -> Bank: โอนเงินผ่าน PromptPay/Mobile Banking
+    Bank -> System: ส่ง API Webhook: Payment Success\n(Amount, Reference, Timestamp)
+    System -> System: ✓ Validate Payment Amount\n✓ Match Invoice Amount\n✓ Verify Bank Account
+    System --> System: บันทึก Payment + Location (GPS) + Device Info\n(Immutable Audit Log)
+    System -> AccountingOfficer: ส่ง Alert: Payment Received\n(ต้องตรวจสอบและยืนยัน)
+    AccountingOfficer -> System: ตรวจสอบ Reconciliation\n✓ Amount ตรงกับ Invoice\n✓ Bank Statement ตรงกับระบบ
+    AccountingOfficer -> System: ยืนยัน (Approve)
+    System --> LineOA: ส่ง e-Receipt ไปยัง LINE Resident\n(พร้อม QR Code ตรวจสอบ)
+    LineOA --> Resident: แสดง e-Receipt + ยอดค้างใหม่
+else ช่องทาง B: ชำระผ่าน LINE Mini App (Digital Payment)
+    Resident -> LineOA: เข้าสู่ระบบ LINE Mini App\n(2FA: OTP via SMS)
+    LineOA -> System: ดึงข้อมูลยอดค้างชำระ
+    System --> LineOA: แสดงยอดค่าธรรมเนียม + Reference Code
+    Resident -> LineOA: ชำระเงินผ่าน Payment Gateway\n(ธนาคารกรุงไทย/ออมสิน/ธนาคารของรัฐ)
+    LineOA -> Bank: ส่ง Payment Request ไปยังธนาคาร
+    Bank -> System: ส่ง API Webhook: Payment Success
+    System -> System: ✓ Validate + Reconcile\n✓ บันทึก Immutable Audit Log\n✓ GPS Location (จากข้อมูลบ้าน)
+    System -> AccountingOfficer: ส่ง Alert: Payment Received
+    AccountingOfficer -> System: ตรวจสอบและยืนยัน (Approve)
+    System --> LineOA: ส่ง e-Receipt
+    LineOA --> Resident: แสดง e-Receipt + Sticker QR Code
+end
+
+== Phase 4: Daily Bank Reconciliation (Automated) ==
+System -> Bank: ดึง Bank Statement API\n(ทุกสิ้นวัน 23:00 น.)
+Bank --> System: ส่ง Transaction List
+System -> System: ✓ Reconcile: System Ledger vs Bank Statement\n✓ ตรวจสอบความแตกต่าง\n✓ Anomaly Detection
+alt ✓ Reconciliation Success
+    System --> FinanceManager: ส่ง Daily Report\n(ยอดเงินเข้า, ยอดค้าง, สถานะ)
+else ❌ Reconciliation Failed
+    System --> FinanceManager: ⚠️ ALERT: ความแตกต่าง\n(ระบุจำนวนและสาเหตุ)
+    FinanceManager -> FinanceManager: ตรวจสอบทันที
+end
+
+== Phase 5: ออกใบเสร็จตัวจริงและสติกเกอร์ ==
+FinanceManager -> System: อนุมัติการออกใบเสร็จ\n(Approval Workflow)
+System -> System: ✓ ตรวจสอบ Segregation of Duties\n✓ ตรวจสอบ Audit Trail
+System -> FinanceManager: ออกใบเสร็จตัวจริง\n(พร้อม QR Code ตรวจสอบ)
+System -> System: พิมพ์ Sticker\n(มี QR Code + ปี + เลขที่บ้าน)
+FinanceManager -> Resident: จัดส่งใบเสร็จตัวจริง + Sticker\n(ทางไปรษณีย์ หรือเจ้าหน้าที่)
+Resident -> Resident: ติด Sticker ที่หน้าบ้าน/ถังขยะ
+
+== Phase 6: การเก็บขยะ (GPS + Photo Evidence) ==
+GarbageTruck -> System: เปิด App ดูแผนที่เส้นทาง
+System --> GarbageTruck: แสดง Location บ้านที่จ่ายแล้ว (สีเขียว)\nและค้างจ่าย (สีแดง)\n+ GPS Geofencing
+
+alt กรณีบ้านชำระเงินแล้ว (มี Sticker / สีเขียว)
+    GarbageTruck -> GarbageTruck: ขับรถมาถึงบ้าน
+    System -> System: ✓ ตรวจสอบ GPS Geofencing\n(ภายใน 20 เมตร)
+    GarbageTruck -> GarbageTruck: สแกน QR Code หน้าบ้าน\n(ด้วย Mobile App)
+    System -> System: ✓ Verify QR Code + Location\n✓ บันทึก Check-in Timestamp
+    GarbageTruck -> GarbageTruck: ถ่ายรูปจุดเก็บขยะ\n(ฝัง GPS + Timestamp ใน EXIF)
+    System -> System: ✓ Validate Photo + GPS + Timestamp\n✓ บันทึก Immutable Audit Log
+    GarbageTruck -> System: บันทึก: เก็บขยะแล้ว\n+ Photo + GPS + Timestamp
+    System -> LineOA: ส่ง Notification ไปยัง Resident
+    LineOA --> Resident: "รถขยะได้เข้าเก็บขยะแล้ว\n+ ปุ่ม: ยืนยัน / รายงานปัญหา"
+    Resident -> LineOA: กด "ยืนยัน" หรือ "รายงานปัญหา"
+    alt ✓ Resident ยืนยัน
+        System -> System: ✓ บันทึก Customer Verification
+    else ❌ Resident รายงานปัญหา
+        System --> FinanceManager: ⚠️ ALERT: ขยะไม่ถูกเก็บ\n(ที่อยู่ + ชื่อ + เวลา)
+        FinanceManager -> GarbageTruck: ตรวจสอบและแก้ไข
+    end
+else กรณีบ้านค้างชำระ (สีแดง)
+    GarbageTruck -> System: ตรวจสอบสถานะค้างชำระ
+    System --> GarbageTruck: แจ้งสถานะค้างชำระ\n(จำนวนรอบ + ยอดหนี้)
+    alt ค้างชำระ 1-2 รอบ
+        GarbageTruck -> GarbageTruck: เก็บขยะตามปกติ\n(แต่บันทึกเป็น "WARNING")
+        System -> LineOA: ส่ง Notification\n"แจ้งเตือน: ค้างชำระ 1-2 รอบ\nกรุณาชำระภายใน 7 วัน"
+    else ค้างชำระ 3 รอบขึ้นไป
+        GarbageTruck -> GarbageTruck: ❌ งดเก็บขยะ\n(บันทึก Reason: Overdue 3+ cycles)
+        System -> LineOA: ส่ง Notification\n"⚠️ ระงับบริการเก็บขยะ\nเนื่องจากค้างชำระ 3 รอบ"
+        System --> FinanceManager: ออกรายงาน\n(บ้านที่ถูกระงับบริการ)
+    end
+end
+
+== Phase 7: Real-time Monitoring & Anomaly Detection ==
+loop ทุกชั่วโมง
+    System -> System: ✓ Anomaly Detection Algorithm\n(ตรวจจับพฤติกรรมผิดปกติ)
+    System -> System: ✓ ตรวจสอบ:\n- Field Officer เก็บเงินจำนวนผิดปกติ\n- Payment Amount ไม่ตรงกับ Invoice\n- Location ห่างจากบ้านมากกว่า 500 เมตร\n- Check-in นอกเวลาทำการ\n- Login จาก Device/IP ที่ไม่คุ้นเคย
+    alt ⚠️ พบ Anomaly
+        System --> FinanceManager: ส่ง Alert + Dashboard\n(ระบุ Anomaly Type + Risk Level)
+    else ✓ Normal
+        System -> System: ✓ ปกติ บันทึกไว้
+    end
+end
+
+== Phase 8: Monthly Audit & Public Disclosure ==
+FinanceManager -> System: ส่งคำสั่งทำ Monthly Audit
+System -> System: ✓ Audit Report:\n- Daily Reconciliation: 100%\n- Payment Approval: 100%\n- Photo Evidence: 95%\n- GPS Accuracy: 98%\n- Customer Satisfaction: 92%\n- Anomaly Detection: 0 cases
+System --> Municipality: ส่ง Audit Report\n(พร้อม Recommendations)
+Municipality -> Municipality: ตรวจสอบและอนุมัติ
+Municipality -> Resident: เปิดเผย Audit Report ต่อสาธารณชน\n(ผ่าน Website/LINE/Social Media)\n"ความโปร่งใส + ความเชื่อใจ"
+
+@enduml

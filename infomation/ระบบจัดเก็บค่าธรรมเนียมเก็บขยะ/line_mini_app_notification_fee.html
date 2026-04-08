@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Payment Portal - ระบบจัดการค่าธรรมเนียม</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#eaeff1",
+                    "inverse-on-surface": "#9b9d9e",
+                    "surface-container-low": "#f1f4f6",
+                    "surface-variant": "#dbe4e7",
+                    "outline": "#737c7f",
+                    "on-primary-container": "#0f509f",
+                    "tertiary-dim": "#52506b",
+                    "inverse-primary": "#73a3f8",
+                    "on-error-container": "#752121",
+                    "on-background": "#2b3437",
+                    "on-secondary-fixed": "#29434e",
+                    "on-secondary": "#f2faff",
+                    "surface": "#f8f9fa",
+                    "on-tertiary-container": "#484661",
+                    "secondary-dim": "#3d5762",
+                    "on-surface-variant": "#586064",
+                    "on-error": "#fff7f6",
+                    "secondary-container": "#cbe7f5",
+                    "primary": "#255dad",
+                    "primary-dim": "#1151a0",
+                    "on-primary-fixed-variant": "#215aaa",
+                    "primary-fixed": "#d7e2ff",
+                    "error": "#9f403d",
+                    "background": "#f8f9fa",
+                    "on-primary": "#f7f7ff",
+                    "on-secondary-fixed-variant": "#455f6b",
+                    "surface-bright": "#f8f9fa",
+                    "surface-dim": "#d1dce0",
+                    "secondary": "#49636f",
+                    "on-tertiary-fixed-variant": "#52506b",
+                    "on-surface": "#2b3437",
+                    "secondary-fixed": "#cbe7f5",
+                    "surface-tint": "#255dad",
+                    "tertiary-fixed-dim": "#c7c3e3",
+                    "secondary-fixed-dim": "#bdd9e6",
+                    "on-tertiary": "#fcf7ff",
+                    "tertiary-container": "#d5d1f2",
+                    "on-tertiary-fixed": "#35334d",
+                    "error-dim": "#4e0309",
+                    "inverse-surface": "#0c0f10",
+                    "tertiary-fixed": "#d5d1f2",
+                    "outline-variant": "#abb3b7",
+                    "surface-container-high": "#e3e9ec",
+                    "tertiary": "#5e5c78",
+                    "primary-container": "#d7e2ff",
+                    "primary-fixed-dim": "#c1d5ff",
+                    "error-container": "#fe8983",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#dbe4e7",
+                    "on-secondary-container": "#3c5561",
+                    "on-primary-fixed": "#003e81"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Public Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-effect {
+        backdrop-filter: blur(16px);
+        background: rgba(255, 255, 255, 0.8);
+      }
+      .gradient-cta {
+        background: linear-gradient(135deg, #255dad 0%, #1151a0 100%);
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-low font-body text-on-surface antialiased">
+
+    <!-- TopAppBar (Execution from JSON) -->
+    <header class="bg-slate-50 dark:bg-slate-900 docked full-width top-0 z-50 fixed flex justify-between items-center px-4 py-3 w-full">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+                <img src="https://openui.fly.dev/openui/24x24.svg?text=🏛️" alt="Municipality Logo" data-alt="Official gold and blue circular crest emblem of a municipality with traditional Thai patterns, clean vector style">
+            </div>
+            <h1 class="font-headline font-bold text-lg text-blue-800 dark:text-blue-300">ระบอบจัดการค่าธรรมเนียม</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 transition-colors active:scale-95 duration-150">
+                <span class="material-symbols-outlined" data-icon="qr_code_scanner">qr_code_scanner</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="pt-20 pb-32 px-4 space-y-6">
+        
+        <!-- Welcome Section -->
+        <section class="space-y-1">
+            <p class="text-secondary font-label text-xs tracking-wider uppercase">บริการชำระเงินออนไลน์</p>
+            <h2 class="font-headline font-black text-2xl text-on-surface">สวัสดี, คุณเจ้าของบ้าน</h2>
+        </section>
+
+        <!-- Current Invoice Card: Bento Style -->
+        <section class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_24px_rgba(43,52,55,0.04)] space-y-6 relative overflow-hidden">
+            <!-- Decorative Background Element -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
+            
+            <div class="flex justify-between items-start">
+                <div class="space-y-1">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-on-secondary-container"></span>
+                        รอกาารชำระ
+                    </span>
+                    <h3 class="font-headline font-bold text-lg pt-2">บ้านเลขที่ 44/2</h3>
+                    <p class="text-on-surface-variant text-sm">งวดเดือน: มกราคม 2567</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-secondary font-label text-[10px] uppercase tracking-tight">ยอดที่ต้องชำระ</p>
+                    <p class="font-headline font-black text-3xl text-primary">40.00 <span class="text-sm font-bold">THB</span></p>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="space-y-4">
+                <button class="gradient-cta w-full py-4 rounded-xl flex items-center justify-center gap-3 text-on-primary font-bold shadow-lg active:scale-[0.98] transition-transform">
+                    <span class="material-symbols-outlined" data-icon="qr_code">qr_code</span>
+                    ชำระเงินผ่าน QR PromptPay
+                </button>
+                <div class="flex items-center justify-center gap-2 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-sm" data-icon="info">info</span>
+                    <p class="text-[11px]">สแกนเพื่อจ่ายเงินผ่านแอปธนาคารทุกแห่ง</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- QR Overlay Simulation (Visual Only for UI Depth) -->
+        <section class="bg-surface-container rounded-xl p-4 flex items-center gap-4">
+            <div class="bg-white p-2 rounded-lg">
+                <img src="https://openui.fly.dev/openui/64x64.svg?text=QR" class="w-12 h-12 grayscale opacity-50" alt="PromptPay Preview" data-alt="Stylized monochrome PromptPay QR code fragment showing high-contrast squares on a white background">
+            </div>
+            <div class="flex-1">
+                <p class="font-bold text-sm">พร้อมเพย์ (PromptPay)</p>
+                <p class="text-xs text-on-surface-variant">ปลอดภัย มั่นใจ ตรวจสอบได้ทันที</p>
+            </div>
+            <span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+        </section>
+
+        <!-- e-Receipt Gallery Section -->
+        <section class="space-y-4">
+            <div class="flex justify-between items-end">
+                <h3 class="font-headline font-bold text-on-surface">ใบเสร็จรับเงินอิเล็กทรอนิกส์ (e-Receipt)</h3>
+                <button class="text-primary text-xs font-bold">ดูทั้งหมด</button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Receipt Item 1 -->
+                <div class="bg-surface-container-lowest p-3 rounded-xl space-y-3 group active:bg-surface-container transition-colors">
+                    <div class="aspect-[3/4] rounded-lg bg-surface-container-low flex items-center justify-center overflow-hidden relative">
+                        <img src="https://openui.fly.dev/openui/120x160.svg?text=Receipt+Dec" class="w-full h-full object-cover opacity-80" alt="Receipt Thumbnail" data-alt="A clean digital receipt mockup with blue header and official stamp texture on soft white paper background">
+                        <div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary" data-icon="visibility">visibility</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="font-bold text-xs truncate">ธันวาคม 2566</p>
+                        <p class="text-[10px] text-on-surface-variant">ชำระแล้ว • 40 THB</p>
+                    </div>
+                </div>
+                
+                <!-- Receipt Item 2 -->
+                <div class="bg-surface-container-lowest p-3 rounded-xl space-y-3 group active:bg-surface-container transition-colors">
+                    <div class="aspect-[3/4] rounded-lg bg-surface-container-low flex items-center justify-center overflow-hidden relative">
+                        <img src="https://openui.fly.dev/openui/120x160.svg?text=Receipt+Nov" class="w-full h-full object-cover opacity-80" alt="Receipt Thumbnail" data-alt="Digital document showing a payment confirmation for public services with a small QR code and a blue verified badge">
+                        <div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary" data-icon="visibility">visibility</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="font-bold text-xs truncate">พฤศจิกายน 2566</p>
+                        <p class="text-[10px] text-on-surface-variant">ชำระแล้ว • 40 THB</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Help/Support Anchor -->
+        <section class="bg-primary/5 rounded-2xl p-5 border border-primary/10 flex items-center gap-4">
+            <div class="bg-primary-container text-on-primary-container w-10 h-10 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+            </div>
+            <div class="flex-1">
+                <p class="font-bold text-sm">พบปัญหาในการใช้งาน?</p>
+                <p class="text-xs text-on-surface-variant">ติดต่อศูนย์บริการเทศบาล 1133</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BottomNavBar (Execution from JSON) -->
+    <!-- active_navigation mapping: "ชำระเงิน" (Payment) is active for this Payment Portal screen -->
+    <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg shadow-[0_-4px_24px_rgba(43,52,55,0.04)] rounded-t-xl border-t border-slate-200/20">
+        <!-- Item 1: งานของฉัน -->
+        <a href="#" class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-3 py-1.5 hover:opacity-80 transition-all duration-200">
+            <span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+            <span class="font-inter text-[10px] font-medium tracking-tight">งานของฉัน</span>
+        </a>
+        
+        <!-- Item 2: ชำระเงิน (ACTIVE) -->
+        <a href="#" class="flex flex-col items-center justify-center bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-2xl px-3 py-1.5 hover:opacity-80 transition-all duration-200">
+            <span class="material-symbols-outlined" data-icon="payments" style="font-variation-settings: 'FILL' 1;">payments</span>
+            <span class="font-inter text-[10px] font-medium tracking-tight">ชำระเงิน</span>
+        </a>
+        
+        <!-- Item 3: ประวัติ -->
+        <a href="#" class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-3 py-1.5 hover:opacity-80 transition-all duration-200">
+            <span class="material-symbols-outlined" data-icon="history">history</span>
+            <span class="font-inter text-[10px] font-medium tracking-tight">ประวัติ</span>
+        </a>
+        
+        <!-- Item 4: ตั้งค่า -->
+        <a href="#" class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-3 py-1.5 hover:opacity-80 transition-all duration-200">
+            <span class="material-symbols-outlined" data-icon="settings">settings</span>
+            <span class="font-inter text-[10px] font-medium tracking-tight">ตั้งค่า</span>
+        </a>
+    </nav>
+
+</body>
+</html></style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body></body></html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Civic Ledger - การแจ้งเตือน</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@700;900&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-dim": "#3d5762",
+                    "inverse-surface": "#0c0f10",
+                    "background": "#f8f9fa",
+                    "on-background": "#2b3437",
+                    "primary-fixed": "#d7e2ff",
+                    "surface": "#f8f9fa",
+                    "surface-tint": "#255dad",
+                    "primary-dim": "#1151a0",
+                    "outline-variant": "#abb3b7",
+                    "on-tertiary-fixed-variant": "#52506b",
+                    "on-secondary-fixed-variant": "#455f6b",
+                    "surface-container-high": "#e3e9ec",
+                    "surface-dim": "#d1dce0",
+                    "secondary": "#49636f",
+                    "surface-variant": "#dbe4e7",
+                    "surface-bright": "#f8f9fa",
+                    "secondary-fixed": "#cbe7f5",
+                    "inverse-primary": "#73a3f8",
+                    "on-primary-container": "#0f509f",
+                    "on-secondary-container": "#3c5561",
+                    "on-primary-fixed-variant": "#215aaa",
+                    "on-surface": "#2b3437",
+                    "secondary-container": "#cbe7f5",
+                    "on-tertiary-fixed": "#35334d",
+                    "inverse-on-surface": "#9b9d9e",
+                    "tertiary-container": "#d5d1f2",
+                    "surface-container": "#eaeff1",
+                    "on-error-container": "#752121",
+                    "outline": "#737c7f",
+                    "secondary-fixed-dim": "#bdd9e6",
+                    "on-tertiary-container": "#484661",
+                    "tertiary": "#5e5c78",
+                    "tertiary-fixed": "#d5d1f2",
+                    "on-surface-variant": "#586064",
+                    "on-primary-fixed": "#003e81",
+                    "tertiary-fixed-dim": "#c7c3e3",
+                    "surface-container-highest": "#dbe4e7",
+                    "error-container": "#fe8983",
+                    "primary-fixed-dim": "#c1d5ff",
+                    "on-primary": "#f7f7ff",
+                    "surface-container-low": "#f1f4f6",
+                    "primary": "#255dad",
+                    "error-dim": "#4e0309",
+                    "on-secondary": "#f2faff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#fff7f6",
+                    "on-secondary-fixed": "#29434e",
+                    "on-tertiary": "#fcf7ff",
+                    "primary-container": "#d7e2ff",
+                    "error": "#9f403d",
+                    "tertiary-dim": "#52506b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Public Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .headline-font { font-family: 'Public Sans', sans-serif; }
+        .glass-effect { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-slate-50 dark:bg-slate-900 flex justify-between items-center px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="Officer profile photo" data-alt="Close-up portrait of a professional municipal officer in a clean uniform against a neutral professional background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC-_Ic7WZh7BpAQwY9djY0obSBxeWMrDcWOKEJ18rTwn6kBYpMakL2WUoMFYHOWtERJhYMf6b8odvmhFQ6Qr-0eFoLlqRgDQoRWb6qKQrGDjJgvlHTrpsDEBmdUJBC73f5Dc51X2IG_AimL_1YwhKPdEhfInzxEyJbwjIaMzBE623GyDagrGpUdI3zRP5e2O0f3lhzaL8XeiMjRExihOJ-VBkubazw_dIJ46r6BZfrl4cwGCBYWjUlJKGmTLpkAigkcWDtqcB2BcvV"/>
+</div>
+<span class="text-lg font-black tracking-tight text-slate-900 dark:text-slate-50 headline-font">Civic Ledger</span>
+</div>
+<button class="text-blue-700 dark:text-blue-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors active:scale-95 duration-150 p-2 rounded-xl">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="flex-grow px-5 py-8 max-w-2xl mx-auto w-full">
+<!-- Content Header Area -->
+<div class="mb-8">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-primary-container text-on-primary-container rounded-full mb-4">
+<span class="material-symbols-outlined text-[18px]" data-icon="task_alt" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<span class="text-[12px] font-bold uppercase tracking-wider">สำเร็จแล้ว</span>
+</div>
+<h1 class="text-3xl font-black text-on-surface headline-font leading-tight mb-3">แจ้งเตือนการเก็บขยะ</h1>
+<p class="text-on-surface-variant leading-relaxed text-lg">
+                รถขยะได้เข้าเก็บขยะที่บ้านของท่านเรียบร้อยแล้วเมื่อ <span class="font-bold text-on-surface">10:30 น.</span>
+</p>
+</div>
+<!-- Evidence Bento Card -->
+<div class="relative group rounded-[2rem] overflow-hidden bg-surface-container-lowest shadow-[0px_24px_48px_rgba(43,52,55,0.06)] border border-outline-variant/10">
+<div class="aspect-[4/3] w-full relative">
+<img alt="Photo evidence" class="w-full h-full object-cover" data-alt="Wide shot of a clean residential street with a modern waste collection truck and neatly placed bins in broad daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAePF3poiYGS4GjW1_DwNHA1T1Ryy0YIsB6Wp7InOXqlWf1lLzG6xwKcoXvQhe5SRymP6FUSYXjSGhQrtQmuB3x3lEWqdlvwEFDIJvYp3zjVgQUcPoTYcr6gr36KnxAQFTp3tyZZMfu39jL_28N2W0h-0hMaZAV8xRnBkwZ29Y6NEGLGfte8IG4VgHG9pCGKW4NoelJeoOs0ncs_G4MXafcUvosxOEJx6HYUFxFa2HrUmjtntREF70AVCpnS3s8VbGAgfaNlH2wiH0m"/>
+<!-- Timestamp Overlay -->
+<div class="absolute bottom-4 left-4 glass-effect bg-black/30 text-white px-4 py-2 rounded-xl flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+<span class="text-sm font-medium">วันนี้ • 10:30 น.</span>
+</div>
+<div class="absolute top-4 right-4">
+<div class="glass-effect bg-white/80 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-white/20">
+                        หลักฐานรูปถ่าย
+                    </div>
+</div>
+</div>
+<div class="p-6 bg-surface-container-lowest">
+<div class="flex items-start gap-4">
+<div class="p-3 bg-primary-fixed-dim rounded-2xl text-primary">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+</div>
+<div>
+<p class="text-xs font-bold text-secondary uppercase tracking-widest mb-1">เจ้าหน้าที่ผู้รับผิดชอบ</p>
+<p class="font-semibold text-on-surface">หน่วยเก็บขนที่ 04 - เขตพญาไท</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons Section -->
+<div class="mt-10 space-y-4">
+<button class="w-full py-5 rounded-full bg-gradient-to-br from-primary to-primary-dim text-on-primary font-bold text-lg shadow-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                ยืนยัน
+            </button>
+<button class="w-full py-5 rounded-full bg-surface-container-highest text-on-primary-container font-bold text-lg hover:bg-surface-dim active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined" data-icon="report" style="font-variation-settings: 'FILL' 0;">report</span>
+                รายงานปัญหา
+            </button>
+</div>
+<!-- Footer Text -->
+<footer class="mt-12 mb-20 text-center">
+<div class="inline-flex items-center gap-2 text-secondary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span>
+<p class="text-sm tracking-wide">ความโปร่งใสคือหัวใจของเรา</p>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span>
+</div>
+</footer>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/20 dark:border-slate-700/20 shadow-[0_-4px_24px_rgba(43,52,55,0.04)] rounded-t-2xl">
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-3 py-1.5 hover:text-blue-600 dark:hover:text-blue-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="map">map</span>
+<span class="text-[11px] font-['Inter'] uppercase tracking-wider font-semibold mt-1">Map</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-3 py-1.5 hover:text-blue-600 dark:hover:text-blue-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="text-[11px] font-['Inter'] uppercase tracking-wider font-semibold mt-1">Tasks</span>
+</a>
+<!-- Active Tab: History (as notification is part of activity history) -->
+<a class="flex flex-col items-center justify-center bg-blue-100/50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-xl px-3 py-1.5 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="history" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="text-[11px] font-['Inter'] uppercase tracking-wider font-semibold mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-3 py-1.5 hover:text-blue-600 dark:hover:text-blue-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[11px] font-['Inter'] uppercase tracking-wider font-semibold mt-1">Profile</span>
+</a>
+</nav>
+</body></html>
