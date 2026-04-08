@@ -1,21 +1,29 @@
-name: 🚀 Deploy to HostAtom
+name: Deploy to Hostatom
 on:
   push:
     branches: [main]
-
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚚 Get latest code
-        uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: 🛠️ Install and Build
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        # ใช้ npm ตามที่คุณถนัด แต่เพิ่มตัวแก้ lightningcss เข้าไป
         run: |
           npm install
-          npm run build
+          npm install -D lightningcss-linux-x64-gnu
 
-      - name: 📂 Sync files via FTP
+      - name: Build Static HTML
+        run: npm run build
+
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -24,3 +32,4 @@ jobs:
           local-dir: ./dist/
           server-dir: /httpdocs/
           protocol: ftp
+          dangerous-clean-slate: false
