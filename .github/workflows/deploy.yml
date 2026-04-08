@@ -1,7 +1,8 @@
 name: 🚀 Deploy to HostAtom Subdomain
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build-and-deploy:
@@ -22,6 +23,6 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: ./
+          server-dir: /httpdocs/
           protocol: ftp
           dangerous-clean-slate: false
