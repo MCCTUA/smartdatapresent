@@ -29,7 +29,7 @@ jobs:
           server: 27.254.145.134
           username: git_depoly_6
           password: 9NjjZ#Rbyg9v!2np
-          local-dir: ./dist/public/
+          local-dir: ./dist/
           server-dir: smartdata.webdemona.com/
           protocol: ftp
           dangerous-clean-slate: false
