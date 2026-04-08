@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -10,6 +9,10 @@ const fadeUp = {
 const stagger = {
   show: { transition: { staggerChildren: 0.12 } },
 };
+
+function scrollTo(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+}
 
 export default function Home() {
   return (
@@ -41,19 +44,25 @@ export default function Home() {
             สำหรับหน่วยงานท้องถิ่นและผู้รับเหมาทั่วประเทศไทย
           </motion.p>
           <motion.div variants={fadeUp} className="flex gap-4 justify-center flex-wrap">
-            <a href="#products" className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors">
+            <button
+              onClick={() => scrollTo('products')}
+              className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg border-none cursor-pointer hover:bg-[#0077ed] transition-colors"
+            >
               ดูผลิตภัณฑ์
-            </a>
-            <a href="#about" className="text-[#2997ff] border border-[#2997ff] text-[17px] px-6 py-2 rounded-[980px] no-underline hover:underline">
+            </button>
+            <button
+              onClick={() => scrollTo('about')}
+              className="text-[#2997ff] border border-[#2997ff] text-[17px] px-6 py-2 rounded-full bg-transparent cursor-pointer hover:underline"
+            >
               เกี่ยวกับเรา
-            </a>
+            </button>
           </motion.div>
         </motion.div>
       </section>
 
       {/* Stats */}
       <section className="bg-black border-t border-white/10">
-        <div className="max-w-245 mx-auto grid grid-cols-2 md:grid-cols-4">
+        <div className="max-w-[980px] mx-auto grid grid-cols-2 md:grid-cols-4">
           {[
             { n: '50+', l: 'หน่วยงานท้องถิ่น\nที่ไว้วางใจเรา' },
             { n: '15+', l: 'ปีประสบการณ์\nอุตสาหกรรม LED' },
@@ -61,8 +70,8 @@ export default function Home() {
             { n: '24/7', l: 'การสนับสนุน\nทางเทคนิค' },
           ].map((s, i) => (
             <div key={i} className={`py-10 text-center ${i < 3 ? 'border-r border-white/10' : ''}`}>
-              <div className="text-[40px] font-semibold text-[#0071e3] leading-[1.1]">{s.n}</div>
-              <div className="text-[14px] text-white/60 mt-2 whitespace-pre-line leading-[1.47]">{s.l}</div>
+              <div className="text-[40px] font-semibold text-[#0071e3] leading-tight">{s.n}</div>
+              <div className="text-[14px] text-white/60 mt-2 whitespace-pre-line leading-relaxed">{s.l}</div>
             </div>
           ))}
         </div>
@@ -70,10 +79,10 @@ export default function Home() {
 
       {/* Products */}
       <section id="products" className="bg-[#f5f5f7] py-24 px-6">
-        <div className="max-w-275 mx-auto">
+        <div className="max-w-[1100px] mx-auto">
           <div className="text-center max-w-xl mx-auto mb-14">
             <p className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-3">ผลิตภัณฑ์และโซลูชัน</p>
-            <h2 className="text-[#1d1d1f] font-semibold leading-[1.1]" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>
+            <h2 className="text-[#1d1d1f] font-semibold leading-tight" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>
               ครบทุกความต้องการ<br />ของหน่วยงานท้องถิ่น
             </h2>
           </div>
@@ -89,15 +98,15 @@ export default function Home() {
               </div>
               <div className="p-7">
                 <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">Smart City</p>
-                <h3 className="text-[#1d1d1f] font-normal leading-[1.14] tracking-[0.196px] mb-3" style={{ fontSize: '28px' }}>
+                <h3 className="text-[#1d1d1f] font-normal leading-snug mb-3" style={{ fontSize: '28px' }}>
                   GGismo Smart<br />Street Light
                 </h3>
-                <p className="text-[14px] text-black/60 leading-[1.47] mb-6">
+                <p className="text-[14px] text-black/60 leading-relaxed mb-6">
                   ระบบจัดการไฟถนนอัจฉริยะครบวงจร ควบคุมและตรวจสอบแบบ Real-time ผ่าน IoT ประหยัดพลังงาน 50-70%
                 </p>
                 <div className="flex gap-4 items-center">
                   <Link to="/smart-street-light" className="bg-[#0071e3] text-white text-[14px] px-4 py-2 rounded-lg no-underline">ดูรายละเอียด</Link>
-                  <Link to="/smart-street-light#packages" className="text-[#0066cc] text-[14px] no-underline hover:underline">ดูแพ็กเกจ ›</Link>
+                  <Link to="/smart-street-light" className="text-[#0066cc] text-[14px] no-underline hover:underline">ดูแพ็กเกจ ›</Link>
                 </div>
               </div>
             </motion.div>
@@ -115,15 +124,15 @@ export default function Home() {
               />
               <div className="p-7">
                 <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">Solar Energy</p>
-                <h3 className="text-[#1d1d1f] font-normal leading-[1.14] tracking-[0.196px] mb-3" style={{ fontSize: '28px' }}>
+                <h3 className="text-[#1d1d1f] font-normal leading-snug mb-3" style={{ fontSize: '28px' }}>
                   Gismo Lighting<br />Solar Street Light
                 </h3>
-                <p className="text-[14px] text-black/60 leading-[1.47] mb-6">
+                <p className="text-[14px] text-black/60 leading-relaxed mb-6">
                   โคมไฟถนนพลังงานแสงอาทิตย์คุณภาพสูง มาตรฐาน LM-79, LM-80 และ มอก. ออกแบบมาเพื่อโครงการ อบต.
                 </p>
                 <div className="flex gap-4 items-center">
                   <Link to="/solar-street-light" className="bg-[#0071e3] text-white text-[14px] px-4 py-2 rounded-lg no-underline">ดูรายละเอียด</Link>
-                  <Link to="/solar-street-light#products" className="text-[#0066cc] text-[14px] no-underline hover:underline">ดูรุ่นสินค้า ›</Link>
+                  <Link to="/solar-street-light" className="text-[#0066cc] text-[14px] no-underline hover:underline">ดูรุ่นสินค้า ›</Link>
                 </div>
               </div>
             </motion.div>
@@ -138,15 +147,15 @@ export default function Home() {
               </div>
               <div className="p-7">
                 <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">GovTech</p>
-                <h3 className="text-[#1d1d1f] font-normal leading-[1.14] tracking-[0.196px] mb-3" style={{ fontSize: '28px' }}>
+                <h3 className="text-[#1d1d1f] font-normal leading-snug mb-3" style={{ fontSize: '28px' }}>
                   ระบบบริหาร<br />จัดการค่าธรรมเนียม
                 </h3>
-                <p className="text-[14px] text-black/60 leading-[1.47] mb-6">
+                <p className="text-[14px] text-black/60 leading-relaxed mb-6">
                   ระบบจัดเก็บค่าธรรมเนียมท้องถิ่นแบบ Cashless โปร่งใส ป้องกันทุจริต ลดการทุจริตจาก 50% เหลือ 0-2%
                 </p>
                 <div className="flex gap-4 items-center">
                   <Link to="/fee-management" className="bg-[#0071e3] text-white text-[14px] px-4 py-2 rounded-lg no-underline">ดูรายละเอียด</Link>
-                  <Link to="/fee-management#workflow" className="text-[#0066cc] text-[14px] no-underline hover:underline">ดูขั้นตอน ›</Link>
+                  <Link to="/fee-management" className="text-[#0066cc] text-[14px] no-underline hover:underline">ดูขั้นตอน ›</Link>
                 </div>
               </div>
             </motion.div>
@@ -156,13 +165,13 @@ export default function Home() {
 
       {/* About */}
       <section id="about" className="bg-black py-24 px-6">
-        <div className="max-w-245 mx-auto">
+        <div className="max-w-[980px] mx-auto">
           <div className="text-center max-w-xl mx-auto mb-14">
             <p className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-3">เกี่ยวกับเรา</p>
-            <h2 className="text-white font-semibold leading-[1.1] mb-5" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>
+            <h2 className="text-white font-semibold leading-tight mb-5" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>
               เทคโนโลยีไทย<br />เพื่อเมืองไทย
             </h2>
-            <p className="text-white/70 text-[17px] leading-[1.47] tracking-[-0.374px]">
+            <p className="text-white/70 text-[17px] leading-relaxed">
               Gismo Group คือบริษัทเทคโนโลยีไทยที่พัฒนาโซลูชัน IoT และซอฟต์แวร์สำหรับหน่วยงานภาครัฐและเอกชนมากว่า 15 ปี ทีมวิศวกรในประเทศพร้อมให้การสนับสนุนและพัฒนาระบบที่ตรงกับความต้องการของคุณอย่างแท้จริง
             </p>
           </div>
@@ -175,8 +184,8 @@ export default function Home() {
             ].map((f, i) => (
               <div key={i} className="bg-[#272729] rounded-lg p-10">
                 <div className="text-4xl mb-4">{f.icon}</div>
-                <h3 className="text-white font-bold text-[21px] leading-[1.19] mb-3">{f.title}</h3>
-                <p className="text-white/70 text-[14px] leading-[1.47]">{f.desc}</p>
+                <h3 className="text-white font-bold text-[21px] leading-snug mb-3">{f.title}</h3>
+                <p className="text-white/70 text-[14px] leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -191,7 +200,7 @@ export default function Home() {
                 <div className="text-3xl shrink-0">{c.icon}</div>
                 <div>
                   <div className="text-white font-semibold text-[17px] mb-2">{c.title}</div>
-                  <div className="text-white/70 text-[14px] leading-[1.47]">{c.desc}</div>
+                  <div className="text-white/70 text-[14px] leading-relaxed">{c.desc}</div>
                 </div>
               </div>
             ))}
@@ -201,12 +210,12 @@ export default function Home() {
 
       {/* CTA */}
       <section className="bg-[#f5f5f7] py-24 px-6 text-center">
-        <div className="max-w-170 mx-auto">
+        <div className="max-w-[680px] mx-auto">
           <p className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-3">เริ่มต้นวันนี้</p>
-          <h2 className="text-[#1d1d1f] font-semibold leading-[1.1] mb-5" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>
+          <h2 className="text-[#1d1d1f] font-semibold leading-tight mb-5" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>
             พร้อมยกระดับ<br />หน่วยงานของคุณ?
           </h2>
-          <p className="text-black/70 text-[17px] leading-[1.47] mb-10">
+          <p className="text-black/70 text-[17px] leading-relaxed mb-10">
             ติดต่อทีมงาน Gismo เพื่อรับคำปรึกษาและประเมินราคาเบื้องต้นฟรี
           </p>
           <a

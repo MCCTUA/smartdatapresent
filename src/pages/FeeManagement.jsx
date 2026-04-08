@@ -104,12 +104,12 @@ export default function FeeManagement() {
             ))}
           </motion.div>
           <motion.div variants={fadeUp} className="flex gap-4 justify-center flex-wrap">
-            <a href="#workflow" className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors">
+            <button onClick={() => document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth' })} className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg border-none cursor-pointer hover:bg-[#0077ed] transition-colors">
               ดูขั้นตอนการทำงาน
-            </a>
-            <a href="#contact" className="text-[#2997ff] border border-[#2997ff] text-[17px] px-6 py-2 rounded-[980px] no-underline hover:underline">
+            </button>
+            <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="text-[#2997ff] border border-[#2997ff] text-[17px] px-6 py-2 rounded-full bg-transparent cursor-pointer hover:underline">
               ขอรับคำปรึกษา ›
-            </a>
+            </button>
           </motion.div>
         </motion.div>
       </section>

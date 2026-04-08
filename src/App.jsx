@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -17,6 +17,7 @@ export default function App() {
             <Route path="/smart-street-light" element={<SmartStreetLight />} />
             <Route path="/solar-street-light" element={<SolarStreetLight />} />
             <Route path="/fee-management" element={<FeeManagement />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
         <Footer />
