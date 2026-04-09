@@ -422,7 +422,7 @@ export default function FeeManagement() {
       {/* Security Features */}
       <Section>
         <div className="max-w-[980px] mx-auto">
-          <SectionHeader eyebrow="ความปลอดภัย" title="3 ชั้นป้องกัน\nที่ครอบคลุม" body="ระบบออกแบบให้ป้องกันทั้งมิจฉาชีพภายนอกและการทุจริตภายในอย่างครอบคลุม" />
+          <SectionHeader eyebrow="ความปลอดภัย" title="เกราะ 3 ชั้นป้องกัน ที่ครอบคลุม" body="ระบบออกแบบให้ป้องกันทั้งมิจฉาชีพภายนอกและการทุจริตภายในอย่างครอบคลุม" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
@@ -473,82 +473,132 @@ export default function FeeManagement() {
         </div>
       </Section>
 
-      {/* Benefits Table */}
-      <Section dark>
+      {/* UI Showcase */}
+      <Section id="ui-showcase">
         <div className="max-w-[980px] mx-auto">
-          <SectionHeader dark eyebrow="ผลลัพธ์ที่คาดหวัง" title="ก่อนและหลัง\nที่พิสูจน์แล้ว" />
-          <div className="overflow-x-auto">
-            <table className="w-full text-[15px]">
-              <thead>
-                <tr className="border-b border-white/15">
-                  <th className="text-left py-4 px-5 text-white/50 font-semibold text-[12px] tracking-[0.5px] uppercase">ประเด็น</th>
-                  <th className="text-center py-4 px-5 text-white/50 font-semibold text-[12px] tracking-[0.5px] uppercase">ก่อน</th>
-                  <th className="text-center py-4 px-5 text-white/50 font-semibold text-[12px] tracking-[0.5px] uppercase">หลัง</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { label: 'การทุจริต', before: '50%', after: '0-2%' },
-                  { label: 'ความเชื่อใจประชาชน', before: '30%', after: '95%' },
-                  { label: 'เวลาเก็บเงิน', before: '40 ชั่วโมง/เดือน', after: '20 ชั่วโมง/เดือน' },
-                  { label: 'ข้อผิดพลาด', before: '15%', after: '<1%' },
-                  { label: 'ความพึงพอใจประชาชน', before: '40%', after: '90%' },
-                ].map((row, i) => (
-                  <tr key={i} className="border-b border-white/8">
-                    <td className="py-4 px-5 text-white font-semibold">{row.label}</td>
-                    <td className="py-4 px-5 text-center text-red-400">{row.before}</td>
-                    <td className="py-4 px-5 text-center text-green-400 font-semibold">{row.after}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <SectionHeader
+            eyebrow="หน้าจอระบบจริง"
+            title="UI ครบวงจร Web & Mobile"
+            body="ออกแบบมาเพื่อเทศบาลและ อบต. โดยเฉพาะ ใช้งานง่าย รองรับทุก Platform"
+          />
+
+          {/* Featured: Main Dashboard */}
+          <div className="mb-6 rounded-2xl overflow-hidden border border-black/8 shadow-[rgba(0,0,0,0.15)_0px_8px_32px]">
+            <div className="bg-[#f0f0f0] px-4 py-2.5 flex items-center gap-2 border-b border-black/8">
+              <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+              <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+              <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+              <span className="text-black/40 text-[11px] ml-2 font-medium">แผงควบคุมผู้ดูแลระบบ — The Digital Ledger</span>
+            </div>
+            <div style={{ height: 559, overflow: 'hidden', position: 'relative' }}>
+              <iframe
+                src="ui/main_screen.html"
+                title="Main Dashboard"
+                style={{ position: 'absolute', top: 0, left: 0, width: 1440, height: 860, transform: 'scale(0.65)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
+              />
+            </div>
+          </div>
+
+          {/* 3-col Desktop Screens */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {[
+              { src: 'ui/bill_listing.html', label: 'จัดการรอบบิล', desc: 'สร้างและติดตามบิลทุกประเภท' },
+              { src: 'ui/Daily_Bank_Reconclliation.html', label: 'กระทบยอดธนาคาร', desc: 'Daily Auto-Reconciliation' },
+              { src: 'ui/phase_6_web.html', label: 'รายงานปฏิบัติงาน', desc: 'ติดตามรถเก็บขยะ GPS' },
+            ].map((s, i) => (
+              <div key={i} className="rounded-xl overflow-hidden border border-black/8 shadow-sm">
+                <div className="bg-[#f5f5f5] px-3 py-1.5 flex items-center gap-1.5 border-b border-black/8">
+                  <div className="w-2 h-2 rounded-full bg-[#ff5f56]" />
+                  <div className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
+                  <div className="w-2 h-2 rounded-full bg-[#27c93f]" />
+                  <span className="text-black/35 text-[10px] ml-1">{s.label}</span>
+                </div>
+                <div style={{ height: 258, overflow: 'hidden', position: 'relative' }}>
+                  <iframe
+                    src={s.src}
+                    title={s.label}
+                    style={{ position: 'absolute', top: 0, left: 0, width: 1024, height: 860, transform: 'scale(0.30)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
+                  />
+                </div>
+                <div className="bg-[#fafafa] px-3 py-2 border-t border-black/6">
+                  <p className="text-[11px] text-black/45 leading-tight">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 4-col Mobile Phones */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6 justify-items-center">
+            {[
+              { src: 'ui/billing.html', label: 'ชำระค่าธรรมเนียม' },
+              { src: 'ui/collection_notification.html', label: 'แจ้งเตือนประชาชน' },
+              { src: 'ui/line_mini_app_notification_fee.html', label: 'LINE Mini App' },
+              { src: 'ui/phase_6_mobile.html', label: 'รถเก็บขยะ (GPS)' },
+            ].map((s, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <div className="rounded-[22px] overflow-hidden border-[3px] border-[#1d1d1f] shadow-[rgba(0,0,0,0.3)_0px_10px_24px]"
+                  style={{ width: 214, height: 463 }}>
+                  <div style={{ height: 463, overflow: 'hidden', position: 'relative' }}>
+                    <iframe
+                      src={s.src}
+                      title={s.label}
+                      style={{ position: 'absolute', top: 0, left: 0, width: 390, height: 844, transform: 'scale(0.549)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
+                    />
+                  </div>
+                </div>
+                <p className="text-[12px] text-black/50 mt-3 text-center font-medium">{s.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* 2-col Registration Screens */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { src: 'ui/House_registration.html', label: 'ทะเบียนบ้านและประชาชน', desc: 'บันทึกและจัดการข้อมูลผู้เสียค่าธรรมเนียม' },
+              { src: 'ui/Officer_registration.html', label: 'จัดการเจ้าหน้าที่', desc: 'ลงทะเบียนและกำหนดสิทธิ์เจ้าหน้าที่' },
+            ].map((s, i) => (
+              <div key={i} className="rounded-xl overflow-hidden border border-black/8 shadow-sm">
+                <div className="bg-[#f5f5f5] px-3 py-1.5 flex items-center gap-1.5 border-b border-black/8">
+                  <div className="w-2 h-2 rounded-full bg-[#ff5f56]" />
+                  <div className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
+                  <div className="w-2 h-2 rounded-full bg-[#27c93f]" />
+                  <span className="text-black/35 text-[10px] ml-1">{s.label}</span>
+                </div>
+                <div style={{ height: 388, overflow: 'hidden', position: 'relative' }}>
+                  <iframe
+                    src={s.src}
+                    title={s.label}
+                    style={{ position: 'absolute', top: 0, left: 0, width: 1024, height: 860, transform: 'scale(0.451)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
+                  />
+                </div>
+                <div className="bg-[#fafafa] px-3 py-2 border-t border-black/6">
+                  <p className="text-[11px] text-black/45">{s.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </Section>
 
-      {/* Timeline */}
-      <Section>
+      {/* Features Summary */}
+      <Section dark>
         <div className="max-w-[980px] mx-auto">
-          <SectionHeader eyebrow="แผนการพัฒนา" title="Timeline การติดตั้ง\n3 Phase ใน 6 เดือน" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <SectionHeader dark eyebrow="ฟีเจอร์ทั้งหมด" title="ครบทุกความต้องการของเทศบาลและ อบต." body="ระบบเดียวที่จัดการทุกขั้นตอน ตั้งแต่ทะเบียนบ้านจนถึงรายงานสาธารณะ" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              {
-                phase: 'Phase 1',
-                period: 'เดือนที่ 1-2',
-                title: 'Foundation',
-                items: ['ออกแบบ Database & API', 'สร้าง Core System (Billing, Payment)', 'Integrate Payment Gateway', 'ทดสอบ Cashless Payment'],
-                result: 'ระบบพื้นฐานทำงานได้ ชำระผ่าน QR Code',
-              },
-              {
-                phase: 'Phase 2',
-                period: 'เดือนที่ 3-4',
-                title: 'Security & Verification',
-                items: ['เพิ่ม GPS + Photo Evidence', 'เพิ่ม Officer Identity QR Code', 'เพิ่ม Daily Auto-Reconciliation', 'เพิ่ม Anomaly Detection'],
-                result: 'ลดการทุจริตจาก 50% → 10%',
-                featured: true,
-              },
-              {
-                phase: 'Phase 3',
-                period: 'เดือนที่ 5-6',
-                title: 'Monitoring & Transparency',
-                items: ['สร้าง Real-time Dashboard', 'เพิ่ม Public Disclosure Feature', 'ทำ Regular Audit', 'ทดสอบ Crowdsourced Verification'],
-                result: 'ลดทุจริต 10% → 0-2% + เพิ่มความเชื่อใจ',
-              },
-            ].map((t, i) => (
-              <div key={i} className={`rounded-xl p-8 ${t.featured ? 'bg-[#0071e3] text-white' : 'bg-white shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]'}`}>
-                <p className={`text-[12px] font-semibold tracking-[2px] uppercase mb-1 ${t.featured ? 'text-white/80' : 'text-[#0071e3]'}`}>{t.phase} — {t.period}</p>
-                <h3 className={`text-[21px] font-bold leading-[1.19] mb-5 ${t.featured ? 'text-white' : 'text-[#1d1d1f]'}`}>{t.title}</h3>
-                <ul className="space-y-2 mb-6">
-                  {t.items.map((item, j) => (
-                    <li key={j} className={`text-[14px] leading-[1.47] pl-4 relative ${t.featured ? 'text-white/90' : 'text-black/70'}`}>
-                      <span className={`absolute left-0 font-bold ${t.featured ? 'text-white' : 'text-[#0071e3]'}`}>✓</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <div className={`text-[13px] font-semibold p-3 rounded-lg ${t.featured ? 'bg-white/20 text-white' : 'bg-[#f5f5f7] text-[#0071e3]'}`}>
-                  ผลลัพธ์: {t.result}
-                </div>
+              { icon: '🏘️', title: 'ทะเบียนบ้าน', desc: 'ฐานข้อมูลบ้านและประชาชนครบถ้วน พร้อม QR Code เฉพาะบ้าน' },
+              { icon: '🧾', title: 'ออกบิลอัตโนมัติ', desc: 'สร้างบิลค่าขยะ ค่าน้ำ ค่าไฟ ตามรอบที่กำหนด' },
+              { icon: '💳', title: 'Cashless Payment', desc: 'ชำระผ่าน QR Code PromptPay เท่านั้น ตรวจสอบได้ 100%' },
+              { icon: '🏦', title: 'กระทบยอดธนาคาร', desc: 'Auto-Reconciliation รายวัน เทียบ Bank Statement อัตโนมัติ' },
+              { icon: '🚛', title: 'ติดตาม GPS', desc: 'แผนที่รถเก็บขยะ Real-time บ้านจ่ายแล้ว vs ค้างจ่าย' },
+              { icon: '💬', title: 'LINE OA แจ้งเตือน', desc: 'ส่ง e-Receipt และแจ้งเตือนผ่าน LINE OA ทันที' },
+              { icon: '👮', title: 'QR ตรวจสอบเจ้าหน้าที่', desc: 'ประชาชนสแกนยืนยันตัวตนเจ้าหน้าที่ก่อนชำระเงิน' },
+              { icon: '📊', title: 'รายงานสาธารณะ', desc: 'Monthly Audit และเปิดเผยรายงานต่อสาธารณชนอัตโนมัติ' },
+            ].map((f, i) => (
+              <div key={i} className="bg-[#272729] rounded-xl p-5">
+                <div className="text-3xl mb-3">{f.icon}</div>
+                <h3 className="text-white font-semibold text-[15px] leading-snug mb-2">{f.title}</h3>
+                <p className="text-white/55 text-[13px] leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>

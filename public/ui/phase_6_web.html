@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="light" lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>รายงานการปฏิบัติงานจัดเก็บขยะ - The Digital Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-dim": "#3d5762",
+                        "inverse-surface": "#0c0f10",
+                        "background": "#f8f9fa",
+                        "on-background": "#2b3437",
+                        "primary-fixed": "#d7e2ff",
+                        "surface": "#f8f9fa",
+                        "surface-tint": "#255dad",
+                        "primary-dim": "#1151a0",
+                        "outline-variant": "#abb3b7",
+                        "on-tertiary-fixed-variant": "#52506b",
+                        "on-secondary-fixed-variant": "#455f6b",
+                        "surface-container-high": "#e3e9ec",
+                        "surface-dim": "#d1dce0",
+                        "secondary": "#49636f",
+                        "surface-variant": "#dbe4e7",
+                        "surface-bright": "#f8f9fa",
+                        "secondary-fixed": "#cbe7f5",
+                        "inverse-primary": "#73a3f8",
+                        "on-primary-container": "#0f509f",
+                        "on-secondary-container": "#3c5561",
+                        "on-primary-fixed-variant": "#215aaa",
+                        "on-surface": "#2b3437",
+                        "secondary-container": "#cbe7f5",
+                        "on-tertiary-fixed": "#35334d",
+                        "inverse-on-surface": "#9b9d9e",
+                        "tertiary-container": "#d5d1f2",
+                        "surface-container": "#eaeff1",
+                        "on-error-container": "#752121",
+                        "outline": "#737c7f",
+                        "secondary-fixed-dim": "#bdd9e6",
+                        "on-tertiary-container": "#484661",
+                        "tertiary": "#5e5c78",
+                        "tertiary-fixed": "#d5d1f2",
+                        "on-surface-variant": "#586064",
+                        "on-primary-fixed": "#003e81",
+                        "tertiary-fixed-dim": "#c7c3e3",
+                        "surface-container-highest": "#dbe4e7",
+                        "error-container": "#fe8983",
+                        "primary-fixed-dim": "#c1d5ff",
+                        "on-primary": "#f7f7ff",
+                        "surface-container-low": "#f1f4f6",
+                        "primary": "#255dad",
+                        "error-dim": "#4e0309",
+                        "on-secondary": "#f2faff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#fff7f6",
+                        "on-secondary-fixed": "#29434e",
+                        "on-tertiary": "#fcf7ff",
+                        "primary-container": "#d7e2ff",
+                        "error": "#9f403d",
+                        "tertiary-dim": "#52506b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Public Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #255dad 0%, #1151a0 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-6 pl-4 pr-0 overflow-y-auto bg-slate-100 dark:bg-slate-950 h-screen w-72 border-r-0 z-40 font-['Public_Sans'] font-medium tracking-wide">
+<div class="mb-8 px-4">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="account_balance">account_balance</span>
+<span class="text-lg font-black text-slate-900 dark:text-white uppercase">Fee Management</span>
+</div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-widest px-1">Official Portal</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 rounded-l-xl shadow-sm opacity-80 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:translate-x-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span>Billing Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:translate-x-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home_work">home_work</span>
+<span>Resident Directory</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:translate-x-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="send_and_archive">send_and_archive</span>
+<span>Notification Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:translate-x-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span>Officer Management</span>
+</a>
+</nav>
+<div class="mt-auto px-4 py-6 space-y-1 border-t border-slate-200/30">
+<a class="flex items-center gap-3 px-2 py-2 text-slate-500 text-sm hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="lock">lock</span>
+<span>Security Settings</span>
+</a>
+<a class="flex items-center gap-3 px-2 py-2 text-slate-500 text-sm hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="history">history</span>
+<span>System Logs</span>
+</a>
+</div>
+<div class="absolute right-0 top-0 bottom-0 w-[1px] bg-slate-200 dark:bg-slate-800 opacity-20"></div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-72">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-8 py-3 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md docked full-width top-0 sticky z-50 font-['Public_Sans'] antialiased">
+<div class="flex items-center gap-8">
+<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">รายงานการปฏิบัติงานจัดเก็บขยะ</h1>
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border-none rounded-xl text-sm w-80 focus:ring-2 focus:ring-primary/20 transition-all" placeholder="ค้นหาเลขที่บ้านหรือผู้ปฏิบัติงาน..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-semibold">
+<span class="material-symbols-outlined text-sm" data-icon="shield" style="font-variation-settings: 'FILL' 1;">shield</span>
+                    Security Status: Active
+                </div>
+<div class="flex gap-1">
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-lg transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-lg transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
+<img class="w-full h-full object-cover" data-alt="professional portrait of a municipal administrator in business attire, clean corporate look" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFeeGpmcL00445aYPSAsv6ytXSFMY9OAeoaEt4Zo1C175tOsU1A7piF6RhWtZtXvh4btrhHJSdq16ZpSDfSXC6XbSOLYHfgvk7mEGVwhw9Ry1VtvY3v_JGTU2Qxk2KWI0o_fwwk7pKh7abBWk6tQmw89_wMoR7lhJ6RuwI7A7ukdGzd-cQvcU86cD3l04xE0yVNOdwig9nWBwlfobkmwN61OxbXBAnxPUW73LHazo_HUzMyxMHrwO0aZD5--Y7lE4cu_ESdq7494iv"/>
+</div>
+</div>
+<div class="bg-slate-200 dark:bg-slate-800 h-[1px] w-full absolute bottom-0 opacity-20"></div>
+</header>
+<div class="p-8 space-y-8 bg-surface-container-low min-h-[calc(100vh-64px)]">
+<!-- Overview Bento Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Primary Metric Card -->
+<div class="col-span-6 bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between overflow-hidden relative group">
+<div class="absolute -right-8 -top-8 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+<div>
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">Collection Efficiency</span>
+<h2 class="text-6xl font-black text-on-surface mt-2 mb-4 tracking-tighter">98%</h2>
+<p class="text-on-surface-variant font-medium">ประสิทธิภาพการเก็บขยะวันนี้</p>
+</div>
+<div class="mt-8 flex items-center gap-4">
+<div class="h-2 flex-1 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-primary w-[98%]"></div>
+</div>
+<span class="text-xs font-bold text-primary">+2.4% จากเมื่อวาน</span>
+</div>
+</div>
+<!-- Secondary Metrics Stack -->
+<div class="col-span-3 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl p-6 h-full flex flex-col justify-center border-l-4 border-primary">
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">Progress</span>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="text-3xl font-bold text-on-surface">36/42</span>
+<span class="text-on-surface-variant text-sm">ครัวเรือน</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-1">จำนวนบ้านที่เก็บแล้ว</p>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-6 h-full flex flex-col justify-center border-l-4 border-tertiary">
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">GPS Accuracy</span>
+<div class="mt-4 flex items-center gap-3">
+<span class="text-3xl font-bold text-on-surface">100%</span>
+<span class="material-symbols-outlined text-primary" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-1">ความถูกต้องของพิกัด GPS</p>
+</div>
+</div>
+<!-- Action Panel -->
+<div class="col-span-3 bg-gradient-primary rounded-xl p-6 flex flex-col items-center justify-center text-center text-white shadow-lg">
+<div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-3xl" data-icon="file_download">file_download</span>
+</div>
+<h3 class="text-lg font-bold mb-2">ส่งออกข้อมูล</h3>
+<p class="text-blue-100 text-sm mb-6 px-4">สรุปรายงานการปฏิบัติงานประจำวันในรูปแบบ PDF หรือ CSV</p>
+<button class="w-full py-3 bg-white text-primary font-bold rounded-xl hover:bg-blue-50 transition-colors shadow-xl shadow-black/10">
+                        Audit Report
+                    </button>
+</div>
+</div>
+<!-- Activity Table Section -->
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+<div class="px-8 py-6 flex justify-between items-center border-b border-surface-container">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="list_alt">list_alt</span>
+<h3 class="text-lg font-bold text-on-surface">บันทึกกิจกรรมล่าสุด</h3>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 text-sm font-semibold text-secondary hover:bg-surface-container-low rounded-lg transition-all">กรองข้อมูล</button>
+<button class="px-4 py-2 text-sm font-semibold text-secondary hover:bg-surface-container-low rounded-lg transition-all">เรียงตามเวลา</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-8 py-4 text-xs font-bold text-secondary uppercase tracking-wider">บ้านเลขที่</th>
+<th class="px-6 py-4 text-xs font-bold text-secondary uppercase tracking-wider">เวลา</th>
+<th class="px-6 py-4 text-xs font-bold text-secondary uppercase tracking-wider">พิกัด GPS</th>
+<th class="px-6 py-4 text-xs font-bold text-secondary uppercase tracking-wider">รูปภาพหลักฐาน</th>
+<th class="px-8 py-4 text-xs font-bold text-secondary uppercase tracking-wider text-right">สถานะการยืนยันจากประชาชน</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1 -->
+<tr class="hover:bg-primary-fixed-dim/10 transition-colors">
+<td class="px-8 py-5 font-semibold text-on-surface">124/5 หมู่ 2</td>
+<td class="px-6 py-5 text-on-surface-variant text-sm">08:45 น.</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 text-primary text-sm font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+                                        13.7563, 100.5018
+                                    </div>
+</td>
+<td class="px-6 py-5">
+<div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-100">
+<img class="w-full h-full object-cover" data-alt="clean recycling bin in front of a modern residential driveway, daylight, high quality photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSjzNHdTr2ckPYnDaT7DWbjNntrmFO-kpH1xbdKekadNP7Pqs3o7VpHmNHWXw23yf0RFGqr0Dqg1ecR7GXQt3xTOsLCWHfAqggfSrKqHrkQYNhAfN4rqLzz4dxkGWHdqhUR4g_B4NdBVfhP3fCKd3AeD-_uRsACDFvO1L0PFlY9f5PY_JnKLWXl_EMMZsZit2W0xXzcBS7e9GUQm3JMxJ0jGGJ_uRg1rHFrqBZZJ7qmeaLrtrTnOKpH97f6U07wWCIXepj7OTye0Ii"/>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-on-primary-container"></span>
+                                        ยืนยันแล้ว
+                                    </span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-primary-fixed-dim/10 transition-colors">
+<td class="px-8 py-5 font-semibold text-on-surface">89/12 ซอย 4</td>
+<td class="px-6 py-5 text-on-surface-variant text-sm">09:12 น.</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 text-primary text-sm font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+                                        13.7580, 100.5035
+                                    </div>
+</td>
+<td class="px-6 py-5">
+<div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-100">
+<img class="w-full h-full object-cover" data-alt="municipal garbage collection truck lifting a green bin on a suburban street, bright morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYLOGUxArthpytpOQmApqtC_ndMi22DOLGAIekDaMwYpT7APgopEVzH7KtI0ZfQfivvmF5pk65_SHU8RuQ2CknRErpcJdXr2xwJtRddACJM9BL658MsQnBKVonYOsEPnREOBysDjmO1Qhg0BT6v7G6gfrqH8NmSxn-iaLp6hNElTxrMA4O5E0gtgf2vsl4V8L7RwxnfBLcsS_-Bd1ah5V4d1k1u3DZeQ81FRJy3Tu2pSABaGW7FkZrQuUTrorNYknA-CmSMqjtV-fI"/>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-on-secondary-container"></span>
+                                        รอยืนยัน
+                                    </span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-primary-fixed-dim/10 transition-colors bg-primary-fixed-dim/5">
+<td class="px-8 py-5 font-semibold text-on-surface">42/3 หมู่ 1</td>
+<td class="px-6 py-5 text-on-surface-variant text-sm">09:30 น.</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 text-primary text-sm font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+                                        13.7592, 100.5050
+                                    </div>
+</td>
+<td class="px-6 py-5">
+<div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-100">
+<img class="w-full h-full object-cover" data-alt="close up of a modern trash collection container lid, industrial design, neutral outdoor lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCutXNqjpDxJ-QdxVn8IWEuR6GgI8x3vWDq475516b51FjtxBaolFNKGX57Aa4mC1i7eyxz5L6E136gpqqCtSIKnJVQ2bM_370HsOv2KBVYzXyyv-2FJaGJV98yNLf_8cSg3cqfBDUgbVGex7ROBWRuuF2BcGnJkxDHQuTywmuAOJZQUHFOOG1DKKrdNrH7dZenTvS-Ncw7uAnsq2l60v5zbmGkyysQDx8C0fZuuSNylQutzhEhXeK242gacN-WW1BH0g84s_yWess4"/>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-on-primary-container"></span>
+                                        ยืนยันแล้ว
+                                    </span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-primary-fixed-dim/10 transition-colors">
+<td class="px-8 py-5 font-semibold text-on-surface">5/5 ซอยลาดพร้าว</td>
+<td class="px-6 py-5 text-on-surface-variant text-sm">09:55 น.</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 text-primary text-sm font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+                                        13.7610, 100.5082
+                                    </div>
+</td>
+<td class="px-6 py-5">
+<div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-100">
+<img class="w-full h-full object-cover" data-alt="clean city sidewalk with minimal modern waste bin, daytime lighting, urban environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDZIy9EaUeqEa7_7JiL5AEnaMlziwslKc7hDkLyWx1TMfu450rWzRS1P-Q2WOAj3uHKeHEu7OgbWYJaeMWYVWg9l2_HGDY25weSGgHvDdneLJvZ1H1Q5sO7GvhCasfLZbj8D0yHwyon1__323nkCDjoF-9qhrALfMFxvNBOMciAiJKXbw_Br8y5dnUan7N-0Gdk7u0XGqLh605FkOutavr3k_YDugHeG5r71-WHxwJ3GobZX8mlH-sRPvCKbZcpKaeCuqHIruMMLOe"/>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container text-on-error-container text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-on-error-container"></span>
+                                        ปฏิเสธ/มีปัญหา
+                                    </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-8 py-4 bg-surface-container-low flex justify-between items-center">
+<span class="text-sm text-on-surface-variant">แสดง 4 จากทั้งหมด 36 รายการ</span>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant/30 text-on-surface-variant hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant/30 text-on-surface-variant hover:bg-white transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant/30 text-on-surface-variant hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

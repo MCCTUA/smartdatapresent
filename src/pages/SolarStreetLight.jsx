@@ -105,9 +105,9 @@ export default function SolarStreetLight() {
       {/* Hero */}
       <section className="min-h-screen bg-black relative overflow-hidden flex items-end justify-center pb-20 px-6">
         <img
-          src={`${imgBase}slide_1_image_1.jpg`}
+          src={`${imgBase}IMG_2589.jpeg`}
           alt="Gismo Lighting Solar Street Light"
-          className="absolute inset-0 w-full h-full object-cover opacity-40"
+          className="absolute inset-0 w-full h-full object-cover opacity-50"
         />
         <div className="relative z-10 text-center max-w-3xl">
           <motion.div initial="hidden" animate="show" variants={stagger}>
@@ -183,8 +183,11 @@ export default function SolarStreetLight() {
                 ))}
               </div>
             </div>
-            <div className="rounded-xl overflow-hidden">
-              <img src={`${imgBase}slide_3_image_1.jpg`} alt="Gismo Lighting Company" className="w-full" loading="lazy" />
+            <div>
+              <div className="rounded-xl overflow-hidden mb-3">
+                <img src={`${imgBase}IMG_0775.jpeg`} alt="เทศบาลเมืองสระบุรี — ไฟถนนโซลาร์กินรี" className="w-full object-cover" loading="lazy" />
+              </div>
+              <p className="text-white/40 text-[12px] text-center tracking-wide">📍 ผลงาน: เทศบาลเมืองสระบุรี</p>
             </div>
           </div>
         </div>
@@ -207,8 +210,69 @@ export default function SolarStreetLight() {
               </div>
             ))}
           </div>
-          <div className="rounded-xl overflow-hidden">
-            <img src={`${imgBase}slide_4_image_1.jpg`} alt="Performance Comparison Chart" className="w-full" loading="lazy" />
+          <div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl overflow-hidden">
+                <img src={`${imgBase}IMG_2582.jpeg`} alt="TOA Factory — กลางวัน" className="w-full h-52 object-cover" loading="lazy" />
+              </div>
+              <div className="rounded-xl overflow-hidden">
+                <img src={`${imgBase}IMG_2587.jpeg`} alt="TOA Factory UNITHAI — กลางวัน" className="w-full h-52 object-cover" loading="lazy" />
+              </div>
+              <div className="rounded-xl overflow-hidden">
+                <img src={`${imgBase}IMG_2644.jpeg`} alt="TOA Factory — กลางคืน" className="w-full h-52 object-cover" loading="lazy" />
+              </div>
+              <div className="rounded-xl overflow-hidden">
+                <img src={`${imgBase}IMG_2649.jpeg`} alt="TOA Factory — กลางคืน" className="w-full h-52 object-cover" loading="lazy" />
+              </div>
+            </div>
+            <p className="text-[13px] text-black/40 text-center mt-3 tracking-wide">📍 ผลงานติดตั้งจริง: โรงงาน TOA — ระบบไฟถนนโซลาร์ลานจอดรถ</p>
+          </div>
+        </div>
+      </Section>
+
+      {/* Reference Projects */}
+      <Section dark>
+        <div className="max-w-[980px] mx-auto">
+          <SectionHeader dark eyebrow="ผลงานอ้างอิง" title="โครงการจริง ความสว่างที่พิสูจน์แล้ว" body="ผลงานติดตั้งจริงทั้งโครงการภาครัฐและภาคอุตสาหกรรม" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Project 1: Saraburi */}
+            <div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="col-span-2 rounded-xl overflow-hidden">
+                  <img src={`${imgBase}IMG_0775.jpeg`} alt="เทศบาลเมืองสระบุรี — ถนนไฟกินรี" className="w-full h-52 object-cover" loading="lazy" />
+                </div>
+                <div className="rounded-xl overflow-hidden">
+                  <img src={`${imgBase}IMG_0777.jpeg`} alt="กินรี close-up" className="w-full h-36 object-cover" loading="lazy" />
+                </div>
+                <div className="rounded-xl overflow-hidden">
+                  <img src={`${imgBase}IMG_2588.jpeg`} alt="TOA — ลานจอดรถกลางวัน" className="w-full h-36 object-cover" loading="lazy" />
+                </div>
+              </div>
+              <div className="bg-[#272729] rounded-xl p-5">
+                <p className="text-[#0071e3] text-[12px] font-semibold tracking-[2px] uppercase mb-1">โครงการภาครัฐ</p>
+                <h3 className="text-white font-semibold text-[19px] mb-2">เทศบาลเมืองสระบุรี</h3>
+                <p className="text-white/60 text-[14px] leading-[1.47]">ไฟถนนโซลาร์ดีไซน์กินรี สะท้อนอัตลักษณ์ท้องถิ่น ติดตั้งบนถนนสายหลักในเขตเทศบาล ผสานความสวยงามกับประสิทธิภาพพลังงานแสงอาทิตย์</p>
+              </div>
+            </div>
+            {/* Project 2: TOA Factory */}
+            <div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="rounded-xl overflow-hidden">
+                  <img src={`${imgBase}IMG_2582.jpeg`} alt="TOA Factory — กลางวัน" className="w-full h-36 object-cover" loading="lazy" />
+                </div>
+                <div className="rounded-xl overflow-hidden">
+                  <img src={`${imgBase}IMG_2644.jpeg`} alt="TOA Factory — กลางคืน" className="w-full h-36 object-cover" loading="lazy" />
+                </div>
+                <div className="col-span-2 rounded-xl overflow-hidden">
+                  <img src={`${imgBase}IMG_2649.jpeg`} alt="TOA Factory — บรรยากาศกลางคืน" className="w-full h-52 object-cover" loading="lazy" />
+                </div>
+              </div>
+              <div className="bg-[#272729] rounded-xl p-5">
+                <p className="text-[#0071e3] text-[12px] font-semibold tracking-[2px] uppercase mb-1">โครงการอุตสาหกรรม</p>
+                <h3 className="text-white font-semibold text-[19px] mb-2">โรงงาน TOA</h3>
+                <p className="text-white/60 text-[14px] leading-[1.47]">ระบบไฟถนนโซลาร์สำหรับลานจอดรถโรงงาน ครอบคลุมพื้นที่กว้าง สว่างสม่ำเสมอตลอดคืน ประหยัดพลังงาน ไม่ต้องเดินสายไฟ</p>
+              </div>
+            </div>
           </div>
         </div>
       </Section>
@@ -304,8 +368,11 @@ export default function SolarStreetLight() {
                 </div>
               ))}
             </div>
-            <div className="rounded-xl overflow-hidden">
-              <img src={`${imgBase}slide_14_image_1.jpg`} alt="End-to-End Service" className="w-full" loading="lazy" />
+            <div>
+              <div className="rounded-xl overflow-hidden mb-3">
+                <img src={`${imgBase}IMG_2648.jpeg`} alt="TOA Factory — ระบบแสงสว่างกลางคืน" className="w-full object-cover" loading="lazy" />
+              </div>
+              <p className="text-white/40 text-[12px] text-center tracking-wide">📍 ผลงาน: โรงงาน TOA — ลานจอดรถ</p>
             </div>
           </div>
         </div>

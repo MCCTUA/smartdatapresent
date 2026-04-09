@@ -271,6 +271,57 @@ export default function SmartStreetLight() {
         </div>
       </Section>
 
+      {/* Reference Project: Huai Khwang */}
+      <Section>
+        <div className="max-w-[980px] mx-auto">
+          <SectionHeader
+            eyebrow="ผลงานอ้างอิง"
+            title="ติดตั้งจริง — เขตห้วยขวาง กรุงเทพฯ"
+            body="โคม GGismo LED รุ่นเดียวกันที่ติดตั้งบนถนนสาธารณะในพื้นที่กรุงเทพมหานคร พร้อม Node LTE ควบคุมผ่านระบบ Real-time"
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Left: lamp close-ups */}
+            <div className="flex flex-col gap-4">
+              <div className="rounded-xl overflow-hidden">
+                <img src="images/smartlight/installation/IMG_5887.jpeg" alt="โคม GGismo — เขตห้วยขวาง" className="w-full object-cover" loading="lazy" />
+              </div>
+              <div className="rounded-xl overflow-hidden">
+                <img src="images/smartlight/installation/IMG_4929.jpeg" alt="โคม GGismo close-up" className="w-full h-56 object-cover" loading="lazy" />
+              </div>
+            </div>
+            {/* Right: night street scenes */}
+            <div className="flex flex-col gap-4">
+              <div className="rounded-xl overflow-hidden">
+                <img src="images/smartlight/installation/IMG_5052.jpeg" alt="ถนนห้วยขวางกลางคืน" className="w-full h-56 object-cover" loading="lazy" />
+              </div>
+              <div className="rounded-xl overflow-hidden">
+                <img src="images/smartlight/installation/IMG_5057.jpeg" alt="ถนนห้วยขวางกลางคืน" className="w-full h-56 object-cover" loading="lazy" />
+              </div>
+            </div>
+          </div>
+          {/* Caption card */}
+          <div className="bg-white rounded-xl p-6 shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px] flex flex-col md:flex-row gap-6 items-start">
+            <div className="flex-1">
+              <p className="text-[#0071e3] text-[12px] font-semibold tracking-[2px] uppercase mb-1">โครงการ กรุงเทพมหานคร</p>
+              <h3 className="text-[#1d1d1f] font-semibold text-[21px] mb-2">เขตห้วยขวาง กรุงเทพฯ</h3>
+              <p className="text-black/60 text-[14px] leading-relaxed">ติดตั้งโคม GGismo LED บนถนนสาธารณะในเขตห้วยขวาง พร้อม Node LTE ทุกดวง รองรับการควบคุมและติดตามสถานะแบบ Real-time ผ่าน Dashboard สว่างกว่า ประหยัดกว่า และแจ้งเตือนเมื่อชำรุดทันที</p>
+            </div>
+            <div className="flex gap-4 flex-shrink-0 flex-wrap">
+              {[
+                { n: '155 lm/W', l: 'ประสิทธิภาพโคม' },
+                { n: 'Node LTE', l: 'ทุกดวง' },
+                { n: '24/7', l: 'Monitoring' },
+              ].map((s, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-[#0071e3] font-bold text-[17px]">{s.n}</div>
+                  <div className="text-black/50 text-[12px]">{s.l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* Customization */}
       <Section>
         <div className="max-w-[980px] mx-auto">
