@@ -605,6 +605,44 @@ export default function FeeManagement() {
         </div>
       </Section>
 
+      {/* Downloads */}
+      <section className="bg-[#f5f5f7] py-16 px-6">
+        <div className="max-w-[980px] mx-auto">
+          <p className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-3 text-center">เอกสารดาวน์โหลด</p>
+          <h2 className="text-[#1d1d1f] font-semibold text-center leading-[1.1] mb-10" style={{ fontSize: 'clamp(24px,3.5vw,36px)' }}>
+            ดาวน์โหลดข้อมูลผลิตภัณฑ์
+          </h2>
+          <div className="flex justify-center">
+            <div className="bg-white rounded-xl shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px] p-6 flex flex-col gap-4 max-w-[400px] w-full">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#f5f5f7] rounded-lg flex items-center justify-center shrink-0">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="#0071e3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline points="14,2 14,8 20,8" stroke="#0071e3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[15px] font-semibold text-[#1d1d1f]">ระบบบริหารจัดการค่าธรรมเนียมท้องถิ่น</p>
+                  <p className="text-[13px] text-[#6e6e73]">Presentation • PDF • 1.4 MB</p>
+                </div>
+              </div>
+              <a
+                href="downloads/FeeManagement_Presentation.pdf"
+                download="FeeManagement_Presentation.pdf"
+                className="flex items-center justify-center gap-2 bg-[#0071e3] text-white text-[14px] font-semibold px-4 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="7,10 12,15 17,10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+                ดาวน์โหลด PDF
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section id="contact" className="bg-black py-24 px-6 text-center">
         <div className="max-w-[680px] mx-auto">

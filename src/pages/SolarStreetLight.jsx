@@ -378,6 +378,43 @@ export default function SolarStreetLight() {
         </div>
       </Section>
 
+      {/* Downloads */}
+      <section className="bg-[#f5f5f7] py-16 px-6">
+        <div className="max-w-[980px] mx-auto">
+          <p className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-3 text-center">เอกสารดาวน์โหลด</p>
+          <h2 className="text-[#1d1d1f] font-semibold text-center leading-[1.1] mb-10" style={{ fontSize: 'clamp(24px,3vw,34px)' }}>
+            ดาวน์โหลดข้อมูลผลิตภัณฑ์
+          </h2>
+          <div className="max-w-[400px] mx-auto">
+            <div className="bg-white rounded-xl p-6 shadow-[rgba(0,0,0,0.08)_0px_2px_16px] flex flex-col gap-4">
+              <div className="w-10 h-10 rounded-lg bg-[#0071e3]/10 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#0071e3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="14 2 14 8 20 8" stroke="#0071e3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[#1d1d1f] font-semibold text-[15px] leading-snug mb-1">Solar Street Light Solutions</h3>
+                <p className="text-black/50 text-[13px] leading-relaxed mb-1">โบรชัวร์ Gismo Lighting Solar Street Light ครบทุก Series พร้อมสเปคและผลงาน</p>
+                <span className="text-[12px] text-black/30">1.5 MB</span>
+              </div>
+              <a
+                href="downloads/Solar_Street_Light_Solutions.pdf"
+                download="Solar_Street_Light_Solutions.pdf"
+                className="flex items-center justify-center gap-2 bg-[#0071e3] text-white text-[14px] font-semibold px-4 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="7 10 12 15 17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                ดาวน์โหลด PDF
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section id="contact" className="bg-[#f5f5f7] py-24 px-6 text-center">
         <div className="max-w-[680px] mx-auto">

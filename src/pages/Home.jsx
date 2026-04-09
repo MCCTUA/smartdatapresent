@@ -93,8 +93,13 @@ export default function Home() {
               whileHover={{ y: -6 }}
               className="bg-white rounded-xl overflow-hidden shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]"
             >
-              <div className="h-56 flex items-center justify-center text-6xl" style={{ background: 'linear-gradient(135deg,#0a0a1a 0%,#001a3d 60%,#003380 100%)' }}>
-                💡
+              <div className="h-56 overflow-hidden relative bg-[#0a0e1a]">
+                <img
+                  src="images/smartlight/location.webp"
+                  alt="GGismo Smart Street Light Dashboard"
+                  className="w-full h-full object-cover object-top"
+                  loading="lazy"
+                />
               </div>
               <div className="p-7">
                 <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">Smart City</p>
@@ -117,7 +122,7 @@ export default function Home() {
               className="bg-white rounded-xl overflow-hidden shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]"
             >
               <img
-                src="images/solar/slide_1_image_1.jpg"
+                src="images/solar/IMG_2589.jpeg"
                 alt="Gismo Lighting Solar Street Light"
                 className="w-full h-56 object-cover"
                 loading="lazy"
@@ -142,8 +147,17 @@ export default function Home() {
               whileHover={{ y: -6 }}
               className="bg-white rounded-xl overflow-hidden shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]"
             >
-              <div className="h-56 flex items-center justify-center text-6xl" style={{ background: 'linear-gradient(135deg,#001a0a 0%,#003d1a 60%,#006633 100%)' }}>
-                🏛️
+              <div style={{ height: 224, overflow: 'hidden', position: 'relative', background: '#f0f4fa' }}>
+                <iframe
+                  src="ui/main_screen.html"
+                  title="Fee Management UI Preview"
+                  style={{
+                    position: 'absolute', top: 0, left: 0,
+                    width: 1440, height: 860,
+                    transform: 'scale(0.243)', transformOrigin: 'top left',
+                    border: 'none', pointerEvents: 'none',
+                  }}
+                />
               </div>
               <div className="p-7">
                 <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">GovTech</p>
