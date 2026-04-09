@@ -106,13 +106,13 @@ export default function SolarStreetLight() {
       <section className="min-h-screen bg-black relative overflow-hidden flex items-end justify-center pb-20 px-6">
         <img
           src={`${imgBase}IMG_2589.jpeg`}
-          alt="Gismo Lighting Solar Street Light"
+          alt="Solar Street Light"
           className="absolute inset-0 w-full h-full object-cover opacity-50"
         />
         <div className="relative z-10 text-center max-w-3xl">
           <motion.div initial="hidden" animate="show" variants={stagger}>
             <motion.p variants={fadeUp} className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-4">
-              GISMO LIGHTING
+              SOLAR STREET LIGHT
             </motion.p>
             <motion.h1
               variants={fadeUp}
@@ -164,7 +164,7 @@ export default function SolarStreetLight() {
             <div>
               <p className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-3">บริษัทของเรา</p>
               <h2 className="text-white font-semibold leading-[1.1] mb-6" style={{ fontSize: 'clamp(28px,4vw,40px)' }}>
-                Gismo Lighting<br />ผู้นำด้านแสงสว่าง LED
+                ผู้นำด้านแสงสว่าง<br />โซล่าเซลล์ LED
               </h2>
               <p className="text-white/70 text-[17px] leading-[1.47] mb-8">
                 ดำเนินกิจการตั้งแต่ปี 2553 มีประสบการณ์กว่า 15 ปี ในฐานะผู้ผลิตและจำหน่าย LED Lighting ที่ได้รับการรับรองมาตรฐานระดับประเทศ
@@ -395,7 +395,7 @@ export default function SolarStreetLight() {
               </div>
               <div className="flex-1">
                 <h3 className="text-[#1d1d1f] font-semibold text-[15px] leading-snug mb-1">Solar Street Light Solutions</h3>
-                <p className="text-black/50 text-[13px] leading-relaxed mb-1">โบรชัวร์ Gismo Lighting Solar Street Light ครบทุก Series พร้อมสเปคและผลงาน</p>
+                <p className="text-black/50 text-[13px] leading-relaxed mb-1">โบรชัวร์ Solar Street Light ครบทุก Series พร้อมสเปคและผลงาน</p>
                 <span className="text-[12px] text-black/30">1.5 MB</span>
               </div>
               <a
@@ -423,10 +423,10 @@ export default function SolarStreetLight() {
             พร้อมเริ่มโครงการ<br />ของคุณแล้ว?
           </h2>
           <p className="text-black/70 text-[17px] leading-[1.47] mb-10">
-            ติดต่อทีมงาน Gismo Lighting เพื่อรับการออกแบบแสงสว่างและใบเสนอราคาฟรี
+            รับการออกแบบแสงสว่างและใบเสนอราคาฟรี
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <a href="mailto:contact@gismo.co.th" className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors">
+            <a href="#" className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors">
               ขอใบเสนอราคาฟรี
             </a>
             <Link to="/" className="text-[#0066cc] border border-[#0066cc] text-[17px] px-6 py-2 rounded-[980px] no-underline hover:underline">

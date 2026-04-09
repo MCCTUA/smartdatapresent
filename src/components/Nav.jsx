@@ -16,8 +16,11 @@ export default function Nav() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 h-12 bg-black/80 backdrop-blur-xl backdrop-saturate-180">
         <div className="max-w-[1200px] mx-auto h-full flex items-center justify-between px-6">
-          <Link to="/" className="text-white font-bold text-lg tracking-widest no-underline">
-            GISMO
+          <Link to="/" className="no-underline flex items-center">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="28" height="28" rx="6" fill="#0071e3"/>
+              <path d="M8 14h12M14 8v12" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            </svg>
           </Link>
           <div className="hidden md:flex items-center gap-7">
             {links.map(link => (

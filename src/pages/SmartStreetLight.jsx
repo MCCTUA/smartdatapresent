@@ -62,7 +62,7 @@ export default function SmartStreetLight() {
           <div className="flex-1 flex justify-center">
             <img
               src="images/smartlight/Gemini_Generated_Image_ykong3ykong3ykon-removebg-preview.png"
-              alt="GGismo Smart Street Light"
+              alt="Smart Street Light"
               className="w-full max-w-[420px] drop-shadow-[0_0_80px_rgba(0,113,227,0.25)]"
             />
           </div>
@@ -117,7 +117,7 @@ export default function SmartStreetLight() {
           <SectionHeader
             eyebrow="สถาปัตยกรรมระบบ"
             title="ระบบทำงานอย่างไร"
-            body="GGismo Smart Street Light ทำงานแบบ End-to-End Integrated อย่างไร้รอยต่อ ตั้งแต่ตัวโคมไฟถึงหน้าจอผู้บริหาร"
+            body="ระบบทำงานแบบ End-to-End Integrated อย่างไร้รอยต่อ ตั้งแต่ตัวโคมไฟถึงหน้าจอผู้บริหาร"
           />
           <div className="flex flex-col divide-y divide-black/8">
             {[
@@ -142,16 +142,16 @@ export default function SmartStreetLight() {
       {/* Hardware */}
       <Section dark>
         <div className="max-w-[980px] mx-auto">
-          <SectionHeader dark eyebrow="ฮาร์ดแวร์" title="ฮาร์ดแวร์ประสิทธิภาพสูง" body="โคมไฟ GGismo ออกแบบด้วยเทคโนโลยี LED ล่าสุด เพื่อให้ได้ประสิทธิภาพสูงสุด ประหยัดพลังงาน สว่างกว่า และทนทาน" />
+          <SectionHeader dark eyebrow="ฮาร์ดแวร์" title="ฮาร์ดแวร์ประสิทธิภาพสูง" body="โคมไฟ LED ออกแบบด้วยเทคโนโลยีล่าสุด เพื่อให้ได้ประสิทธิภาพสูงสุด ประหยัดพลังงาน สว่างกว่า และทนทาน" />
           {/* Product showcase */}
           <div className="flex flex-col md:flex-row items-center gap-8 mb-12 bg-[#111] rounded-2xl overflow-hidden">
             <img
               src="images/smartlight/Gemini_Generated_Image_am4oo4am4oo4am4o.png"
-              alt="GGismo Street Light — 90° Adjustable"
+              alt="Smart Street Light — 90° Adjustable"
               className="w-full md:w-[48%] object-cover"
             />
             <div className="flex-1 px-8 py-10 md:py-0">
-              <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-3">GGismo LED</p>
+              <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-3">Smart LED</p>
               <h3 className="text-white font-semibold text-[28px] leading-[1.1] mb-4">
                 ออกแบบมาเพื่อ<br />การใช้งานจริง
               </h3>
@@ -277,16 +277,16 @@ export default function SmartStreetLight() {
           <SectionHeader
             eyebrow="ผลงานอ้างอิง"
             title="ติดตั้งจริง — เขตห้วยขวาง กรุงเทพฯ"
-            body="โคม GGismo LED รุ่นเดียวกันที่ติดตั้งบนถนนสาธารณะในพื้นที่กรุงเทพมหานคร พร้อม Node LTE ควบคุมผ่านระบบ Real-time"
+            body="โคม LED รุ่นเดียวกันที่ติดตั้งบนถนนสาธารณะในพื้นที่กรุงเทพมหานคร พร้อม Node LTE ควบคุมผ่านระบบ Real-time"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Left: lamp close-ups */}
             <div className="flex flex-col gap-4">
               <div className="rounded-xl overflow-hidden">
-                <img src="images/smartlight/installation/IMG_5887.jpeg" alt="โคม GGismo — เขตห้วยขวาง" className="w-full object-cover" loading="lazy" />
+                <img src="images/smartlight/installation/IMG_5887.jpeg" alt="โคม LED — เขตห้วยขวาง" className="w-full object-cover" loading="lazy" />
               </div>
               <div className="rounded-xl overflow-hidden">
-                <img src="images/smartlight/installation/IMG_4929.jpeg" alt="โคม GGismo close-up" className="w-full h-56 object-cover" loading="lazy" />
+                <img src="images/smartlight/installation/IMG_4929.jpeg" alt="โคม LED close-up" className="w-full h-56 object-cover" loading="lazy" />
               </div>
             </div>
             {/* Right: night street scenes */}
@@ -304,7 +304,7 @@ export default function SmartStreetLight() {
             <div className="flex-1">
               <p className="text-[#0071e3] text-[12px] font-semibold tracking-[2px] uppercase mb-1">โครงการ กรุงเทพมหานคร</p>
               <h3 className="text-[#1d1d1f] font-semibold text-[21px] mb-2">เขตห้วยขวาง กรุงเทพฯ</h3>
-              <p className="text-black/60 text-[14px] leading-relaxed">ติดตั้งโคม GGismo LED บนถนนสาธารณะในเขตห้วยขวาง พร้อม Node LTE ทุกดวง รองรับการควบคุมและติดตามสถานะแบบ Real-time ผ่าน Dashboard สว่างกว่า ประหยัดกว่า และแจ้งเตือนเมื่อชำรุดทันที</p>
+              <p className="text-black/60 text-[14px] leading-relaxed">ติดตั้งโคม LED บนถนนสาธารณะในเขตห้วยขวาง พร้อม Node LTE ทุกดวง รองรับการควบคุมและติดตามสถานะแบบ Real-time ผ่าน Dashboard สว่างกว่า ประหยัดกว่า และแจ้งเตือนเมื่อชำรุดทันที</p>
             </div>
             <div className="flex gap-4 flex-shrink-0 flex-wrap">
               {[
@@ -487,7 +487,7 @@ export default function SmartStreetLight() {
             {[
               {
                 title: 'Smart Street Light Presentation',
-                desc: 'นำเสนอระบบไฟถนนอัจฉริยะ GGismo ครบวงจร',
+                desc: 'นำเสนอระบบไฟถนนอัจฉริยะครบวงจร',
                 size: '3.3 MB',
                 file: 'downloads/SmartLight_Presentation.pdf',
                 name: 'SmartLight_Presentation.pdf',
@@ -541,7 +541,7 @@ export default function SmartStreetLight() {
             ติดต่อทีมงานของเราเพื่อรับคำปรึกษาและประเมินราคาเบื้องต้นฟรี
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <a href="mailto:contact@gismo.co.th" className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors">
+            <a href="#" className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors">
               ติดต่อเรา
             </a>
             <Link to="/" className="text-[#0066cc] border border-[#0066cc] text-[17px] px-6 py-2 rounded-full no-underline hover:underline">

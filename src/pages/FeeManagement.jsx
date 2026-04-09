@@ -651,10 +651,10 @@ export default function FeeManagement() {
             ยกระดับความโปร่งใส<br />ในหน่วยงานของคุณ
           </h2>
           <p className="text-white/70 text-[17px] leading-[1.47] mb-10">
-            ติดต่อทีมงาน Gismo เพื่อรับการสาธิตระบบและประเมินราคาเบื้องต้นฟรี
+            รับการสาธิตระบบและประเมินราคาเบื้องต้นฟรี
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <a href="mailto:contact@gismo.co.th" className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors">
+            <a href="#" className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors">
               ขอรับการสาธิต
             </a>
             <Link to="/" className="text-[#2997ff] border border-[#2997ff] text-[17px] px-6 py-2 rounded-[980px] no-underline hover:underline">

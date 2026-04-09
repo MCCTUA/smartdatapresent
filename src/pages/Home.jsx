@@ -25,9 +25,6 @@ export default function Home() {
           animate="show"
           variants={stagger}
         >
-          <motion.p variants={fadeUp} className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-4">
-            GISMO GROUP
-          </motion.p>
           <motion.h1
             variants={fadeUp}
             className="text-white font-semibold leading-[1.07] tracking-[-0.28px] mb-5"
@@ -96,7 +93,7 @@ export default function Home() {
               <div className="h-56 overflow-hidden relative bg-[#0a0e1a]">
                 <img
                   src="images/smartlight/location.webp"
-                  alt="GGismo Smart Street Light Dashboard"
+                  alt="Smart Street Light Dashboard"
                   className="w-full h-full object-cover object-top"
                   loading="lazy"
                 />
@@ -104,7 +101,7 @@ export default function Home() {
               <div className="p-7">
                 <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">Smart City</p>
                 <h3 className="text-[#1d1d1f] font-normal leading-snug mb-3" style={{ fontSize: '28px' }}>
-                  GGismo Smart<br />Street Light
+                  Smart<br />Street Light
                 </h3>
                 <p className="text-[14px] text-black/60 leading-relaxed mb-6">
                   ระบบจัดการไฟถนนอัจฉริยะครบวงจร ควบคุมและตรวจสอบแบบ Real-time ผ่าน IoT ประหยัดพลังงาน 50-70%
@@ -123,14 +120,14 @@ export default function Home() {
             >
               <img
                 src="images/solar/IMG_2589.jpeg"
-                alt="Gismo Lighting Solar Street Light"
+                alt="Solar Street Light"
                 className="w-full h-56 object-cover"
                 loading="lazy"
               />
               <div className="p-7">
                 <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">Solar Energy</p>
                 <h3 className="text-[#1d1d1f] font-normal leading-snug mb-3" style={{ fontSize: '28px' }}>
-                  Gismo Lighting<br />Solar Street Light
+                  Solar<br />Street Light
                 </h3>
                 <p className="text-[14px] text-black/60 leading-relaxed mb-6">
                   โคมไฟถนนพลังงานแสงอาทิตย์คุณภาพสูง มาตรฐาน LM-79, LM-80 และ มอก. ออกแบบมาเพื่อโครงการ อบต.
@@ -186,7 +183,7 @@ export default function Home() {
               เทคโนโลยีไทย<br />เพื่อเมืองไทย
             </h2>
             <p className="text-white/70 text-[17px] leading-relaxed">
-              Gismo Group คือบริษัทเทคโนโลยีไทยที่พัฒนาโซลูชัน IoT และซอฟต์แวร์สำหรับหน่วยงานภาครัฐและเอกชนมากว่า 15 ปี ทีมวิศวกรในประเทศพร้อมให้การสนับสนุนและพัฒนาระบบที่ตรงกับความต้องการของคุณอย่างแท้จริง
+              บริษัทเทคโนโลยีไทยที่พัฒนาโซลูชัน IoT และซอฟต์แวร์สำหรับหน่วยงานภาครัฐและเอกชนมากว่า 15 ปี ทีมวิศวกรในประเทศพร้อมให้การสนับสนุนและพัฒนาระบบที่ตรงกับความต้องการของคุณอย่างแท้จริง
             </p>
           </div>
 
@@ -230,10 +227,10 @@ export default function Home() {
             พร้อมยกระดับ<br />หน่วยงานของคุณ?
           </h2>
           <p className="text-black/70 text-[17px] leading-relaxed mb-10">
-            ติดต่อทีมงาน Gismo เพื่อรับคำปรึกษาและประเมินราคาเบื้องต้นฟรี
+            รับคำปรึกษาและประเมินราคาเบื้องต้นฟรี
           </p>
           <a
-            href="mailto:contact@gismo.co.th"
+            href="#"
             className="inline-block bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg no-underline hover:bg-[#0077ed] transition-colors"
           >
             ติดต่อเรา
