@@ -37,7 +37,7 @@ const products = [
     model: 'SA-2A01',
     series: 'RSK Series — All-in-One',
     tagline: 'สำหรับถนนหลัก',
-    img: `${imgBase}slide_5_image_1.jpg`,
+    img: `${imgBase}product_sa2a01.webp`,
     detailImg: `${imgBase}slide_7_image_1.jpg`,
     specs: [
       { label: 'กำลังไฟแผงโซลาร์', value: '60W – 120W' },
@@ -53,7 +53,7 @@ const products = [
     model: 'SA-2A02',
     series: 'RSA Series — Modular',
     tagline: 'ความยืดหยุ่นสูง ถนนกว้าง',
-    img: `${imgBase}slide_6_image_1.jpg`,
+    img: `${imgBase}product_sa2a02.webp`,
     detailImg: `${imgBase}slide_8_image_1.jpg`,
     specs: [
       { label: 'กำลังไฟแผงโซลาร์', value: '40W – 160W' },
@@ -69,8 +69,8 @@ const products = [
     model: 'SK-7A13',
     series: 'YY Series — Split Type',
     tagline: 'ยืดหยุ่นสูง แยกส่วน',
-    img: `${imgBase}slide_9_image_1.jpg`,
-    detailImg: `${imgBase}slide_9_image_1.jpg`,
+    img: `${imgBase}product_sk7a13.webp`,
+    detailImg: `${imgBase}product_sk7a13.webp`,
     specs: [
       { label: 'กำลังไฟแผงโซลาร์', value: '60W – 85W' },
       { label: 'ความสว่าง', value: '3,400 – 4,800 LM' },
@@ -85,8 +85,8 @@ const products = [
     model: 'SK-7A14',
     series: 'Sailing Light — Premium',
     tagline: 'ดีไซน์หรูหรา พรีเมียม',
-    img: `${imgBase}slide_10_image_1.jpg`,
-    detailImg: `${imgBase}slide_10_image_1.jpg`,
+    img: `${imgBase}product_sk7a14.webp`,
+    detailImg: `${imgBase}product_sk7a14.webp`,
     specs: [
       { label: 'กำลังไฟแผงโซลาร์', value: '60W – 100W' },
       { label: 'ความสว่าง', value: '4,100 – 9,000 LM' },
