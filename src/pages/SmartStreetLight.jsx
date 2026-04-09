@@ -33,27 +33,38 @@ export default function SmartStreetLight() {
   return (
     <div>
       {/* Hero */}
-      <section className="min-h-screen bg-black flex items-center justify-center px-6 text-center">
-        <div className="max-w-3xl">
-          <p className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-4">
-            Smart City Solution
-          </p>
-          <h1
-            className="text-white font-semibold leading-[1.07] tracking-[-0.28px] mb-5"
-            style={{ fontSize: 'clamp(36px,6vw,56px)' }}
-          >
-            {'ก้าวสู่เมืองอัจฉริยะ'}<br />{'ด้วยระบบไฟถนนอัจฉริยะ'}
-          </h1>
-          <p className="text-white/70 mb-10" style={{ fontSize: 'clamp(17px,2vw,21px)', lineHeight: 1.47 }}>
-            {'Smart Street Lighting Platform ครบวงจร'}<br />{'ฮาร์ดแวร์ประสิทธิภาพสูง 155 lm/W ผสานกับซอฟต์แวร์อัจฉริยะ'}
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <button onClick={() => scrollTo('contact')} className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg border-none cursor-pointer hover:bg-[#0077ed] transition-colors">
-              ขอรับคำปรึกษาฟรี
-            </button>
-            <button onClick={() => scrollTo('how-it-works')} className="text-[#2997ff] border border-[#2997ff] text-[17px] px-6 py-2 rounded-full bg-transparent cursor-pointer hover:underline">
-              ดูการทำงาน ›
-            </button>
+      <section className="min-h-screen bg-black flex items-center px-6">
+        <div className="max-w-[980px] mx-auto w-full flex flex-col md:flex-row items-center gap-10 py-24">
+          {/* Text */}
+          <div className="flex-1 md:text-left text-center">
+            <p className="text-[14px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-4">
+              Smart City Solution
+            </p>
+            <h1
+              className="text-white font-semibold leading-[1.07] tracking-[-0.28px] mb-5"
+              style={{ fontSize: 'clamp(36px,5vw,56px)' }}
+            >
+              ก้าวสู่เมืองอัจฉริยะ<br />ด้วยระบบไฟถนนอัจฉริยะ
+            </h1>
+            <p className="text-white/70 mb-10" style={{ fontSize: 'clamp(17px,2vw,21px)', lineHeight: 1.47 }}>
+              Smart Street Lighting Platform ครบวงจร<br />ฮาร์ดแวร์ประสิทธิภาพสูง 155 lm/W ผสานกับซอฟต์แวร์อัจฉริยะ
+            </p>
+            <div className="flex gap-4 md:justify-start justify-center flex-wrap">
+              <button onClick={() => scrollTo('contact')} className="bg-[#0071e3] text-white text-[17px] px-6 py-2 rounded-lg border-none cursor-pointer hover:bg-[#0077ed] transition-colors">
+                ขอรับคำปรึกษาฟรี
+              </button>
+              <button onClick={() => scrollTo('how-it-works')} className="text-[#2997ff] border border-[#2997ff] text-[17px] px-6 py-2 rounded-full bg-transparent cursor-pointer hover:underline">
+                ดูการทำงาน ›
+              </button>
+            </div>
+          </div>
+          {/* Product image */}
+          <div className="flex-1 flex justify-center">
+            <img
+              src="images/smartlight/Gemini_Generated_Image_ykong3ykong3ykon-removebg-preview.png"
+              alt="GGismo Smart Street Light"
+              className="w-full max-w-[420px] drop-shadow-[0_0_80px_rgba(0,113,227,0.25)]"
+            />
           </div>
         </div>
       </section>
@@ -132,6 +143,26 @@ export default function SmartStreetLight() {
       <Section dark>
         <div className="max-w-[980px] mx-auto">
           <SectionHeader dark eyebrow="ฮาร์ดแวร์" title="ฮาร์ดแวร์ประสิทธิภาพสูง" body="โคมไฟ GGismo ออกแบบด้วยเทคโนโลยี LED ล่าสุด เพื่อให้ได้ประสิทธิภาพสูงสุด ประหยัดพลังงาน สว่างกว่า และทนทาน" />
+          {/* Product showcase */}
+          <div className="flex flex-col md:flex-row items-center gap-8 mb-12 bg-[#111] rounded-2xl overflow-hidden">
+            <img
+              src="images/smartlight/Gemini_Generated_Image_am4oo4am4oo4am4o.png"
+              alt="GGismo Street Light — 90° Adjustable"
+              className="w-full md:w-[48%] object-cover"
+            />
+            <div className="flex-1 px-8 py-10 md:py-0">
+              <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-3">GGismo LED</p>
+              <h3 className="text-white font-semibold text-[28px] leading-[1.1] mb-4">
+                ออกแบบมาเพื่อ<br />การใช้งานจริง
+              </h3>
+              <ul className="space-y-3 text-[14px] text-white/70 leading-relaxed">
+                <li className="flex gap-2"><span className="text-[#0071e3] font-bold mt-0.5">✓</span>ขาโคมปรับองศาได้ 90° เพื่อความสว่างครอบคลุม</li>
+                <li className="flex gap-2"><span className="text-[#0071e3] font-bold mt-0.5">✓</span>ประสิทธิภาพสูงสุด 155 lm/W</li>
+                <li className="flex gap-2"><span className="text-[#0071e3] font-bold mt-0.5">✓</span>ผ่านมาตรฐาน IES LM-79 และ LM-80</li>
+                <li className="flex gap-2"><span className="text-[#0071e3] font-bold mt-0.5">✓</span>กันน้ำ/ฝุ่น IP66 สำหรับสภาพแวดล้อมเขตร้อน</li>
+              </ul>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               { icon: '🔆', title: 'สว่างกว่า 24%', desc: 'สว่างกว่านวัตกรรมที่ขึ้นทะเบียน (125 lm/W) ถึง 24% ลดค่าไฟฟ้าได้ 20-30% เมื่อเทียบกับโคมไฟแบบเดิม' },
@@ -157,6 +188,16 @@ export default function SmartStreetLight() {
             title="Node LTE — หัวใจของระบบ"
             body="Node LTE ที่ติดตั้งในแต่ละโคมไฟ อ่านค่า ติดตามสถานะ และแจ้งเตือนอัตโนมัติ ออกแบบให้ติดตั้งง่ายด้วย Socket NEMA มาตรฐาน"
           />
+          {/* Platform screenshot */}
+          <div className="rounded-2xl overflow-hidden shadow-[rgba(0,0,0,0.18)_0px_8px_40px_0px] mb-12 border border-black/8">
+            <div className="bg-[#f0f0f0] px-4 py-2.5 flex items-center gap-2 border-b border-black/8">
+              <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+              <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+              <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+              <span className="text-black/40 text-[11px] ml-2">SmartPole — Lamps / Devices</span>
+            </div>
+            <img src="images/smartlight/Screen1.webp" alt="SmartPole device management dashboard" className="w-full block" />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg p-8 shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]">
               <h3 className="text-[#1d1d1f] font-bold text-[21px] mb-4">ติดตั้งง่าย</h3>
@@ -193,7 +234,7 @@ export default function SmartStreetLight() {
       <Section dark>
         <div className="max-w-[980px] mx-auto">
           <SectionHeader dark eyebrow="การติดตาม" title="Real-time Monitoring ปัญหาจะไม่ลับ" body="ระบบตรวจสอบแบบ Real-time ช่วยให้หน่วยงานท้องถิ่นสามารถจัดการได้อย่างมีประสิทธิภาพ" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {[
               { icon: '🗺️', title: 'แผนที่รวมศูนย์', desc: 'แสดงตำแหน่งโคมไฟทั้งหมดบน Dashboard นำทางไปยังโคมที่มีปัญหาด้วย Google Map ไม่ต้องขับรถตระเวน' },
               { icon: '⏰', title: 'แจ้งเตือนทันที', desc: 'เมื่อโคมไฟเสีย ระบบแจ้งเตือนทันทีไปยังเจ้าหน้าที่ ไม่ต้องรอประชาชนแจ้ง ลดเวลาตอบสนองจากวันเป็นชั่วโมง' },
@@ -205,6 +246,27 @@ export default function SmartStreetLight() {
                 <p className="text-white/70 text-[14px] leading-relaxed">{f.desc}</p>
               </div>
             ))}
+          </div>
+          {/* Dashboard screenshots */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-xl overflow-hidden border border-white/10">
+              <div className="bg-[#1a1a1a] px-4 py-2 flex items-center gap-2 border-b border-white/10">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+                <span className="text-white/30 text-[11px] ml-2">Device Map</span>
+              </div>
+              <img src="images/smartlight/location.webp" alt="Device Map — real-time location tracking" className="w-full block" />
+            </div>
+            <div className="rounded-xl overflow-hidden border border-white/10">
+              <div className="bg-[#1a1a1a] px-4 py-2 flex items-center gap-2 border-b border-white/10">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+                <span className="text-white/30 text-[11px] ml-2">Alerts Dashboard</span>
+              </div>
+              <img src="images/smartlight/Alerts.webp" alt="Alerts dashboard" className="w-full block" />
+            </div>
           </div>
         </div>
       </Section>
