@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>R-07 ประวัติการชำระเงิน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: #0d1117;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      font-family: 'Noto Sans Thai', -apple-system, system-ui, sans-serif;
+    }
+    #root { width: 100%; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 16px; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; }
+    button { font-family: 'Noto Sans Thai', -apple-system, system-ui, sans-serif; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel">
+
+// ─── Tweak defaults ───────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "orgColor": "#1b61c9",
+  "orgName": "อบต.สุขสมบูรณ์",
+  "viewState": "list",
+  "selectedYear": "2567"
+}/*EDITMODE-END*/;
+
+// ─── Mock Data ────────────────────────────────────────────────
+const METHOD_CONFIG = {
+  QRCODE:   { label: "พร้อมเพย์",   color: "#1b61c9", bg: "#EEF4FF" },
+  CASH:     { label: "เงินสด",       color: "#059669", bg: "#ECFDF5" },
+  TRANSFER: { label: "โอนเงิน",      color: "#D97706", bg: "#FFFBEB" },
+  CARD:     { label: "บัตรเครดิต",  color: "#7C3AED", bg: "#F5F3FF" },
+};
+
+const PAYMENT_DATA = {
+  "2568": [],
+  "2567": [
+    { id:"p06", month:"ธันวาคม 2567",    date:"15 ธ.ค.",  desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ ต.ค.–ธ.ค. 67",    amount:450, method:"QRCODE",   receipt:"R2567-004521", bill:"B2567-1098" },
+    { id:"p05", month:"กันยายน 2567",    date:"20 ก.ย.",  desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ ก.ค.–ก.ย. 67",    amount:450, method:"TRANSFER",  receipt:"R2567-003892", bill:"B2567-0987" },
+    { id:"p04", month:"มิถุนายน 2567",   date:"28 มิ.ย.", desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ เม.ย.–มิ.ย. 67",  amount:450, method:"CASH",     receipt:"R2567-002741", bill:"B2567-0876" },
+    { id:"p03", month:"มิถุนายน 2567",   date:"10 มิ.ย.", desc:"ค่าน้ำประปา",           cycle:"รอบ พ.ค. 2567",        amount:380, method:"QRCODE",   receipt:"R2567-002540", bill:"B2567-0820" },
+    { id:"p02", month:"มีนาคม 2567",     date:"5 มี.ค.",  desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ ม.ค.–มี.ค. 67",   amount:450, method:"QRCODE",   receipt:"R2567-001423", bill:"B2567-0654" },
+    { id:"p01", month:"มกราคม 2567",     date:"12 ม.ค.", desc:"ค่าธรรมเนียมเก็บขยะ",  cycle:"รอบ ต.ค.–ธ.ค. 66",    amount:450, method:"CASH",     receipt:"R2567-000312", bill:"B2566-1201" },
+  ],
+  "2566": [
+    { id:"p564", month:"ตุลาคม 2566",    date:"18 ต.ค.",  desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ ก.ค.–ก.ย. 66",    amount:400, method:"TRANSFER", receipt:"R2566-004102", bill:"B2566-0980" },
+    { id:"p563", month:"กรกฎาคม 2566",   date:"3 ก.ค.",   desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ เม.ย.–มิ.ย. 66",  amount:400, method:"QRCODE",  receipt:"R2566-002890", bill:"B2566-0730" },
+    { id:"p562", month:"เมษายน 2566",    date:"22 เม.ย.", desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ ม.ค.–มี.ค. 66",   amount:400, method:"CASH",    receipt:"R2566-001540", bill:"B2566-0430" },
+    { id:"p561", month:"มกราคม 2566",    date:"8 ม.ค.",   desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ ต.ค.–ธ.ค. 65",    amount:400, method:"QRCODE",  receipt:"R2566-000201", bill:"B2565-1180" },
+  ],
+  "2565": [
+    { id:"p553", month:"กันยายน 2565",   date:"30 ก.ย.",  desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ ก.ค.–ก.ย. 65",    amount:360, method:"CASH",     receipt:"R2565-003801", bill:"B2565-0910" },
+    { id:"p552", month:"มิถุนายน 2565",  date:"14 มิ.ย.", desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ เม.ย.–มิ.ย. 65",  amount:360, method:"TRANSFER", receipt:"R2565-002210", bill:"B2565-0610" },
+    { id:"p551", month:"มีนาคม 2565",    date:"25 มี.ค.", desc:"ค่าธรรมเนียมเก็บขยะ", cycle:"รอบ ม.ค.–มี.ค. 65",   amount:360, method:"QRCODE",  receipt:"R2565-000890", bill:"B2565-0310" },
+  ],
+};
+
+// ─── SVG Icons ────────────────────────────────────────────────
+function IcQR({ size=20, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <rect x="1.5" y="1.5" width="6.5" height="6.5" rx="1.2" stroke={color} strokeWidth="1.6"/>
+      <rect x="3.5" y="3.5" width="2.5" height="2.5" fill={color}/>
+      <rect x="12" y="1.5" width="6.5" height="6.5" rx="1.2" stroke={color} strokeWidth="1.6"/>
+      <rect x="14" y="3.5" width="2.5" height="2.5" fill={color}/>
+      <rect x="1.5" y="12" width="6.5" height="6.5" rx="1.2" stroke={color} strokeWidth="1.6"/>
+      <rect x="3.5" y="14" width="2.5" height="2.5" fill={color}/>
+      <rect x="12" y="12" width="2.5" height="2.5" fill={color}/>
+      <rect x="15.5" y="12" width="2.5" height="2.5" fill={color}/>
+      <rect x="12" y="15.5" width="2.5" height="2.5" fill={color}/>
+      <rect x="15.5" y="15.5" width="2.5" height="2.5" fill={color}/>
+    </svg>
+  );
+}
+function IcCash({ size=20, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <rect x="1.5" y="4.5" width="17" height="11" rx="2" stroke={color} strokeWidth="1.6"/>
+      <circle cx="10" cy="10" r="2.5" stroke={color} strokeWidth="1.6"/>
+      <circle cx="4" cy="10" r="0.8" fill={color}/>
+      <circle cx="16" cy="10" r="0.8" fill={color}/>
+    </svg>
+  );
+}
+function IcTransfer({ size=20, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <path d="M2 6.5h16M13.5 2.5L18 6.5L13.5 10.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M18 13.5H2M6.5 9.5L2 13.5L6.5 17.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function IcCard({ size=20, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <rect x="1.5" y="3.5" width="17" height="13" rx="2.5" stroke={color} strokeWidth="1.6"/>
+      <path d="M1.5 7.5h17" stroke={color} strokeWidth="1.6"/>
+      <rect x="3.5" y="11" width="5" height="2.5" rx="1" fill={color} fillOpacity="0.7"/>
+    </svg>
+  );
+}
+function IcDownload({ size=15, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 15 15" fill="none">
+      <path d="M7.5 2v8M3.5 7l4 4 4-4" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2 13h11" stroke={color} strokeWidth="1.7" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function IcChevronRight({ size=14, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
+      <path d="M5 3l4 4-4 4" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function IcChevronLeft({ size=9, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 9 15" fill="none">
+      <path d="M7.5 1L1 7.5L7.5 14" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function IcReceipt({ size=40, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <rect x="6" y="4" width="28" height="32" rx="4" stroke={color} strokeWidth="2" strokeOpacity="0.3"/>
+      <path d="M6 30v6l4-3 4 3 4-3 4 3 4-3 4 3v-6" stroke={color} strokeWidth="1.5" strokeOpacity="0.3" strokeLinejoin="round"/>
+      <rect x="11" y="12" width="18" height="2" rx="1" fill={color} fillOpacity="0.2"/>
+      <rect x="11" y="17" width="12" height="2" rx="1" fill={color} fillOpacity="0.2"/>
+      <rect x="11" y="22" width="15" height="2" rx="1" fill={color} fillOpacity="0.2"/>
+    </svg>
+  );
+}
+
+function MethodIcon({ method, size=20 }) {
+  const cfg = METHOD_CONFIG[method] || METHOD_CONFIG.CASH;
+  if (method === 'QRCODE')   return <IcQR size={size} color={cfg.color} />;
+  if (method === 'CASH')     return <IcCash size={size} color={cfg.color} />;
+  if (method === 'TRANSFER') return <IcTransfer size={size} color={cfg.color} />;
+  if (method === 'CARD')     return <IcCard size={size} color={cfg.color} />;
+  return <IcCash size={size} color={cfg.color} />;
+}
+
+// ─── Year Filter ──────────────────────────────────────────────
+function YearFilter({ years, selected, onChange, orgColor }) {
+  return (
+    <div style={{ display:'flex', gap:8, padding:'2px 16px 14px', overflowX:'auto' }}>
+      {years.map(y => {
+        const active = y === selected;
+        return (
+          <button key={y} onClick={() => onChange(y)} style={{
+            flexShrink: 0, height: 34, padding: '0 18px', borderRadius: 17,
+            border: active ? 'none' : `1.5px solid rgba(0,0,0,0.1)`,
+            background: active ? orgColor : 'white',
+            color: active ? 'white' : '#444',
+            fontSize: 14, fontWeight: active ? 600 : 400,
+            cursor: 'pointer',
+            boxShadow: active ? `0 2px 8px ${orgColor}50` : '0 1px 3px rgba(0,0,0,0.06)',
+            transition: 'all 0.15s ease',
+          }}>
+            {y}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Summary Banner ───────────────────────────────────────────
+function SummaryBanner({ orgColor, year, total, count, onDownloadAll }) {
+  return (
+    <div style={{
+      margin: '0 16px 20px', borderRadius: 22,
+      background: `linear-gradient(140deg, ${orgColor} 0%, ${orgColor}bb 100%)`,
+      padding: '20px 20px 18px',
+      boxShadow: `0 6px 20px ${orgColor}45`,
+      position: 'relative', overflow: 'hidden',
+    }}>
+      <div style={{ position:'absolute', right:-24, top:-24, width:110, height:110, borderRadius:'50%', background:'rgba(255,255,255,0.08)' }}/>
+      <div style={{ position:'absolute', right:18, bottom:-28, width:70, height:70, borderRadius:'50%', background:'rgba(255,255,255,0.06)' }}/>
+      <div style={{ position:'relative' }}>
+        <div style={{ color:'rgba(255,255,255,0.75)', fontSize:13, marginBottom:5, letterSpacing:0.3 }}>
+          ยอดชำระรวมปี {year}
+        </div>
+        <div style={{ color:'white', fontSize:34, fontWeight:700, lineHeight:1.1, marginBottom:10 }}>
+          ฿{total.toLocaleString()}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div style={{ color:'rgba(255,255,255,0.7)', fontSize:14 }}>
+            {count} รายการ
+          </div>
+          <button onClick={onDownloadAll} style={{
+            background:'rgba(255,255,255,0.18)', border:'1px solid rgba(255,255,255,0.28)',
+            borderRadius:10, padding:'7px 13px',
+            color:'white', fontSize:13, fontWeight:500,
+            display:'flex', alignItems:'center', gap:5,
+            cursor:'pointer',
+            backdropFilter:'blur(8px)',
+          }}>
+            <IcDownload size={13} color="white"/>
+            ดาวน์โหลดทั้งหมด
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Payment Row ──────────────────────────────────────────────
+function PaymentRow({ item, orgColor, onDownload, onDetail, isLast }) {
+  const cfg = METHOD_CONFIG[item.method] || METHOD_CONFIG.CASH;
+  return (
+    <div
+      onClick={onDetail}
+      style={{
+        padding: '14px 16px', display:'flex', alignItems:'flex-start', gap:12,
+        position:'relative', cursor:'pointer',
+      }}
+    >
+      {/* Method icon badge */}
+      <div style={{
+        width:42, height:42, borderRadius:13, flexShrink:0,
+        background: cfg.bg,
+        display:'flex', alignItems:'center', justifyContent:'center',
+        marginTop: 1,
+      }}>
+        <MethodIcon method={item.method} size={20}/>
+      </div>
+
+      {/* Content */}
+      <div style={{ flex:1, minWidth:0 }}>
+        {/* Row 1: desc + amount */}
+        <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:2 }}>
+          <div style={{ fontSize:15, fontWeight:600, color:'#181d26', letterSpacing:0.05, lineHeight:1.4 }}>
+            {item.desc}
+          </div>
+          <div style={{ fontSize:16, fontWeight:700, color:'#181d26', marginLeft:8, flexShrink:0 }}>
+            ฿{item.amount.toLocaleString()}
+          </div>
+        </div>
+        {/* Row 2: cycle */}
+        <div style={{ fontSize:13, color:'rgba(60,60,67,0.5)', marginBottom:8, lineHeight:1.3 }}>
+          {item.cycle}
+        </div>
+        {/* Row 3: method tag + date + download */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+            <span style={{
+              fontSize:11, color:cfg.color, fontWeight:600,
+              background:cfg.bg, padding:'3px 8px', borderRadius:6,
+              letterSpacing:0.1,
+            }}>
+              {cfg.label}
+            </span>
+            <span style={{ fontSize:12, color:'rgba(60,60,67,0.4)' }}>
+              {item.date}
+            </span>
+          </div>
+          <button
+            onClick={e => { e.stopPropagation(); onDownload(item.receipt); }}
+            style={{
+              background:'none', border:`1px solid ${orgColor}30`, cursor:'pointer',
+              display:'flex', alignItems:'center', gap:4,
+              color:orgColor, fontSize:12, fontWeight:500,
+              padding:'4px 9px', borderRadius:8,
+            }}
+          >
+            <IcDownload size={12} color={orgColor}/>
+            ใบเสร็จ
+          </button>
+        </div>
+        {/* Row 4: receipt number */}
+        <div style={{ fontSize:11, color:'rgba(60,60,67,0.3)', marginTop:5, letterSpacing:0.3 }}>
+          {item.receipt}
+        </div>
+      </div>
+
+      {/* Separator */}
+      {!isLast && (
+        <div style={{
+          position:'absolute', bottom:0, left:70, right:16,
+          height:'0.5px', background:'rgba(60,60,67,0.1)',
+        }}/>
+      )}
+    </div>
+  );
+}
+
+// ─── Month Group ──────────────────────────────────────────────
+function MonthGroup({ month, items, orgColor, onDownload, onDetail }) {
+  return (
+    <div style={{ marginBottom:10 }}>
+      <div style={{
+        padding:'0 20px 7px',
+        fontSize:12, fontWeight:600, color:'rgba(60,60,67,0.45)',
+        letterSpacing:0.6, textTransform:'uppercase',
+      }}>
+        {month}
+      </div>
+      <div style={{
+        margin:'0 16px', background:'white', borderRadius:20,
+        boxShadow:'0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+        overflow:'hidden',
+      }}>
+        {items.map((item, i) => (
+          <PaymentRow
+            key={item.id} item={item} orgColor={orgColor}
+            onDownload={onDownload}
+            onDetail={() => onDetail(item)}
+            isLast={i === items.length - 1}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Empty State ──────────────────────────────────────────────
+function EmptyState({ orgColor, year }) {
+  return (
+    <div style={{
+      display:'flex', flexDirection:'column', alignItems:'center',
+      padding:'52px 36px 32px', textAlign:'center',
+    }}>
+      <div style={{
+        width:88, height:88, borderRadius:28,
+        background:`${orgColor}12`,
+        display:'flex', alignItems:'center', justifyContent:'center',
+        marginBottom:22,
+      }}>
+        <IcReceipt size={44} color={orgColor}/>
+      </div>
+      <div style={{ fontSize:17, fontWeight:600, color:'#181d26', marginBottom:10 }}>
+        ยังไม่มีประวัติการชำระเงิน
+      </div>
+      <div style={{ fontSize:14, color:'rgba(60,60,67,0.5)', lineHeight:1.7, maxWidth:220 }}>
+        รายการชำระเงินของคุณในปี {year} จะแสดงขึ้นที่นี่หลังจากชำระบิลครั้งแรก
+      </div>
+    </div>
+  );
+}
+
+// ─── Detail Sheet ─────────────────────────────────────────────
+function DetailSheet({ item, orgColor, onClose, onDownload }) {
+  const cfg = METHOD_CONFIG[item.method] || METHOD_CONFIG.CASH;
+  return (
+    <div style={{
+      position:'absolute', inset:0, zIndex:80,
+      display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      background:'rgba(0,0,0,0.35)', backdropFilter:'blur(3px)',
+    }} onClick={onClose}>
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background:'white', borderRadius:'24px 24px 0 0',
+          padding:'0 0 32px',
+          boxShadow:'0 -8px 32px rgba(0,0,0,0.15)',
+        }}
+      >
+        {/* Handle */}
+        <div style={{ display:'flex', justifyContent:'center', padding:'12px 0 20px' }}>
+          <div style={{ width:36, height:4, borderRadius:2, background:'rgba(60,60,67,0.2)' }}/>
+        </div>
+
+        {/* Header */}
+        <div style={{ padding:'0 20px 20px', borderBottom:'1px solid #f0f0f5' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+            <div style={{ width:52, height:52, borderRadius:16, background:cfg.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <MethodIcon method={item.method} size={24}/>
+            </div>
+            <div>
+              <div style={{ fontSize:17, fontWeight:700, color:'#181d26' }}>{item.desc}</div>
+              <div style={{ fontSize:13, color:'rgba(60,60,67,0.5)', marginTop:3 }}>{item.cycle}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Details */}
+        <div style={{ padding:'20px 20px 0' }}>
+          {[
+            ["จำนวนเงิน", `฿${item.amount.toLocaleString()}`],
+            ["ช่องทางชำระ", cfg.label],
+            ["วันที่ชำระ", item.date],
+            ["เลขที่ใบเสร็จ", item.receipt],
+            ["เลขที่บิล", item.bill],
+          ].map(([label, val], i) => (
+            <div key={i} style={{
+              display:'flex', justifyContent:'space-between', alignItems:'center',
+              padding:'12px 0',
+              borderBottom: i < 4 ? '0.5px solid #f0f0f5' : 'none',
+            }}>
+              <span style={{ fontSize:14, color:'rgba(60,60,67,0.55)' }}>{label}</span>
+              <span style={{ fontSize:14, fontWeight:i === 0 ? 700 : 500, color:'#181d26' }}>{val}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Status badge */}
+        <div style={{ padding:'16px 20px 0', display:'flex', alignItems:'center', gap:6 }}>
+          <div style={{ width:7, height:7, borderRadius:'50%', background:'#059669' }}/>
+          <span style={{ fontSize:13, color:'#059669', fontWeight:500 }}>ชำระสำเร็จ</span>
+        </div>
+
+        {/* Action button */}
+        <div style={{ padding:'20px 20px 0' }}>
+          <button onClick={() => onDownload(item.receipt)} style={{
+            width:'100%', height:50, borderRadius:14,
+            background:orgColor, border:'none', color:'white',
+            fontSize:15, fontWeight:600, cursor:'pointer',
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+          }}>
+            <IcDownload size={16} color="white"/>
+            ดาวน์โหลดใบเสร็จ
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Toast ────────────────────────────────────────────────────
+function Toast({ message }) {
+  return (
+    <div style={{
+      position:'absolute', bottom:56, left:20, right:20, zIndex:100,
+      background:'rgba(24,29,38,0.88)', color:'white',
+      padding:'12px 16px', borderRadius:12,
+      fontSize:14, textAlign:'center',
+      backdropFilter:'blur(12px)',
+      boxShadow:'0 4px 16px rgba(0,0,0,0.25)',
+    }}>
+      {message}
+    </div>
+  );
+}
+
+// ─── Main Screen ──────────────────────────────────────────────
+function PaymentHistoryScreen({ orgColor, orgName, viewState, selectedYear: defaultYear }) {
+  const [year, setYear] = React.useState(() => {
+    return localStorage.getItem('r07-year') || defaultYear || "2567";
+  });
+  const [toast, setToast] = React.useState(null);
+  const [detailItem, setDetailItem] = React.useState(null);
+
+  React.useEffect(() => {
+    setYear(defaultYear);
+  }, [defaultYear]);
+
+  React.useEffect(() => {
+    localStorage.setItem('r07-year', year);
+  }, [year]);
+
+  const rawPayments = PAYMENT_DATA[year] || [];
+  const payments = viewState === 'empty' ? [] : rawPayments;
+  const total = payments.reduce((s, p) => s + p.amount, 0);
+
+  const grouped = React.useMemo(() => {
+    const map = new Map();
+    payments.forEach(p => {
+      if (!map.has(p.month)) map.set(p.month, []);
+      map.get(p.month).push(p);
+    });
+    return [...map.entries()];
+  }, [payments]);
+
+  const showToast = msg => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2400);
+  };
+
+  const handleDownload = receipt => showToast(`กำลังดาวน์โหลด ${receipt}...`);
+
+  return (
+    <div style={{
+      fontFamily: "'Noto Sans Thai', -apple-system, system-ui, sans-serif",
+      height:'100%', display:'flex', flexDirection:'column',
+      background:'#F2F2F7', position:'relative',
+    }}>
+      {/* Status bar spacer */}
+      <div style={{ height:62, flexShrink:0 }}/>
+
+      {/* Nav bar */}
+      <div style={{ display:'flex', alignItems:'center', padding:'4px 16px 12px' }}>
+        <button style={{
+          background:'none', border:'none', cursor:'pointer',
+          display:'flex', alignItems:'center', gap:5,
+          color:orgColor, fontSize:16, padding:'4px 0',
+        }}>
+          <IcChevronLeft size={9} color={orgColor}/>
+          กลับ
+        </button>
+        <div style={{ flex:1, textAlign:'center', fontSize:17, fontWeight:600, color:'#181d26' }}>
+          ประวัติการชำระเงิน
+        </div>
+        <div style={{ width:52 }}/>
+      </div>
+
+      {/* Year filter */}
+      <YearFilter
+        years={["2568","2567","2566","2565"]}
+        selected={year} onChange={setYear} orgColor={orgColor}
+      />
+
+      {/* Scrollable body */}
+      <div style={{ flex:1, overflowY:'auto', paddingBottom:44 }}>
+        {payments.length === 0 ? (
+          <EmptyState orgColor={orgColor} year={year}/>
+        ) : (
+          <>
+            <SummaryBanner
+              orgColor={orgColor} year={year}
+              total={total} count={payments.length}
+              onDownloadAll={() => showToast("กำลังเตรียมไฟล์ทั้งหมด...")}
+            />
+            {grouped.map(([month, items]) => (
+              <MonthGroup
+                key={month} month={month} items={items}
+                orgColor={orgColor}
+                onDownload={handleDownload}
+                onDetail={item => setDetailItem(item)}
+              />
+            ))}
+            <div style={{
+              textAlign:'center', padding:'18px 0 10px',
+              fontSize:13, color:'rgba(60,60,67,0.3)',
+            }}>
+              แสดงทั้งหมด {payments.length} รายการ
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Detail sheet */}
+      {detailItem && (
+        <DetailSheet
+          item={detailItem} orgColor={orgColor}
+          onClose={() => setDetailItem(null)}
+          onDownload={r => { handleDownload(r); setDetailItem(null); }}
+        />
+      )}
+
+      {/* Toast */}
+      {toast && <Toast message={toast}/>}
+    </div>
+  );
+}
+
+// ─── Tweaks Panel ─────────────────────────────────────────────
+const tweaksPanelSt = {
+  overlay: {
+    position:'fixed', inset:0, zIndex:9999,
+    display:'flex', alignItems:'flex-end', justifyContent:'center',
+    background:'rgba(0,0,0,0.45)', backdropFilter:'blur(4px)',
+  },
+  panel: {
+    background:'white', borderRadius:'22px 22px 0 0',
+    padding:'16px 20px 40px', width:'100%', maxWidth:500,
+    boxShadow:'0 -4px 28px rgba(0,0,0,0.14)',
+  },
+  handle: {
+    display:'flex', justifyContent:'center', marginBottom:18,
+  },
+  title: { fontSize:17, fontWeight:600, color:'#181d26' },
+  section: { marginBottom:22 },
+  label: {
+    display:'block', fontSize:12, color:'rgba(60,60,67,0.55)',
+    marginBottom:10, fontWeight:600, letterSpacing:0.5, textTransform:'uppercase',
+  },
+};
+
+function TweaksPanel({ tweaks, onChange, onClose }) {
+  const COLORS = ["#1b61c9","#DC2626","#059669","#D97706","#7C3AED","#DB2777","#0891B2"];
+  return (
+    <div style={tweaksPanelSt.overlay} onClick={onClose}>
+      <div style={tweaksPanelSt.panel} onClick={e => e.stopPropagation()}>
+        <div style={tweaksPanelSt.handle}>
+          <div style={{ width:36, height:4, borderRadius:2, background:'rgba(60,60,67,0.2)' }}/>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24 }}>
+          <span style={tweaksPanelSt.title}>Tweaks</span>
+          <button onClick={onClose} style={{ background:'#f0f0f5', border:'none', width:28, height:28, borderRadius:8, cursor:'pointer', fontSize:14, color:'#666', display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
+        </div>
+
+        <div style={tweaksPanelSt.section}>
+          <label style={tweaksPanelSt.label}>สี อปท. (Org Color)</label>
+          <div style={{ display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' }}>
+            {COLORS.map(c => (
+              <button key={c} onClick={() => onChange('orgColor', c)} style={{
+                width:34, height:34, borderRadius:10, background:c, border:'none', cursor:'pointer',
+                boxShadow: tweaks.orgColor === c ? `0 0 0 3px white, 0 0 0 5px ${c}` : 'none',
+                transition:'box-shadow 0.15s',
+              }}/>
+            ))}
+            <input type="color" value={tweaks.orgColor}
+              onChange={e => onChange('orgColor', e.target.value)}
+              style={{ width:34, height:34, borderRadius:10, border:'1.5px solid #e0e2e6', cursor:'pointer', padding:2 }}
+            />
+          </div>
+        </div>
+
+        <div style={tweaksPanelSt.section}>
+          <label style={tweaksPanelSt.label}>สถานะ (View State)</label>
+          <div style={{ display:'flex', gap:8 }}>
+            {[["list","มีรายการ"],["empty","ว่างเปล่า"]].map(([v,l]) => (
+              <button key={v} onClick={() => onChange('viewState', v)} style={{
+                flex:1, padding:'10px 0', borderRadius:12, border:'none',
+                background: tweaks.viewState === v ? tweaks.orgColor : '#f0f0f5',
+                color: tweaks.viewState === v ? 'white' : '#444',
+                fontSize:14, fontWeight:500, cursor:'pointer',
+              }}>{l}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={tweaksPanelSt.section}>
+          <label style={tweaksPanelSt.label}>ปี (Year)</label>
+          <div style={{ display:'flex', gap:6 }}>
+            {["2568","2567","2566","2565"].map(y => (
+              <button key={y} onClick={() => onChange('selectedYear', y)} style={{
+                flex:1, padding:'10px 0', borderRadius:12, border:'none',
+                background: tweaks.selectedYear === y ? tweaks.orgColor : '#f0f0f5',
+                color: tweaks.selectedYear === y ? 'white' : '#444',
+                fontSize:13, fontWeight:500, cursor:'pointer',
+              }}>{y}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAK_DEFAULTS);
+  const [showTweaks, setShowTweaks] = React.useState(false);
+
+  const handleChange = (key, val) => {
+    const next = { ...tweaks, [key]: val };
+    setTweaks(next);
+    window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ [key]: val } }, '*');
+  };
+
+  React.useEffect(() => {
+    const handler = e => {
+      if (e.data?.type === '__activate_edit_mode')   setShowTweaks(true);
+      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type:'__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  return (
+    <>
+      <IOSDevice width={393} height={852}>
+        <PaymentHistoryScreen
+          orgColor={tweaks.orgColor}
+          orgName={tweaks.orgName}
+          viewState={tweaks.viewState}
+          selectedYear={tweaks.selectedYear}
+        />
+      </IOSDevice>
+      {showTweaks && (
+        <TweaksPanel tweaks={tweaks} onChange={handleChange} onClose={() => setShowTweaks(false)}/>
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-03 — Payment Flow · Resident Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="../ios-frame.jsx"></script>
+<script type="text/babel" src="../design-canvas.jsx"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0eee9; }
+  @keyframes fadeSlideUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes checkPop { 0% { transform:scale(0.4); opacity:0; } 70% { transform:scale(1.12); } 100% { transform:scale(1); opacity:1; } }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes pulse { 0%,100% { opacity:0.5; transform:scale(0.96); } 50% { opacity:1; transform:scale(1.04); } }
+</style>
+</head>
+<body>
+<script type="text/babel">
+
+/* ─── Design Tokens (matches R-01 / R-02 exactly) ─── */
+const T = {
+  primary:      '#1b61c9',
+  primaryLight: '#e8f0fd',
+  primaryDark:  '#144fa8',
+  primaryMid:   '#2d6ed4',
+  navy:         '#181d26',
+  navyWeak:     'rgba(4,14,32,0.50)',
+  navyFaint:    'rgba(4,14,32,0.07)',
+  border:       '#e0e2e6',
+  surface:      '#f8fafc',
+  white:        '#ffffff',
+  success:      '#166534',
+  successBg:    '#f0fdf4',
+  successMid:   '#16a34a',
+  warning:      '#b45309',
+  warningBg:    '#fffbeb',
+  warningMid:   '#d97706',
+  danger:       '#b91c1c',
+  dangerBg:     '#fef2f2',
+  dangerMid:    '#dc2626',
+  font:         "'Sarabun', -apple-system, sans-serif",
+  radius:       { sm: 8, md: 14, lg: 20, xl: 28 },
+};
+
+/* ─── Shared Components ─── */
+
+const BackHeader = ({ title, sub }) => (
+  <div style={{ background: T.primary, padding:'14px 20px 20px' }}>
+    <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom: sub ? 10 : 0 }}>
+      <div style={{
+        width:40, height:40, borderRadius:10,
+        background:'rgba(255,255,255,0.18)',
+        display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0,
+      }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </div>
+      <div>
+        <div style={{ fontSize:20, fontWeight:700, color:'#fff', fontFamily:T.font, lineHeight:1.2 }}>{title}</div>
+        {sub && <div style={{ fontSize:13, color:'rgba(255,255,255,0.70)', fontFamily:T.font, marginTop:2 }}>{sub}</div>}
+      </div>
+    </div>
+  </div>
+);
+
+const StepBar = ({ step, total=4 }) => (
+  <div style={{ padding:'14px 20px 0', display:'flex', gap:6 }}>
+    {Array.from({length:total}).map((_,i) => (
+      <div key={i} style={{
+        flex:1, height:4, borderRadius:4,
+        background: i < step ? T.primary : T.border,
+        transition:'background 0.3s',
+      }}/>
+    ))}
+  </div>
+);
+
+const BigBtn = ({ children, color, disabled, icon, onClick }) => (
+  <button disabled={disabled} onClick={onClick} style={{
+    width:'100%', height:62, borderRadius:T.radius.md,
+    background: disabled ? T.border : (color || T.primary),
+    border:'none', cursor: disabled ? 'not-allowed' : 'pointer',
+    display:'flex', alignItems:'center', justifyContent:'center', gap:10,
+    boxShadow: disabled ? 'none' : `0 4px 16px ${color ? color+'55' : 'rgba(27,97,201,0.32)'}`,
+    fontFamily:T.font, transition:'all 0.2s',
+  }}>
+    {icon}
+    <span style={{ fontSize:20, fontWeight:700, color: disabled ? T.navyWeak : '#fff' }}>{children}</span>
+  </button>
+);
+
+const Pill = ({ status }) => {
+  const map = {
+    overdue: { label:'ค้างชำระ', bg:T.dangerBg, color:T.danger },
+    issued:  { label:'รอชำระ',   bg:T.primaryLight, color:T.primary },
+    partial: { label:'ชำระบางส่วน', bg:T.warningBg, color:T.warning },
+    paid:    { label:'ชำระแล้ว', bg:T.successBg, color:T.success },
+    pending: { label:'รอตรวจสอบ', bg:T.warningBg, color:T.warning },
+  };
+  const c = map[status] || map.issued;
+  return (
+    <span style={{
+      background:c.bg, color:c.color, borderRadius:6,
+      padding:'4px 10px', fontSize:13, fontWeight:600,
+      whiteSpace:'nowrap', fontFamily:T.font,
+    }}>{c.label}</span>
+  );
+};
+
+/* QR code SVG placeholder — realistic grid pattern */
+const QRCodeSVG = ({ size=200 }) => {
+  // Fixed deterministic QR-like pattern
+  const cells = [
+    // top-left finder
+    [0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],
+    [1,0],[1,6],[2,0],[2,2],[2,3],[2,4],[2,6],
+    [3,0],[3,2],[3,3],[3,4],[3,6],[4,0],[4,2],[4,3],[4,4],[4,6],
+    [5,0],[5,6],[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],
+    // top-right finder
+    [0,14],[0,15],[0,16],[0,17],[0,18],[0,19],[0,20],
+    [1,14],[1,20],[2,14],[2,16],[2,17],[2,18],[2,20],
+    [3,14],[3,16],[3,17],[3,18],[3,20],[4,14],[4,16],[4,17],[4,18],[4,20],
+    [5,14],[5,20],[6,14],[6,15],[6,16],[6,17],[6,18],[6,19],[6,20],
+    // bottom-left finder
+    [14,0],[14,1],[14,2],[14,3],[14,4],[14,5],[14,6],
+    [15,0],[15,6],[16,0],[16,2],[16,3],[16,4],[16,6],
+    [17,0],[17,2],[17,3],[17,4],[17,6],[18,0],[18,2],[18,3],[18,4],[18,6],
+    [19,0],[19,6],[20,0],[20,1],[20,2],[20,3],[20,4],[20,5],[20,6],
+    // data dots (fixed pattern)
+    [8,2],[8,5],[8,8],[8,11],[8,14],[8,17],[8,20],
+    [9,3],[9,6],[9,9],[9,12],[9,15],[9,18],
+    [10,1],[10,4],[10,7],[10,10],[10,13],[10,16],[10,19],
+    [11,2],[11,5],[11,8],[11,11],[11,14],[11,17],[11,20],
+    [12,3],[12,6],[12,9],[12,12],[12,15],[12,18],
+    [13,1],[13,4],[13,7],[13,13],[13,16],[13,19],
+  ];
+  const grid = 21;
+  const cell = size / grid;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display:'block' }}>
+      <rect width={size} height={size} fill="white"/>
+      {cells.map(([r,c],i) => (
+        <rect key={i} x={c*cell} y={r*cell} width={cell-0.5} height={cell-0.5} fill="#181d26" rx="1"/>
+      ))}
+    </svg>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────
+   S1 — เลือกบิลที่จะชำระ  (Bill Selection)
+───────────────────────────────────────────────────────── */
+const ScreenBillSelect = () => {
+  const [sel, setSel] = React.useState({ waste:true, water:true });
+  const bills = [
+    { id:'waste', type:'ค่าขยะ',     period:'เม.ย. 2569', amount:60,  status:'overdue', icon:'🗑️' },
+    { id:'water', type:'ค่าน้ำประปา', period:'เม.ย. 2569', amount:240, status:'issued',  icon:'💧' },
+  ];
+  const total = bills.filter(b=>sel[b.id]).reduce((s,b)=>s+b.amount,0);
+  const anySelected = total > 0;
+
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:110 }}>
+      <BackHeader title="ชำระค่าบริการ" sub="บ้านเลขที่ 45/2 ม.3 ต.บ้านแป้ง"/>
+      <StepBar step={1}/>
+
+      <div style={{ padding:'16px 16px 0' }}>
+        <div style={{ fontSize:15, color:T.navyWeak, fontFamily:T.font, marginBottom:14 }}>
+          เลือกรายการที่ต้องการชำระ
+        </div>
+
+        {bills.map(b => {
+          const checked = sel[b.id];
+          return (
+            <div key={b.id} onClick={()=>setSel(s=>({...s,[b.id]:!s[b.id]}))} style={{
+              background:T.white,
+              border:`2px solid ${checked ? T.primary : T.border}`,
+              borderRadius:T.radius.md,
+              padding:'16px',
+              marginBottom:10,
+              display:'flex', alignItems:'center', gap:14,
+              cursor:'pointer',
+              boxShadow: checked ? `0 0 0 4px ${T.primaryLight}` : '0 1px 3px rgba(0,0,0,0.05)',
+              transition:'all 0.2s',
+            }}>
+              {/* checkbox */}
+              <div style={{
+                width:28, height:28, borderRadius:8, flexShrink:0,
+                background: checked ? T.primary : T.white,
+                border:`2px solid ${checked ? T.primary : T.border}`,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                transition:'all 0.2s',
+              }}>
+                {checked && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                )}
+              </div>
+              {/* icon */}
+              <div style={{
+                width:52, height:52, borderRadius:14, flexShrink:0,
+                background: b.status==='overdue' ? T.dangerBg : T.primaryLight,
+                display:'flex', alignItems:'center', justifyContent:'center', fontSize:24,
+              }}>{b.icon}</div>
+              {/* text */}
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:18, fontWeight:700, color:T.navy, fontFamily:T.font, lineHeight:1.2 }}>{b.type}</div>
+                <div style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font, marginTop:3 }}>{b.period}</div>
+                {b.status==='overdue' && (
+                  <div style={{ fontSize:13, color:T.danger, fontFamily:T.font, fontWeight:600, marginTop:3 }}>⚠ ค้างชำระ</div>
+                )}
+              </div>
+              {/* amount */}
+              <div style={{ textAlign:'right', flexShrink:0 }}>
+                <div style={{ fontSize:22, fontWeight:700, color: b.status==='overdue'?T.danger:T.navy, fontFamily:T.font }}>
+                  ฿{b.amount}
+                </div>
+                <Pill status={b.status}/>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Select all shortcut */}
+        <button onClick={()=>setSel({waste:true,water:true})} style={{
+          background:'none', border:'none', cursor:'pointer',
+          fontSize:14, color:T.primary, fontFamily:T.font, fontWeight:600,
+          padding:'4px 0', display:'block', marginTop:4,
+        }}>+ เลือกทั้งหมด</button>
+      </div>
+
+      {/* Sticky total + CTA */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'14px 20px 28px',
+      }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+          <div>
+            <div style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>ยอดชำระรวม</div>
+            <div style={{ fontSize:32, fontWeight:800, color: anySelected?T.navy:T.navyWeak, fontFamily:T.font, lineHeight:1.2 }}>
+              ฿{total.toLocaleString()}
+            </div>
+          </div>
+          <div style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font, textAlign:'right' }}>
+            {Object.values(sel).filter(Boolean).length} รายการที่เลือก
+          </div>
+        </div>
+        <BigBtn disabled={!anySelected}
+          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>}>
+          ถัดไป — เลือกวิธีชำระ
+        </BigBtn>
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────
+   S2 — เลือกวิธีชำระเงิน  (Payment Method)
+───────────────────────────────────────────────────────── */
+const ScreenPaymentMethod = () => {
+  const [sel, setSel] = React.useState('qr');
+  const methods = [
+    {
+      id:'qr',
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <path d="M14 14h2v2h-2zM18 14h3M14 18h2M18 18h3M14 21v-2M21 18v3"/>
+        </svg>
+      ),
+      label:'QR พร้อมเพย์',
+      sub:'สแกนจ่ายผ่านแอปธนาคาร',
+      badge:'แนะนำ',
+    },
+    {
+      id:'transfer',
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <line x1="2" y1="10" x2="22" y2="10"/>
+          <line x1="6" y1="15" x2="10" y2="15"/>
+        </svg>
+      ),
+      label:'โอนเงิน',
+      sub:'โอนผ่านอินเทอร์เน็ตแบงกิง',
+    },
+    {
+      id:'cash',
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <rect x="2" y="6" width="20" height="12" rx="2"/>
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M6 12h.01M18 12h.01"/>
+        </svg>
+      ),
+      label:'เงินสด',
+      sub:'ชำระที่สำนักงาน อบต.',
+    },
+  ];
+
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:110 }}>
+      <BackHeader title="เลือกวิธีชำระเงิน" sub="ยอดชำระ ฿300"/>
+      <StepBar step={2}/>
+
+      {/* Amount recap */}
+      <div style={{ padding:'16px 16px 0' }}>
+        <div style={{
+          background:T.white, borderRadius:T.radius.md, border:`1.5px solid ${T.border}`,
+          padding:'14px 16px', marginBottom:16,
+          display:'flex', justifyContent:'space-between', alignItems:'center',
+        }}>
+          <div>
+            <div style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>2 รายการ · เม.ย. 2569</div>
+            <div style={{ fontSize:13, fontWeight:600, color:T.navy, fontFamily:T.font, marginTop:3 }}>ค่าขยะ + ค่าน้ำประปา</div>
+          </div>
+          <div style={{ fontSize:26, fontWeight:800, color:T.navy, fontFamily:T.font }}>฿300</div>
+        </div>
+
+        <div style={{ fontSize:15, color:T.navyWeak, fontFamily:T.font, marginBottom:12 }}>
+          เลือกช่องทางการชำระ
+        </div>
+
+        {methods.map(m => {
+          const active = sel === m.id;
+          return (
+            <div key={m.id} onClick={()=>setSel(m.id)} style={{
+              background:T.white,
+              border:`2px solid ${active ? T.primary : T.border}`,
+              borderRadius:T.radius.md,
+              padding:'18px 16px',
+              marginBottom:10,
+              display:'flex', alignItems:'center', gap:16,
+              cursor:'pointer',
+              boxShadow: active ? `0 0 0 4px ${T.primaryLight}` : '0 1px 3px rgba(0,0,0,0.05)',
+              transition:'all 0.2s',
+            }}>
+              <div style={{
+                width:56, height:56, borderRadius:16, flexShrink:0,
+                background: active ? T.primaryLight : T.navyFaint,
+                color: active ? T.primary : T.navyWeak,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                transition:'all 0.2s',
+              }}>{m.icon}</div>
+              <div style={{ flex:1 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
+                  <span style={{ fontSize:18, fontWeight:700, color:T.navy, fontFamily:T.font }}>{m.label}</span>
+                  {m.badge && (
+                    <span style={{
+                      background:T.primaryLight, color:T.primary,
+                      fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, fontFamily:T.font,
+                    }}>{m.badge}</span>
+                  )}
+                </div>
+                <div style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font }}>{m.sub}</div>
+              </div>
+              {/* radio */}
+              <div style={{
+                width:24, height:24, borderRadius:'50%', flexShrink:0,
+                border:`2px solid ${active ? T.primary : T.border}`,
+                background:T.white,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                transition:'all 0.2s',
+              }}>
+                {active && <div style={{ width:12, height:12, borderRadius:'50%', background:T.primary }}/>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'14px 20px 28px',
+      }}>
+        <BigBtn
+          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>}>
+          {sel==='qr' ? 'แสดง QR Code' : sel==='transfer' ? 'ดูบัญชีโอนเงิน' : 'ดูรายละเอียด'}
+        </BigBtn>
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────
+   S3 — QR Code Payment
+───────────────────────────────────────────────────────── */
+const ScreenQRCode = () => {
+  const [copied, setCopied] = React.useState(false);
+
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:100 }}>
+      <BackHeader title="QR พร้อมเพย์" sub="สแกนเพื่อชำระเงิน"/>
+      <StepBar step={3}/>
+
+      <div style={{ padding:'16px 16px 0' }}>
+        {/* QR card */}
+        <div style={{
+          background:T.white, borderRadius:T.radius.lg,
+          border:`1.5px solid ${T.border}`,
+          boxShadow:'0 4px 20px rgba(0,0,0,0.08)',
+          overflow:'hidden',
+          marginBottom:14,
+        }}>
+          {/* header stripe */}
+          <div style={{
+            background: 'linear-gradient(135deg, #1b61c9 0%, #144fa8 100%)',
+            padding:'16px 20px',
+            display:'flex', alignItems:'center', justifyContent:'space-between',
+          }}>
+            <div>
+              <div style={{ fontSize:13, color:'rgba(255,255,255,0.75)', fontFamily:T.font }}>ยอดที่ต้องชำระ</div>
+              <div style={{ fontSize:34, fontWeight:800, color:'#fff', fontFamily:T.font, lineHeight:1.2 }}>฿300.00</div>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:12, color:'rgba(255,255,255,0.7)', fontFamily:T.font }}>หมดอายุใน</div>
+              <div style={{ fontSize:22, fontWeight:700, color:'#fde68a', fontFamily:T.font }}>14:37</div>
+            </div>
+          </div>
+
+          {/* QR code area */}
+          <div style={{
+            padding:'24px 20px 20px',
+            display:'flex', flexDirection:'column', alignItems:'center', gap:16,
+          }}>
+            <div style={{
+              padding:12, background:T.white,
+              borderRadius:16, border:`1.5px solid ${T.border}`,
+              boxShadow:'0 2px 10px rgba(0,0,0,0.08)',
+            }}>
+              <QRCodeSVG size={196}/>
+            </div>
+
+            <div style={{ textAlign:'center' }}>
+              <div style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font, marginBottom:6 }}>
+                หรือใช้รหัสพร้อมเพย์
+              </div>
+              <div style={{
+                display:'flex', alignItems:'center', gap:8,
+                background:T.navyFaint, borderRadius:10, padding:'10px 14px',
+              }}>
+                <span style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font, letterSpacing:1 }}>
+                  067-890-1234
+                </span>
+                <button onClick={()=>{setCopied(true); setTimeout(()=>setCopied(false),2000)}} style={{
+                  background: copied ? T.successBg : T.primaryLight,
+                  border:'none', borderRadius:6, padding:'4px 10px',
+                  fontSize:13, fontWeight:700,
+                  color: copied ? T.success : T.primary,
+                  cursor:'pointer', fontFamily:T.font, transition:'all 0.2s',
+                }}>
+                  {copied ? '✓ คัดลอกแล้ว' : 'คัดลอก'}
+                </button>
+              </div>
+            </div>
+
+            {/* bill breakdown */}
+            <div style={{ width:'100%', borderTop:`1px solid ${T.border}`, paddingTop:14 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:T.navyWeak, fontFamily:T.font, marginBottom:10, textTransform:'uppercase', letterSpacing:0.5 }}>
+                รายการที่ชำระ
+              </div>
+              {[
+                { label:'ค่าขยะ · เม.ย. 2569', amount:60, icon:'🗑️' },
+                { label:'ค่าน้ำประปา · เม.ย. 2569', amount:240, icon:'💧' },
+              ].map((item,i) => (
+                <div key={i} style={{
+                  display:'flex', alignItems:'center', justifyContent:'space-between',
+                  padding:'8px 0', borderBottom: i===0 ? `1px dashed ${T.border}` : 'none',
+                }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <span style={{ fontSize:18 }}>{item.icon}</span>
+                    <span style={{ fontSize:15, color:T.navy, fontFamily:T.font }}>{item.label}</span>
+                  </div>
+                  <span style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font }}>฿{item.amount}</span>
+                </div>
+              ))}
+              <div style={{ display:'flex', justifyContent:'space-between', marginTop:10, paddingTop:10, borderTop:`2px solid ${T.border}` }}>
+                <span style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font }}>รวมทั้งหมด</span>
+                <span style={{ fontSize:20, fontWeight:800, color:T.primary, fontFamily:T.font }}>฿300</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* instruction */}
+        <div style={{
+          background:'#fffbeb', border:`1.5px solid #fde68a`,
+          borderRadius:T.radius.md, padding:'14px 16px',
+          display:'flex', gap:12, alignItems:'flex-start',
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.warningMid} strokeWidth="2" strokeLinecap="round" style={{flexShrink:0, marginTop:1}}>
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <div style={{ fontSize:14, color:T.warning, fontFamily:T.font, lineHeight:1.6 }}>
+            <strong>วิธีชำระ:</strong> เปิดแอปธนาคาร → สแกน QR → ตรวจสอบยอดเงิน → ยืนยันการชำระ → กลับมาอัปโหลดสลิป
+          </div>
+        </div>
+      </div>
+
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'14px 20px 28px',
+      }}>
+        <BigBtn color={T.successMid}
+          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>}>
+          อัปโหลดหลักฐานการชำระ
+        </BigBtn>
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────
+   S4 — อัปโหลดสลิป  (Upload Slip)
+───────────────────────────────────────────────────────── */
+const ScreenUploadSlip = () => {
+  const [uploaded, setUploaded] = React.useState(false);
+  const [note, setNote] = React.useState('');
+
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:110 }}>
+      <BackHeader title="อัปโหลดหลักฐาน" sub="แนบสลิปการโอน / ชำระเงิน"/>
+      <StepBar step={4}/>
+
+      <div style={{ padding:'16px 16px 0' }}>
+
+        {/* Upload zone */}
+        <div
+          onClick={()=>setUploaded(u=>!u)}
+          style={{
+            background: uploaded ? T.successBg : T.white,
+            border:`2px dashed ${uploaded ? T.successMid : T.border}`,
+            borderRadius:T.radius.lg,
+            padding:'32px 20px',
+            textAlign:'center',
+            cursor:'pointer',
+            transition:'all 0.3s',
+            marginBottom:16,
+          }}>
+          {uploaded ? (
+            <div style={{ animation:'checkPop 0.4s ease-out' }}>
+              <div style={{
+                width:72, height:72, borderRadius:'50%',
+                background:T.successBg, border:`3px solid #bbf7d0`,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                margin:'0 auto 14px',
+              }}>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={T.successMid} strokeWidth="2.5" strokeLinecap="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <div style={{ fontSize:18, fontWeight:700, color:T.success, fontFamily:T.font }}>อัปโหลดสำเร็จ</div>
+              <div style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font, marginTop:6 }}>slip_payment_apr2569.jpg</div>
+              <button style={{
+                background:'none', border:`1.5px solid ${T.border}`,
+                borderRadius:8, padding:'6px 16px', marginTop:10,
+                fontSize:13, fontWeight:600, color:T.navyWeak,
+                cursor:'pointer', fontFamily:T.font,
+              }}>เปลี่ยนไฟล์</button>
+            </div>
+          ) : (
+            <>
+              <div style={{
+                width:72, height:72, borderRadius:20,
+                background:T.primaryLight,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                margin:'0 auto 16px',
+              }}>
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="1.8" strokeLinecap="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <div style={{ fontSize:18, fontWeight:700, color:T.navy, fontFamily:T.font, marginBottom:8 }}>
+                แตะเพื่อเลือกสลิป
+              </div>
+              <div style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font, lineHeight:1.6 }}>
+                รองรับ JPG, PNG, PDF<br/>ขนาดไม่เกิน 10 MB
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Amount confirm */}
+        <div style={{
+          background:T.white, border:`1.5px solid ${T.border}`,
+          borderRadius:T.radius.md, padding:'16px',
+          marginBottom:14,
+        }}>
+          <div style={{ fontSize:14, fontWeight:700, color:T.navyWeak, fontFamily:T.font, marginBottom:12, textTransform:'uppercase', letterSpacing:0.5 }}>
+            ยืนยันรายละเอียด
+          </div>
+          {[
+            { label:'ยอดชำระ',       value:'฿300' },
+            { label:'วันที่ชำระ',     value:'21 เม.ย. 2569' },
+            { label:'ช่องทาง',        value:'QR พร้อมเพย์' },
+            { label:'เลขที่อ้างอิง',  value:'PAY-2569-0421-001' },
+          ].map((r,i) => (
+            <div key={i} style={{
+              display:'flex', justifyContent:'space-between', alignItems:'center',
+              padding:'9px 0', borderBottom: i<3 ? `1px solid ${T.border}` : 'none',
+            }}>
+              <span style={{ fontSize:15, color:T.navyWeak, fontFamily:T.font }}>{r.label}</span>
+              <span style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font }}>{r.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Note */}
+        <div style={{ marginBottom:14 }}>
+          <div style={{ fontSize:15, fontWeight:600, color:T.navy, fontFamily:T.font, marginBottom:8 }}>
+            หมายเหตุ <span style={{ fontWeight:400, color:T.navyWeak }}>(ไม่บังคับ)</span>
+          </div>
+          <textarea
+            value={note}
+            onChange={e=>setNote(e.target.value)}
+            placeholder="เช่น โอนจากธนาคารกสิกรไทย..."
+            style={{
+              width:'100%', height:80, borderRadius:T.radius.sm,
+              border:`1.5px solid ${T.border}`,
+              padding:'12px 14px', fontSize:15, fontFamily:T.font,
+              resize:'none', outline:'none', color:T.navy,
+              background:T.white,
+            }}
+          />
+        </div>
+      </div>
+
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'14px 20px 28px',
+      }}>
+        <BigBtn disabled={!uploaded} color={T.primary}
+          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>}>
+          ส่งหลักฐานการชำระเงิน
+        </BigBtn>
+        {!uploaded && (
+          <div style={{ textAlign:'center', fontSize:13, color:T.navyWeak, fontFamily:T.font, marginTop:8 }}>
+            กรุณาอัปโหลดสลิปก่อน
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────
+   S5 — กำลังตรวจสอบ  (Pending Verification)
+───────────────────────────────────────────────────────── */
+const ScreenPending = () => (
+  <div style={{ background:T.surface, minHeight:'100%', paddingBottom:96 }}>
+    {/* minimal header */}
+    <div style={{ background:T.primary, padding:'14px 20px 24px' }}>
+      <div style={{ fontSize:20, fontWeight:700, color:'#fff', fontFamily:T.font }}>สถานะการชำระ</div>
+      <div style={{ fontSize:13, color:'rgba(255,255,255,0.70)', fontFamily:T.font, marginTop:2 }}>บ้านเลขที่ 45/2 ม.3 ต.บ้านแป้ง</div>
+    </div>
+
+    {/* Status hero */}
+    <div style={{ margin:'-1px 16px 0', position:'relative', zIndex:2 }}>
+      <div style={{
+        background:T.white, borderRadius:T.radius.lg,
+        border:`1.5px solid #fde68a`,
+        boxShadow:'0 4px 20px rgba(0,0,0,0.08)',
+        padding:'28px 20px 24px',
+        textAlign:'center',
+      }}>
+        <div style={{
+          width:80, height:80, borderRadius:24,
+          background:T.warningBg, margin:'0 auto 16px',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          animation:'pulse 2s ease-in-out infinite',
+        }}>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={T.warningMid} strokeWidth="1.8" strokeLinecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div style={{ fontSize:24, fontWeight:700, color:T.warning, fontFamily:T.font, marginBottom:8 }}>
+          รอการตรวจสอบ
+        </div>
+        <div style={{ fontSize:16, color:T.navyWeak, fontFamily:T.font, lineHeight:1.7, marginBottom:16 }}>
+          เจ้าหน้าที่กำลังตรวจสอบหลักฐาน<br/>โดยปกติใช้เวลา 1–2 ชั่วโมง<br/>ในเวลาราชการ (08:30–16:30 น.)
+        </div>
+        <Pill status="pending"/>
+      </div>
+    </div>
+
+    {/* Transaction detail */}
+    <div style={{ padding:'20px 16px 0' }}>
+      <div style={{
+        background:T.white, borderRadius:T.radius.md,
+        border:`1.5px solid ${T.border}`,
+        overflow:'hidden',
+      }}>
+        <div style={{ padding:'14px 16px', borderBottom:`1px solid ${T.border}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <span style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font }}>รายละเอียดรายการ</span>
+          <span style={{ fontSize:13, color:T.primary, fontWeight:600, fontFamily:T.font }}>PAY-2569-0421-001</span>
+        </div>
+        {[
+          { label:'ยอดที่ส่ง',   value:'฿300' },
+          { label:'ช่องทาง',     value:'QR พร้อมเพย์' },
+          { label:'วันที่ส่ง',   value:'21 เม.ย. 2569 · 14:52 น.' },
+          { label:'สลิปที่แนบ',  value:'slip_payment_apr2569.jpg ✓' },
+        ].map((r,i,arr) => (
+          <div key={i} style={{
+            padding:'12px 16px', borderBottom: i<arr.length-1 ? `1px solid ${T.border}` : 'none',
+            display:'flex', justifyContent:'space-between',
+          }}>
+            <span style={{ fontSize:15, color:T.navyWeak, fontFamily:T.font }}>{r.label}</span>
+            <span style={{ fontSize:15, fontWeight:600, color:T.navy, fontFamily:T.font }}>{r.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Timeline */}
+      <div style={{ marginTop:20 }}>
+        <div style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font, marginBottom:14 }}>
+          ความคืบหน้า
+        </div>
+        {[
+          { label:'ส่งหลักฐาน', sub:'21 เม.ย. 2569 · 14:52 น.', done:true },
+          { label:'รอการตรวจสอบ', sub:'เจ้าหน้าที่กำลังดำเนินการ', done:false, active:true },
+          { label:'อนุมัติ & ออกใบเสร็จ', sub:'รอดำเนินการ', done:false },
+        ].map((step, i) => (
+          <div key={i} style={{ display:'flex', gap:14, marginBottom: i<2 ? 0 : 0, position:'relative' }}>
+            {/* dot + line */}
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', flexShrink:0 }}>
+              <div style={{
+                width:32, height:32, borderRadius:'50%',
+                background: step.done ? T.successMid : step.active ? T.warningMid : T.border,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                flexShrink:0,
+              }}>
+                {step.done ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                ) : step.active ? (
+                  <div style={{ width:10, height:10, borderRadius:'50%', background:'white', animation:'pulse 1.5s infinite' }}/>
+                ) : (
+                  <div style={{ width:10, height:10, borderRadius:'50%', background:'white', opacity:0.5 }}/>
+                )}
+              </div>
+              {i < 2 && <div style={{ width:2, height:36, background: step.done ? T.successMid : T.border, marginTop:2, marginBottom:2 }}/>}
+            </div>
+            {/* text */}
+            <div style={{ paddingTop:4, paddingBottom: i<2 ? 0 : 0, marginBottom: i<2 ? 8 : 0 }}>
+              <div style={{ fontSize:16, fontWeight: step.active ? 700 : 600, color: step.done ? T.success : step.active ? T.warning : T.navyWeak, fontFamily:T.font }}>{step.label}</div>
+              <div style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font, marginTop:2 }}>{step.sub}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Notification note */}
+      <div style={{
+        marginTop:20,
+        background:T.primaryLight, border:`1.5px solid ${T.primary}22`,
+        borderRadius:T.radius.md, padding:'14px 16px',
+        display:'flex', gap:10, alignItems:'flex-start',
+      }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2" strokeLinecap="round" style={{flexShrink:0, marginTop:1}}>
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <div style={{ fontSize:14, color:T.primary, fontFamily:T.font, lineHeight:1.6 }}>
+          ระบบจะแจ้งเตือนผ่าน <strong>LINE Notify</strong> เมื่อการตรวจสอบเสร็จสิ้น
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ─────────────────────────────────────────────────────────
+   S6 — ชำระสำเร็จ  (Payment Success)
+───────────────────────────────────────────────────────── */
+const ScreenSuccess = () => (
+  <div style={{ background:T.surface, minHeight:'100%', paddingBottom:96 }}>
+    <div style={{ background:T.primary, padding:'14px 20px 24px' }}>
+      <div style={{ fontSize:20, fontWeight:700, color:'#fff', fontFamily:T.font }}>ผลการชำระเงิน</div>
+    </div>
+
+    {/* Success hero */}
+    <div style={{ margin:'-1px 16px 0', position:'relative', zIndex:2 }}>
+      <div style={{
+        background:T.white, borderRadius:T.radius.lg,
+        border:`1.5px solid #bbf7d0`,
+        boxShadow:'0 4px 24px rgba(22,163,74,0.12)',
+        padding:'32px 20px 24px',
+        textAlign:'center',
+      }}>
+        <div style={{
+          width:88, height:88, borderRadius:'50%',
+          background:T.successBg, border:`4px solid #bbf7d0`,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          margin:'0 auto 16px',
+          animation:'checkPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275)',
+        }}>
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke={T.successMid} strokeWidth="2.5" strokeLinecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div style={{ fontSize:26, fontWeight:700, color:T.success, fontFamily:T.font, marginBottom:6 }}>
+          ชำระเงินสำเร็จ!
+        </div>
+        <div style={{ fontSize:38, fontWeight:800, color:T.navy, fontFamily:T.font, lineHeight:1.2, marginBottom:8 }}>
+          ฿300.00
+        </div>
+        <div style={{ fontSize:15, color:T.navyWeak, fontFamily:T.font, lineHeight:1.6, marginBottom:16 }}>
+          21 เม.ย. 2569 · 15:10 น.<br/>ค่าขยะ + ค่าน้ำประปา · เม.ย. 2569
+        </div>
+        {/* receipt number badge */}
+        <div style={{
+          display:'inline-flex', alignItems:'center', gap:8,
+          background:T.successBg, borderRadius:10, padding:'8px 16px',
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.success} strokeWidth="2" strokeLinecap="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span style={{ fontSize:14, fontWeight:700, color:T.success, fontFamily:T.font }}>
+            ใบเสร็จ: RC-2569-0421-001
+          </span>
+        </div>
+      </div>
+    </div>
+
+    {/* Receipt breakdown */}
+    <div style={{ padding:'20px 16px 0' }}>
+      <div style={{
+        background:T.white, borderRadius:T.radius.md,
+        border:`1.5px solid ${T.border}`, overflow:'hidden',
+        marginBottom:14,
+      }}>
+        <div style={{ padding:'14px 16px', borderBottom:`1px solid ${T.border}` }}>
+          <div style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font }}>ใบเสร็จรับเงิน</div>
+        </div>
+        {[
+          { icon:'🗑️', label:'ค่าขยะ · เม.ย. 2569',     amount:'฿60' },
+          { icon:'💧', label:'ค่าน้ำประปา · เม.ย. 2569', amount:'฿240' },
+        ].map((item,i) => (
+          <div key={i} style={{
+            padding:'12px 16px', borderBottom:`1px solid ${T.border}`,
+            display:'flex', alignItems:'center', gap:12,
+          }}>
+            <span style={{ fontSize:22 }}>{item.icon}</span>
+            <span style={{ flex:1, fontSize:15, color:T.navy, fontFamily:T.font }}>{item.label}</span>
+            <span style={{ fontSize:16, fontWeight:700, color:T.success, fontFamily:T.font }}>{item.amount}</span>
+          </div>
+        ))}
+        <div style={{
+          padding:'14px 16px', background:T.successBg,
+          display:'flex', justifyContent:'space-between', alignItems:'center',
+        }}>
+          <span style={{ fontSize:17, fontWeight:700, color:T.success, fontFamily:T.font }}>รวมทั้งหมด</span>
+          <span style={{ fontSize:22, fontWeight:800, color:T.success, fontFamily:T.font }}>฿300</span>
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div style={{ display:'flex', gap:10, marginBottom:12 }}>
+        <button style={{
+          flex:1, height:54, borderRadius:T.radius.md,
+          background:T.white, border:`1.5px solid ${T.border}`,
+          display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+          cursor:'pointer', fontFamily:T.font,
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.navy} strokeWidth="2" strokeLinecap="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          <span style={{ fontSize:16, fontWeight:600, color:T.navy }}>บันทึก PDF</span>
+        </button>
+        <button style={{
+          flex:1, height:54, borderRadius:T.radius.md,
+          background:T.white, border:`1.5px solid ${T.border}`,
+          display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+          cursor:'pointer', fontFamily:T.font,
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.navy} strokeWidth="2" strokeLinecap="round">
+            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+          <span style={{ fontSize:16, fontWeight:600, color:T.navy }}>แชร์</span>
+        </button>
+      </div>
+
+      <BigBtn color={T.primary}
+        icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>}>
+        กลับหน้าหลัก
+      </BigBtn>
+
+      {/* Congratulation note */}
+      <div style={{
+        marginTop:14,
+        background:T.successBg, borderRadius:T.radius.md, padding:'14px 16px',
+        textAlign:'center',
+      }}>
+        <div style={{ fontSize:15, color:T.success, fontFamily:T.font, lineHeight:1.6 }}>
+          🙏 ขอบคุณที่ชำระค่าบริการตรงเวลา<br/>
+          <strong>ชำระตรงเวลา 5 เดือนติดต่อกัน!</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ─── Main App ─── */
+const W = 390, H = 844;
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection
+        id="r03"
+        title="R-03 — Payment Flow · กระบวนการชำระเงิน"
+        subtitle="Resident Portal · Mobile First · ออกแบบสำหรับผู้สูงอายุ · Sarabun · ฿ Thai Baht">
+
+        <DCArtboard id="s1" label="1 · เลือกรายการ (Bill Selection)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenBillSelect />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s2" label="2 · เลือกวิธีชำระ (Payment Method)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenPaymentMethod />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s3" label="3 · QR พร้อมเพย์ (QR Code)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenQRCode />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s4" label="4 · อัปโหลดสลิป (Upload Slip)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenUploadSlip />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s5" label="5 · รอตรวจสอบ (Pending)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenPending />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s6" label="6 · ชำระสำเร็จ (Success)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenSuccess />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<div id="root"></div>
+</body>
+</html>

@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import SmartStreetLight from './pages/SmartStreetLight';
 import SolarStreetLight from './pages/SolarStreetLight';
 import FeeManagement from './pages/FeeManagement';
+import WasteCollectionFee from './pages/WasteCollectionFee';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
             <Route path="/smart-street-light" element={<SmartStreetLight />} />
             <Route path="/solar-street-light" element={<SolarStreetLight />} />
             <Route path="/fee-management" element={<FeeManagement />} />
+            <Route path="/waste-fee" element={<WasteCollectionFee />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

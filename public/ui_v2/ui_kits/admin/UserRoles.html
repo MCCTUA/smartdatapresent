@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>จัดการผู้ใช้งานและสิทธิ์ — utilitfeeapp</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; }
+  body {
+    font-family: 'Prompt', 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    letter-spacing: 0.3px;
+    background: #f8fafc;
+    color: #181d26;
+    -webkit-font-smoothing: antialiased;
+  }
+  :root {
+    --primary: #1b61c9;
+    --primary-dark: #1550b0;
+    --primary-tint: #eff6ff;
+    --primary-light: #dbeafe;
+    --navy: #181d26;
+    --border: #e0e2e6;
+    --surface: #ffffff;
+    --subtle: #f8fafc;
+    --text-weak: rgba(4,14,32,0.55);
+    --radius-btn: 10px;
+    --radius-card: 14px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 0 1px rgba(0,0,0,0.1);
+  }
+  * { scrollbar-width: thin; scrollbar-color: #e0e2e6 transparent; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+
+// ── Data ──────────────────────────────────────────────────────────────────
+const ROLES = [
+  { id: 'resident',       label: 'ประชาชน',               color: '#6b7280', bg: '#f3f4f6',  desc: 'ดูบิล ชำระเงิน แจ้งร้องเรียน' },
+  { id: 'account_officer',label: 'เจ้าหน้าที่กองคลัง',    color: '#1b61c9', bg: '#eff6ff',  desc: 'ออกบิล รับชำระ ออกใบเสร็จ' },
+  { id: 'field_officer',  label: 'เจ้าหน้าที่ภาคสนาม',   color: '#0891b2', bg: '#ecfeff',  desc: 'บันทึกการเก็บขยะรายบ้าน' },
+  { id: 'supervisor',     label: 'หัวหน้างาน',            color: '#7c3aed', bg: '#f5f3ff',  desc: 'อนุมัติคำขอ ดูรายงาน' },
+  { id: 'admin',          label: 'ผู้ดูแลระบบ',            color: '#b45309', bg: '#fffbeb',  desc: 'จัดการผู้ใช้ ตั้งค่า org' },
+];
+
+const INITIAL_USERS = [
+  { id:1, name:'นิตยา บุญมี',      phone:'081-234-5678', role:'account_officer', status:'active',   lastLogin:'21 เม.ย. 2569', avatar:'นบ' },
+  { id:2, name:'สมชัย ปิ่นทอง',    phone:'082-345-6789', role:'supervisor',      status:'active',   lastLogin:'20 เม.ย. 2569', avatar:'สป' },
+  { id:3, name:'วรรณา สุขดี',      phone:'083-456-7890', role:'account_officer', status:'active',   lastLogin:'21 เม.ย. 2569', avatar:'วส' },
+  { id:4, name:'ประสิทธิ์ มั่นคง', phone:'084-567-8901', role:'field_officer',   status:'active',   lastLogin:'21 เม.ย. 2569', avatar:'ปม' },
+  { id:5, name:'อำนาจ ทองใบ',      phone:'085-678-9012', role:'field_officer',   status:'active',   lastLogin:'19 เม.ย. 2569', avatar:'อท' },
+  { id:6, name:'ลัดดา จิตดี',      phone:'086-789-0123', role:'admin',           status:'active',   lastLogin:'18 เม.ย. 2569', avatar:'ลจ' },
+  { id:7, name:'มนตรี สว่างใจ',    phone:'087-890-1234', role:'account_officer', status:'inactive', lastLogin:'5 มี.ค. 2569',  avatar:'มส' },
+  { id:8, name:'สุดา พรหมดี',      phone:'088-901-2345', role:'field_officer',   status:'inactive', lastLogin:'1 มี.ค. 2569',  avatar:'สพ' },
+];
+
+const ROLE_PERMISSIONS = {
+  resident:        ['ดูบิลของตนเอง','ชำระเงินออนไลน์','แจ้งร้องเรียน','ดูประวัติการชำระ'],
+  account_officer: ['ออกบิลใหม่','รับชำระเงิน','ออกใบเสร็จ','บันทึกค้างชำระ','พิมพ์สติ๊กเกอร์','ค้นหาครัวเรือน'],
+  field_officer:   ['บันทึกผลเก็บขยะรายบ้าน','ดูเส้นทางเก็บขยะ','อัปเดตสถานะสติ๊กเกอร์','รายงานปัญหาภาคสนาม'],
+  supervisor:      ['อนุมัติ/ปฏิเสธคำขอ','ดูรายงานทั้งหมด','ติดตามค้างชำระ','มอบหมายงาน','ดูประวัติ Audit'],
+  admin:           ['จัดการผู้ใช้งาน','ตั้งค่าองค์กร','กำหนด Primary Color','จัดการอัตราค่าธรรมเนียม','ดูทุก module','ส่งออกรายงาน'],
+};
+
+// ── Utils ─────────────────────────────────────────────────────────────────
+function getRoleInfo(id) { return ROLES.find(r => r.id === id) || ROLES[0]; }
+
+function Avatar({ text, color, size = 36 }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: color, display: 'flex', alignItems: 'center',
+      justifyContent: 'center', fontSize: size * 0.35,
+      fontWeight: 600, color: '#fff', flexShrink: 0, letterSpacing: 0,
+    }}>{text}</div>
+  );
+}
+
+function RoleBadge({ roleId, small }) {
+  const r = getRoleInfo(roleId);
+  return (
+    <span style={{
+      background: r.bg, color: r.color,
+      border: `1px solid ${r.color}22`,
+      borderRadius: 6, padding: small ? '1px 7px' : '3px 9px',
+      fontSize: small ? 11 : 12, fontWeight: 500, whiteSpace: 'nowrap',
+    }}>{r.label}</span>
+  );
+}
+
+function StatusDot({ status }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: status === 'active' ? '#16a34a' : '#9ca3af', fontWeight: 500 }}>
+      <span style={{ width: 7, height: 7, borderRadius: '50%', background: status === 'active' ? '#16a34a' : '#d1d5db', display: 'inline-block' }} />
+      {status === 'active' ? 'ใช้งาน' : 'ระงับ'}
+    </span>
+  );
+}
+
+// ── Role Card (overview) ──────────────────────────────────────────────────
+function RoleCard({ role, count, onClick, active }) {
+  return (
+    <button onClick={onClick} style={{
+      background: active ? role.bg : '#fff',
+      border: `1.5px solid ${active ? role.color + '55' : '#e0e2e6'}`,
+      borderRadius: 12, padding: '14px 16px', cursor: 'pointer',
+      textAlign: 'left', fontFamily: 'Prompt,Inter,sans-serif',
+      transition: 'all 140ms', flex: '1 1 0', minWidth: 0,
+      boxShadow: active ? `0 0 0 3px ${role.color}18` : '0 1px 3px rgba(0,0,0,0.06)',
+    }}
+    onMouseEnter={e => { if (!active) e.currentTarget.style.borderColor = role.color + '44'; }}
+    onMouseLeave={e => { if (!active) e.currentTarget.style.borderColor = '#e0e2e6'; }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+        <span style={{ background: role.bg, color: role.color, borderRadius: 8, padding: '3px 9px', fontSize: 12, fontWeight: 600, border: `1px solid ${role.color}22` }}>
+          {role.label}
+        </span>
+        <span style={{ fontSize: 20, fontWeight: 300, color: active ? role.color : '#181d26', lineHeight: 1 }}>{count}</span>
+      </div>
+      <div style={{ fontSize: 12, color: 'rgba(4,14,32,.5)', marginTop: 4, lineHeight: 1.4 }}>{role.desc}</div>
+    </button>
+  );
+}
+
+// ── Permission list ───────────────────────────────────────────────────────
+function PermissionList({ roleId }) {
+  const perms = ROLE_PERMISSIONS[roleId] || [];
+  const role = getRoleInfo(roleId);
+  return (
+    <div style={{ background: role.bg, border: `1px solid ${role.color}22`, borderRadius: 10, padding: '12px 14px' }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: role.color, letterSpacing: '.4px', textTransform: 'uppercase', marginBottom: 8 }}>สิทธิ์การเข้าถึง</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {perms.map(p => (
+          <div key={p} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12.5, color: '#181d26' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={role.color} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            {p}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Add/Edit User Modal ───────────────────────────────────────────────────
+function UserModal({ user, onSave, onClose }) {
+  const isEdit = !!user?.id;
+  const [form, setForm] = useState({
+    name: user?.name || '',
+    phone: user?.phone || '',
+    role: user?.role || 'account_officer',
+    status: user?.status || 'active',
+  });
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onSave({ ...user, ...form, id: user?.id || Date.now(), avatar: form.name.slice(0,2) });
+  }
+
+  const roleColors = { account_officer:'#1b61c9', field_officer:'#0891b2', supervisor:'#7c3aed', admin:'#b45309', resident:'#6b7280' };
+
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(15,25,50,0.38)', backdropFilter:'blur(3px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}
+      onClick={e => { if (e.target===e.currentTarget) onClose(); }}>
+      <div style={{ background:'#fff', borderRadius:20, width:440, maxWidth:'94vw', boxShadow:'rgba(15,48,106,0.07) 0px 0px 40px, rgba(0,0,0,0.14) 0px 8px 32px', overflow:'hidden' }}>
+        {/* Header */}
+        <div style={{ padding:'18px 22px 14px', borderBottom:'1px solid #f0f0f2', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div style={{ fontSize:16, fontWeight:600 }}>{isEdit ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มผู้ใช้งานใหม่'}</div>
+          <button onClick={onClose} style={{ background:'none', border:'1px solid #e0e2e6', borderRadius:8, padding:5, cursor:'pointer', lineHeight:0, color:'rgba(4,14,32,.5)' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ padding:'18px 22px', display:'flex', flexDirection:'column', gap:14 }}>
+            {/* Name */}
+            <div>
+              <label style={{ display:'block', fontSize:13, fontWeight:500, marginBottom:5 }}>ชื่อ-นามสกุล <span style={{ color:'#dc2626' }}>*</span></label>
+              <input required value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}
+                placeholder="เช่น สมชาย จันทร์ดี"
+                style={{ fontFamily:'Prompt,Inter,sans-serif', fontSize:14, color:'#181d26', background:'#fff', border:'1px solid #e0e2e6', borderRadius:8, padding:'8px 12px', width:'100%', outline:'none', letterSpacing:'.2px' }}
+                onFocus={e=>{ e.target.style.borderColor='#1b61c9'; e.target.style.boxShadow='0 0 0 3px rgba(27,97,201,0.12)'; }}
+                onBlur={e=>{ e.target.style.borderColor='#e0e2e6'; e.target.style.boxShadow='none'; }} />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label style={{ display:'block', fontSize:13, fontWeight:500, marginBottom:5 }}>เบอร์โทรศัพท์ <span style={{ color:'#dc2626' }}>*</span></label>
+              <input required value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))}
+                placeholder="เช่น 081-234-5678"
+                style={{ fontFamily:'Prompt,Inter,sans-serif', fontSize:14, color:'#181d26', background:'#fff', border:'1px solid #e0e2e6', borderRadius:8, padding:'8px 12px', width:'100%', outline:'none', letterSpacing:'.2px' }}
+                onFocus={e=>{ e.target.style.borderColor='#1b61c9'; e.target.style.boxShadow='0 0 0 3px rgba(27,97,201,0.12)'; }}
+                onBlur={e=>{ e.target.style.borderColor='#e0e2e6'; e.target.style.boxShadow='none'; }} />
+              <div style={{ fontSize:11.5, color:'rgba(4,14,32,.45)', marginTop:3 }}>ใช้เป็น username สำหรับเข้าสู่ระบบ</div>
+            </div>
+
+            {/* Role */}
+            <div>
+              <label style={{ display:'block', fontSize:13, fontWeight:500, marginBottom:8 }}>บทบาท <span style={{ color:'#dc2626' }}>*</span></label>
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                {ROLES.filter(r => r.id !== 'resident').map(r => (
+                  <label key={r.id} style={{
+                    display:'flex', alignItems:'center', gap:10, padding:'9px 12px',
+                    border:`1.5px solid ${form.role===r.id ? r.color+'55' : '#e0e2e6'}`,
+                    borderRadius:9, cursor:'pointer',
+                    background: form.role===r.id ? r.bg : '#fff',
+                    transition:'all 120ms',
+                  }}>
+                    <input type="radio" name="role" value={r.id} checked={form.role===r.id}
+                      onChange={()=>setForm(f=>({...f,role:r.id}))}
+                      style={{ accentColor: r.color, width:15, height:15 }} />
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:500, color: form.role===r.id ? r.color : '#181d26' }}>{r.label}</div>
+                      <div style={{ fontSize:11.5, color:'rgba(4,14,32,.5)', marginTop:1 }}>{r.desc}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Status */}
+            {isEdit && (
+              <div>
+                <label style={{ display:'block', fontSize:13, fontWeight:500, marginBottom:8 }}>สถานะบัญชี</label>
+                <div style={{ display:'flex', gap:8 }}>
+                  {[{id:'active',label:'ใช้งาน',color:'#16a34a',bg:'#f0fdf4'},{id:'inactive',label:'ระงับ',color:'#6b7280',bg:'#f3f4f6'}].map(s => (
+                    <label key={s.id} style={{
+                      display:'flex', alignItems:'center', gap:7, padding:'7px 14px',
+                      border:`1.5px solid ${form.status===s.id ? s.color+'55' : '#e0e2e6'}`,
+                      borderRadius:8, cursor:'pointer',
+                      background: form.status===s.id ? s.bg : '#fff',
+                    }}>
+                      <input type="radio" name="status" value={s.id} checked={form.status===s.id}
+                        onChange={()=>setForm(f=>({...f,status:s.id}))}
+                        style={{ accentColor: s.color, width:14, height:14 }} />
+                      <span style={{ fontSize:13, fontWeight:500, color: form.status===s.id ? s.color : '#181d26' }}>{s.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Permission preview */}
+            <PermissionList roleId={form.role} />
+          </div>
+
+          <div style={{ padding:'14px 22px', borderTop:'1px solid #f0f0f2', display:'flex', gap:8, justifyContent:'flex-end' }}>
+            <button type="button" onClick={onClose} style={{ background:'#fff', color:'#181d26', border:'1px solid #e0e2e6', borderRadius:10, padding:'9px 18px', fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:'Prompt,Inter,sans-serif' }}>ยกเลิก</button>
+            <button type="submit" style={{ background:'var(--primary)', color:'#fff', border:'none', borderRadius:10, padding:'9px 22px', fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:'Prompt,Inter,sans-serif' }}>
+              {isEdit ? 'บันทึกการเปลี่ยนแปลง' : 'เพิ่มผู้ใช้งาน'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Delete Confirm Modal ──────────────────────────────────────────────────
+function DeleteModal({ user, onConfirm, onClose }) {
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(15,25,50,0.38)', backdropFilter:'blur(3px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}
+      onClick={e => { if(e.target===e.currentTarget) onClose(); }}>
+      <div style={{ background:'#fff', borderRadius:16, width:380, maxWidth:'94vw', padding:'28px 26px', boxShadow:'rgba(0,0,0,0.14) 0px 8px 32px', textAlign:'center' }}>
+        <div style={{ width:48, height:48, borderRadius:'50%', background:'#fef2f2', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </div>
+        <div style={{ fontSize:15, fontWeight:600, color:'#181d26', marginBottom:6 }}>ลบผู้ใช้งาน?</div>
+        <div style={{ fontSize:13, color:'rgba(4,14,32,.55)', lineHeight:1.5 }}>
+          คุณต้องการลบ <span style={{ fontWeight:600, color:'#181d26' }}>{user?.name}</span> ออกจากระบบ?<br/>การดำเนินการนี้ไม่สามารถย้อนกลับได้
+        </div>
+        <div style={{ display:'flex', gap:8, marginTop:20, justifyContent:'center' }}>
+          <button onClick={onClose} style={{ background:'#fff', color:'#181d26', border:'1px solid #e0e2e6', borderRadius:10, padding:'9px 20px', fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:'Prompt,Inter,sans-serif' }}>ยกเลิก</button>
+          <button onClick={onConfirm} style={{ background:'#dc2626', color:'#fff', border:'none', borderRadius:10, padding:'9px 20px', fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:'Prompt,Inter,sans-serif' }}>ลบผู้ใช้งาน</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Role Detail Drawer ────────────────────────────────────────────────────
+function RoleDrawer({ roleId, users, onClose }) {
+  const role = getRoleInfo(roleId);
+  const roleUsers = users.filter(u => u.role === roleId);
+  const avatarColors = ['#1b61c9','#7c3aed','#0891b2','#b45309','#16a34a'];
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(15,25,50,0.28)', backdropFilter:'blur(2px)', display:'flex', justifyContent:'flex-end', zIndex:900 }}
+      onClick={e => { if(e.target===e.currentTarget) onClose(); }}>
+      <div style={{ width:340, background:'#fff', height:'100%', boxShadow:'-4px 0 24px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column', animation:'slideIn 180ms ease' }}>
+        <style>{`@keyframes slideIn { from { transform:translateX(40px); opacity:0 } to { transform:none; opacity:1 } }`}</style>
+        <div style={{ padding:'18px 20px 14px', borderBottom:'1px solid #f0f0f2', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div>
+            <RoleBadge roleId={roleId} />
+            <div style={{ fontSize:12, color:'rgba(4,14,32,.45)', marginTop:4 }}>{role.desc}</div>
+          </div>
+          <button onClick={onClose} style={{ background:'none', border:'1px solid #e0e2e6', borderRadius:8, padding:5, cursor:'pointer', lineHeight:0 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div style={{ flex:1, overflow:'auto', padding:'16px 20px', display:'flex', flexDirection:'column', gap:16 }}>
+          <PermissionList roleId={roleId} />
+          <div>
+            <div style={{ fontSize:12, fontWeight:600, color:'rgba(4,14,32,.45)', letterSpacing:'.4px', textTransform:'uppercase', marginBottom:10 }}>
+              ผู้ใช้งาน ({roleUsers.length} คน)
+            </div>
+            {roleUsers.length === 0 ? (
+              <div style={{ fontSize:13, color:'rgba(4,14,32,.35)', textAlign:'center', padding:'20px 0' }}>ยังไม่มีผู้ใช้งานใน role นี้</div>
+            ) : (
+              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                {roleUsers.map((u, i) => (
+                  <div key={u.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 10px', background:'#f8fafc', borderRadius:9, border:'1px solid #f0f0f2' }}>
+                    <Avatar text={u.avatar} color={avatarColors[i % avatarColors.length]} size={32} />
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:13, fontWeight:500, color:'#181d26', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{u.name}</div>
+                      <div style={{ fontSize:11, color:'rgba(4,14,32,.45)' }}>{u.phone}</div>
+                    </div>
+                    <StatusDot status={u.status} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main App ──────────────────────────────────────────────────────────────
+const AVATAR_COLORS = ['#1b61c9','#7c3aed','#0891b2','#b45309','#16a34a','#dc2626','#0d9488','#9333ea'];
+
+function App() {
+  const [users, setUsers] = useState(INITIAL_USERS);
+  const [filterRoles, setFilterRoles] = useState([]); // empty = show all
+  const [roleDropOpen, setRoleDropOpen] = useState(false);
+  const roleDropRef = useRef(null);
+  useEffect(() => {
+    const handler = (e) => { if (roleDropRef.current && !roleDropRef.current.contains(e.target)) setRoleDropOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [search, setSearch] = useState('');
+  const [modal, setModal] = useState(null); // {type:'add'|'edit'|'delete', user?}
+  const [drawer, setDrawer] = useState(null); // roleId
+
+  const roleCounts = {};
+  ROLES.forEach(r => { roleCounts[r.id] = users.filter(u => u.role === r.id).length; });
+
+  const filtered = users.filter(u => {
+    if (filterRoles.length > 0 && !filterRoles.includes(u.role)) return false;
+    if (filterStatus !== 'all' && u.status !== filterStatus) return false;
+    if (search && !u.name.includes(search) && !u.phone.includes(search)) return false;
+    return true;
+  });
+
+  function handleSave(user) {
+    setUsers(prev => prev.find(u => u.id === user.id)
+      ? prev.map(u => u.id === user.id ? user : u)
+      : [...prev, user]);
+    setModal(null);
+  }
+
+  function handleDelete() {
+    setUsers(prev => prev.filter(u => u.id !== modal.user.id));
+    setModal(null);
+  }
+
+  return (
+    <div style={{ minHeight:'100vh', background:'#f8fafc' }}>
+      {/* Top bar */}
+      <header style={{ background:'#fff', borderBottom:'1px solid #e0e2e6', padding:'0 28px', height:52, display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:10 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ width:28, height:28, borderRadius:7, background:'var(--primary)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <span style={{ fontSize:13, fontWeight:500, color:'rgba(4,14,32,.4)' }}>อบต.บ้านแป้ง</span>
+          <span style={{ color:'#e0e2e6' }}>›</span>
+          <span style={{ fontSize:14, fontWeight:600, color:'#181d26' }}>จัดการผู้ใช้งาน</span>
+        </div>
+        <button onClick={() => setModal({ type:'add' })} style={{
+          background:'var(--primary)', color:'#fff', border:'none', borderRadius:10,
+          padding:'7px 16px', fontSize:13, fontWeight:500, cursor:'pointer',
+          fontFamily:'Prompt,Inter,sans-serif', display:'flex', alignItems:'center', gap:6,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          เพิ่มผู้ใช้งาน
+        </button>
+      </header>
+
+      <div style={{ padding:'24px 28px', maxWidth:1100, margin:'0 auto' }}>
+        {/* Role overview cards */}
+        <div style={{ marginBottom:20 }}>
+          <div style={{ fontSize:11, fontWeight:600, color:'rgba(4,14,32,.4)', letterSpacing:'.5px', textTransform:'uppercase', marginBottom:10 }}>บทบาทในระบบ — คลิกเพื่อดูรายละเอียด</div>
+          <div style={{ display:'flex', gap:10 }}>
+            {ROLES.filter(r => r.id !== 'resident').map(r => (
+              <RoleCard key={r.id} role={r} count={roleCounts[r.id] || 0}
+                active={drawer === r.id}
+                onClick={() => setDrawer(drawer === r.id ? null : r.id)} />
+            ))}
+          </div>
+        </div>
+
+        {/* Table card */}
+        <div style={{ background:'#fff', border:'1px solid #e0e2e6', borderRadius:14, overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,0.06)' }}>
+          {/* Toolbar */}
+          <div style={{ padding:'12px 16px', borderBottom:'1px solid #f0f0f2', display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+            {/* Status tabs */}
+            <div style={{ display:'flex', gap:2, flex:1, flexWrap:'wrap' }}>
+              {[{id:'all',label:'ทั้งหมด'},{id:'active',label:'ใช้งาน'},{id:'inactive',label:'ระงับ'}].map(s => (
+                <button key={s.id} onClick={() => setFilterStatus(s.id)} style={{
+                  background: filterStatus===s.id ? '#eff6ff' : 'none',
+                  color: filterStatus===s.id ? '#1b61c9' : 'rgba(4,14,32,.55)',
+                  border:'none', borderRadius:7, padding:'5px 11px', fontSize:12.5,
+                  fontWeight: filterStatus===s.id ? 600 : 400, cursor:'pointer',
+                  fontFamily:'Prompt,Inter,sans-serif',
+                }}>{s.label}</button>
+              ))}
+              <div style={{ width:1, background:'#e0e2e6', margin:'0 4px', alignSelf:'stretch' }} />
+              {/* Role dropdown with checkboxes */}
+              <div ref={roleDropRef} style={{ position:'relative' }}>
+                <button
+                  onClick={() => setRoleDropOpen(o => !o)}
+                  style={{
+                    display:'flex', alignItems:'center', gap:6,
+                    background: filterRoles.length > 0 ? '#eff6ff' : '#f8fafc',
+                    color: filterRoles.length > 0 ? '#1b61c9' : 'rgba(4,14,32,.55)',
+                    border: `1.5px solid ${filterRoles.length > 0 ? '#1b61c9' : '#e0e2e6'}`,
+                    borderRadius:8, padding:'5px 10px', fontSize:12.5,
+                    fontWeight: filterRoles.length > 0 ? 600 : 400,
+                    cursor:'pointer', fontFamily:'Prompt,Inter,sans-serif',
+                    transition:'all 120ms', whiteSpace:'nowrap',
+                  }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+                  {filterRoles.length === 0
+                    ? 'ทุก Role'
+                    : filterRoles.length === 1
+                      ? ROLES.find(r => r.id === filterRoles[0])?.label
+                      : `${filterRoles.length} Roles`}
+                  {filterRoles.length > 0 && (
+                    <span style={{
+                      background:'#1b61c9', color:'#fff', borderRadius:10,
+                      padding:'0px 5px', fontSize:10.5, fontWeight:700, lineHeight:'17px',
+                    }}>{filterRoles.length}</span>
+                  )}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+                    style={{ transform: roleDropOpen ? 'rotate(180deg)' : 'none', transition:'transform 150ms' }}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+
+                {roleDropOpen && (
+                  <div style={{
+                    position:'absolute', top:'calc(100% + 6px)', left:0, zIndex:50,
+                    background:'#fff', border:'1px solid #e0e2e6', borderRadius:11,
+                    boxShadow:'0 4px 20px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.07)',
+                    minWidth:210, overflow:'hidden',
+                    animation:'fadeDown 120ms ease',
+                  }}>
+                    <style>{`@keyframes fadeDown { from { opacity:0; transform:translateY(-6px) } to { opacity:1; transform:none } }`}</style>
+                    {/* Select all / clear */}
+                    <div style={{ padding:'8px 12px 6px', borderBottom:'1px solid #f0f0f2', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                      <span style={{ fontSize:11, fontWeight:600, color:'rgba(4,14,32,.4)', letterSpacing:'.4px', textTransform:'uppercase' }}>บทบาท</span>
+                      <button
+                        onClick={() => setFilterRoles(filterRoles.length > 0 ? [] : ROLES.filter(r=>r.id!=='resident').map(r=>r.id))}
+                        style={{ background:'none', border:'none', cursor:'pointer', fontSize:11.5, color:'#1b61c9', fontWeight:600, fontFamily:'Prompt,Inter,sans-serif', padding:0 }}>
+                        {filterRoles.length > 0 ? 'ล้างทั้งหมด' : 'เลือกทั้งหมด'}
+                      </button>
+                    </div>
+                    {/* Role items */}
+                    <div style={{ padding:'6px 8px' }}>
+                      {ROLES.filter(r => r.id !== 'resident').map(r => {
+                        const checked = filterRoles.includes(r.id);
+                        return (
+                          <label key={r.id}
+                            style={{
+                              display:'flex', alignItems:'center', gap:10,
+                              padding:'7px 8px', borderRadius:8, cursor:'pointer',
+                              background: checked ? r.bg : 'transparent',
+                              transition:'background 100ms',
+                            }}
+                            onMouseEnter={e => { if (!checked) e.currentTarget.style.background='#f8fafc'; }}
+                            onMouseLeave={e => { if (!checked) e.currentTarget.style.background='transparent'; }}>
+                            {/* custom checkbox */}
+                            <div style={{
+                              width:16, height:16, borderRadius:4, flexShrink:0,
+                              border: `2px solid ${checked ? r.color : '#d1d5db'}`,
+                              background: checked ? r.color : '#fff',
+                              display:'flex', alignItems:'center', justifyContent:'center',
+                              transition:'all 120ms',
+                            }}>
+                              {checked && (
+                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              )}
+                            </div>
+                            <input type="checkbox" checked={checked} onChange={() =>
+                              setFilterRoles(prev => checked ? prev.filter(id=>id!==r.id) : [...prev, r.id])
+                            } style={{ display:'none' }} />
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <div style={{ fontSize:13, fontWeight:500, color: checked ? r.color : '#181d26', lineHeight:1.2 }}>{r.label}</div>
+                              <div style={{ fontSize:11, color:'rgba(4,14,32,.4)', marginTop:1 }}>{r.desc}</div>
+                            </div>
+                            <span style={{ fontSize:11.5, fontWeight:600, color: checked ? r.color : 'rgba(4,14,32,.3)', minWidth:16, textAlign:'right' }}>
+                              {roleCounts[r.id] || 0}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Search */}
+            <div style={{ position:'relative' }}>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ค้นหาชื่อหรือเบอร์โทร..."
+                style={{ fontFamily:'Prompt,Inter,sans-serif', fontSize:12.5, background:'#f8fafc', border:'1px solid #e0e2e6', borderRadius:7, padding:'5px 10px 5px 28px', width:190, outline:'none', color:'#181d26', letterSpacing:'.1px' }}
+                onFocus={e=>{ e.target.style.borderColor='#1b61c9'; e.target.style.background='#fff'; }}
+                onBlur={e=>{ e.target.style.borderColor='#e0e2e6'; e.target.style.background='#f8fafc'; }} />
+              <svg style={{ position:'absolute', left:8, top:'50%', transform:'translateY(-50%)', color:'rgba(4,14,32,.35)', pointerEvents:'none' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+          </div>
+
+          {/* Table */}
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+            <thead>
+              <tr>
+                {['ผู้ใช้งาน','เบอร์โทร','บทบาท','สถานะ','เข้าสู่ระบบล่าสุด',''].map(h => (
+                  <th key={h} style={{ background:'#f8fafc', padding:'8px 16px', textAlign:'left', fontSize:11, fontWeight:600, color:'rgba(4,14,32,.45)', letterSpacing:'.4px', textTransform:'uppercase', borderBottom:'1px solid #e0e2e6', whiteSpace:'nowrap' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((u, i) => (
+                <tr key={u.id} style={{ borderBottom:'1px solid #f5f5f7', opacity: u.status==='inactive' ? .65 : 1 }}
+                  onMouseEnter={e => e.currentTarget.style.background='#f5f8ff'}
+                  onMouseLeave={e => e.currentTarget.style.background=''}>
+                  <td style={{ padding:'11px 16px' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                      <Avatar text={u.avatar} color={AVATAR_COLORS[i % AVATAR_COLORS.length]} size={34} />
+                      <div>
+                        <div style={{ fontWeight:500, color:'#181d26', lineHeight:1.3 }}>{u.name}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding:'11px 16px', color:'rgba(4,14,32,.65)', fontVariantNumeric:'tabular-nums' }}>{u.phone}</td>
+                  <td style={{ padding:'11px 16px' }}><RoleBadge roleId={u.role} small /></td>
+                  <td style={{ padding:'11px 16px' }}><StatusDot status={u.status} /></td>
+                  <td style={{ padding:'11px 16px', color:'rgba(4,14,32,.45)', fontSize:12 }}>{u.lastLogin}</td>
+                  <td style={{ padding:'11px 16px' }}>
+                    <div style={{ display:'flex', gap:4 }}>
+                      <button onClick={() => setModal({ type:'edit', user:u })}
+                        style={{ background:'none', border:'1px solid #e0e2e6', borderRadius:6, padding:'4px 10px', fontSize:11.5, color:'rgba(4,14,32,.6)', cursor:'pointer', fontFamily:'Prompt,Inter,sans-serif', display:'flex', alignItems:'center', gap:4 }}
+                        onMouseEnter={e=>e.currentTarget.style.background='#f8fafc'}
+                        onMouseLeave={e=>e.currentTarget.style.background='none'}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        แก้ไข
+                      </button>
+                      <button onClick={() => setModal({ type:'delete', user:u })}
+                        style={{ background:'none', border:'1px solid #fecaca', borderRadius:6, padding:'4px 10px', fontSize:11.5, color:'#dc2626', cursor:'pointer', fontFamily:'Prompt,Inter,sans-serif', display:'flex', alignItems:'center', gap:4 }}
+                        onMouseEnter={e=>e.currentTarget.style.background='#fef2f2'}
+                        onMouseLeave={e=>e.currentTarget.style.background='none'}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+                        ลบ
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan={6} style={{ padding:'36px', textAlign:'center', color:'rgba(4,14,32,.35)', fontSize:13 }}>ไม่พบผู้ใช้งานที่ตรงกับเงื่อนไข</td></tr>
+              )}
+            </tbody>
+          </table>
+
+          {/* Footer */}
+          <div style={{ padding:'10px 16px', borderTop:'1px solid #f0f0f2', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <span style={{ fontSize:12, color:'rgba(4,14,32,.4)' }}>แสดง {filtered.length} จาก {users.length} ผู้ใช้งาน</span>
+            <div style={{ display:'flex', gap:4 }}>
+              {['←','1','→'].map(p => (
+                <button key={p} style={{ background: p==='1' ? 'var(--primary)' : 'none', color: p==='1' ? '#fff' : 'rgba(4,14,32,.5)', border:'1px solid', borderColor: p==='1' ? 'var(--primary)' : '#e0e2e6', borderRadius:6, padding:'3px 9px', fontSize:12, cursor:'pointer', fontFamily:'Prompt,Inter,sans-serif' }}>{p}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {modal?.type === 'add'    && <UserModal onSave={handleSave} onClose={() => setModal(null)} />}
+      {modal?.type === 'edit'   && <UserModal user={modal.user} onSave={handleSave} onClose={() => setModal(null)} />}
+      {modal?.type === 'delete' && <DeleteModal user={modal.user} onConfirm={handleDelete} onClose={() => setModal(null)} />}
+      {drawer && <RoleDrawer roleId={drawer} users={users} onClose={() => setDrawer(null)} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

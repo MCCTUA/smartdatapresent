@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-07 · ออกใบเสร็จ (Receipt Issuance) — Officer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ───────────────────────────────────────────── */
+:root {
+  --org-primary:       #1b61c9;
+  --org-primary-light: #e8f0fd;
+  --org-primary-dark:  #1349a0;
+  --navy:    #181d26;
+  --navy-80: rgba(24,29,38,.80);
+  --navy-50: rgba(24,29,38,.50);
+  --navy-30: rgba(24,29,38,.30);
+  --navy-10: rgba(24,29,38,.07);
+  --white:       #ffffff;
+  --surface:     #f8fafc;
+  --surface-2:   #f1f4f8;
+  --border:      #e0e2e6;
+  --border-light:#edf0f4;
+  --green:       #059669;
+  --green-light: #d1fae5;
+  --red:         #dc2626;
+  --red-light:   #fee2e2;
+  --amber:       #d97706;
+  --amber-light: #fef3c7;
+  --shadow-card: 0 0 1px rgba(0,0,0,.12),0 1px 3px rgba(45,127,249,.10),0 0 0 .5px rgba(0,0,0,.04) inset;
+  --font: 'Prompt','Inter',sans-serif;
+  --sidebar-w: 220px;
+  --topbar-h:  56px;
+  --radius-card: 12px;
+  --radius-sm:   8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);color:var(--navy);background:var(--surface)}
+button{font-family:var(--font);cursor:pointer;border:none;background:none}
+input{font-family:var(--font)}
+
+/* ─── LAYOUT ──────────────────────────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ─── SIDEBAR ─────────────────────────────────────────── */
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--white);box-shadow:1px 0 0 var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;z-index:10}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 16px;height:var(--topbar-h);border-bottom:1px solid var(--border)}
+.org-avatar{width:32px;height:32px;border-radius:8px;background:var(--org-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;letter-spacing:.5px;flex-shrink:0}
+.org-name{font-size:13px;font-weight:600;color:var(--navy);line-height:1.3}
+.org-sub{font-size:11px;color:var(--navy-50)}
+.nav-section{padding:8px 8px 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--navy-30);letter-spacing:1px;text-transform:uppercase;padding:0 8px;margin-bottom:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:400;color:var(--navy-80);cursor:pointer;transition:background .12s,color .12s}
+.nav-item:hover{background:var(--navy-10);color:var(--navy)}
+.nav-item.active{background:var(--org-primary-light);color:var(--org-primary);font-weight:600}
+.nav-item .icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:700;border-radius:99px;padding:1px 6px;min-width:18px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--org-primary-light);color:var(--org-primary);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-name{font-size:13px;font-weight:500}
+.user-role{font-size:11px;color:var(--navy-50)}
+
+/* ─── MAIN ────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─── TOPBAR ──────────────────────────────────────────── */
+.topbar{height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.breadcrumb-link{color:var(--navy-50);cursor:pointer;transition:color .12s}
+.breadcrumb-link:hover{color:var(--org-primary)}
+.breadcrumb-sep{color:var(--navy-30);font-size:12px}
+.breadcrumb-cur{font-weight:600;color:var(--navy)}
+.topbar-spacer{flex:1}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;transition:all .14s;white-space:nowrap;cursor:pointer}
+.btn-primary{background:var(--org-primary);color:white;border:none;box-shadow:0 1px 3px rgba(27,97,201,.25)}
+.btn-primary:hover{background:var(--org-primary-dark)}
+.btn-secondary{background:var(--white);color:var(--navy);border:1px solid var(--border);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.btn-secondary:hover{background:var(--surface);border-color:var(--navy-30)}
+.btn-ghost{color:var(--navy-50);padding:6px 10px;border:none;background:none}
+.btn-ghost:hover{color:var(--navy);background:var(--navy-10)}
+.btn-green{background:var(--green);color:white;border:none;box-shadow:0 1px 3px rgba(5,150,105,.25)}
+.btn-green:hover{background:#047857}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px}
+
+/* ─── WORKSPACE ───────────────────────────────────────── */
+.workspace{flex:1;display:flex;overflow:hidden}
+
+/* LEFT PANEL */
+.list-panel{width:340px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.lp-head{padding:14px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.lp-title{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.lp-title svg{color:var(--org-primary)}
+.search-box{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);overflow:hidden;transition:border .15s,box-shadow .15s}
+.search-box:focus-within{border-color:var(--org-primary);box-shadow:0 0 0 3px rgba(27,97,201,.10);background:var(--white)}
+.search-box svg{flex-shrink:0;margin:0 10px;color:var(--navy-30)}
+.search-box input{flex:1;padding:8px 12px 8px 0;border:none;background:transparent;font-size:13.5px;color:var(--navy);outline:none}
+.search-box input::placeholder{color:var(--navy-30)}
+
+.filter-bar{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.filter-chip{padding:4px 10px;border-radius:99px;font-size:11.5px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--navy-50);transition:all .12s}
+.filter-chip.active{background:var(--org-primary-light);border-color:var(--org-primary);color:var(--org-primary)}
+
+.lp-list{flex:1;overflow-y:auto;padding:6px 8px}
+.receipt-item{padding:11px 12px;border-radius:9px;cursor:pointer;transition:background .1s;border:1.5px solid transparent;margin-bottom:3px}
+.receipt-item:hover{background:var(--surface)}
+.receipt-item.selected{background:var(--org-primary-light);border-color:var(--org-primary)}
+.ri-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.ri-recno{font-size:11.5px;font-weight:700;color:var(--navy-50);font-family:monospace;letter-spacing:.3px}
+.ri-date{font-size:11px;color:var(--navy-30)}
+.ri-house{font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.ri-owner{font-size:12px;color:var(--navy-50);margin-bottom:7px}
+.ri-foot{display:flex;align-items:center;justify-content:space-between}
+.ri-amount{font-size:15px;font-weight:700;color:var(--green)}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500}
+.pill-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.s-printed{background:var(--green-light);color:var(--green)}.s-printed .pill-dot{background:var(--green)}
+.s-preview{background:var(--org-primary-light);color:var(--org-primary)}.s-preview .pill-dot{background:var(--org-primary)}
+.s-cancelled{background:var(--red-light);color:var(--red)}.s-cancelled .pill-dot{background:var(--red)}
+.s-sent{background:var(--amber-light);color:var(--amber)}.s-sent .pill-dot{background:var(--amber)}
+
+/* RIGHT PANEL */
+.preview-panel{flex:1;overflow-y:auto;background:var(--surface-2);display:flex;flex-direction:column}
+.pp-toolbar{flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:10px}
+.pp-toolbar-title{font-size:13px;font-weight:600;color:var(--navy);flex:1}
+.paper-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.pt-btn{padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:var(--white);color:var(--navy-50);transition:all .12s}
+.pt-btn.active{background:var(--org-primary);color:white}
+
+.pp-body{flex:1;padding:32px;display:flex;justify-content:center;align-items:flex-start}
+
+/* ─── RECEIPT DOCUMENT ────────────────────────────────── */
+.receipt-doc{
+  background:white;position:relative;
+  box-shadow:0 4px 24px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.08);
+  transition:all .2s;
+}
+.receipt-doc.a4{
+  width:794px; /* A4 at 96dpi */
+  min-height:1123px;
+  padding:48px 56px;
+}
+.receipt-doc.thermal{
+  width:302px; /* 80mm at 96dpi */
+  min-height:auto;
+  padding:16px 14px;
+}
+
+/* CANCELLED WATERMARK */
+.receipt-doc.cancelled::after{
+  content:'ยกเลิก';
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-30deg);
+  font-size:96px;font-weight:900;color:rgba(220,38,38,.18);
+  pointer-events:none;letter-spacing:4px;white-space:nowrap;
+}
+.receipt-doc.thermal.cancelled::after{font-size:48px}
+
+/* PRINTED STAMP */
+.printed-stamp{
+  position:absolute;top:48px;right:56px;
+  border:3px solid var(--green);border-radius:6px;
+  padding:4px 14px;color:var(--green);font-size:18px;font-weight:700;
+  letter-spacing:2px;opacity:.65;transform:rotate(-8deg);
+  text-transform:uppercase;pointer-events:none;
+}
+.receipt-doc.thermal .printed-stamp{top:16px;right:14px;font-size:11px;padding:2px 7px;border-width:2px}
+
+/* ─── A4 RECEIPT CONTENT ──────────────────────────────── */
+.rec-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid var(--navy)}
+.rec-org{display:flex;align-items:center;gap:14px}
+.rec-logo{width:52px;height:52px;border-radius:10px;background:var(--org-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:700;letter-spacing:.5px;flex-shrink:0}
+.rec-org-name{font-size:17px;font-weight:700;color:var(--navy)}
+.rec-org-address{font-size:12px;color:var(--navy-50);margin-top:2px;line-height:1.6}
+.rec-title-block{text-align:right}
+.rec-title{font-size:22px;font-weight:700;color:var(--navy);letter-spacing:.5px}
+.rec-title-th{font-size:13px;color:var(--navy-50);margin-bottom:6px}
+.rec-no{font-size:13px;font-weight:700;color:var(--org-primary);font-family:monospace;letter-spacing:.5px}
+.rec-date{font-size:12px;color:var(--navy-50);margin-top:2px}
+
+.rec-meta{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:24px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.meta-cell{padding:9px 16px;font-size:13px}
+.meta-cell:nth-child(odd){border-right:1px solid var(--border-light)}
+.meta-cell:not(:nth-last-child(-n+2)){border-bottom:1px solid var(--border-light)}
+.meta-lbl{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--navy-30);margin-bottom:2px}
+.meta-val{font-weight:500;color:var(--navy)}
+
+/* service table */
+.rec-table{width:100%;border-collapse:collapse;margin-bottom:0}
+.rec-table thead th{background:var(--surface);padding:8px 12px;font-size:11px;font-weight:600;color:var(--navy-50);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--border)}
+.rec-table thead th:last-child{text-align:right}
+.rec-table tbody td{padding:10px 12px;font-size:13.5px;border-bottom:1px solid var(--border-light)}
+.rec-table tbody tr:last-child td{border-bottom:none}
+.rec-table .subtotal-row td{background:var(--surface);font-size:13px;color:var(--navy-50)}
+.rec-table .discount-row td{color:var(--green);font-size:13px}
+.rec-table .total-row{background:var(--org-primary);color:white}
+.rec-table .total-row td{padding:12px;font-size:15px;font-weight:700;border:none}
+.rec-table .total-row td:last-child{text-align:right;font-size:18px}
+
+.rec-change-row{display:flex;justify-content:space-between;padding:10px 12px;background:var(--green-light);border:1px solid #6ee7b7;border-radius:0 0 8px 8px;font-size:13.5px}
+.rec-change-lbl{color:var(--navy-50);font-weight:500}
+.rec-change-val{font-weight:700;color:var(--green)}
+
+/* barcode section */
+.rec-barcode-section{margin-top:28px;padding-top:20px;border-top:1.5px dashed var(--border);display:flex;align-items:flex-start;gap:24px}
+.rec-barcode-wrap{flex:1}
+.rec-barcode-label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--navy-30);margin-bottom:8px}
+.rec-barcode-canvas{display:block;max-width:100%}
+.rec-barcode-ref{font-size:11px;color:var(--navy-50);margin-top:4px;font-family:monospace;letter-spacing:1px}
+
+.rec-qr-wrap{flex-shrink:0;text-align:center}
+.rec-qr-box{width:88px;height:88px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--navy-30);font-size:10px}
+
+/* footer */
+.rec-footer{margin-top:32px;padding-top:20px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;color:var(--navy-50);text-align:center}
+.rec-footer-col strong{display:block;color:var(--navy);margin-bottom:24px;margin-top:2px}
+.rec-footer-col .sig-line{border-top:1px solid var(--navy-30);margin:0 8px 6px;height:0}
+
+.rec-legal{margin-top:16px;font-size:10.5px;color:var(--navy-30);text-align:center;line-height:1.7;border-top:1px solid var(--border-light);padding-top:12px}
+
+/* ─── THERMAL RECEIPT ─────────────────────────────────── */
+.thermal .rec-header{flex-direction:column;align-items:center;text-align:center;gap:8px;border-bottom:1px dashed var(--navy-30);margin-bottom:12px;padding-bottom:12px}
+.thermal .rec-logo{width:36px;height:36px;font-size:12px}
+.thermal .rec-org-name{font-size:13px}
+.thermal .rec-org-address{font-size:10px}
+.thermal .rec-title-block{text-align:center;margin-top:4px}
+.thermal .rec-title{font-size:13px;font-weight:700;letter-spacing:1px}
+.thermal .rec-title-th{font-size:10px}
+.thermal .rec-no{font-size:11px}
+.thermal .rec-date{font-size:10px}
+
+.thermal .rec-meta{grid-template-columns:1fr;border:none;margin-bottom:8px}
+.thermal .meta-cell{padding:4px 0;border-right:none!important;font-size:11px}
+.thermal .meta-cell:not(:last-child){border-bottom:1px dashed var(--border-light)!important}
+.thermal .meta-lbl{font-size:9px}
+
+.thermal .rec-table thead th{font-size:9px;padding:5px 4px}
+.thermal .rec-table tbody td{font-size:11px;padding:5px 4px}
+.thermal .rec-table .total-row td{font-size:12px;padding:8px 4px}
+
+.thermal .rec-barcode-section{flex-direction:column;gap:10px;margin-top:14px;padding-top:12px}
+.thermal .rec-barcode-label{font-size:9px}
+.thermal .rec-qr-box{width:64px;height:64px;font-size:9px}
+.thermal .rec-qr-wrap{align-self:center}
+
+.thermal .rec-footer{grid-template-columns:1fr;font-size:10px;margin-top:16px;padding-top:12px;gap:8px}
+.thermal .rec-footer-col strong{margin-bottom:14px}
+.thermal .rec-legal{font-size:9px;margin-top:10px}
+
+.thermal .rec-change-row{font-size:11px;padding:7px 8px}
+
+/* ─── IDLE STATE ──────────────────────────────────────── */
+.pp-idle{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:10px;color:var(--navy-50);text-align:center;padding:40px}
+.pp-idle-icon{width:72px;height:72px;border-radius:18px;background:var(--white);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:6px;color:var(--navy-30)}
+.pp-idle-title{font-size:16px;font-weight:600;color:var(--navy)}
+.pp-idle-sub{font-size:13px;max-width:280px;line-height:1.6}
+
+/* ─── TOAST ───────────────────────────────────────────── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9999;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* ─── TWEAKS ──────────────────────────────────────────── */
+#tweaks-panel{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.14);padding:16px;width:230px;display:none}
+#tweaks-panel h4{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--navy)}
+.tweak-row{margin-bottom:10px}
+.tweak-label{font-size:11.5px;color:var(--navy-50);margin-bottom:4px}
+.tweak-row input[type=color]{width:100%;height:34px;border:1px solid var(--border);border-radius:6px;padding:2px 4px;cursor:pointer;background:var(--surface)}
+.tweak-row select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:13px;background:var(--surface);color:var(--navy)}
+
+/* ─── PRINT STYLES ────────────────────────────────────── */
+@media print {
+  body{background:white!important}
+  .sidebar,.topbar,.list-panel,.pp-toolbar,#tweaks-panel,.toast{display:none!important}
+  .app,.main,.workspace,.preview-panel{display:block!important;height:auto!important;overflow:visible!important}
+  .pp-body{padding:0!important;display:block!important}
+  .receipt-doc.a4{box-shadow:none!important;width:100%!important;padding:16mm 20mm!important;min-height:auto!important}
+  .receipt-doc.thermal{box-shadow:none!important;width:72mm!important;padding:4mm!important}
+  @page{margin:0;size:A4}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ─── SIDEBAR ──────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="org-avatar">อบต</div>
+      <div>
+        <div class="org-name">อบต.สาธิต</div>
+        <div class="org-sub">Officer Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ภาพรวม</div>
+      <div class="nav-item" onclick="location='O-01 KPI Dashboard.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v5H3V4zm0 6h6v5a1 1 0 01-1 1H4a1 1 0 01-1-1v-5zm8-6a1 1 0 011-1h4a1 1 0 011 1v2h-6V4zm0 4h6v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V8z"/></svg>
+        Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">จัดการ</div>
+      <div class="nav-item" onclick="location='O-02 Household List.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        ครัวเรือน
+      </div>
+      <div class="nav-item" onclick="location='O-05 Bill List.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+        บิลทั้งหมด
+      </div>
+      <div class="nav-item" onclick="location='O-06 Record Payment.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+        รับชำระเงิน
+      </div>
+      <div class="nav-item active">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+        ออกใบเสร็จ
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ติดตาม</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ค้างชำระ
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        อนุมัติคำขอ
+        <span class="nav-badge">5</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">บริการ</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5z" clip-rule="evenodd"/></svg>
+        สติ๊กเกอร์
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/></svg>
+        รายงาน
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">สม</div>
+        <div>
+          <div class="user-name">สมหญิง ใจดี</div>
+          <div class="user-role">Account Officer</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ────────────────────────────────────────── -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span class="breadcrumb-link" onclick="location='O-05 Bill List.html'">บิลทั้งหมด</span>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-link" onclick="location='O-06 Record Payment.html'">รับชำระเงิน</span>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-cur">ออกใบเสร็จ</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <span style="font-size:12px;color:var(--navy-50);margin-right:4px">เจ้าหน้าที่:</span>
+      <span style="font-size:12.5px;font-weight:600;color:var(--navy)">สมหญิง ใจดี</span>
+      <span style="font-size:12px;color:var(--navy-30);margin:0 8px">|</span>
+      <span id="clock" style="font-size:12.5px;font-weight:600;color:var(--navy-50);font-family:monospace"></span>
+    </div>
+
+    <!-- WORKSPACE -->
+    <div class="workspace">
+
+      <!-- LEFT: receipt list -->
+      <div class="list-panel">
+        <div class="lp-head">
+          <div class="lp-title">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+            ใบเสร็จล่าสุด
+          </div>
+          <div class="search-box">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+            <input type="text" id="rec-search" placeholder="เลขที่ใบเสร็จ · บ้าน · ชื่อ…" oninput="filterReceipts(this.value)" autocomplete="off">
+          </div>
+        </div>
+        <div class="filter-bar" id="filter-bar">
+          <div class="filter-chip active" data-filter="all" onclick="setFilter('all',this)">ทั้งหมด</div>
+          <div class="filter-chip" data-filter="preview" onclick="setFilter('preview',this)">รอพิมพ์</div>
+          <div class="filter-chip" data-filter="printed" onclick="setFilter('printed',this)">พิมพ์แล้ว</div>
+          <div class="filter-chip" data-filter="sent" onclick="setFilter('sent',this)">ส่ง LINE</div>
+          <div class="filter-chip" data-filter="cancelled" onclick="setFilter('cancelled',this)">ยกเลิก</div>
+        </div>
+        <div class="lp-list" id="receipt-list"></div>
+      </div>
+
+      <!-- RIGHT: preview area -->
+      <div class="preview-panel" id="preview-panel">
+        <!-- toolbar (hidden until receipt selected) -->
+        <div class="pp-toolbar" id="pp-toolbar" style="display:none">
+          <div class="pp-toolbar-title" id="pp-title">ใบเสร็จ</div>
+          <div class="paper-toggle">
+            <button class="pt-btn active" id="btn-a4" onclick="setPaper('a4')">A4</button>
+            <button class="pt-btn" id="btn-thermal" onclick="setPaper('thermal')">Thermal 80mm</button>
+          </div>
+          <div style="width:1px;height:22px;background:var(--border);margin:0 4px"></div>
+          <button class="btn btn-ghost btn-sm" onclick="showCancelConfirm()" id="btn-cancel-receipt" style="color:var(--red)">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            ยกเลิกใบเสร็จ
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="sendLine()">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/></svg>
+            ส่ง LINE
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="printReceipt()">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a1 1 0 001 1h8a1 1 0 001-1v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a1 1 0 00-1-1H6a1 1 0 00-1 1zm2 0h6v3H7V4zm-2 8v-1h10v1H5zm2 2h6v1H7v-1z" clip-rule="evenodd"/></svg>
+            พิมพ์ใบเสร็จ
+          </button>
+        </div>
+
+        <!-- idle -->
+        <div class="pp-idle" id="pp-idle">
+          <div class="pp-idle-icon">
+            <svg width="36" height="36" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="pp-idle-title">เลือกใบเสร็จเพื่อดู Preview</div>
+          <div class="pp-idle-sub">คลิกรายการใบเสร็จด้านซ้ายเพื่อดู Preview และพิมพ์</div>
+        </div>
+
+        <!-- receipt preview body -->
+        <div class="pp-body" id="pp-body" style="display:none">
+          <div class="receipt-doc a4" id="receipt-doc">
+            <!-- dynamically filled -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TWEAKS -->
+<div id="tweaks-panel">
+  <h4>Tweaks</h4>
+  <div class="tweak-row">
+    <div class="tweak-label">Primary Color</div>
+    <input type="color" value="#1b61c9" oninput="setPrimary(this.value)">
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">ขนาดกระดาษ</div>
+    <select onchange="setPaper(this.value)">
+      <option value="a4">A4</option>
+      <option value="thermal">Thermal 80mm</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">สถานะ Demo</div>
+    <select id="tweak-status" onchange="setDemoStatus(this.value)">
+      <option value="">— เลือก —</option>
+      <option value="preview">รอพิมพ์ (Preview)</option>
+      <option value="printed">พิมพ์แล้ว (Printed)</option>
+      <option value="cancelled">ยกเลิก (Cancelled)</option>
+      <option value="sent">ส่ง LINE แล้ว</option>
+    </select>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── TWEAK DEFAULTS ─────────────────────────────────── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{"primaryColor":"#1b61c9"}/*EDITMODE-END*/;
+
+/* ─── DATA ───────────────────────────────────────────── */
+const RECEIPTS = [
+  {
+    id:'REC-2568-000312', billId:'BIL-2568-00087',
+    house:'24/1 หมู่ 3', owner:'สมชาย สุขใจ',
+    zone:'B', type:'บ้านเดี่ยว', cycle:'Q2/2568',
+    date:'22 เม.ย. 2568', time:'09:14',
+    method:'เงินสด', methodRef:'',
+    services:[{n:'ค่าขยะมูลฝอย (Q2/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำประปา 14 ม³',t:'น้ำ',v:1560}],
+    discount:0, penalty:0,
+    total:1800, received:2000, change:200,
+    payRef:'001167000001234',
+    officer:'สมหญิง ใจดี', status:'printed',
+  },
+  {
+    id:'REC-2568-000311', billId:'BIL-2568-00302',
+    house:'102 หมู่ 3', owner:'บุญมา ศรีสุข',
+    zone:'B', type:'บ้านเดี่ยว', cycle:'Q2/2568',
+    date:'22 เม.ย. 2568', time:'08:52',
+    method:'โอนเงิน (Bank Transfer)', methodRef:'TXN20680422-004521',
+    services:[{n:'ค่าขยะมูลฝอย (Q2/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำประปา 10 ม³',t:'น้ำ',v:800}],
+    discount:0, penalty:0,
+    total:640, received:640, change:0,
+    payRef:'001167000001233',
+    officer:'สมหญิง ใจดี', status:'sent',
+  },
+  {
+    id:'REC-2568-000310', billId:'BIL-2568-00512',
+    house:'41 หมู่ 4', owner:'กมลทิพย์ หัวใจดี',
+    zone:'C', type:'อาคารชุด', cycle:'Q2/2568',
+    date:'22 เม.ย. 2568', time:'08:31',
+    method:'PromptPay QR', methodRef:'',
+    services:[{n:'ค่าขยะมูลฝอย (Q2/2568)',t:'ขยะ',v:480},{n:'ค่าน้ำประปา 17 ม³',t:'น้ำ',v:2120}],
+    discount:0, penalty:0,
+    total:2600, received:2600, change:0,
+    payRef:'001167000001232',
+    officer:'สมหญิง ใจดี', status:'preview',
+  },
+  {
+    id:'REC-2568-000309', billId:'BIL-2568-00019',
+    house:'67 หมู่ 4', owner:'พิมพา ดวงดี',
+    zone:'D', type:'ทาวน์เฮาส์', cycle:'Q1/2568',
+    date:'21 เม.ย. 2568', time:'15:04',
+    method:'เงินสด', methodRef:'',
+    services:[{n:'ค่าขยะมูลฝอย (Q1/2568)',t:'ขยะ',v:720},{n:'ค่าน้ำประปา 32 ม³',t:'น้ำ',v:3880}],
+    discount:0, penalty:230,
+    total:4830, received:5000, change:170,
+    payRef:'001167000001231',
+    officer:'สมหญิง ใจดี', status:'printed',
+  },
+  {
+    id:'REC-2568-000308', billId:'BIL-2568-00156',
+    house:'5/1 หมู่ 2', owner:'สุนีย์ มั่นคง',
+    zone:'A', type:'บ้านเดี่ยว', cycle:'Q2/2568',
+    date:'21 เม.ย. 2568', time:'14:22',
+    method:'เงินสด', methodRef:'',
+    services:[{n:'ค่าขยะมูลฝอย (Q2/2568)',t:'ขยะ',v:240}],
+    discount:0, penalty:0,
+    total:240, received:300, change:60,
+    payRef:'001167000001230',
+    officer:'สมหญิง ใจดี', status:'printed',
+  },
+  {
+    id:'REC-2568-000307', billId:'BIL-2568-00073',
+    house:'9/3 หมู่ 2', owner:'ณัฐวุฒิ ตั้งใจ',
+    zone:'D', type:'บ้านเดี่ยว', cycle:'Q1/2568',
+    date:'21 เม.ย. 2568', time:'11:05',
+    method:'โอนเงิน (Bank Transfer)', methodRef:'TXN20680421-001102',
+    services:[{n:'ค่าขยะมูลฝอย (Q1/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำประปา 12 ม³',t:'น้ำ',v:1400}],
+    discount:0, penalty:80,
+    total:1720, received:1720, change:0,
+    payRef:'001167000001229',
+    officer:'วีระ เจ้าหน้าที่', status:'cancelled',
+  },
+  {
+    id:'REC-2568-000306', billId:'BIL-2568-00201',
+    house:'33/2 หมู่ 2', owner:'อดุลย์ เพชรสว่าง',
+    zone:'A', type:'บ้านเดี่ยว', cycle:'Q2/2568',
+    date:'20 เม.ย. 2568', time:'10:38',
+    method:'เงินสด', methodRef:'',
+    services:[{n:'ค่าขยะมูลฝอย (Q2/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำประปา 11 ม³',t:'น้ำ',v:840}],
+    discount:0, penalty:0,
+    total:1080, received:1100, change:20,
+    payRef:'001167000001228',
+    officer:'สมหญิง ใจดี', status:'sent',
+  },
+];
+
+const STATUS_LABEL = {preview:'รอพิมพ์',printed:'พิมพ์แล้ว',cancelled:'ยกเลิก',sent:'ส่ง LINE'};
+const STATUS_CLASS = {preview:'s-preview',printed:'s-printed',cancelled:'s-cancelled',sent:'s-sent'};
+const METHOD_ICON  = {เงินสด:'💵','โอนเงิน (Bank Transfer)':'🏦','PromptPay QR':'📱'};
+
+/* ─── STATE ──────────────────────────────────────────── */
+let currentReceipt = null;
+let currentPaper   = 'a4';
+let activeFilter   = 'all';
+let searchQ        = '';
+
+/* ─── CLOCK ──────────────────────────────────────────── */
+(function tick(){
+  const n=new Date(),p=v=>String(v).padStart(2,'0');
+  document.getElementById('clock').textContent=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+  setTimeout(tick,1000);
+})();
+
+/* ─── CODE128B BARCODE ───────────────────────────────── */
+const C128 = [
+  "212222","222122","222221","121223","121322","131222","122213","122312","132212","221213",
+  "221312","231212","112232","122132","122231","113222","123122","123221","223211","221132",
+  "221231","213212","223112","312131","311222","321122","321221","312212","322112","322211",
+  "212123","212321","232121","111323","131123","131321","112313","132113","132311","211313",
+  "231113","231311","112133","112331","132131","113123","113321","133121","313121","211331",
+  "231131","213113","213311","213131","311123","311321","331121","312113","312311","332111",
+  "314111","221411","431111","111224","111422","121124","121421","141122","141221","112214",
+  "112412","122114","122411","142112","142211","241211","221114","413111","241112","134111",
+  "111242","121142","121241","114212","124112","124211","411212","421112","421211","212141",
+  "214121","412121","111143","111341","131141","114113","114311","411113","411311","113141",
+  "114131","311141","411131","211412","211214","211232","2331112"
+];
+
+function drawBarcode(canvas, text, modW, barH) {
+  const codes = [104]; // START B
+  for (let i = 0; i < text.length; i++) {
+    const v = text.charCodeAt(i) - 32;
+    if (v >= 0 && v <= 94) codes.push(v);
+  }
+  let chk = 104;
+  for (let i = 1; i < codes.length; i++) chk += codes[i] * i;
+  codes.push(chk % 103);
+  codes.push(106); // STOP
+
+  let totalMod = 20; // quiet zones
+  for (const c of codes) { for (const ch of C128[c]) totalMod += parseInt(ch); }
+
+  canvas.width  = totalMod * modW;
+  canvas.height = barH + 18;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  let x = 10 * modW, bar = true;
+  for (const c of codes) {
+    for (const ch of C128[c]) {
+      const w = parseInt(ch) * modW;
+      if (bar) { ctx.fillStyle = '#000'; ctx.fillRect(x, 0, w, barH); }
+      x += w; bar = !bar;
+    }
+  }
+  ctx.fillStyle = '#000';
+  ctx.font = `${Math.max(9, modW * 4)}px monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText(text, canvas.width / 2, barH + 13);
+}
+
+/* ─── QR PLACEHOLDER SVG ────────────────────────────── */
+function qrPlaceholderSVG(size) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" style="display:block">
+    <rect width="80" height="80" fill="#f8fafc"/>
+    <rect x="4" y="4" width="28" height="28" rx="2" fill="none" stroke="#1b61c9" stroke-width="3"/>
+    <rect x="10" y="10" width="16" height="16" rx="1" fill="#1b61c9"/>
+    <rect x="48" y="4" width="28" height="28" rx="2" fill="none" stroke="#1b61c9" stroke-width="3"/>
+    <rect x="54" y="10" width="16" height="16" rx="1" fill="#1b61c9"/>
+    <rect x="4" y="48" width="28" height="28" rx="2" fill="none" stroke="#1b61c9" stroke-width="3"/>
+    <rect x="10" y="54" width="16" height="16" rx="1" fill="#1b61c9"/>
+    <rect x="44" y="44" width="6" height="6" fill="#1b61c9"/>
+    <rect x="52" y="44" width="6" height="6" fill="#1b61c9"/>
+    <rect x="60" y="44" width="6" height="6" fill="#1b61c9"/>
+    <rect x="68" y="44" width="8" height="6" fill="#1b61c9"/>
+    <rect x="44" y="52" width="6" height="6" fill="#1b61c9"/>
+    <rect x="60" y="52" width="6" height="6" fill="#1b61c9"/>
+    <rect x="44" y="60" width="6" height="6" fill="#1b61c9"/>
+    <rect x="52" y="60" width="14" height="6" fill="#1b61c9"/>
+    <rect x="68" y="60" width="8" height="6" fill="#1b61c9"/>
+    <rect x="44" y="68" width="6" height="8" fill="#1b61c9"/>
+    <rect x="60" y="68" width="6" height="8" fill="#1b61c9"/>
+    <rect x="68" y="68" width="8" height="8" fill="#1b61c9"/>
+  </svg>`;
+}
+
+/* ─── RENDER RECEIPT ─────────────────────────────────── */
+function renderReceipt(r, paper, status) {
+  const isThermal = paper === 'thermal';
+  const isCancelled = status === 'cancelled';
+  const isPrinted   = status === 'printed';
+  const isSent      = status === 'sent';
+
+  const subtotal = r.services.reduce((s, x) => s + x.v, 0);
+  const total    = subtotal + r.penalty - r.discount;
+  const modW     = isThermal ? 1.2 : 2;
+  const barH     = isThermal ? 40  : 60;
+  const qrSize   = isThermal ? 64  : 88;
+
+  const serviceRows = r.services.map(s => `
+    <tr>
+      <td>${s.n}</td>
+      <td><span style="font-size:11px;background:var(--surface-2);padding:2px 7px;border-radius:4px;color:var(--navy-50)">${s.t}</span></td>
+      <td style="text-align:right;font-weight:500">${s.v.toLocaleString('th-TH',{minimumFractionDigits:2})} บาท</td>
+    </tr>`).join('');
+
+  const penaltyRow = r.penalty > 0 ? `<tr style="color:var(--red)">
+    <td colspan="2" style="font-size:${isThermal?'10px':'13px'}">เบี้ยปรับค้างชำระ</td>
+    <td style="text-align:right">+${r.penalty.toLocaleString('th-TH',{minimumFractionDigits:2})} บาท</td></tr>` : '';
+
+  const discountRow = r.discount > 0 ? `<tr class="discount-row">
+    <td colspan="2">ส่วนลด</td>
+    <td style="text-align:right">-${r.discount.toLocaleString('th-TH',{minimumFractionDigits:2})} บาท</td></tr>` : '';
+
+  const changeRow = r.change > 0 ? `
+    <div class="rec-change-row">
+      <span class="rec-change-lbl">เงินสด/รับมา</span>
+      <span style="font-size:${isThermal?'11px':'13.5px'};font-weight:600;color:var(--navy-50)">฿${r.received.toLocaleString('th-TH',{minimumFractionDigits:2})}</span>
+    </div>
+    <div class="rec-change-row" style="border-top:none;border-radius:0 0 8px 8px;margin-top:0;border-top:1px solid #a7f3d0">
+      <span class="rec-change-lbl">เงินทอน</span>
+      <span class="rec-change-val">฿${r.change.toLocaleString('th-TH',{minimumFractionDigits:2})}</span>
+    </div>` : '';
+
+  const statusBadge = isCancelled
+    ? `<span style="font-size:11px;font-weight:600;background:var(--red-light);color:var(--red);padding:2px 10px;border-radius:99px">● ยกเลิกแล้ว</span>`
+    : `<span style="font-size:11px;font-weight:600;background:var(--green-light);color:var(--green);padding:2px 10px;border-radius:99px">● ชำระแล้ว</span>`;
+
+  const printedStamp = isPrinted
+    ? `<div class="printed-stamp">PRINTED</div>` : '';
+
+  const barcodeId = 'barcode-canvas-' + Date.now();
+
+  const html = `
+    ${printedStamp}
+    <div class="rec-header">
+      <div class="rec-org">
+        <div class="rec-logo">อบต</div>
+        <div>
+          <div class="rec-org-name">องค์การบริหารส่วนตำบลสาธิต</div>
+          <div class="rec-org-address">
+            เลขที่ 1 หมู่ 5 ต.สาธิต อ.เมือง จ.ตัวอย่าง 10000<br>
+            โทร 02-000-0000 · อีเมล info@demo-abt.go.th
+          </div>
+        </div>
+      </div>
+      <div class="rec-title-block">
+        <div class="rec-title-th">ใบเสร็จรับเงิน</div>
+        <div class="rec-title">RECEIPT</div>
+        <div class="rec-no">${r.id}</div>
+        <div class="rec-date">${r.date} เวลา ${r.time} น.</div>
+        <div style="margin-top:6px">${statusBadge}</div>
+      </div>
+    </div>
+
+    <div class="rec-meta">
+      <div class="meta-cell"><div class="meta-lbl">บ้านเลขที่</div><div class="meta-val">${r.house}</div></div>
+      <div class="meta-cell"><div class="meta-lbl">ชื่อเจ้าบ้าน</div><div class="meta-val">${r.owner}</div></div>
+      <div class="meta-cell"><div class="meta-lbl">รอบบิล</div><div class="meta-val">${r.cycle}</div></div>
+      <div class="meta-cell"><div class="meta-lbl">วิธีชำระ</div><div class="meta-val">${METHOD_ICON[r.method] || ''} ${r.method}</div></div>
+      ${r.methodRef ? `<div class="meta-cell" style="grid-column:1/-1"><div class="meta-lbl">เลขที่อ้างอิง</div><div class="meta-val" style="font-family:monospace">${r.methodRef}</div></div>` : ''}
+    </div>
+
+    <table class="rec-table">
+      <thead>
+        <tr>
+          <th>รายการค่าบริการ</th>
+          <th>ประเภท</th>
+          <th style="text-align:right">จำนวนเงิน</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${serviceRows}
+        ${penaltyRow}
+        ${discountRow}
+        <tr class="subtotal-row" style="display:${(r.penalty||r.discount)?'table-row':'none'}">
+          <td colspan="2">ยอดรวมก่อนปรับ</td>
+          <td style="text-align:right">${subtotal.toLocaleString('th-TH',{minimumFractionDigits:2})} บาท</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td colspan="2">ยอดรวมสุทธิ / TOTAL</td>
+          <td style="text-align:right">฿ ${total.toLocaleString('th-TH',{minimumFractionDigits:2})}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    ${changeRow}
+
+    <div class="rec-barcode-section">
+      <div class="rec-barcode-wrap">
+        <div class="rec-barcode-label">รหัสชำระเงิน / Payment Reference (CODE128)</div>
+        <canvas id="${barcodeId}" class="rec-barcode-canvas"></canvas>
+        <div class="rec-barcode-ref">${r.payRef}</div>
+      </div>
+      <div class="rec-qr-wrap">
+        <div class="rec-barcode-label" style="text-align:center">QR PromptPay</div>
+        <div class="rec-qr-box" style="width:${qrSize}px;height:${qrSize}px;padding:6px">
+          ${qrPlaceholderSVG(qrSize - 12)}
+        </div>
+        <div style="font-size:9.5px;color:var(--navy-30);text-align:center;margin-top:4px">gismo.th/pay/${r.billId.slice(-6)}</div>
+      </div>
+    </div>
+
+    <div class="rec-footer">
+      <div class="rec-footer-col">
+        <div class="sig-line"></div>
+        <strong>${r.officer}</strong>
+        ผู้รับเงิน / Received By
+      </div>
+      <div class="rec-footer-col">
+        <div class="sig-line"></div>
+        <strong>…………………………</strong>
+        ผู้จ่ายเงิน / Payer Signature
+      </div>
+      <div class="rec-footer-col">
+        <div class="sig-line"></div>
+        <strong>…………………………</strong>
+        ผู้ตรวจสอบ / Verified By
+      </div>
+    </div>
+
+    <div class="rec-legal">
+      เอกสารนี้ออกโดยระบบ Gismo · ใบเสร็จฉบับนี้ใช้เป็นหลักฐานการรับเงินได้ตามระเบียบราชการ<br>
+      สงสัยติดต่อ อบต.สาธิต โทร 02-000-0000 หรือ LINE OA @demo-abt · พิมพ์วันที่ ${r.date} ${r.time} น.
+    </div>
+  `;
+
+  const doc = document.getElementById('receipt-doc');
+  doc.className = `receipt-doc ${paper}${isCancelled ? ' cancelled' : ''}`;
+  doc.innerHTML = html;
+
+  // draw barcode
+  requestAnimationFrame(() => {
+    const canvas = document.getElementById(barcodeId);
+    if (canvas) drawBarcode(canvas, r.payRef, modW, barH);
+  });
+}
+
+/* ─── LIST RENDERING ─────────────────────────────────── */
+function renderList() {
+  const container = document.getElementById('receipt-list');
+  const filtered = RECEIPTS.filter(r => {
+    const matchFilter = activeFilter === 'all' || r.status === activeFilter;
+    const q = searchQ.toLowerCase();
+    const matchSearch = !q ||
+      r.id.toLowerCase().includes(q) ||
+      r.house.toLowerCase().includes(q) ||
+      r.owner.toLowerCase().includes(q) ||
+      r.billId.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+
+  if (!filtered.length) {
+    container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;padding:32px 16px;gap:8px;color:var(--navy-50);text-align:center;font-size:13px">
+      <svg width="28" height="28" viewBox="0 0 20 20" fill="currentColor" style="color:var(--navy-30)"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+      <div style="font-weight:600;color:var(--navy)">ไม่พบใบเสร็จ</div>
+      <div>ลองปรับ filter หรือค้นหาใหม่</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(r => {
+    const isSelected = currentReceipt && currentReceipt.id === r.id;
+    const total = r.services.reduce((s,x) => s+x.v,0) + r.penalty - r.discount;
+    return `<div class="receipt-item ${isSelected ? 'selected' : ''}" onclick="selectReceipt('${r.id}')">
+      <div class="ri-top">
+        <span class="ri-recno">${r.id}</span>
+        <span class="ri-date">${r.date} ${r.time}</span>
+      </div>
+      <div class="ri-house">${r.house}</div>
+      <div class="ri-owner">${r.owner} · ${r.type}</div>
+      <div class="ri-foot">
+        <span class="ri-amount">฿${total.toLocaleString('th-TH',{minimumFractionDigits:2})}</span>
+        <span class="pill ${STATUS_CLASS[r.status]}"><span class="pill-dot"></span>${STATUS_LABEL[r.status]}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── INTERACTIONS ───────────────────────────────────── */
+function selectReceipt(id) {
+  currentReceipt = RECEIPTS.find(r => r.id === id);
+  if (!currentReceipt) return;
+
+  document.getElementById('pp-idle').style.display = 'none';
+  document.getElementById('pp-body').style.display  = 'flex';
+  document.getElementById('pp-toolbar').style.display = 'flex';
+  document.getElementById('pp-title').textContent = currentReceipt.id;
+
+  // show/hide cancel btn
+  const cancelled = currentReceipt.status === 'cancelled';
+  document.getElementById('btn-cancel-receipt').style.display = cancelled ? 'none' : '';
+
+  renderReceipt(currentReceipt, currentPaper, currentReceipt.status);
+  renderList();
+}
+
+function filterReceipts(q) {
+  searchQ = q;
+  renderList();
+}
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+function setPaper(p) {
+  currentPaper = p;
+  document.getElementById('btn-a4').classList.toggle('active', p === 'a4');
+  document.getElementById('btn-thermal').classList.toggle('active', p === 'thermal');
+  // sync tweaks select
+  const sel = document.querySelector('#tweaks-panel select:nth-of-type(1)');
+  if (sel) sel.value = p;
+  if (currentReceipt) renderReceipt(currentReceipt, currentPaper, currentReceipt.status);
+}
+
+function printReceipt() {
+  if (!currentReceipt) return;
+  // mark as printed
+  if (currentReceipt.status === 'preview') {
+    currentReceipt.status = 'printed';
+    renderReceipt(currentReceipt, currentPaper, 'printed');
+    renderList();
+  }
+  setTimeout(() => window.print(), 80);
+}
+
+function sendLine() {
+  if (!currentReceipt || currentReceipt.status === 'cancelled') return;
+  currentReceipt.status = 'sent';
+  renderReceipt(currentReceipt, currentPaper, currentReceipt.status);
+  renderList();
+  showToast('ส่งใบเสร็จผ่าน LINE สำเร็จ');
+}
+
+function showCancelConfirm() {
+  if (!currentReceipt) return;
+  if (!confirm(`ยืนยันการยกเลิกใบเสร็จ ${currentReceipt.id}?\n\nการยกเลิกใบเสร็จจะต้องผ่านการอนุมัติจากหัวหน้างาน`)) return;
+  currentReceipt.status = 'cancelled';
+  document.getElementById('btn-cancel-receipt').style.display = 'none';
+  renderReceipt(currentReceipt, currentPaper, 'cancelled');
+  renderList();
+  showToast('ส่งคำขอยกเลิกใบเสร็จเพื่ออนุมัติแล้ว');
+}
+
+function setDemoStatus(s) {
+  if (!currentReceipt || !s) return;
+  currentReceipt.status = s;
+  document.getElementById('btn-cancel-receipt').style.display = s === 'cancelled' ? 'none' : '';
+  renderReceipt(currentReceipt, currentPaper, s);
+  renderList();
+}
+
+function setPrimary(color) {
+  document.documentElement.style.setProperty('--org-primary', color);
+  const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
+  document.documentElement.style.setProperty('--org-primary-light', `rgba(${r},${g},${b},.12)`);
+  document.documentElement.style.setProperty('--org-primary-dark', `rgb(${Math.round(r*.85)},${Math.round(g*.85)},${Math.round(b*.85)})`);
+  window.parent.postMessage({type:'__edit_mode_set_keys',edits:{primaryColor:color}},'*');
+  if (currentReceipt) renderReceipt(currentReceipt, currentPaper, currentReceipt.status);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ─── TWEAKS ─────────────────────────────────────────── */
+window.addEventListener('message', e => {
+  if (e.data?.type === '__activate_edit_mode')   document.getElementById('tweaks-panel').style.display = 'block';
+  if (e.data?.type === '__deactivate_edit_mode') document.getElementById('tweaks-panel').style.display = 'none';
+});
+window.parent.postMessage({type:'__edit_mode_available'},'*');
+
+// apply saved primary
+if (TWEAK_DEFAULTS.primaryColor && TWEAK_DEFAULTS.primaryColor !== '#1b61c9') {
+  setPrimary(TWEAK_DEFAULTS.primaryColor);
+}
+
+/* ─── INIT ───────────────────────────────────────────── */
+renderList();
+// auto-select first receipt
+if (RECEIPTS.length) selectReceipt(RECEIPTS[0].id);
+</script>
+</body>
+</html>

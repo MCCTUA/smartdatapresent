@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#fff; padding:16px; color:#181d26; }
+.section { margin-bottom:14px; }
+.title { font-size:10px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:rgba(4,14,32,.4); margin-bottom:8px; }
+.row { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:4px; font-size:12px; font-weight:500; letter-spacing:.1px; }
+.pill { border-radius:9999px; }
+.dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+</style>
+</head><body>
+<div class="section">
+  <div class="title">Bill Status</div>
+  <div class="row">
+    <span class="badge" style="background:#f3f4f6;color:#4b5563">draft</span>
+    <span class="badge" style="background:#eff6ff;color:#1b61c9">ออกบิลแล้ว</span>
+    <span class="badge" style="background:#fffbeb;color:#b45309">ชำระบางส่วน</span>
+    <span class="badge" style="background:#f0fdf4;color:#006400">ชำระแล้ว</span>
+    <span class="badge" style="background:#fef2f2;color:#b91c1c">ค้างชำระ</span>
+    <span class="badge" style="background:#f3f4f6;color:#6b7280">ยกเลิก</span>
+    <span class="badge" style="background:#fdf4ff;color:#7c3aed">ตัดหนี้สูญ</span>
+  </div>
+</div>
+<div class="section">
+  <div class="title">Approval Status</div>
+  <div class="row">
+    <span class="badge" style="background:#f3f4f6;color:#4b5563">draft</span>
+    <span class="badge" style="background:#fffbeb;color:#b45309"><span class="dot" style="background:#d97706"></span>รอดำเนินการ</span>
+    <span class="badge" style="background:#f0fdf4;color:#006400"><span class="dot" style="background:#16a34a"></span>อนุมัติแล้ว</span>
+    <span class="badge" style="background:#fef2f2;color:#b91c1c"><span class="dot" style="background:#dc2626"></span>ปฏิเสธ</span>
+    <span class="badge" style="background:#f3f4f6;color:#6b7280">ยกเลิก</span>
+    <span class="badge" style="background:#fef3f8;color:#9d174d">หมดอายุ</span>
+  </div>
+</div>
+<div class="section">
+  <div class="title">Issue Priority</div>
+  <div class="row">
+    <span class="badge pill" style="background:#f0fdf4;color:#006400">ต่ำ</span>
+    <span class="badge pill" style="background:#fffbeb;color:#b45309">ปานกลาง</span>
+    <span class="badge pill" style="background:#fef2f2;color:#b91c1c">สูง</span>
+    <span class="badge pill" style="background:#dc2626;color:#fff">เร่งด่วน</span>
+  </div>
+</div>
+<div class="section">
+  <div class="title">Subscription Tiers</div>
+  <div class="row">
+    <span class="badge pill" style="background:#f8fafc;color:#6b7280;border:1px solid #e0e2e6">Starter</span>
+    <span class="badge pill" style="background:#eff6ff;color:#1b61c9;border:1px solid #dbeafe">Basic</span>
+    <span class="badge pill" style="background:#eff6ff;color:#254fad;border:1px solid #bfdbfe">Standard</span>
+    <span class="badge pill" style="background:#1b61c9;color:#fff">Pro</span>
+    <span class="badge pill" style="background:#181d26;color:#fff">Business</span>
+    <span class="badge pill" style="background:linear-gradient(90deg,#181d26,#1b61c9);color:#fff">Enterprise</span>
+  </div>
+</div>
+<div class="section">
+  <div class="title">Arrears Level</div>
+  <div class="row">
+    <span class="badge" style="background:#f0fdf4;color:#006400">ปกติ</span>
+    <span class="badge" style="background:#fefce8;color:#854d0e">เตือน ครั้งที่ 1</span>
+    <span class="badge" style="background:#fffbeb;color:#b45309">เตือน ครั้งที่ 2</span>
+    <span class="badge" style="background:#fff7ed;color:#c2410c">เตือน ครั้งที่ 3</span>
+    <span class="badge" style="background:#fef2f2;color:#b91c1c">ดำเนินคดี</span>
+    <span class="badge" style="background:#fdf4ff;color:#7c3aed">ตัดหนี้สูญ</span>
+  </div>
+</div>
+</body></html>

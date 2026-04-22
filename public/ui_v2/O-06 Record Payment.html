@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-06 · บันทึกรับชำระเงิน (Record Payment) — Officer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --org-primary:       #1b61c9;
+  --org-primary-light: #e8f0fd;
+  --org-primary-dark:  #1349a0;
+
+  --navy:    #181d26;
+  --navy-80: rgba(24,29,38,0.80);
+  --navy-50: rgba(24,29,38,0.50);
+  --navy-30: rgba(24,29,38,0.30);
+  --navy-10: rgba(24,29,38,0.07);
+
+  --white:       #ffffff;
+  --surface:     #f8fafc;
+  --surface-2:   #f1f4f8;
+  --border:      #e0e2e6;
+  --border-light:#edf0f4;
+
+  --green:       #059669;
+  --green-light: #d1fae5;
+  --red:         #dc2626;
+  --red-light:   #fee2e2;
+  --amber:       #d97706;
+  --amber-light: #fef3c7;
+
+  --shadow-card: 0 0 1px rgba(0,0,0,.12), 0 1px 3px rgba(45,127,249,.10), 0 0 0 .5px rgba(0,0,0,.04) inset;
+  --shadow-sidebar: 1px 0 0 var(--border);
+
+  --font: 'Prompt','Inter',sans-serif;
+  --sidebar-w:   220px;
+  --topbar-h:    56px;
+  --radius-card: 12px;
+  --radius-sm:   8px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);color:var(--navy);background:var(--surface)}
+button{font-family:var(--font);cursor:pointer;border:none;background:none}
+a{text-decoration:none;color:inherit}
+input,select,textarea{font-family:var(--font)}
+
+/* ─── LAYOUT ─────────────────────────────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ─── SIDEBAR ────────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);height:100vh;background:var(--white);
+  box-shadow:var(--shadow-sidebar);display:flex;flex-direction:column;
+  flex-shrink:0;overflow-y:auto;z-index:10;
+}
+.sidebar-logo{
+  display:flex;align-items:center;gap:10px;padding:0 16px;
+  height:var(--topbar-h);border-bottom:1px solid var(--border);
+}
+.org-avatar{
+  width:32px;height:32px;border-radius:8px;background:var(--org-primary);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:12px;font-weight:700;letter-spacing:.5px;flex-shrink:0;
+}
+.org-name{font-size:13px;font-weight:600;color:var(--navy);line-height:1.3}
+.org-sub{font-size:11px;color:var(--navy-50)}
+
+.nav-section{padding:8px 8px 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--navy-30);letter-spacing:1px;
+  text-transform:uppercase;padding:0 8px;margin-bottom:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);
+  font-size:13.5px;font-weight:400;color:var(--navy-80);cursor:pointer;
+  transition:background .12s,color .12s;
+}
+.nav-item:hover{background:var(--navy-10);color:var(--navy)}
+.nav-item.active{background:var(--org-primary-light);color:var(--org-primary);font-weight:600}
+.nav-item .icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .icon{opacity:1}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:white;
+  font-size:10px;font-weight:700;border-radius:99px;
+  padding:1px 6px;min-width:18px;text-align:center;
+}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer}
+.user-avatar{
+  width:30px;height:30px;border-radius:50%;background:var(--org-primary-light);
+  color:var(--org-primary);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.user-name{font-size:13px;font-weight:500}
+.user-role{font-size:11px;color:var(--navy-50)}
+
+/* ─── MAIN ───────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─── TOPBAR ─────────────────────────────────────────────── */
+.topbar{
+  height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;
+}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.breadcrumb-link{color:var(--navy-50);cursor:pointer;transition:color .12s}
+.breadcrumb-link:hover{color:var(--org-primary)}
+.breadcrumb-sep{color:var(--navy-30);font-size:12px}
+.breadcrumb-cur{font-weight:600;color:var(--navy)}
+.topbar-spacer{flex:1}
+
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;
+  font-size:13px;font-weight:500;transition:all .14s;white-space:nowrap;cursor:pointer;
+}
+.btn-primary{background:var(--org-primary);color:white;border:none;box-shadow:0 1px 3px rgba(27,97,201,.25)}
+.btn-primary:hover{background:var(--org-primary-dark)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-secondary{background:var(--white);color:var(--navy);border:1px solid var(--border);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.btn-secondary:hover{background:var(--surface);border-color:var(--navy-30)}
+.btn-ghost{color:var(--navy-50);padding:6px 10px;border:none;background:none}
+.btn-ghost:hover{color:var(--navy);background:var(--navy-10)}
+.btn-green{background:var(--green);color:white;border:none;box-shadow:0 1px 3px rgba(5,150,105,.25)}
+.btn-green:hover{background:#047857}
+.btn-lg{padding:11px 22px;font-size:14px;border-radius:9px;font-weight:600}
+
+/* ─── CONTENT ────────────────────────────────────────────── */
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* ─── STEP HEADER ────────────────────────────────────────── */
+.step-bar{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:0 24px;display:flex;align-items:center;gap:0;flex-shrink:0;height:52px;
+}
+.step{
+  display:flex;align-items:center;gap:8px;padding:0 18px 0 0;position:relative;
+  font-size:12.5px;color:var(--navy-50);font-weight:500;
+}
+.step:not(:last-child)::after{
+  content:'›';position:absolute;right:4px;color:var(--navy-30);font-size:14px;
+}
+.step-num{
+  width:22px;height:22px;border-radius:50%;background:var(--surface-2);
+  color:var(--navy-30);font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.step.active{color:var(--org-primary)}
+.step.active .step-num{background:var(--org-primary);color:white}
+.step.done{color:var(--green)}
+.step.done .step-num{background:var(--green-light);color:var(--green)}
+
+/* ─── TWO-PANEL LAYOUT ───────────────────────────────────── */
+.workspace{flex:1;display:flex;overflow:hidden}
+
+/* LEFT: search panel */
+.search-panel{
+  width:380px;flex-shrink:0;background:var(--white);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sp-head{
+  padding:16px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.sp-title{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sp-title svg{color:var(--org-primary)}
+
+.search-box{
+  display:flex;align-items:center;border:1.5px solid var(--border);border-radius:9px;
+  background:var(--surface);overflow:hidden;transition:border .15s,box-shadow .15s;
+}
+.search-box:focus-within{border-color:var(--org-primary);box-shadow:0 0 0 3px rgba(27,97,201,.10);background:var(--white)}
+.search-box svg{flex-shrink:0;margin:0 10px;color:var(--navy-30)}
+.search-box input{
+  flex:1;padding:9px 12px 9px 0;border:none;background:transparent;
+  font-size:14px;color:var(--navy);outline:none;
+}
+.search-box input::placeholder{color:var(--navy-30)}
+.search-box .kbd{
+  margin-right:10px;font-size:10px;font-weight:600;color:var(--navy-30);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;white-space:nowrap;
+}
+
+.sp-results{flex:1;overflow-y:auto;padding:8px}
+
+.result-item{
+  padding:12px 14px;border-radius:9px;cursor:pointer;transition:background .1s;
+  border:1.5px solid transparent;margin-bottom:4px;
+}
+.result-item:hover{background:var(--surface)}
+.result-item.selected{background:var(--org-primary-light);border-color:var(--org-primary)}
+.ri-bill{font-size:11.5px;font-weight:700;color:var(--navy-50);font-family:monospace;letter-spacing:.3px;margin-bottom:2px}
+.ri-house{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:1px}
+.ri-owner{font-size:12px;color:var(--navy-50);margin-bottom:8px}
+.ri-meta{display:flex;align-items:center;justify-content:space-between}
+.ri-outstanding{font-size:15px;font-weight:700}
+.ri-outstanding.red{color:var(--red)}
+.ri-outstanding.amber{color:var(--amber)}
+.ri-cycle{font-size:11px;background:var(--surface-2);border:1px solid var(--border-light);
+  border-radius:5px;padding:2px 7px;color:var(--navy-50);font-weight:500}
+
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500}
+.pill-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.s-issued{background:var(--org-primary-light);color:var(--org-primary)}.s-issued .pill-dot{background:var(--org-primary)}
+.s-partial{background:var(--amber-light);color:var(--amber)}.s-partial .pill-dot{background:var(--amber)}
+.s-overdue{background:var(--red-light);color:var(--red)}.s-overdue .pill-dot{background:var(--red)}
+.s-paid{background:var(--green-light);color:var(--green)}.s-paid .pill-dot{background:var(--green)}
+
+/* ─── BARCODE BADGE ──────────────────────────────────────── */
+.barcode-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  margin-right:8px;padding:3px 8px;border-radius:5px;flex-shrink:0;
+  font-size:10.5px;font-weight:600;letter-spacing:.3px;cursor:default;
+  background:var(--surface-2);color:var(--navy-50);border:1px solid var(--border-light);
+  transition:background .2s,color .2s,border-color .2s;
+}
+.barcode-badge.scanning{
+  background:var(--green-light);color:var(--green);border-color:#6ee7b7;
+  animation:scan-pulse .4s ease;
+}
+@keyframes scan-pulse{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.12)}
+  100%{transform:scale(1)}
+}
+.search-box.scan-active{
+  border-color:var(--green)!important;
+  box-shadow:0 0 0 3px rgba(5,150,105,.15)!important;
+}
+
+.sp-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;gap:8px;color:var(--navy-50);font-size:13px;text-align:center;padding:24px;
+}
+.sp-empty svg{color:var(--navy-30);margin-bottom:4px}
+
+/* ─── RIGHT: main form area ──────────────────────────────── */
+.form-panel{flex:1;overflow-y:auto;padding:28px 32px;display:flex;flex-direction:column;gap:20px}
+
+/* ─── BILL SUMMARY CARD ──────────────────────────────────── */
+.card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  box-shadow:var(--shadow-card);overflow:hidden;
+}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+}
+.card-title{font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.card-title svg{color:var(--org-primary)}
+.card-body{padding:20px}
+
+.bill-meta{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.meta-cell{padding:10px 0;border-bottom:1px solid var(--border-light)}
+.meta-cell:nth-child(odd){padding-right:20px;border-right:1px solid var(--border-light)}
+.meta-cell:nth-child(even){padding-left:20px}
+.meta-cell:nth-last-child(-n+2){border-bottom:none}
+.meta-label{font-size:11px;color:var(--navy-30);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.meta-val{font-size:13.5px;font-weight:500;color:var(--navy)}
+
+/* ─── BREAKDOWN TABLE ────────────────────────────────────── */
+.breakdown-table{width:100%;border-collapse:collapse}
+.breakdown-table thead th{
+  background:var(--surface);padding:7px 12px;font-size:11px;font-weight:600;
+  color:var(--navy-50);text-transform:uppercase;letter-spacing:.5px;text-align:left;
+  border-bottom:1px solid var(--border-light);
+}
+.breakdown-table tbody td{padding:9px 12px;font-size:13px;border-bottom:1px solid var(--border-light)}
+.breakdown-table tbody tr:last-child td{border-bottom:none}
+.breakdown-table .total-row td{font-weight:700;background:var(--surface);font-size:13.5px}
+
+/* ─── OUTSTANDING HERO ───────────────────────────────────── */
+.outstanding-hero{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);border-radius:9px;padding:16px 20px;border:1px solid var(--border-light);
+}
+.oh-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--navy-50)}
+.oh-amount{font-size:28px;font-weight:700;color:var(--red);margin-top:2px;letter-spacing:-.5px}
+.oh-amount.green{color:var(--green)}
+.oh-sub{font-size:11.5px;color:var(--navy-30);margin-top:2px}
+.oh-badge{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+
+/* ─── PAYMENT FORM ───────────────────────────────────────── */
+.form-group{margin-bottom:16px}
+.form-label{font-size:12.5px;font-weight:600;color:var(--navy);margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.form-label .req{color:var(--red);font-size:14px;line-height:1}
+.form-input{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-size:14px;color:var(--navy);background:var(--surface);outline:none;
+  transition:border .15s,box-shadow .15s;
+}
+.form-input:focus{border-color:var(--org-primary);box-shadow:0 0 0 3px rgba(27,97,201,.10);background:var(--white)}
+.form-input::placeholder{color:var(--navy-30)}
+.form-input.large{font-size:22px;font-weight:700;padding:12px 16px;letter-spacing:-.3px}
+.form-hint{font-size:11.5px;color:var(--navy-50);margin-top:5px}
+
+/* payment method selector */
+.method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:2px}
+.method-card{
+  border:1.5px solid var(--border);border-radius:9px;padding:14px 12px;
+  cursor:pointer;transition:all .14s;text-align:center;background:var(--surface);
+}
+.method-card:hover{border-color:var(--org-primary-dark);background:var(--org-primary-light)}
+.method-card.selected{border-color:var(--org-primary);background:var(--org-primary-light)}
+.method-icon{font-size:24px;margin-bottom:6px;display:block}
+.method-label{font-size:13px;font-weight:600;color:var(--navy)}
+.method-sub{font-size:11px;color:var(--navy-50);margin-top:2px}
+.method-card.selected .method-label{color:var(--org-primary)}
+
+/* amount shortcuts */
+.amount-shortcuts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.amt-chip{
+  padding:5px 12px;border:1px solid var(--border);border-radius:99px;
+  font-size:12.5px;font-weight:500;cursor:pointer;background:var(--white);
+  transition:all .12s;color:var(--navy);
+}
+.amt-chip:hover{border-color:var(--org-primary);color:var(--org-primary);background:var(--org-primary-light)}
+
+/* change calculation */
+.change-bar{
+  background:var(--green-light);border:1px solid #6ee7b7;border-radius:9px;
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+  transition:all .2s;
+}
+.change-bar.shortage{background:var(--red-light);border-color:#fca5a5}
+.change-bar.zero{background:var(--surface);border-color:var(--border)}
+.change-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--navy-50)}
+.change-amount{font-size:20px;font-weight:700}
+.change-amount.green{color:var(--green)}
+.change-amount.red{color:var(--red)}
+
+/* ─── CONFIRM CARD ───────────────────────────────────────── */
+.confirm-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--border-light);font-size:13.5px;
+}
+.confirm-row:last-child{border-bottom:none}
+.confirm-row-label{color:var(--navy-50)}
+.confirm-row-val{font-weight:600;color:var(--navy);text-align:right}
+.confirm-row.total .confirm-row-val{font-size:20px;font-weight:700;color:var(--org-primary)}
+.confirm-row.change .confirm-row-val{color:var(--green);font-size:17px}
+
+/* ─── RECEIPT ────────────────────────────────────────────── */
+.receipt-wrapper{
+  max-width:520px;margin:0 auto;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  box-shadow:var(--shadow-card);overflow:hidden;
+}
+.receipt-top{
+  background:var(--org-primary);padding:24px 28px;text-align:center;color:white;
+}
+.receipt-logo{
+  width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,.2);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;margin-bottom:10px;letter-spacing:.5px;
+}
+.receipt-org{font-size:15px;font-weight:700;margin-bottom:2px}
+.receipt-org-sub{font-size:12px;opacity:.8}
+.receipt-check{
+  width:60px;height:60px;border-radius:50%;background:var(--green);
+  display:flex;align-items:center;justify-content:center;margin:20px auto 10px;
+  box-shadow:0 4px 16px rgba(5,150,105,.35);
+}
+.receipt-success{font-size:18px;font-weight:700;margin-bottom:4px}
+.receipt-subtitle{font-size:13px;opacity:.85}
+
+.receipt-body{padding:24px 28px}
+.receipt-ref{
+  text-align:center;margin-bottom:18px;padding-bottom:18px;border-bottom:1.5px dashed var(--border);
+}
+.receipt-ref-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--navy-30)}
+.receipt-ref-no{font-size:22px;font-weight:700;color:var(--navy);margin-top:2px;font-family:monospace}
+
+.receipt-line{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+.receipt-line:not(:last-child){border-bottom:1px solid var(--border-light)}
+.receipt-line-label{color:var(--navy-50)}
+.receipt-line-val{font-weight:500;text-align:right}
+.receipt-total-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 16px;background:var(--surface);border-radius:8px;margin-top:16px;
+  border:1px solid var(--border-light);
+}
+.receipt-total-label{font-size:13px;font-weight:600;color:var(--navy-50)}
+.receipt-total-val{font-size:24px;font-weight:700;color:var(--green)}
+
+.receipt-footer{
+  padding:16px 28px 20px;border-top:1px solid var(--border);
+  display:flex;gap:8px;
+}
+
+/* ─── IDLE STATE ─────────────────────────────────────────── */
+.idle-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;text-align:center;gap:10px;padding:40px;color:var(--navy-50);
+}
+.idle-icon{
+  width:72px;height:72px;border-radius:18px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;margin-bottom:6px;
+  color:var(--navy-30);
+}
+.idle-title{font-size:16px;font-weight:600;color:var(--navy)}
+.idle-sub{font-size:13px;color:var(--navy-50);max-width:300px;line-height:1.6}
+.kbd-hint{
+  display:inline-flex;align-items:center;gap:6px;margin-top:6px;
+  background:var(--surface-2);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--navy-50);
+  border:1px solid var(--border-light);
+}
+.kbd-hint kbd{
+  background:var(--white);border:1px solid var(--border);border-radius:4px;
+  padding:1px 6px;font-size:11px;font-family:monospace;color:var(--navy);
+  box-shadow:0 1px 0 var(--border);
+}
+
+/* ─── FORM ACTIONS ───────────────────────────────────────── */
+.form-actions{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:8px;margin-top:8px;border-top:1px solid var(--border-light);
+}
+
+/* ─── TOAST ──────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:white;padding:10px 18px;border-radius:8px;
+  font-size:13px;font-weight:500;opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:9999;white-space:nowrap;
+}
+.toast.show{opacity:1}
+
+/* ─── TWEAKS ─────────────────────────────────────────────── */
+#tweaks-panel{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--white);border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.14);padding:16px;width:230px;display:none;
+}
+#tweaks-panel h4{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--navy)}
+.tweak-row{margin-bottom:10px}
+.tweak-label{font-size:11.5px;color:var(--navy-50);margin-bottom:4px}
+.tweak-row input[type=color]{width:100%;height:34px;border:1px solid var(--border);border-radius:6px;padding:2px 4px;cursor:pointer;background:var(--surface)}
+.tweak-row select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:13px;background:var(--surface);color:var(--navy)}
+
+/* QR placeholder */
+.qr-placeholder{
+  width:160px;height:160px;margin:0 auto;border:1.5px solid var(--border);
+  border-radius:10px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;background:var(--surface);color:var(--navy-30);gap:6px;font-size:11.5px;
+}
+.qr-grid{display:grid;grid-template-columns:repeat(8,16px);gap:2px;padding:6px}
+.qr-cell{width:16px;height:16px;border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ─── SIDEBAR ────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="org-avatar">อบต</div>
+      <div>
+        <div class="org-name">อบต.สาธิต</div>
+        <div class="org-sub">Officer Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ภาพรวม</div>
+      <div class="nav-item" onclick="window.location='O-01 KPI Dashboard.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm8-9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1v-5z"/></svg>
+        Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">จัดการ</div>
+      <div class="nav-item" onclick="window.location='O-02 Household List.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        ครัวเรือน
+      </div>
+      <div class="nav-item" onclick="window.location='O-05 Bill List.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+        บิลทั้งหมด
+      </div>
+      <div class="nav-item active">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+        รับชำระเงิน
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ติดตาม</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ค้างชำระ
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        อนุมัติคำขอ
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ร้องเรียน
+        <span class="nav-badge" style="background:var(--amber)">12</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">บริการ</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5z" clip-rule="evenodd"/></svg>
+        สติ๊กเกอร์
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/></svg>
+        รายงาน
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">สม</div>
+        <div>
+          <div class="user-name">สมหญิง ใจดี</div>
+          <div class="user-role">Account Officer</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─────────────────────────────────────────────── -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span class="breadcrumb-link" onclick="window.location='O-05 Bill List.html'">บิลทั้งหมด</span>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-cur">บันทึกรับชำระเงิน</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <span style="font-size:12px;color:var(--navy-50);margin-right:4px">เจ้าหน้าที่:</span>
+      <span style="font-size:12.5px;font-weight:600;color:var(--navy)">สมหญิง ใจดี</span>
+      <span style="font-size:12px;color:var(--navy-30);margin:0 8px">|</span>
+      <span id="clock" style="font-size:12.5px;font-weight:600;color:var(--navy-50);font-family:monospace"></span>
+    </div>
+
+    <!-- STEP BAR -->
+    <div class="step-bar">
+      <div class="step" id="step-1-indicator">
+        <div class="step-num">1</div>
+        <span>ค้นหาบิล</span>
+      </div>
+      <div class="step" id="step-2-indicator">
+        <div class="step-num">2</div>
+        <span>รายละเอียด & ชำระ</span>
+      </div>
+      <div class="step" id="step-3-indicator">
+        <div class="step-num">3</div>
+        <span>ยืนยัน</span>
+      </div>
+      <div class="step" id="step-4-indicator">
+        <div class="step-num">4</div>
+        <span>ออกใบเสร็จ</span>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+        <button class="btn btn-ghost" id="reset-btn" onclick="resetFlow()" style="display:none;font-size:12.5px">
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+          รายการใหม่ (F5)
+        </button>
+      </div>
+    </div>
+
+    <!-- WORKSPACE -->
+    <div class="workspace">
+
+      <!-- LEFT: Search Panel -->
+      <div class="search-panel">
+        <div class="sp-head">
+          <div class="sp-title">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+            ค้นหาบิล / บ้าน / Barcode
+          </div>
+          <div class="search-box" id="search-box">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor" id="search-icon"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+            <input type="text" id="search-input" placeholder="เลขบิล · บ้านเลขที่ · ชื่อ · หรือสแกน Barcode…" oninput="handleSearch(this.value)" autocomplete="off">
+            <span class="barcode-badge" id="barcode-badge" title="รองรับ Barcode Scanner">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M2 4h2v16H2V4zm3 0h1v16H5V4zm2 0h2v16H7V4zm3 0h1v16h-1V4zm2 0h2v16h-2V4zm3 0h1v16h-1V4zm2 0h2v16h-2V4zm3 0h1v16h-1V4zm2 0h1v16h-1V4z"/></svg>
+              <span id="barcode-label">Barcode</span>
+            </span>
+          </div>
+          <!-- Barcode scan flash -->
+          <div id="scan-flash" style="display:none;margin-top:6px;padding:6px 10px;background:var(--green-light);border:1px solid #6ee7b7;border-radius:7px;font-size:12px;font-weight:600;color:var(--green);display:none;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4h2v12H2V4zm3 0h1v12H5V4zm2 0h2v12H7V4zm3 0h1v12h-1V4zm2 0h2v12h-2V4zm3 0h1v12h-1V4zm2 0h2v12h-2V4z"/></svg>
+            <span id="scan-flash-text">สแกน Barcode สำเร็จ</span>
+          </div>
+        </div>
+        <div class="sp-results" id="sp-results">
+          <div class="sp-empty">
+            <svg width="36" height="36" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+            <div style="font-weight:600;color:var(--navy);margin-top:2px">พิมพ์เพื่อค้นหา</div>
+            <div>ค้นหาจากเลขบิล เลขที่บ้าน หรือชื่อเจ้าบ้าน</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Form Panel -->
+      <div class="form-panel" id="form-panel">
+
+        <!-- STEP 1 idle -->
+        <div class="idle-state" id="idle-state">
+          <div class="idle-icon">
+            <svg width="36" height="36" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+          </div>
+          <div class="idle-title">เลือกบิลที่ต้องการรับชำระ</div>
+          <div class="idle-sub">ค้นหาบิลจากแผงด้านซ้าย แล้วเลือกรายการเพื่อดำเนินการบันทึกรับชำระเงิน</div>
+          <div class="kbd-hint">
+            <kbd>F3</kbd> โฟกัสช่องค้นหา &nbsp;·&nbsp; <kbd>↑↓</kbd> เลือกรายการ &nbsp;·&nbsp; <kbd>Enter</kbd> เปิดบิล &nbsp;·&nbsp; สแกน Barcode ได้ทันที
+          </div>
+        </div>
+
+        <!-- STEP 2: bill detail + payment form -->
+        <div id="step2" style="display:none">
+          <!-- Bill summary -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+                รายละเอียดบิล
+              </div>
+              <div id="bill-status-pill"></div>
+            </div>
+            <div class="card-body">
+              <div class="bill-meta" id="bill-meta"></div>
+            </div>
+          </div>
+
+          <!-- Service breakdown -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+                รายการค่าบริการ
+              </div>
+            </div>
+            <div class="card-body" style="padding:0">
+              <table class="breakdown-table">
+                <thead>
+                  <tr>
+                    <th>รายการ</th>
+                    <th>ประเภท</th>
+                    <th style="text-align:right">จำนวนเงิน</th>
+                  </tr>
+                </thead>
+                <tbody id="breakdown-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Outstanding hero + payment form -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+                บันทึกการชำระเงิน
+              </div>
+            </div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:18px">
+
+              <!-- outstanding bar -->
+              <div class="outstanding-hero">
+                <div>
+                  <div class="oh-label">ยอดค้างทั้งหมด</div>
+                  <div class="oh-amount" id="oh-amount">฿0</div>
+                  <div class="oh-sub" id="oh-sub"></div>
+                </div>
+                <div class="oh-badge">
+                  <div id="oh-paid-badge" style="font-size:12px;color:var(--navy-50)"></div>
+                </div>
+              </div>
+
+              <!-- payment method -->
+              <div class="form-group" style="margin-bottom:0">
+                <div class="form-label">ช่องทางชำระเงิน <span class="req">*</span></div>
+                <div class="method-grid">
+                  <div class="method-card selected" id="method-cash" onclick="selectMethod('cash')">
+                    <span class="method-icon">💵</span>
+                    <div class="method-label">เงินสด</div>
+                    <div class="method-sub">Cash</div>
+                  </div>
+                  <div class="method-card" id="method-transfer" onclick="selectMethod('transfer')">
+                    <span class="method-icon">🏦</span>
+                    <div class="method-label">โอนเงิน</div>
+                    <div class="method-sub">Bank Transfer</div>
+                  </div>
+                  <div class="method-card" id="method-qr" onclick="selectMethod('qr')">
+                    <span class="method-icon">📱</span>
+                    <div class="method-label">PromptPay QR</div>
+                    <div class="method-sub">QR Code</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- QR section (shown only for qr method) -->
+              <div id="qr-section" style="display:none;text-align:center;padding:8px 0">
+                <div style="font-size:12.5px;color:var(--navy-50);margin-bottom:12px">สแกน QR เพื่อชำระผ่าน PromptPay</div>
+                <div class="qr-placeholder" id="qr-box">
+                  <svg width="32" height="32" viewBox="0 0 20 20" fill="currentColor" style="opacity:.3"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clip-rule="evenodd"/><path d="M11 4a1 1 0 10-2 0v1a1 1 0 002 0V4zM10 7a1 1 0 011 1v1h2a1 1 0 110 2h-3a1 1 0 01-1-1V8a1 1 0 011-1zM16 9a1 1 0 100 2 1 1 0 000-2zM9 13a1 1 0 011-1h1a1 1 0 110 2v2a1 1 0 11-2 0v-3zM15 13a1 1 0 10-2 0 1 1 0 002 0zM14 15a1 1 0 00-1 1v1a1 1 0 102 0v-1a1 1 0 00-1-1z"/></svg>
+                  <div>QR PromptPay</div>
+                  <div style="font-size:10.5px;opacity:.6">ระบบจะ generate</div>
+                </div>
+                <div style="font-size:12px;color:var(--navy-30);margin-top:10px">หมดอายุใน 15 นาที</div>
+                <div style="margin-top:12px;font-size:13px;font-weight:500;color:var(--navy-50)">เมื่อลูกค้าชำระแล้ว กรอกยอดและกด บันทึก</div>
+              </div>
+
+              <!-- ref no (for transfer only) -->
+              <div class="form-group" id="ref-group" style="display:none;margin-bottom:0">
+                <div class="form-label">เลขที่อ้างอิง / สลิปโอนเงิน</div>
+                <input type="text" class="form-input" id="ref-input" placeholder="เลขที่ ref หรือเลขที่รายการ" oninput="updateConfirm()">
+              </div>
+
+              <!-- amount -->
+              <div class="form-group" style="margin-bottom:0">
+                <div class="form-label" id="amount-label">ยอดที่รับ <span class="req">*</span></div>
+                <input type="number" class="form-input large" id="amount-input" placeholder="0.00" oninput="calcChange()" onkeydown="handleAmountKey(event)" min="0">
+                <div class="amount-shortcuts" id="amount-shortcuts"></div>
+              </div>
+
+              <!-- change calculation (cash only) -->
+              <div id="change-section">
+                <div class="change-bar zero" id="change-bar">
+                  <div>
+                    <div class="change-label" id="change-label-text">เงินทอน</div>
+                    <div style="font-size:11px;color:var(--navy-30);margin-top:1px" id="change-sub-text">กรอกยอดที่รับเพื่อคำนวณ</div>
+                  </div>
+                  <div class="change-amount" id="change-amount">—</div>
+                </div>
+              </div>
+
+              <!-- note -->
+              <div class="form-group" style="margin-bottom:0">
+                <div class="form-label">หมายเหตุ (ไม่บังคับ)</div>
+                <input type="text" class="form-input" id="note-input" placeholder="หมายเหตุเพิ่มเติม…">
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-ghost" onclick="resetFlow()">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
+                  ยกเลิก
+                </button>
+                <button class="btn btn-primary btn-lg" id="proceed-btn" onclick="proceedToConfirm()" disabled>
+                  ตรวจสอบและยืนยัน
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: confirm -->
+        <div id="step3" style="display:none">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                ยืนยันการรับชำระเงิน
+              </div>
+              <div style="font-size:12px;color:var(--navy-50)">ตรวจสอบข้อมูลก่อนบันทึก</div>
+            </div>
+            <div class="card-body">
+              <!-- summary alert -->
+              <div style="background:var(--amber-light);border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--amber)">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                <span>กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนกด <strong>บันทึกรับชำระ</strong> — ไม่สามารถแก้ไขได้หลังบันทึก</span>
+              </div>
+
+              <div id="confirm-rows"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="btn btn-secondary btn-lg" onclick="backToStep2()" style="flex:0">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
+              แก้ไข
+            </button>
+            <button class="btn btn-green btn-lg" id="confirm-btn" onclick="confirmPayment()" style="flex:1">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+              บันทึกรับชำระเงิน
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 4: receipt -->
+        <div id="step4" style="display:none">
+          <div class="receipt-wrapper">
+            <div class="receipt-top">
+              <div class="receipt-logo">อบต</div>
+              <div class="receipt-org">อบต.สาธิต</div>
+              <div class="receipt-org-sub">องค์การบริหารส่วนตำบล · Officer Portal</div>
+              <div class="receipt-check">
+                <svg width="28" height="28" viewBox="0 0 20 20" fill="white"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </div>
+              <div class="receipt-success">บันทึกรับชำระสำเร็จ</div>
+              <div class="receipt-subtitle" id="receipt-subtitle">ขอบคุณ — ใบเสร็จถูกบันทึกเรียบร้อยแล้ว</div>
+            </div>
+
+            <div class="receipt-body">
+              <div class="receipt-ref">
+                <div class="receipt-ref-label">เลขที่ใบเสร็จ</div>
+                <div class="receipt-ref-no" id="receipt-no">REC-2568-000000</div>
+              </div>
+
+              <div id="receipt-lines"></div>
+
+              <div class="receipt-total-row">
+                <div class="receipt-total-label">ยอดรับชำระ</div>
+                <div class="receipt-total-val" id="receipt-total">฿0</div>
+              </div>
+
+              <div style="margin-top:14px;font-size:12px;color:var(--navy-30);text-align:center;line-height:1.8">
+                เจ้าหน้าที่ผู้รับชำระ: <strong style="color:var(--navy-50)">สมหญิง ใจดี</strong><br>
+                <span id="receipt-datetime"></span>
+              </div>
+            </div>
+
+            <div class="receipt-footer">
+              <button class="btn btn-primary" style="flex:1" onclick="printReceipt()">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a1 1 0 001 1h8a1 1 0 001-1v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a1 1 0 00-1-1H6a1 1 0 00-1 1zm2 0h6v3H7V4zm-2 8v-1h10v1H5zm2 2h6v1H7v-1z" clip-rule="evenodd"/></svg>
+                พิมพ์ใบเสร็จ
+              </button>
+              <button class="btn btn-secondary" onclick="sendLine()">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/></svg>
+                ส่ง LINE
+              </button>
+              <button class="btn btn-ghost" onclick="resetFlow()">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+                รายการใหม่
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /form-panel -->
+    </div><!-- /workspace -->
+  </div><!-- /main -->
+</div>
+
+<!-- TWEAKS PANEL -->
+<div id="tweaks-panel">
+  <h4>Tweaks</h4>
+  <div class="tweak-row">
+    <div class="tweak-label">Primary Color</div>
+    <input type="color" value="#1b61c9" oninput="setPrimary(this.value)">
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">Demo: เปิดบิลตัวอย่าง</div>
+    <select onchange="if(this.value) openBillById(this.value)">
+      <option value="">— เลือก —</option>
+      <option value="BIL-2568-00034">ค้างชำระ (overdue)</option>
+      <option value="BIL-2568-00087">รอชำระ (issued)</option>
+      <option value="BIL-2568-00302">ชำระบางส่วน (partial)</option>
+      <option value="BIL-2568-00512">รอชำระ — สูง</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">วิธีชำระเริ่มต้น</div>
+    <select onchange="selectMethod(this.value)">
+      <option value="cash">เงินสด</option>
+      <option value="transfer">โอนเงิน</option>
+      <option value="qr">PromptPay QR</option>
+    </select>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── DEFAULTS ──────────────────────────────────────────── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "primaryColor": "#1b61c9"
+}/*EDITMODE-END*/;
+
+/* ─── DATA ──────────────────────────────────────────────── */
+const BILLS = [
+  {id:'BIL-2568-00087',house:'24/1 หมู่ 3',owner:'สมชาย สุขใจ',cycle:'Q2/2568',zone:'B',type:'บ้านเดี่ยว',total:1800,paid:0,due:'31 พ.ค. 68',status:'issued',services:[{n:'ค่าขยะ (Q2/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำ 14 ม³',t:'น้ำ',v:1560}]},
+  {id:'BIL-2568-00210',house:'12/3 หมู่ 1',owner:'วิภา รักดี',cycle:'Q2/2568',zone:'A',type:'บ้านเดี่ยว',total:1220,paid:1220,due:'31 พ.ค. 68',status:'paid',services:[{n:'ค่าขยะ (Q2/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำ 8 ม³',t:'น้ำ',v:980}]},
+  {id:'BIL-2568-00034',house:'88/2 หมู่ 4',owner:'ประยุทธ์ ใจกล้า',cycle:'Q1/2568',zone:'C',type:'อาคารชุด',total:2820,paid:1000,due:'28 ก.พ. 68',status:'overdue',services:[{n:'ค่าขยะ (Q1/2568)',t:'ขยะ',v:480},{n:'ค่าน้ำ 19 ม³',t:'น้ำ',v:2340}]},
+  {id:'BIL-2568-00156',house:'5/1 หมู่ 2',owner:'สุนีย์ มั่นคง',cycle:'Q2/2568',zone:'A',type:'บ้านเดี่ยว',total:240,paid:0,due:'31 พ.ค. 68',status:'issued',services:[{n:'ค่าขยะ (Q2/2568)',t:'ขยะ',v:240}]},
+  {id:'BIL-2568-00302',house:'102 หมู่ 3',owner:'บุญมา ศรีสุข',cycle:'Q2/2568',zone:'B',type:'บ้านเดี่ยว',total:1440,paid:800,due:'31 พ.ค. 68',status:'partial',services:[{n:'ค่าขยะ (Q2/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำ 10 ม³',t:'น้ำ',v:1200}]},
+  {id:'BIL-2568-00019',house:'67 หมู่ 4',owner:'พิมพา ดวงดี',cycle:'Q1/2568',zone:'D',type:'ทาวน์เฮาส์',total:4600,paid:0,due:'28 ก.พ. 68',status:'overdue',services:[{n:'ค่าขยะ (Q1/2568)',t:'ขยะ',v:720},{n:'ค่าน้ำ 32 ม³',t:'น้ำ',v:3880}]},
+  {id:'BIL-2568-00441',house:'14/5 หมู่ 1',owner:'เรณู ทองแดง',cycle:'Q2/2568',zone:'A',type:'บ้านเดี่ยว',total:1000,paid:1000,due:'31 พ.ค. 68',status:'paid',services:[{n:'ค่าขยะ (Q2/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำ 6 ม³',t:'น้ำ',v:760}]},
+  {id:'BIL-2568-00512',house:'41 หมู่ 4',owner:'กมลทิพย์ หัวใจดี',cycle:'Q2/2568',zone:'C',type:'อาคารชุด',total:2600,paid:0,due:'31 พ.ค. 68',status:'issued',services:[{n:'ค่าขยะ (Q2/2568)',t:'ขยะ',v:480},{n:'ค่าน้ำ 17 ม³',t:'น้ำ',v:2120}]},
+  {id:'BIL-2568-00073',house:'9/3 หมู่ 2',owner:'ณัฐวุฒิ ตั้งใจ',cycle:'Q1/2568',zone:'D',type:'บ้านเดี่ยว',total:1640,paid:0,due:'28 ก.พ. 68',status:'overdue',services:[{n:'ค่าขยะ (Q1/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำ 12 ม³',t:'น้ำ',v:1400}]},
+  {id:'BIL-2568-00201',house:'33/2 หมู่ 2',owner:'อดุลย์ เพชรสว่าง',cycle:'Q2/2568',zone:'A',type:'บ้านเดี่ยว',total:1580,paid:500,due:'31 พ.ค. 68',status:'partial',services:[{n:'ค่าขยะ (Q2/2568)',t:'ขยะ',v:240},{n:'ค่าน้ำ 11 ม³',t:'น้ำ',v:1340}]},
+];
+
+const STATUS_LABEL = {issued:'รอชำระ',partial:'ชำระบางส่วน',paid:'ชำระแล้ว',overdue:'เกินกำหนด'};
+const STATUS_CLASS = {issued:'s-issued',partial:'s-partial',paid:'s-paid',overdue:'s-overdue'};
+const METHOD_LABEL = {cash:'เงินสด',transfer:'โอนเงิน (Bank Transfer)',qr:'PromptPay QR'};
+
+/* ─── STATE ─────────────────────────────────────────────── */
+let currentStep = 1;
+let selectedBill = null;
+let selectedMethod = 'cash';
+let receiptSeq = Math.floor(Math.random()*900)+100;
+
+/* ─── CLOCK ─────────────────────────────────────────────── */
+function updateClock(){
+  const now = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  document.getElementById('clock').textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+setInterval(updateClock,1000); updateClock();
+
+/* ─── SEARCH ────────────────────────────────────────────── */
+function handleSearch(q){
+  const container = document.getElementById('sp-results');
+  q = q.trim().toLowerCase();
+  if(!q){
+    container.innerHTML = `<div class="sp-empty">
+      <svg width="36" height="36" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+      <div style="font-weight:600;color:var(--navy);margin-top:2px">พิมพ์เพื่อค้นหา</div>
+      <div>ค้นหาจากเลขบิล เลขที่บ้าน หรือชื่อเจ้าบ้าน</div></div>`;
+    return;
+  }
+  const results = BILLS.filter(b =>
+    b.id.toLowerCase().includes(q) ||
+    b.house.toLowerCase().includes(q) ||
+    b.owner.toLowerCase().includes(q)
+  );
+  if(!results.length){
+    container.innerHTML = `<div class="sp-empty"><svg width="32" height="32" viewBox="0 0 20 20" fill="currentColor" style="color:var(--navy-30)"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg><div style="font-weight:600;color:var(--navy)">ไม่พบรายการ</div><div>ลองค้นหาด้วยคำอื่น</div></div>`;
+    return;
+  }
+  container.innerHTML = results.map(b=>{
+    const outstanding = b.total - b.paid;
+    const isPayable = b.status !== 'paid';
+    return `<div class="result-item ${selectedBill?.id===b.id?'selected':''}" onclick="openBill('${b.id}')">
+      <div class="ri-bill">${b.id}</div>
+      <div class="ri-house">${b.house}</div>
+      <div class="ri-owner">${b.owner} · โซน ${b.zone} · ${b.type}</div>
+      <div class="ri-meta">
+        <div>
+          <div class="ri-outstanding ${b.status==='overdue'?'red':b.status==='partial'?'amber':''}">
+            ${b.status==='paid' ? '<span style="color:var(--green);font-size:14px">✓ ชำระแล้ว</span>' : '฿'+outstanding.toLocaleString()+' ค้าง'}
+          </div>
+          <div style="font-size:11px;color:var(--navy-30);margin-top:2px">${b.cycle}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="pill ${STATUS_CLASS[b.status]}"><span class="pill-dot"></span>${STATUS_LABEL[b.status]}</span>
+          ${isPayable ? `<span style="font-size:11px;color:var(--org-primary);font-weight:600">กด Enter เพื่อรับชำระ →</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openBill(id){ openBillById(id); }
+function openBillById(id){
+  const bill = BILLS.find(b=>b.id===id);
+  if(!bill) return;
+  selectedBill = bill;
+  if(bill.status === 'paid'){
+    showToast('บิลนี้ชำระครบแล้ว — ไม่สามารถรับชำระซ้ำได้');
+    return;
+  }
+  showStep(2);
+  renderBillDetail(bill);
+  // update search results to show selected
+  const q = document.getElementById('search-input').value;
+  if(q) handleSearch(q);
+}
+
+/* ─── RENDER BILL DETAIL ─────────────────────────────────── */
+function renderBillDetail(bill){
+  const outstanding = bill.total - bill.paid;
+
+  // status pill
+  document.getElementById('bill-status-pill').innerHTML =
+    `<span class="pill ${STATUS_CLASS[bill.status]}"><span class="pill-dot"></span>${STATUS_LABEL[bill.status]}</span>`;
+
+  // meta grid
+  document.getElementById('bill-meta').innerHTML = `
+    <div class="meta-cell"><div class="meta-label">เลขที่บิล</div><div class="meta-val" style="font-family:monospace;font-size:13px">${bill.id}</div></div>
+    <div class="meta-cell"><div class="meta-label">รอบบิล</div><div class="meta-val">${bill.cycle}</div></div>
+    <div class="meta-cell"><div class="meta-label">ที่อยู่บ้าน</div><div class="meta-val">${bill.house}</div></div>
+    <div class="meta-cell"><div class="meta-label">เจ้าบ้าน</div><div class="meta-val">${bill.owner}</div></div>
+    <div class="meta-cell"><div class="meta-label">โซน / ประเภท</div><div class="meta-val">โซน ${bill.zone} · ${bill.type}</div></div>
+    <div class="meta-cell"><div class="meta-label">กำหนดชำระ</div><div class="meta-val" style="${bill.status==='overdue'?'color:var(--red);font-weight:700':''}">${bill.due}${bill.status==='overdue'?' ⚠ เกินกำหนด':''}</div></div>`;
+
+  // breakdown
+  document.getElementById('breakdown-body').innerHTML =
+    bill.services.map(s=>`<tr><td>${s.n}</td><td><span style="font-size:11px;background:var(--surface-2);border:1px solid var(--border-light);padding:2px 7px;border-radius:5px;color:var(--navy-50)">${s.t}</span></td><td style="text-align:right;font-weight:500">฿${s.v.toLocaleString()}</td></tr>`).join('') +
+    (bill.paid > 0 ? `<tr><td style="color:var(--navy-50)">ชำระแล้ว (บางส่วน)</td><td></td><td style="text-align:right;color:var(--green)">-฿${bill.paid.toLocaleString()}</td></tr>` : '') +
+    `<tr class="total-row"><td>ยอดค้างสุทธิ</td><td></td><td style="text-align:right;color:var(--red)">฿${outstanding.toLocaleString()}</td></tr>`;
+
+  // outstanding hero
+  document.getElementById('oh-amount').textContent = '฿' + outstanding.toLocaleString();
+  document.getElementById('oh-amount').className = 'oh-amount ' + (bill.status==='overdue'?'red':'');
+  document.getElementById('oh-sub').textContent = `ยอดรวมบิล ฿${bill.total.toLocaleString()}`;
+  document.getElementById('oh-paid-badge').textContent = bill.paid > 0 ? `ชำระแล้ว ฿${bill.paid.toLocaleString()}` : '';
+
+  // shortcuts
+  const shortcuts = [outstanding, Math.ceil(outstanding/100)*100, outstanding + 100, outstanding + 200];
+  const unique = [...new Set(shortcuts)].filter(v=>v>0).slice(0,4);
+  document.getElementById('amount-shortcuts').innerHTML =
+    `<div style="font-size:11px;color:var(--navy-30);width:100%;margin-bottom:2px">ทางลัด:</div>` +
+    unique.map(v=>`<div class="amt-chip" onclick="setAmount(${v})">฿${v.toLocaleString()}</div>`).join('');
+
+  // reset amount
+  document.getElementById('amount-input').value = '';
+  document.getElementById('amount-input').placeholder = outstanding.toLocaleString()+'.00';
+  document.getElementById('note-input').value = '';
+  calcChange();
+
+  // set label based on method
+  updateMethodUI();
+  setTimeout(()=>document.getElementById('amount-input').focus(), 100);
+}
+
+/* ─── METHOD ────────────────────────────────────────────── */
+function selectMethod(m){
+  selectedMethod = m;
+  ['cash','transfer','qr'].forEach(k=>{
+    document.getElementById('method-'+k).classList.toggle('selected', k===m);
+  });
+  updateMethodUI();
+}
+function updateMethodUI(){
+  document.getElementById('qr-section').style.display = selectedMethod==='qr' ? '' : 'none';
+  document.getElementById('ref-group').style.display = selectedMethod==='transfer' ? '' : 'none';
+  document.getElementById('change-section').style.display = selectedMethod==='cash' ? '' : 'none';
+  document.getElementById('amount-label').innerHTML = selectedMethod==='cash'
+    ? 'ยอดที่รับ (เงินสด) <span class="req">*</span>'
+    : selectedMethod==='qr'
+    ? 'ยอดที่ชำระ (ยืนยันจาก QR) <span class="req">*</span>'
+    : 'ยอดที่โอน <span class="req">*</span>';
+  calcChange();
+}
+
+function setAmount(v){
+  document.getElementById('amount-input').value = v;
+  document.getElementById('amount-input').focus();
+  calcChange();
+}
+
+/* ─── CHANGE CALC ───────────────────────────────────────── */
+function calcChange(){
+  if(!selectedBill) return;
+  const outstanding = selectedBill.total - selectedBill.paid;
+  const received = parseFloat(document.getElementById('amount-input').value) || 0;
+  const bar = document.getElementById('change-bar');
+  const amt = document.getElementById('change-amount');
+  const sub = document.getElementById('change-sub-text');
+  const lbl = document.getElementById('change-label-text');
+
+  const btn = document.getElementById('proceed-btn');
+  btn.disabled = received <= 0;
+
+  if(selectedMethod !== 'cash'){
+    updateConfirm(); return;
+  }
+  if(received === 0){
+    bar.className = 'change-bar zero';
+    amt.textContent = '—';
+    amt.className = 'change-amount';
+    sub.textContent = 'กรอกยอดที่รับเพื่อคำนวณ';
+    lbl.textContent = 'เงินทอน';
+  } else if(received >= outstanding){
+    const change = received - outstanding;
+    bar.className = 'change-bar';
+    amt.textContent = change===0 ? '฿0 (พอดี)' : '฿'+change.toLocaleString();
+    amt.className = 'change-amount green';
+    sub.textContent = `รับ ฿${received.toLocaleString()} — ค้าง ฿${outstanding.toLocaleString()}`;
+    lbl.textContent = 'เงินทอน';
+    btn.disabled = false;
+  } else {
+    const shortage = outstanding - received;
+    bar.className = 'change-bar shortage';
+    amt.textContent = `ขาด ฿${shortage.toLocaleString()}`;
+    amt.className = 'change-amount red';
+    sub.textContent = `รับบางส่วน — ยังค้าง ฿${shortage.toLocaleString()}`;
+    lbl.textContent = 'ยอดค้างหลังชำระ';
+    btn.disabled = false; // allow partial
+  }
+  updateConfirm();
+}
+
+function updateConfirm(){}
+
+function handleAmountKey(e){
+  if(e.key === 'Enter'){
+    const received = parseFloat(document.getElementById('amount-input').value) || 0;
+    if(received > 0) proceedToConfirm();
+  }
+}
+
+/* ─── STEPS ─────────────────────────────────────────────── */
+function showStep(n){
+  currentStep = n;
+  document.getElementById('idle-state').style.display = n===1 ? '' : 'none';
+  document.getElementById('step2').style.display = n===2 ? '' : 'none';
+  document.getElementById('step3').style.display = n===3 ? '' : 'none';
+  document.getElementById('step4').style.display = n===4 ? '' : 'none';
+  document.getElementById('reset-btn').style.display = n>1 ? '' : 'none';
+
+  ['1','2','3','4'].forEach(i=>{
+    const el = document.getElementById('step-'+i+'-indicator');
+    el.className = 'step' + (parseInt(i)===n ? ' active' : parseInt(i)<n ? ' done' : '');
+  });
+
+  // scroll form panel to top
+  document.getElementById('form-panel').scrollTop = 0;
+}
+
+function proceedToConfirm(){
+  const received = parseFloat(document.getElementById('amount-input').value) || 0;
+  if(!selectedBill || received <= 0) { showToast('กรุณากรอกยอดที่รับ'); return; }
+
+  const outstanding = selectedBill.total - selectedBill.paid;
+  const isPartial = received < outstanding;
+  const change = received - outstanding;
+  const ref = document.getElementById('ref-input')?.value || '';
+
+  // build confirm rows
+  const rows = [
+    {label:'เลขที่บิล', val:`<span style="font-family:monospace">${selectedBill.id}</span>`},
+    {label:'บ้าน', val:selectedBill.house},
+    {label:'เจ้าบ้าน', val:selectedBill.owner},
+    {label:'รอบบิล', val:selectedBill.cycle},
+    {label:'ช่องทางชำระ', val:METHOD_LABEL[selectedMethod]},
+    ref ? {label:'เลขที่อ้างอิง', val:ref} : null,
+    {label:'ยอดค้างทั้งหมด', val:`฿${outstanding.toLocaleString()}`},
+    {label:'ยอดที่รับ', val:`<span style="color:var(--org-primary);font-weight:700">฿${received.toLocaleString()}</span>`, cls:''},
+    selectedMethod==='cash' && change>0 ? {label:'เงินทอน', val:`฿${change.toLocaleString()}`, cls:'change'} : null,
+    isPartial ? {label:'ยังค้างหลังชำระ', val:`<span style="color:var(--amber);font-weight:700">฿${(outstanding-received).toLocaleString()}</span>`} : null,
+    document.getElementById('note-input').value ? {label:'หมายเหตุ', val:document.getElementById('note-input').value} : null,
+  ].filter(Boolean);
+
+  document.getElementById('confirm-rows').innerHTML =
+    rows.map((r,i)=>`<div class="confirm-row ${i===rows.length-2&&!isPartial?'total':r.cls||''}"
+      style="margin-top:${i===rows.length-(isPartial?2:2)?'8px':'0'};${i===rows.length-(isPartial?2:2)?'border-top:2px solid var(--border);padding-top:14px':''}">`+
+      `<div class="confirm-row-label">${r.label}</div><div class="confirm-row-val">${r.val}</div></div>`).join('');
+
+  showStep(3);
+}
+
+function backToStep2(){
+  showStep(2);
+}
+
+function confirmPayment(){
+  const btn = document.getElementById('confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'กำลังบันทึก…';
+
+  setTimeout(()=>{
+    renderReceipt();
+    showStep(4);
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg> บันทึกรับชำระเงิน`;
+  }, 700);
+}
+
+function renderReceipt(){
+  const bill = selectedBill;
+  const received = parseFloat(document.getElementById('amount-input').value) || 0;
+  const outstanding = bill.total - bill.paid;
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+
+  receiptSeq++;
+  const recNo = `REC-2568-${String(receiptSeq).padStart(6,'0')}`;
+  document.getElementById('receipt-no').textContent = recNo;
+
+  const dateStr = `${now.getDate()} ${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][now.getMonth()]} ${now.getFullYear()+543} เวลา ${pad(now.getHours())}:${pad(now.getMinutes())} น.`;
+  document.getElementById('receipt-datetime').textContent = dateStr;
+
+  const isPartial = received < outstanding;
+  const ref = document.getElementById('ref-input')?.value || '';
+
+  const lines = [
+    {label:'เลขที่บิล', val:bill.id},
+    {label:'บ้าน / เจ้าบ้าน', val:`${bill.house} · ${bill.owner}`},
+    {label:'รอบบิล', val:bill.cycle},
+    {label:'ช่องทาง', val:METHOD_LABEL[selectedMethod]},
+    ref ? {label:'เลขที่อ้างอิง', val:ref} : null,
+    {label:'วันที่ / เวลา', val:dateStr},
+    isPartial ? {label:'สถานะ', val:`<span style="color:var(--amber);font-weight:600">ชำระบางส่วน — ยังค้าง ฿${(outstanding-received).toLocaleString()}</span>`} : {label:'สถานะ', val:`<span style="color:var(--green);font-weight:600">ชำระครบ ✓</span>`},
+  ].filter(Boolean);
+
+  document.getElementById('receipt-lines').innerHTML = lines.map(l=>
+    `<div class="receipt-line"><span class="receipt-line-label">${l.label}</span><span class="receipt-line-val">${l.val}</span></div>`
+  ).join('');
+  document.getElementById('receipt-total').textContent = '฿' + received.toLocaleString();
+  document.getElementById('receipt-subtitle').textContent = isPartial
+    ? `ชำระบางส่วน — ยังค้างอีก ฿${(outstanding-received).toLocaleString()}`
+    : 'ชำระเต็มจำนวน — ขอบคุณสำหรับการชำระเงิน';
+}
+
+function resetFlow(){
+  selectedBill = null;
+  selectedMethod = 'cash';
+  document.getElementById('search-input').value = '';
+  handleSearch('');
+  selectMethod('cash');
+  showStep(1);
+  document.getElementById('reset-btn').style.display = 'none';
+  document.getElementById('search-input').focus();
+}
+
+/* ─── BARCODE SCANNER DETECTION ──────────────────────────── */
+// Scanners fire chars very rapidly (< 50 ms apart) then send Enter.
+// We track timing to distinguish scanner input from manual typing.
+let _bcBuf = '';
+let _bcLastTime = 0;
+let _bcTimer = null;
+const BC_SPEED_THRESHOLD = 50; // ms between chars to qualify as scanner
+const BC_MIN_LENGTH = 4;       // minimum chars to treat as a scan
+
+const searchInput = document.getElementById('search-input');
+const searchBox   = document.getElementById('search-box');
+const barcodeBadge = document.getElementById('barcode-badge');
+const barcodeLabel = document.getElementById('barcode-label');
+const scanFlash    = document.getElementById('scan-flash');
+const scanFlashTxt = document.getElementById('scan-flash-text');
+
+searchInput.addEventListener('keydown', e=>{
+  const now = Date.now();
+  const gap = now - _bcLastTime;
+  _bcLastTime = now;
+
+  if(e.key === 'Enter'){
+    // If buffer looks like a barcode scan (was fast + long enough)
+    const val = searchInput.value.trim();
+    if(val.length >= BC_MIN_LENGTH && gap < BC_SPEED_THRESHOLD * 3){
+      e.preventDefault();
+      triggerBarcodeScan(val);
+    } else if(val.length >= BC_MIN_LENGTH){
+      // Manual Enter on search result — open first match
+      e.preventDefault();
+      autoSelectFirst(val);
+    }
+    _bcBuf = '';
+    return;
+  }
+
+  // Track buffer & speed for multi-char sequence
+  if(e.key.length === 1){
+    if(gap < BC_SPEED_THRESHOLD){
+      _bcBuf += e.key;
+    } else {
+      _bcBuf = e.key; // reset buffer if too slow (manual typing)
+    }
+  }
+
+  // Clear any pending auto-trigger
+  clearTimeout(_bcTimer);
+
+  // If buffer has grown fast enough, schedule an auto-trigger (some scanners don't send Enter)
+  if(_bcBuf.length >= 8 && gap < BC_SPEED_THRESHOLD){
+    _bcTimer = setTimeout(()=>{
+      const val = searchInput.value.trim();
+      if(val.length >= BC_MIN_LENGTH) triggerBarcodeScan(val);
+      _bcBuf = '';
+    }, 120);
+  }
+});
+
+function triggerBarcodeScan(code){
+  // Flash search box green
+  searchBox.classList.add('scan-active');
+  barcodeBadge.classList.add('scanning');
+  barcodeLabel.textContent = 'สแกนแล้ว!';
+
+  // Show flash banner
+  scanFlash.style.display = 'flex';
+  scanFlashTxt.textContent = `สแกน Barcode: ${code}`;
+
+  // Search and auto-open if exactly 1 result
+  handleSearch(code);
+  const results = BILLS.filter(b =>
+    b.id.toLowerCase() === code.toLowerCase() ||
+    b.id.toLowerCase().includes(code.toLowerCase())
+  );
+  if(results.length === 1 && results[0].status !== 'paid'){
+    setTimeout(()=>openBillById(results[0].id), 250);
+  }
+
+  setTimeout(()=>{
+    searchBox.classList.remove('scan-active');
+    barcodeBadge.classList.remove('scanning');
+    barcodeLabel.textContent = 'Barcode';
+    scanFlash.style.display = 'none';
+  }, 2000);
+}
+
+function autoSelectFirst(val){
+  const results = BILLS.filter(b =>
+    b.id.toLowerCase().includes(val.toLowerCase()) ||
+    b.house.toLowerCase().includes(val.toLowerCase()) ||
+    b.owner.toLowerCase().includes(val.toLowerCase())
+  );
+  if(results.length === 1) openBillById(results[0].id);
+  else if(results.length > 1) showToast(`พบ ${results.length} รายการ — เลือกจากรายการด้านล่าง`);
+}
+
+// Always-on global barcode listener: scanner fires even when field is not focused
+document.addEventListener('keypress', e=>{
+  // Only intercept if not already in an input/textarea
+  const tag = document.activeElement.tagName;
+  if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  // Route to search input
+  searchInput.focus();
+});
+
+/* ─── KEYBOARD SHORTCUTS ──────────────────────────────────── */
+document.addEventListener('keydown', e=>{
+  if(e.key==='F3' || (e.ctrlKey && e.key==='f')){ e.preventDefault(); searchInput.focus(); }
+  if(e.key==='F5'){ e.preventDefault(); resetFlow(); }
+  if(e.key==='Escape' && currentStep>1){ resetFlow(); }
+});
+
+/* ─── TOAST ─────────────────────────────────────────────── */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+/* ─── RECEIPT ACTIONS ────────────────────────────────────── */
+function printReceipt(){ showToast('กำลังเปิดหน้าต่างพิมพ์…'); setTimeout(()=>window.print(), 400); }
+function sendLine(){ showToast('ส่งใบเสร็จผ่าน LINE สำเร็จ'); }
+
+/* ─── TWEAKS ────────────────────────────────────────────── */
+window.addEventListener('message', e=>{
+  if(e.data?.type==='__activate_edit_mode') document.getElementById('tweaks-panel').style.display='block';
+  if(e.data?.type==='__deactivate_edit_mode') document.getElementById('tweaks-panel').style.display='none';
+});
+window.parent.postMessage({type:'__edit_mode_available'},'*');
+
+function setPrimary(v){
+  document.documentElement.style.setProperty('--org-primary', v);
+  const r = parseInt(v.slice(1,3),16), g=parseInt(v.slice(3,5),16), b=parseInt(v.slice(5,7),16);
+  document.documentElement.style.setProperty('--org-primary-light',`rgba(${r},${g},${b},0.12)`);
+  document.documentElement.style.setProperty('--org-primary-dark',`rgb(${Math.max(0,r-30)},${Math.max(0,g-30)},${Math.max(0,b-30)})`);
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits:{primaryColor:v}},'*');
+}
+
+// apply saved primary
+(()=>{
+  const c = TWEAK_DEFAULTS.primaryColor;
+  if(c) setPrimary(c);
+})();
+
+// init
+showStep(1);
+document.getElementById('search-input').focus();
+</script>
+</body>
+</html>

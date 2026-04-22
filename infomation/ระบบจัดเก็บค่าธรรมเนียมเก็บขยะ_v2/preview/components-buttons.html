@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#fff; padding:20px; color:#181d26; }
+.section { margin-bottom:16px; }
+.title { font-size:10px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:rgba(4,14,32,.4); margin-bottom:10px; }
+.row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+button { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; letter-spacing:.08px; cursor:pointer; border:none; display:inline-flex; align-items:center; gap:6px; transition:all 150ms ease; }
+.btn-primary { background:#1b61c9; color:#fff; padding:9px 20px; border-radius:12px; }
+.btn-primary:hover { background:#1550b0; }
+.btn-secondary { background:#fff; color:#181d26; padding:9px 20px; border-radius:12px; border:1px solid #e0e2e6; box-shadow:0px 1px 2px rgba(0,0,0,0.06); }
+.btn-secondary:hover { background:#f8fafc; }
+.btn-ghost { background:transparent; color:#1b61c9; padding:9px 16px; border-radius:12px; }
+.btn-ghost:hover { background:rgba(27,97,201,0.06); }
+.btn-danger { background:#dc2626; color:#fff; padding:9px 20px; border-radius:12px; }
+.btn-danger:hover { background:#b91c1c; }
+.btn-sm { font-size:12px; padding:6px 14px; border-radius:8px; }
+.btn-lg { font-size:15px; padding:12px 28px; border-radius:12px; }
+.btn-icon { padding:9px; border-radius:10px; }
+.disabled { opacity:.45; pointer-events:none; }
+</style>
+</head><body>
+<div class="section">
+  <div class="title">Variants</div>
+  <div class="row">
+    <button class="btn-primary">รับชำระเงิน</button>
+    <button class="btn-secondary">ออกใบเสร็จ</button>
+    <button class="btn-ghost">ยกเลิก</button>
+    <button class="btn-danger">ลบบิล</button>
+  </div>
+</div>
+<div class="section">
+  <div class="title">Sizes</div>
+  <div class="row">
+    <button class="btn-primary btn-sm">ขนาดเล็ก</button>
+    <button class="btn-primary">ขนาดกลาง</button>
+    <button class="btn-primary btn-lg">ขนาดใหญ่</button>
+  </div>
+</div>
+<div class="section">
+  <div class="title">States</div>
+  <div class="row">
+    <button class="btn-primary">ปกติ</button>
+    <button class="btn-primary" style="background:#1550b0">Hover</button>
+    <button class="btn-primary" style="transform:scale(.98);background:#1550b0">Active</button>
+    <button class="btn-primary disabled">Disabled</button>
+    <button class="btn-secondary" style="box-shadow:0 0 0 3px rgba(27,97,201,0.25);border-color:#1b61c9">Focus</button>
+  </div>
+</div>
+<div class="section">
+  <div class="title">With Icon (Lucide)</div>
+  <div class="row">
+    <button class="btn-primary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      ออกบิลใหม่
+    </button>
+    <button class="btn-secondary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      ส่งออก
+    </button>
+    <button class="btn-ghost btn-icon" title="ค้นหา">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1b61c9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+  </div>
+</div>
+</body></html>

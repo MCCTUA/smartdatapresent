@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-05 · รายการบิลทั้งหมด (Bill List) — Officer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --org-primary:       #1b61c9;
+  --org-primary-light: #e8f0fd;
+  --org-primary-dark:  #1349a0;
+
+  --navy:    #181d26;
+  --navy-80: rgba(24,29,38,0.80);
+  --navy-50: rgba(24,29,38,0.50);
+  --navy-30: rgba(24,29,38,0.30);
+  --navy-10: rgba(24,29,38,0.07);
+
+  --white:       #ffffff;
+  --surface:     #f8fafc;
+  --surface-2:   #f1f4f8;
+  --border:      #e0e2e6;
+  --border-light:#edf0f4;
+
+  --green:       #059669;
+  --green-light: #d1fae5;
+  --red:         #dc2626;
+  --red-light:   #fee2e2;
+  --amber:       #d97706;
+  --amber-light: #fef3c7;
+  --purple:      #7c3aed;
+  --purple-light:#ede9fe;
+  --sky:         #0284c7;
+  --sky-light:   #e0f2fe;
+
+  --shadow-card: 0 0 1px rgba(0,0,0,.12), 0 1px 3px rgba(45,127,249,.10), 0 0 0 .5px rgba(0,0,0,.04) inset;
+  --shadow-hover: 0 0 1px rgba(0,0,0,.14), 0 4px 12px rgba(45,127,249,.18);
+  --shadow-sidebar: 1px 0 0 var(--border);
+
+  --font: 'Prompt','Inter',sans-serif;
+  --sidebar-w:   220px;
+  --topbar-h:    56px;
+  --radius-card: 12px;
+  --radius-sm:   8px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);color:var(--navy);background:var(--surface)}
+button{font-family:var(--font);cursor:pointer;border:none;background:none}
+a{text-decoration:none;color:inherit}
+input,select{font-family:var(--font)}
+
+/* ─── LAYOUT ─────────────────────────────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ─── SIDEBAR ────────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);height:100vh;background:var(--white);
+  box-shadow:var(--shadow-sidebar);display:flex;flex-direction:column;
+  flex-shrink:0;overflow-y:auto;z-index:10;
+}
+.sidebar-logo{
+  display:flex;align-items:center;gap:10px;padding:0 16px;
+  height:var(--topbar-h);border-bottom:1px solid var(--border);
+}
+.org-avatar{
+  width:32px;height:32px;border-radius:8px;background:var(--org-primary);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:12px;font-weight:700;letter-spacing:.5px;flex-shrink:0;
+}
+.org-name{font-size:13px;font-weight:600;color:var(--navy);line-height:1.3}
+.org-sub{font-size:11px;color:var(--navy-50)}
+
+.nav-section{padding:8px 8px 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--navy-30);letter-spacing:1px;
+  text-transform:uppercase;padding:0 8px;margin-bottom:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);
+  font-size:13.5px;font-weight:400;color:var(--navy-80);cursor:pointer;
+  transition:background .12s,color .12s;
+}
+.nav-item:hover{background:var(--navy-10);color:var(--navy)}
+.nav-item.active{background:var(--org-primary-light);color:var(--org-primary);font-weight:600}
+.nav-item .icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .icon{opacity:1}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:white;
+  font-size:10px;font-weight:700;border-radius:99px;
+  padding:1px 6px;min-width:18px;text-align:center;
+}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border)}
+.user-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;
+}
+.user-row:hover{background:var(--navy-10)}
+.user-avatar{
+  width:30px;height:30px;border-radius:50%;background:var(--org-primary-light);
+  color:var(--org-primary);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.user-name{font-size:13px;font-weight:500}
+.user-role{font-size:11px;color:var(--navy-50)}
+
+/* ─── MAIN ───────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─── TOPBAR ─────────────────────────────────────────────── */
+.topbar{
+  height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;
+}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.breadcrumb-link{color:var(--navy-50);cursor:pointer;transition:color .12s}
+.breadcrumb-link:hover{color:var(--org-primary)}
+.breadcrumb-sep{color:var(--navy-30);font-size:12px}
+.breadcrumb-cur{font-weight:600;color:var(--navy)}
+.topbar-spacer{flex:1}
+
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;
+  font-size:13px;font-weight:500;transition:all .12s;white-space:nowrap;
+}
+.btn-secondary{
+  background:var(--white);color:var(--navy);border:1px solid var(--border);
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.btn-secondary:hover{background:var(--surface);border-color:var(--navy-30)}
+.btn-primary{background:var(--org-primary);color:white;box-shadow:0 1px 3px rgba(27,97,201,.25)}
+.btn-primary:hover{background:var(--org-primary-dark)}
+.btn-ghost{color:var(--navy-50);padding:6px 10px}
+.btn-ghost:hover{color:var(--navy);background:var(--navy-10)}
+
+/* ─── CONTENT ────────────────────────────────────────────── */
+.content{flex:1;overflow-y:auto;padding:0;display:flex;flex-direction:column}
+
+/* ─── PAGE HEADER ────────────────────────────────────────── */
+.page-header{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:18px 24px;flex-shrink:0;
+}
+.page-title{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.page-subtitle{font-size:13px;color:var(--navy-50)}
+
+/* ─── KPI STRIP ──────────────────────────────────────────── */
+.kpi-strip{
+  display:grid;grid-template-columns:repeat(5,1fr);
+  background:var(--white);border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.kpi-cell{
+  padding:14px 20px;border-right:1px solid var(--border-light);
+  cursor:pointer;transition:background .12s;
+  position:relative;
+}
+.kpi-cell:last-child{border-right:none}
+.kpi-cell:hover{background:var(--surface)}
+.kpi-cell.active-filter{background:var(--org-primary-light)}
+.kpi-cell.active-filter::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--org-primary);
+}
+.kpi-label{font-size:11px;font-weight:600;color:var(--navy-50);text-transform:uppercase;
+  letter-spacing:.6px;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.kpi-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.kpi-value{font-size:22px;font-weight:700;color:var(--navy);line-height:1;margin-bottom:2px}
+.kpi-sub{font-size:11px;color:var(--navy-30)}
+.kpi-value.blue{color:var(--org-primary)}
+.kpi-value.green{color:var(--green)}
+.kpi-value.red{color:var(--red)}
+.kpi-value.amber{color:var(--amber)}
+
+/* ─── TOOLBAR ────────────────────────────────────────────── */
+.toolbar{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:10px 24px;display:flex;align-items:center;gap:10px;flex-shrink:0;
+  flex-wrap:wrap;
+}
+.search-wrap{
+  position:relative;flex:1;min-width:200px;max-width:320px;
+}
+.search-wrap svg{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--navy-30);pointer-events:none;
+}
+.search-input{
+  width:100%;padding:7px 10px 7px 34px;border:1px solid var(--border);border-radius:8px;
+  font-size:13px;color:var(--navy);outline:none;background:var(--surface);
+  transition:border .15s;
+}
+.search-input:focus{border-color:var(--org-primary);background:var(--white);
+  box-shadow:0 0 0 3px rgba(27,97,201,.10)}
+.search-input::placeholder{color:var(--navy-30)}
+
+.filter-select{
+  padding:7px 10px;border:1px solid var(--border);border-radius:8px;
+  font-size:13px;color:var(--navy);background:var(--surface);outline:none;
+  cursor:pointer;transition:border .15s;
+}
+.filter-select:focus{border-color:var(--org-primary)}
+
+.filter-chip{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 10px;
+  border:1px solid var(--border);border-radius:99px;font-size:12px;
+  background:var(--white);color:var(--navy-80);cursor:pointer;
+  transition:all .12s;user-select:none;
+}
+.filter-chip:hover{border-color:var(--navy-30);background:var(--surface)}
+.filter-chip.active{
+  border-color:var(--org-primary);background:var(--org-primary-light);
+  color:var(--org-primary);font-weight:600;
+}
+.filter-chip .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+.toolbar-spacer{flex:1}
+
+/* ─── TABLE WRAP ─────────────────────────────────────────── */
+.table-wrap{flex:1;overflow:auto;padding:0 24px 24px}
+.table-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius-card);box-shadow:var(--shadow-card);
+  overflow:hidden;margin-top:16px;
+}
+
+/* ─── TABLE ──────────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse}
+thead{background:var(--surface);position:sticky;top:0;z-index:2}
+th{
+  padding:9px 14px;text-align:left;font-size:11px;font-weight:600;
+  color:var(--navy-50);text-transform:uppercase;letter-spacing:.6px;
+  border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;
+  user-select:none;transition:color .1s;
+}
+th:hover{color:var(--navy)}
+th.sort-asc::after{content:' ↑';color:var(--org-primary)}
+th.sort-desc::after{content:' ↓';color:var(--org-primary)}
+th.no-sort{cursor:default}
+
+tbody tr{
+  border-bottom:1px solid var(--border-light);transition:background .1s;
+  cursor:pointer;
+}
+tbody tr:hover{background:#f5f8ff}
+tbody tr:last-child{border-bottom:none}
+tbody tr.overdue-row{background:#fff8f8}
+tbody tr.overdue-row:hover{background:#ffefef}
+
+td{padding:10px 14px;font-size:13px;color:var(--navy);vertical-align:middle}
+.mono{font-family:monospace;font-size:12.5px;color:var(--navy-80);letter-spacing:.3px}
+
+/* ─── STATUS PILLS ───────────────────────────────────────── */
+.pill{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
+  border-radius:99px;font-size:11.5px;font-weight:500;white-space:nowrap;
+}
+.pill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.s-draft{background:var(--surface-2);color:var(--navy-50)}
+.s-draft .pill-dot{background:var(--navy-30)}
+.s-issued{background:var(--org-primary-light);color:var(--org-primary)}
+.s-issued .pill-dot{background:var(--org-primary)}
+.s-partial{background:var(--amber-light);color:var(--amber)}
+.s-partial .pill-dot{background:var(--amber)}
+.s-paid{background:var(--green-light);color:var(--green)}
+.s-paid .pill-dot{background:var(--green)}
+.s-overdue{background:var(--red-light);color:var(--red)}
+.s-overdue .pill-dot{background:var(--red)}
+
+/* ─── AMOUNT CELLS ───────────────────────────────────────── */
+.amount{font-variant-numeric:tabular-nums;text-align:right;font-weight:600;font-size:13px}
+.amount-dim{color:var(--navy-30);font-weight:400}
+.amount-red{color:var(--red);font-weight:700}
+.amount-green{color:var(--green)}
+
+/* ─── OVERDUE INDICATOR ──────────────────────────────────── */
+.overdue-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10.5px;color:var(--red);font-weight:600;
+  background:var(--red-light);padding:1px 6px;border-radius:4px;margin-top:2px;
+}
+
+/* ─── ACTIONS COL ────────────────────────────────────────── */
+.row-actions{
+  display:flex;align-items:center;gap:4px;opacity:0;
+  transition:opacity .12s;
+}
+tbody tr:hover .row-actions{opacity:1}
+.row-btn{
+  padding:4px 9px;border-radius:6px;font-size:12px;font-weight:500;
+  transition:all .12s;border:1px solid transparent;
+}
+.row-btn-ghost{color:var(--navy-50)}
+.row-btn-ghost:hover{background:var(--navy-10);color:var(--navy)}
+.row-btn-primary{color:var(--org-primary);border-color:var(--org-primary);background:var(--org-primary-light)}
+.row-btn-primary:hover{background:var(--org-primary);color:white}
+
+/* ─── TABLE FOOTER ───────────────────────────────────────── */
+.table-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-top:1px solid var(--border);
+  background:var(--surface);font-size:12.5px;color:var(--navy-50);
+}
+.pagination{display:flex;align-items:center;gap:4px}
+.page-btn{
+  width:28px;height:28px;border-radius:6px;font-size:12.5px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .12s;color:var(--navy-50);
+  border:1px solid transparent;
+}
+.page-btn:hover{background:var(--navy-10);color:var(--navy)}
+.page-btn.active{background:var(--org-primary);color:white;border-color:var(--org-primary)}
+.page-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ─── EMPTY STATE ────────────────────────────────────────── */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 24px;text-align:center;gap:8px;
+}
+.empty-icon{
+  width:52px;height:52px;border-radius:14px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;margin-bottom:4px;
+}
+.empty-title{font-size:15px;font-weight:600;color:var(--navy)}
+.empty-sub{font-size:13px;color:var(--navy-50);max-width:340px;line-height:1.6}
+
+/* ─── OVERDUE ALERT BANNER ───────────────────────────────── */
+.alert-banner{
+  margin:16px 24px 0;padding:10px 14px;border-radius:8px;
+  background:var(--red-light);border:1px solid #fca5a5;
+  display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--red);
+  font-weight:500;
+}
+.alert-banner strong{font-weight:700}
+
+/* ─── TWEAKS PANEL ───────────────────────────────────────── */
+#tweaks-panel{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--white);border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.14);padding:16px;width:240px;display:none;
+}
+#tweaks-panel h4{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--navy)}
+.tweak-row{margin-bottom:10px}
+.tweak-label{font-size:11.5px;color:var(--navy-50);margin-bottom:4px}
+.tweak-row select,.tweak-row input[type=color]{
+  width:100%;padding:6px 8px;border:1px solid var(--border);
+  border-radius:6px;font-family:var(--font);font-size:13px;
+  background:var(--surface);color:var(--navy);
+}
+.tweak-row input[type=color]{height:34px;padding:2px 4px;cursor:pointer}
+
+/* ─── TOAST ──────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:white;padding:10px 18px;border-radius:8px;
+  font-size:13px;font-weight:500;opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:9999;white-space:nowrap;
+}
+.toast.show{opacity:1}
+
+/* ─── SLIDE-OUT DETAIL PANEL ─────────────────────────────── */
+.detail-overlay{
+  position:fixed;inset:0;background:rgba(24,29,38,.25);z-index:100;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.detail-overlay.open{opacity:1;pointer-events:all}
+.detail-panel{
+  position:fixed;top:0;right:-480px;width:460px;height:100vh;
+  background:var(--white);border-left:1px solid var(--border);z-index:101;
+  display:flex;flex-direction:column;
+  box-shadow:-4px 0 24px rgba(0,0,0,.1);transition:right .25s cubic-bezier(.32,.72,0,1);
+}
+.detail-panel.open{right:0}
+.detail-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.detail-title{font-size:15px;font-weight:700;color:var(--navy)}
+.detail-close{
+  width:30px;height:30px;border-radius:6px;display:flex;align-items:center;
+  justify-content:center;color:var(--navy-50);cursor:pointer;transition:all .12s;
+}
+.detail-close:hover{background:var(--navy-10);color:var(--navy)}
+.detail-body{flex:1;overflow-y:auto;padding:20px}
+.detail-section{margin-bottom:18px}
+.detail-section-label{font-size:10.5px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--navy-30);margin-bottom:10px}
+.detail-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px;
+}
+.detail-row:last-child{border-bottom:none}
+.detail-row-label{color:var(--navy-50)}
+.detail-row-val{font-weight:500;color:var(--navy);text-align:right}
+.detail-footer{
+  padding:14px 20px;border-top:1px solid var(--border);
+  display:flex;gap:8px;flex-shrink:0;
+}
+.btn-lg{padding:10px 18px;font-size:13.5px;border-radius:9px}
+
+/* ─── BREAKDOWN TABLE ────────────────────────────────────── */
+.breakdown-table{width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid var(--border-light)}
+.breakdown-table th{background:var(--surface);padding:7px 12px;font-size:11px;font-weight:600;color:var(--navy-50);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--border-light)}
+.breakdown-table td{padding:8px 12px;font-size:12.5px;border-bottom:1px solid var(--border-light)}
+.breakdown-table tr:last-child td{border-bottom:none;font-weight:700;background:var(--surface)}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ─── SIDEBAR ────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="org-avatar">อบต</div>
+      <div>
+        <div class="org-name">อบต.สาธิต</div>
+        <div class="org-sub">Officer Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ภาพรวม</div>
+      <div class="nav-item" onclick="window.location='O-01 KPI Dashboard.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm8-9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1v-5z"/></svg>
+        Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">จัดการ</div>
+      <div class="nav-item" onclick="window.location='O-02 Household List.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        ครัวเรือน
+      </div>
+      <div class="nav-item active">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+        บิลทั้งหมด
+      </div>
+      <div class="nav-item" onclick="showToast('รับชำระเงิน')">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+        รับชำระเงิน
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ติดตาม</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ค้างชำระ
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        อนุมัติคำขอ
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ร้องเรียน
+        <span class="nav-badge" style="background:var(--amber)">12</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">บริการ</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+        สติ๊กเกอร์
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/></svg>
+        รายงาน
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">สม</div>
+        <div>
+          <div class="user-name">สมหญิง ใจดี</div>
+          <div class="user-role">Account Officer</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─────────────────────────────────────────────── -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span class="breadcrumb-cur">บิลทั้งหมด</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <button class="btn btn-secondary" onclick="window.location='O-04 Generate Bills.html'">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+        ออกบิลใหม่
+      </button>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="page-title">รายการบิลทั้งหมด</div>
+          <div class="page-subtitle">ค้นหา ดู และจัดการบิลทุกใบของ อบต.สาธิต — ปีงบประมาณ 2568</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn btn-ghost" onclick="showToast('Export Excel')" style="font-size:12.5px">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Export Excel
+          </button>
+          <button class="btn btn-secondary" onclick="showToast('Export PDF')" style="font-size:12.5px">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/></svg>
+            Export PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI STRIP -->
+    <div class="kpi-strip" id="kpi-strip">
+      <div class="kpi-cell" id="kpi-all" onclick="filterByKpi('all')">
+        <div class="kpi-label">บิลทั้งหมด</div>
+        <div class="kpi-value blue" id="kv-all">1,284</div>
+        <div class="kpi-sub">ปีงบ 2568</div>
+      </div>
+      <div class="kpi-cell" id="kpi-issued" onclick="filterByKpi('issued')">
+        <div class="kpi-label"><span class="kpi-dot" style="background:var(--org-primary)"></span>รอชำระ</div>
+        <div class="kpi-value" id="kv-issued">346</div>
+        <div class="kpi-sub">฿621,480 ยังค้าง</div>
+      </div>
+      <div class="kpi-cell" id="kpi-overdue" onclick="filterByKpi('overdue')">
+        <div class="kpi-label"><span class="kpi-dot" style="background:var(--red)"></span>เกินกำหนด</div>
+        <div class="kpi-value red" id="kv-overdue">87</div>
+        <div class="kpi-sub">฿184,320 เกินกำหนด</div>
+      </div>
+      <div class="kpi-cell" id="kpi-partial" onclick="filterByKpi('partial')">
+        <div class="kpi-label"><span class="kpi-dot" style="background:var(--amber)"></span>ชำระบางส่วน</div>
+        <div class="kpi-value amber" id="kv-partial">54</div>
+        <div class="kpi-sub">฿43,200 คงเหลือ</div>
+      </div>
+      <div class="kpi-cell" id="kpi-paid" onclick="filterByKpi('paid')">
+        <div class="kpi-label"><span class="kpi-dot" style="background:var(--green)"></span>ชำระแล้ว</div>
+        <div class="kpi-value green" id="kv-paid">797</div>
+        <div class="kpi-sub">฿1,432,600 รับแล้ว</div>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="content">
+
+      <!-- overdue alert — visible when overdue filter active -->
+      <div class="alert-banner" id="overdue-alert" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        <span><strong>87 บิล</strong>เกินกำหนดชำระแล้ว — แนะนำให้ดำเนินการแจ้งเตือนหรือส่งเรื่องค้างชำระ</span>
+        <button class="btn btn-ghost" style="font-size:12px;padding:3px 10px;margin-left:auto;color:var(--red);border:1px solid var(--red)" onclick="showToast('ส่งเรื่องค้างชำระทั้งหมด')">จัดการค้างชำระ</button>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+          <input type="text" class="search-input" id="search-input" placeholder="ค้นหา เลขบิล · บ้าน · ชื่อเจ้าบ้าน…" oninput="handleSearch(this.value)">
+        </div>
+        <button class="btn btn-secondary" onclick="openScanner()" style="gap:6px;white-space:nowrap;border-color:var(--org-primary);color:var(--org-primary)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 012-2h2"/><path d="M17 3h2a2 2 0 012 2v2"/><path d="M21 17v2a2 2 0 01-2 2h-2"/><path d="M7 21H5a2 2 0 01-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+          สแกนบาร์โค้ด
+        </button>
+
+        <select class="filter-select" id="filter-cycle" onchange="applyFilters()">
+          <option value="">ทุกรอบ</option>
+          <option value="Q1/2568">Q1/2568</option>
+          <option value="Q2/2568">Q2/2568</option>
+          <option value="Q3/2568">Q3/2568</option>
+          <option value="Q4/2568">Q4/2568</option>
+        </select>
+
+        <select class="filter-select" id="filter-zone" onchange="applyFilters()">
+          <option value="">ทุกโซน</option>
+          <option value="A">โซน A</option>
+          <option value="B">โซน B</option>
+          <option value="C">โซน C</option>
+          <option value="D">โซน D</option>
+        </select>
+
+        <select class="filter-select" id="filter-type" onchange="applyFilters()">
+          <option value="">ทุกประเภท</option>
+          <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
+          <option value="ทาวน์เฮาส์">ทาวน์เฮาส์</option>
+          <option value="อาคารชุด">อาคารชุด</option>
+        </select>
+
+        <select class="filter-select" id="filter-status" onchange="applyFilters()">
+          <option value="">ทุกสถานะ</option>
+          <option value="draft">ฉบับร่าง</option>
+          <option value="issued">รอชำระ</option>
+          <option value="partial">ชำระบางส่วน</option>
+          <option value="paid">ชำระแล้ว</option>
+          <option value="overdue">เกินกำหนด</option>
+        </select>
+
+        <div class="toolbar-spacer"></div>
+
+        <div style="font-size:12px;color:var(--navy-50)" id="result-count">แสดง 1,284 รายการ</div>
+
+        <!-- View toggle -->
+        <div style="display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden">
+          <button class="btn" id="view-table" style="border-radius:0;padding:6px 10px;border:none;background:var(--org-primary);color:white" onclick="setView('table')">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd"/></svg>
+          </button>
+          <button class="btn" id="view-card" style="border-radius:0;padding:6px 10px;border:none;background:var(--white);color:var(--navy-50)" onclick="setView('card')">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- TABLE WRAP -->
+      <div class="table-wrap">
+        <!-- TABLE VIEW -->
+        <div class="table-card" id="table-view">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:36px" class="no-sort">
+                  <input type="checkbox" id="chk-all" onchange="toggleAll(this)" style="cursor:pointer;width:14px;height:14px;accent-color:var(--org-primary)">
+                </th>
+                <th onclick="sortBy('bill_no')">เลขที่บิล</th>
+                <th onclick="sortBy('house')">บ้าน / เจ้าบ้าน</th>
+                <th onclick="sortBy('cycle')">รอบ</th>
+                <th onclick="sortBy('zone')">โซน</th>
+                <th onclick="sortBy('total')" style="text-align:right">ยอดสุทธิ</th>
+                <th onclick="sortBy('outstanding')" style="text-align:right">ยังค้าง</th>
+                <th onclick="sortBy('due')">กำหนดชำระ</th>
+                <th onclick="sortBy('status')">สถานะ</th>
+                <th class="no-sort" style="width:90px"></th>
+              </tr>
+            </thead>
+            <tbody id="bill-tbody">
+              <!-- Rows injected by JS -->
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <div id="footer-info" style="color:var(--navy-50)">แสดง 1–20 จาก 1,284 รายการ</div>
+            <div class="pagination" id="pagination">
+              <button class="page-btn" onclick="goPage(-1)" id="prev-btn">‹</button>
+              <button class="page-btn active" id="p1" onclick="setPage(1)">1</button>
+              <button class="page-btn" id="p2" onclick="setPage(2)">2</button>
+              <button class="page-btn" id="p3" onclick="setPage(3)">3</button>
+              <span style="font-size:12px;color:var(--navy-30);padding:0 4px">…</span>
+              <button class="page-btn" onclick="setPage(65)">65</button>
+              <button class="page-btn" onclick="goPage(1)" id="next-btn">›</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD VIEW -->
+        <div id="card-view" style="display:none;margin-top:16px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px" id="card-grid">
+            <!-- cards injected by JS -->
+          </div>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="empty-state" id="empty-state" style="display:none">
+          <div class="empty-icon">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="var(--navy-30)"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+          </div>
+          <div class="empty-title">ไม่พบรายการบิล</div>
+          <div class="empty-sub">ลองเปลี่ยนเงื่อนไขการค้นหาหรือ Filter ใหม่อีกครั้ง</div>
+          <button class="btn btn-secondary" onclick="clearFilters()" style="margin-top:8px">ล้าง Filter ทั้งหมด</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── DETAIL OVERLAY ───────────────────────────────────── -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div>
+      <div class="detail-title" id="dp-bill-no">BIL-2568-00234</div>
+      <div style="font-size:12px;color:var(--navy-50);margin-top:2px" id="dp-cycle">Q2/2568 · บ้านเดี่ยว</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div id="dp-status-pill"></div>
+      <div class="detail-close" onclick="closeDetail()">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="detail-body">
+
+    <div class="detail-section">
+      <div class="detail-section-label">ข้อมูลบ้าน</div>
+      <div class="detail-row"><span class="detail-row-label">ที่อยู่</span><span class="detail-row-val" id="dp-address">24/1 หมู่ 3</span></div>
+      <div class="detail-row"><span class="detail-row-label">เจ้าบ้าน</span><span class="detail-row-val" id="dp-owner">สมชาย สุขใจ</span></div>
+      <div class="detail-row"><span class="detail-row-label">โซน</span><span class="detail-row-val" id="dp-zone">โซน B</span></div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">รายการค่าบริการ</div>
+      <table class="breakdown-table">
+        <thead>
+          <tr><th>รายการ</th><th style="text-align:right">จำนวนเงิน</th></tr>
+        </thead>
+        <tbody id="dp-breakdown">
+          <tr><td>ค่าขยะ (Q2/2568)</td><td style="text-align:right">฿240</td></tr>
+          <tr><td>ค่าน้ำ 14 ม³</td><td style="text-align:right">฿1,560</td></tr>
+          <tr><td style="font-weight:700">รวมสุทธิ</td><td style="text-align:right;font-weight:700" id="dp-total">฿1,800</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">การชำระเงิน</div>
+      <div class="detail-row"><span class="detail-row-label">กำหนดชำระ</span><span class="detail-row-val" id="dp-due">31 พ.ค. 2568</span></div>
+      <div class="detail-row"><span class="detail-row-label">ชำระแล้ว</span><span class="detail-row-val amount-green" id="dp-paid">฿0</span></div>
+      <div class="detail-row"><span class="detail-row-label">ยังค้าง</span><span class="detail-row-val amount-red" id="dp-outstanding">฿1,800</span></div>
+    </div>
+
+    <div class="detail-section" id="dp-timeline-section">
+      <div class="detail-section-label">ประวัติ</div>
+      <div id="dp-timeline" style="font-size:12.5px;color:var(--navy-50);line-height:2">
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--org-primary);flex-shrink:0"></div>
+          ออกบิล — 22 เม.ย. 2568
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="detail-footer">
+    <button class="btn btn-primary btn-lg" style="flex:1" onclick="showToast('บันทึกรับชำระ')">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+      บันทึกรับชำระ
+    </button>
+    <button class="btn btn-secondary btn-lg" onclick="showToast('Download PDF')">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/></svg>
+      PDF
+    </button>
+    <button class="btn btn-ghost btn-lg" onclick="showToast('แจ้งเตือน LINE')">LINE</button>
+  </div>
+</div>
+
+<!-- ─── BARCODE SCANNER MODAL ──────────────────────────── -->
+<div id="scanner-overlay" style="
+  position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.92);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+">
+  <!-- top bar -->
+  <div style="position:absolute;top:0;left:0;right:0;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+    <div style="color:white;font-family:var(--font);font-size:16px;font-weight:600">สแกนบาร์โค้ดบิล</div>
+    <button onclick="closeScanner()" style="
+      background:rgba(255,255,255,0.15);border:none;border-radius:8px;
+      width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    ">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="white"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+    </button>
+  </div>
+
+  <!-- scanner state -->
+  <div id="scan-view" style="display:flex;flex-direction:column;align-items:center;gap:24px">
+    <!-- viewfinder -->
+    <div style="position:relative;width:280px;height:200px">
+      <!-- corner brackets -->
+      <div style="position:absolute;top:0;left:0;width:28px;height:28px;border-top:3px solid var(--org-primary);border-left:3px solid var(--org-primary);border-radius:3px 0 0 0"></div>
+      <div style="position:absolute;top:0;right:0;width:28px;height:28px;border-top:3px solid var(--org-primary);border-right:3px solid var(--org-primary);border-radius:0 3px 0 0"></div>
+      <div style="position:absolute;bottom:0;left:0;width:28px;height:28px;border-bottom:3px solid var(--org-primary);border-left:3px solid var(--org-primary);border-radius:0 0 0 3px"></div>
+      <div style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-bottom:3px solid var(--org-primary);border-right:3px solid var(--org-primary);border-radius:0 0 3px 0"></div>
+      <!-- camera preview sim -->
+      <div style="
+        position:absolute;inset:8px;background:rgba(255,255,255,0.04);border-radius:4px;
+        overflow:hidden;display:flex;align-items:center;justify-content:center;
+      ">
+        <!-- barcode lines mock -->
+        <div style="display:flex;gap:1.5px;align-items:stretch;height:72px;opacity:0.25">
+          <script>
+            document.write(Array.from({length:42}).map((_,i)=>`<div style="width:${i%5===0?3:i%3===0?2:1}px;background:white;border-radius:1px;height:${i%7===0?72:i%4===0?60:48}px;align-self:center"></div>`).join(''));
+          </script>
+        </div>
+        <!-- scan line -->
+        <div id="scan-line" style="
+          position:absolute;left:0;right:0;height:2px;
+          background:linear-gradient(90deg,transparent,var(--org-primary),var(--org-primary),transparent);
+          box-shadow:0 0 8px var(--org-primary);
+          animation:scanMove 1.6s ease-in-out infinite;
+          top:20%;
+        "></div>
+      </div>
+    </div>
+    <div style="color:rgba(255,255,255,0.65);font-family:var(--font);font-size:14px;text-align:center;line-height:1.7">
+      วางบาร์โค้ดบิลไว้ในกรอบ<br>ระบบจะสแกนอัตโนมัติ
+    </div>
+    <!-- manual input row -->
+    <div style="display:flex;gap:8px;width:280px">
+      <input id="manual-barcode" type="text" placeholder="หรือพิมพ์เลขบาร์โค้ด…" style="
+        flex:1;padding:10px 14px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);
+        background:rgba(255,255,255,0.08);color:white;font-family:var(--font);font-size:14px;outline:none;
+      " onkeydown="if(event.key==='Enter')triggerScan()">
+      <button onclick="triggerScan()" style="
+        padding:10px 16px;border-radius:8px;background:var(--org-primary);border:none;
+        color:white;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;
+      ">ค้นหา</button>
+    </div>
+    <div style="color:rgba(255,255,255,0.35);font-family:var(--font);font-size:12px">กำลังสแกน…</div>
+  </div>
+
+  <!-- found state (hidden by default) -->
+  <div id="scan-found" style="display:none;flex-direction:column;align-items:center;gap:16px;width:min(360px,92vw)">
+    <div style="
+      width:64px;height:64px;border-radius:50%;
+      background:linear-gradient(135deg,#059669,#047857);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 8px 24px rgba(5,150,105,0.4);
+      animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;
+    ">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div style="color:white;font-family:var(--font);font-size:18px;font-weight:700;text-align:center">พบบิลในระบบ</div>
+    <div id="scan-result-card" style="
+      width:100%;background:white;border-radius:14px;padding:18px;
+      box-shadow:0 12px 40px rgba(0,0,0,0.4);
+    "></div>
+    <div style="display:flex;gap:10px;width:100%">
+      <button onclick="scanGoDetail()" style="
+        flex:1;padding:14px;border-radius:10px;background:var(--org-primary);border:none;
+        color:white;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;
+      ">เปิดบิล / รับชำระ</button>
+      <button onclick="resetScanner()" style="
+        padding:14px 18px;border-radius:10px;background:rgba(255,255,255,0.12);border:none;
+        color:white;font-family:var(--font);font-size:14px;cursor:pointer;
+      ">สแกนใหม่</button>
+    </div>
+  </div>
+
+  <!-- not found state -->
+  <div id="scan-notfound" style="display:none;flex-direction:column;align-items:center;gap:14px">
+    <div style="
+      width:64px;height:64px;border-radius:50%;
+      background:rgba(220,38,38,0.25);border:2px solid #dc2626;
+      display:flex;align-items:center;justify-content:center;
+    ">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+    <div style="color:white;font-family:var(--font);font-size:17px;font-weight:600">ไม่พบบิลนี้ในระบบ</div>
+    <div style="color:rgba(255,255,255,0.55);font-family:var(--font);font-size:13px;text-align:center">ตรวจสอบบาร์โค้ดหรือค้นหาด้วยชื่อ/บ้านเลขที่</div>
+    <button onclick="resetScanner()" style="
+      padding:12px 28px;border-radius:10px;background:rgba(255,255,255,0.12);border:none;
+      color:white;font-family:var(--font);font-size:14px;cursor:pointer;
+    ">ลองอีกครั้ง</button>
+  </div>
+</div>
+
+<style>
+@keyframes scanMove {
+  0%   { top:15%; }
+  50%  { top:75%; }
+  100% { top:15%; }
+}
+@keyframes popIn {
+  0%   { transform:scale(0.4);opacity:0; }
+  65%  { transform:scale(1.1); }
+  100% { transform:scale(1);opacity:1; }
+}
+</style>
+
+<!-- TWEAKS PANEL -->
+<div id="tweaks-panel">
+  <h4>Tweaks</h4>
+  <div class="tweak-row">
+    <div class="tweak-label">Primary Color</div>
+    <input type="color" value="#1b61c9" oninput="setPrimary(this.value)">
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">แสดงสถานะเริ่มต้น</div>
+    <select onchange="filterByKpi(this.value)">
+      <option value="all">ทั้งหมด</option>
+      <option value="overdue">เกินกำหนด</option>
+      <option value="issued">รอชำระ</option>
+      <option value="paid">ชำระแล้ว</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">มุมมองเริ่มต้น</div>
+    <select onchange="setView(this.value)">
+      <option value="table">ตาราง</option>
+      <option value="card">การ์ด</option>
+    </select>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── SCANNER ───────────────────────────────────────────────
+let scannerTimer = null;
+let scannedBill = null;
+
+function openScanner() {
+  document.getElementById('scanner-overlay').style.display = 'flex';
+  resetScanner();
+  // Auto-simulate a scan after 2.4s for demo
+  scannerTimer = setTimeout(() => triggerScan('AUTO'), 2400);
+}
+
+function closeScanner() {
+  clearTimeout(scannerTimer);
+  document.getElementById('scanner-overlay').style.display = 'none';
+}
+
+function resetScanner() {
+  clearTimeout(scannerTimer);
+  document.getElementById('scan-view').style.display = 'flex';
+  document.getElementById('scan-found').style.display = 'none';
+  document.getElementById('scan-notfound').style.display = 'none';
+  document.getElementById('manual-barcode').value = '';
+  scannerTimer = setTimeout(() => triggerScan('AUTO'), 2400);
+}
+
+function triggerScan(mode) {
+  clearTimeout(scannerTimer);
+  const input = document.getElementById('manual-barcode').value.trim();
+  // For demo: auto picks first overdue bill; manual tries to match by id fragment
+  let found = null;
+  if (mode === 'AUTO') {
+    found = BILLS.find(b => b.status === 'overdue') || BILLS[0];
+  } else {
+    found = BILLS.find(b =>
+      b.id.toLowerCase().includes(input.toLowerCase()) ||
+      input === ''
+    );
+  }
+  document.getElementById('scan-view').style.display = 'none';
+  if (found) {
+    scannedBill = found;
+    const outstanding = found.total - found.paid;
+    const STATUS_LABEL_L = {draft:'ฉบับร่าง',issued:'รอชำระ',partial:'ชำระบางส่วน',paid:'ชำระแล้ว',overdue:'เกินกำหนด'};
+    const STATUS_COLOR = {draft:'var(--navy-50)',issued:'var(--org-primary)',partial:'var(--amber)',paid:'var(--green)',overdue:'var(--red)'};
+    document.getElementById('scan-result-card').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div style="font-family:monospace;font-size:12px;color:var(--navy-50);letter-spacing:.5px">${found.id}</div>
+          <div style="font-size:17px;font-weight:700;color:var(--navy);margin-top:2px">${found.house}</div>
+          <div style="font-size:13px;color:var(--navy-50)">${found.owner}</div>
+        </div>
+        <span style="
+          background:${STATUS_COLOR[found.status]}18;color:${STATUS_COLOR[found.status]};
+          border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;
+          white-space:nowrap;font-family:var(--font);
+        ">${STATUS_LABEL_L[found.status]}</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:100px;background:var(--surface);border-radius:8px;padding:10px">
+          <div style="font-size:11px;color:var(--navy-30);font-family:var(--font);margin-bottom:3px">ยอดสุทธิ</div>
+          <div style="font-size:18px;font-weight:700;color:var(--navy);font-family:var(--font)">฿${found.total.toLocaleString()}</div>
+        </div>
+        <div style="flex:1;min-width:100px;background:${outstanding>0?'var(--red-light)':'var(--green-light)'};border-radius:8px;padding:10px">
+          <div style="font-size:11px;color:var(--navy-30);font-family:var(--font);margin-bottom:3px">ยังค้าง</div>
+          <div style="font-size:18px;font-weight:700;color:${outstanding>0?'var(--red)':'var(--green)'};font-family:var(--font)">${outstanding===0?'—':'฿'+outstanding.toLocaleString()}</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--navy-50);font-family:var(--font)">
+        ${found.cycle} · โซน ${found.zone} · กำหนดชำระ ${found.due}
+      </div>
+    `;
+    document.getElementById('scan-found').style.display = 'flex';
+  } else {
+    document.getElementById('scan-notfound').style.display = 'flex';
+  }
+}
+
+function scanGoDetail() {
+  closeScanner();
+  if (scannedBill) {
+    // highlight row and open detail
+    setTimeout(() => openDetail(scannedBill.id), 100);
+  }
+}
+
+// ─── DATA ──────────────────────────────────────────────────
+const BILLS = [
+  {id:'BIL-2568-00087',house:'24/1 หมู่ 3',owner:'สมชาย สุขใจ',cycle:'Q2/2568',zone:'B',type:'บ้านเดี่ยว',total:1800,paid:0,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'issued',services:[{n:'ค่าขยะ (Q2/2568)',v:240},{n:'ค่าน้ำ 14 ม³',v:1560}]},
+  {id:'BIL-2568-00210',house:'12/3 หมู่ 1',owner:'วิภา รักดี',cycle:'Q2/2568',zone:'A',type:'บ้านเดี่ยว',total:1220,paid:1220,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'paid',services:[{n:'ค่าขยะ (Q2/2568)',v:240},{n:'ค่าน้ำ 8 ม³',v:980}]},
+  {id:'BIL-2568-00034',house:'88/2 หมู่ 4',owner:'ประยุทธ์ ใจกล้า',cycle:'Q1/2568',zone:'C',type:'อาคารชุด',total:2820,paid:1000,due:'28 ก.พ. 68',due_raw:'2025-02-28',status:'overdue',services:[{n:'ค่าขยะ (Q1/2568)',v:480},{n:'ค่าน้ำ 19 ม³',v:2340}]},
+  {id:'BIL-2568-00156',house:'5/1 หมู่ 2',owner:'สุนีย์ มั่นคง',cycle:'Q2/2568',zone:'A',type:'บ้านเดี่ยว',total:240,paid:0,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'issued',services:[{n:'ค่าขยะ (Q2/2568)',v:240}]},
+  {id:'BIL-2568-00302',house:'102 หมู่ 3',owner:'บุญมา ศรีสุข',cycle:'Q2/2568',zone:'B',type:'บ้านเดี่ยว',total:1440,paid:800,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'partial',services:[{n:'ค่าขยะ (Q2/2568)',v:240},{n:'ค่าน้ำ 10 ม³',v:1200}]},
+  {id:'BIL-2568-00019',house:'67 หมู่ 4',owner:'พิมพา ดวงดี',cycle:'Q1/2568',zone:'D',type:'ทาวน์เฮาส์',total:4600,paid:0,due:'28 ก.พ. 68',due_raw:'2025-02-28',status:'overdue',services:[{n:'ค่าขยะ (Q1/2568)',v:720},{n:'ค่าน้ำ 32 ม³',v:3880}]},
+  {id:'BIL-2568-00441',house:'14/5 หมู่ 1',owner:'เรณู ทองแดง',cycle:'Q2/2568',zone:'A',type:'บ้านเดี่ยว',total:1000,paid:1000,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'paid',services:[{n:'ค่าขยะ (Q2/2568)',v:240},{n:'ค่าน้ำ 6 ม³',v:760}]},
+  {id:'BIL-2568-00098',house:'77/1 หมู่ 3',owner:'ชาญชัย พลิก',cycle:'Q2/2568',zone:'B',type:'บ้านเดี่ยว',total:2080,paid:2080,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'paid',services:[{n:'ค่าขยะ (Q2/2568)',v:240},{n:'ค่าน้ำ 15 ม³',v:1840}]},
+  {id:'BIL-2568-00512',house:'41 หมู่ 4',owner:'กมลทิพย์ หัวใจดี',cycle:'Q2/2568',zone:'C',type:'อาคารชุด',total:2600,paid:0,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'issued',services:[{n:'ค่าขยะ (Q2/2568)',v:480},{n:'ค่าน้ำ 17 ม³',v:2120}]},
+  {id:'BIL-2568-00073',house:'9/3 หมู่ 2',owner:'ณัฐวุฒิ ตั้งใจ',cycle:'Q1/2568',zone:'D',type:'บ้านเดี่ยว',total:1640,paid:0,due:'28 ก.พ. 68',due_raw:'2025-02-28',status:'overdue',services:[{n:'ค่าขยะ (Q1/2568)',v:240},{n:'ค่าน้ำ 12 ม³',v:1400}]},
+  {id:'BIL-2568-00388',house:'56/2 หมู่ 1',owner:'นิภาพร สวยงาม',cycle:'Q2/2568',zone:'A',type:'ทาวน์เฮาส์',total:1360,paid:1360,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'paid',services:[{n:'ค่าขยะ (Q2/2568)',v:480},{n:'ค่าน้ำ 7 ม³',v:880}]},
+  {id:'BIL-2568-00201',house:'33/2 หมู่ 2',owner:'อดุลย์ เพชรสว่าง',cycle:'Q2/2568',zone:'A',type:'บ้านเดี่ยว',total:1580,paid:500,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'partial',services:[{n:'ค่าขยะ (Q2/2568)',v:240},{n:'ค่าน้ำ 11 ม³',v:1340}]},
+  {id:'BIL-2568-00455',house:'78 หมู่ 3',owner:'ทิพย์วรา ดีเลิศ',cycle:'Q2/2568',zone:'B',type:'บ้านเดี่ยว',total:900,paid:0,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'issued',services:[{n:'ค่าขยะ (Q2/2568)',v:240},{n:'ค่าน้ำ 5 ม³',v:660}]},
+  {id:'BIL-2568-00122',house:'18/1 หมู่ 4',owner:'วรวิทย์ เก่งการ',cycle:'Q1/2568',zone:'C',type:'บ้านเดี่ยว',total:2200,paid:2200,due:'28 ก.พ. 68',due_raw:'2025-02-28',status:'paid',services:[{n:'ค่าขยะ (Q1/2568)',v:240},{n:'ค่าน้ำ 16 ม³',v:1960}]},
+  {id:'BIL-2568-00334',house:'65/4 หมู่ 1',owner:'ลลิตา มีสุข',cycle:'Q2/2568',zone:'D',type:'อาคารชุด',total:3400,paid:0,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'issued',services:[{n:'ค่าขยะ (Q2/2568)',v:480},{n:'ค่าน้ำ 23 ม³',v:2920}]},
+  {id:'BIL-2568-00008',house:'1 หมู่ 1',owner:'สงบ รักษาดี',cycle:'Q1/2568',zone:'A',type:'บ้านเดี่ยว',total:1100,paid:0,due:'28 ก.พ. 68',due_raw:'2025-02-28',status:'overdue',services:[{n:'ค่าขยะ (Q1/2568)',v:240},{n:'ค่าน้ำ 7 ม³',v:860}]},
+  {id:'BIL-2568-00590',house:'90 หมู่ 2',owner:'บัวทอง ชื่นบาน',cycle:'Q2/2568',zone:'B',type:'บ้านเดี่ยว',total:1740,paid:1740,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'paid',services:[{n:'ค่าขยะ (Q2/2568)',v:240},{n:'ค่าน้ำ 13 ม³',v:1500}]},
+  {id:'BIL-2568-00276',house:'44/2 หมู่ 4',owner:'ประเสริฐ ใฝ่ดี',cycle:'Q2/2568',zone:'C',type:'ทาวน์เฮาส์',total:2040,paid:600,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'partial',services:[{n:'ค่าขยะ (Q2/2568)',v:480},{n:'ค่าน้ำ 13 ม³',v:1560}]},
+  {id:'BIL-2568-00047',house:'3/1 หมู่ 3',owner:'เนตรนภา แสงสว่าง',cycle:'Q1/2568',zone:'A',type:'บ้านเดี่ยว',total:980,paid:0,due:'28 ก.พ. 68',due_raw:'2025-02-28',status:'overdue',services:[{n:'ค่าขยะ (Q1/2568)',v:240},{n:'ค่าน้ำ 6 ม³',v:740}]},
+  {id:'BIL-2568-00614',house:'111/1 หมู่ 2',owner:'กานต์ชนก พูนสุข',cycle:'Q2/2568',zone:'D',type:'อาคารชุด',total:4200,paid:4200,due:'31 พ.ค. 68',due_raw:'2025-05-31',status:'paid',services:[{n:'ค่าขยะ (Q2/2568)',v:720},{n:'ค่าน้ำ 28 ม³',v:3480}]},
+];
+
+// ─── STATE ─────────────────────────────────────────────────
+let activeKpi = 'all';
+let currentPage = 1;
+let sortCol = 'due_raw';
+let sortDir = 1;
+let searchQ = '';
+let activeView = 'table';
+const PAGE_SIZE = 20;
+
+const STATUS_LABEL = {draft:'ฉบับร่าง',issued:'รอชำระ',partial:'ชำระบางส่วน',paid:'ชำระแล้ว',overdue:'เกินกำหนด'};
+const STATUS_CLASS = {draft:'s-draft',issued:'s-issued',partial:'s-partial',paid:'s-paid',overdue:'s-overdue'};
+
+// ─── FILTER + RENDER ────────────────────────────────────────
+function getFiltered(){
+  const cycle  = document.getElementById('filter-cycle').value;
+  const zone   = document.getElementById('filter-zone').value;
+  const type   = document.getElementById('filter-type').value;
+  const status = document.getElementById('filter-status').value;
+  const q = searchQ.toLowerCase();
+  return BILLS.filter(b=>{
+    if(activeKpi !== 'all' && b.status !== activeKpi) return false;
+    if(cycle  && b.cycle  !== cycle)  return false;
+    if(zone   && b.zone   !== zone)   return false;
+    if(type   && b.type   !== type)   return false;
+    if(status && b.status !== status) return false;
+    if(q && !b.id.toLowerCase().includes(q) && !b.house.toLowerCase().includes(q) && !b.owner.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b)=>{
+    let av=a[sortCol],bv=b[sortCol];
+    if(typeof av==='string') return av.localeCompare(bv)*sortDir;
+    return (av-bv)*sortDir;
+  });
+}
+
+function renderTable(){
+  const data = getFiltered();
+  const tbody = document.getElementById('bill-tbody');
+  const empty = document.getElementById('empty-state');
+  const tableCard = document.getElementById('table-view');
+
+  document.getElementById('result-count').textContent = `แสดง ${data.length.toLocaleString()} รายการ`;
+
+  if(data.length===0){
+    tableCard.style.display='none';
+    empty.style.display='flex';
+    return;
+  }
+  empty.style.display='none';
+  tableCard.style.display='';
+
+  const page = data.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+  tbody.innerHTML = page.map(b=>{
+    const outstanding = b.total - b.paid;
+    const isOverdue = b.status==='overdue';
+    const overdayDays = isOverdue ? Math.floor((new Date()-new Date(b.due_raw))/86400000) : 0;
+    return `<tr class="${isOverdue?'overdue-row':''}" onclick="openDetail('${b.id}')">
+      <td onclick="event.stopPropagation()">
+        <input type="checkbox" class="row-chk" style="cursor:pointer;width:14px;height:14px;accent-color:var(--org-primary)">
+      </td>
+      <td><span class="mono">${b.id}</span></td>
+      <td>
+        <div style="font-size:13px;font-weight:500">${b.house}</div>
+        <div style="font-size:11.5px;color:var(--navy-50)">${b.owner}</div>
+      </td>
+      <td style="color:var(--navy-50);font-size:12.5px">${b.cycle}</td>
+      <td>
+        <span style="font-size:12px;background:var(--surface-2);border:1px solid var(--border-light);border-radius:5px;padding:2px 8px;font-weight:500">โซน ${b.zone}</span>
+      </td>
+      <td class="amount">฿${b.total.toLocaleString()}</td>
+      <td class="amount ${outstanding===0?'amount-dim':isOverdue?'amount-red':''}">
+        ${outstanding===0 ? '—' : '฿'+outstanding.toLocaleString()}
+        ${isOverdue&&outstanding>0 ? `<div class="overdue-badge">+${overdayDays} วัน</div>` : ''}
+      </td>
+      <td>
+        <div style="font-size:12.5px${isOverdue?';color:var(--red);font-weight:600':''}">${b.due}</div>
+      </td>
+      <td><span class="pill ${STATUS_CLASS[b.status]}"><span class="pill-dot"></span>${STATUS_LABEL[b.status]}</span></td>
+      <td onclick="event.stopPropagation()">
+        <div class="row-actions">
+          ${b.status!=='paid'?`<button class="row-btn row-btn-primary" onclick="showToast('รับชำระ: '+this.dataset.id)" data-id="${b.id}">รับชำระ</button>`:''}
+          <button class="row-btn row-btn-ghost" onclick="showToast('PDF')">PDF</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // pagination footer
+  const total = data.length;
+  const pages = Math.ceil(total/PAGE_SIZE);
+  const start = (currentPage-1)*PAGE_SIZE+1;
+  const end = Math.min(currentPage*PAGE_SIZE, total);
+  document.getElementById('footer-info').textContent = `แสดง ${start}–${end} จาก ${total.toLocaleString()} รายการ`;
+
+  // simple pagination (show 3 + last)
+  const pg = document.getElementById('pagination');
+  pg.innerHTML = `<button class="page-btn" onclick="goPage(-1)" ${currentPage===1?'disabled':''}>‹</button>`;
+  const shown = new Set([1,2,3,currentPage-1,currentPage,currentPage+1,pages].filter(p=>p>=1&&p<=pages));
+  let prev=0;
+  [...shown].sort((a,b)=>a-b).forEach(p=>{
+    if(p-prev>1) pg.innerHTML+=`<span style="font-size:12px;color:var(--navy-30);padding:0 2px">…</span>`;
+    pg.innerHTML+=`<button class="page-btn ${p===currentPage?'active':''}" onclick="setPage(${p})">${p}</button>`;
+    prev=p;
+  });
+  pg.innerHTML+=`<button class="page-btn" onclick="goPage(1)" ${currentPage===pages?'disabled':''}>›</button>`;
+}
+
+function renderCards(){
+  const data = getFiltered();
+  const grid = document.getElementById('card-grid');
+  const empty = document.getElementById('empty-state');
+  document.getElementById('card-view').style.display = activeView==='card' ? '' : 'none';
+  if(data.length===0){empty.style.display='flex';grid.innerHTML='';return;}
+  empty.style.display='none';
+  grid.innerHTML = data.slice(0,24).map(b=>{
+    const outstanding = b.total-b.paid;
+    const isOverdue = b.status==='overdue';
+    return `<div onclick="openDetail('${b.id}')" style="background:var(--white);border:1.5px solid ${isOverdue?'#fca5a5':'var(--border)'};border-radius:10px;padding:14px;cursor:pointer;transition:box-shadow .12s;${isOverdue?'background:#fff8f8':''}"
+      onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--navy-80);font-family:monospace">${b.id}</div>
+          <div style="font-size:14px;font-weight:600;margin-top:2px">${b.house}</div>
+          <div style="font-size:12px;color:var(--navy-50)">${b.owner}</div>
+        </div>
+        <span class="pill ${STATUS_CLASS[b.status]}" style="flex-shrink:0"><span class="pill-dot"></span>${STATUS_LABEL[b.status]}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--border-light);padding-top:10px;margin-top:4px">
+        <div>
+          <div style="font-size:10.5px;color:var(--navy-30);text-transform:uppercase;letter-spacing:.5px">${b.cycle} · โซน ${b.zone}</div>
+          <div style="font-size:11px;color:${isOverdue?'var(--red)':'var(--navy-50)'};margin-top:2px">กำหนด ${b.due}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:16px;font-weight:700;color:${outstanding===0?'var(--green)':isOverdue?'var(--red)':'var(--navy)'}">${outstanding===0?'ชำระแล้ว':'฿'+outstanding.toLocaleString()}</div>
+          <div style="font-size:11px;color:var(--navy-30)">/ ฿${b.total.toLocaleString()}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── CONTROLS ──────────────────────────────────────────────
+function filterByKpi(kpi){
+  activeKpi = kpi;
+  document.querySelectorAll('.kpi-cell').forEach(c=>c.classList.remove('active-filter'));
+  if(kpi!=='all') document.getElementById('kpi-'+kpi)?.classList.add('active-filter');
+  document.getElementById('overdue-alert').style.display = kpi==='overdue' ? 'flex' : 'none';
+  const sel = document.getElementById('filter-status');
+  if(sel) sel.value = kpi==='all' ? '' : kpi;
+  currentPage=1;
+  render();
+}
+
+function applyFilters(){
+  // sync KPI strip with status dropdown
+  const statusVal = document.getElementById('filter-status').value;
+  if(statusVal){
+    activeKpi = statusVal;
+    document.querySelectorAll('.kpi-cell').forEach(c=>c.classList.remove('active-filter'));
+    document.getElementById('kpi-'+statusVal)?.classList.add('active-filter');
+    document.getElementById('overdue-alert').style.display = statusVal==='overdue' ? 'flex' : 'none';
+  } else {
+    activeKpi = 'all';
+    document.querySelectorAll('.kpi-cell').forEach(c=>c.classList.remove('active-filter'));
+    document.getElementById('overdue-alert').style.display = 'none';
+  }
+  currentPage=1;
+  render();
+}
+
+function handleSearch(v){searchQ=v;currentPage=1;render();}
+
+function clearFilters(){
+  searchQ='';
+  document.getElementById('search-input').value='';
+  document.getElementById('filter-cycle').value='';
+  document.getElementById('filter-zone').value='';
+  document.getElementById('filter-type').value='';
+  document.getElementById('filter-status').value='';
+  activeKpi='all';
+  document.querySelectorAll('.kpi-cell').forEach(c=>c.classList.remove('active-filter'));
+  document.getElementById('overdue-alert').style.display='none';
+  currentPage=1;
+  render();
+}
+
+function sortBy(col){
+  if(sortCol===col) sortDir*=-1; else {sortCol=col;sortDir=1;}
+  document.querySelectorAll('th').forEach(th=>{th.classList.remove('sort-asc','sort-desc')});
+  // find th by onclick
+  const ths = document.querySelectorAll('th');
+  ths.forEach(th=>{
+    if(th.getAttribute('onclick')==='sortBy(\''+col+'\')'){
+      th.classList.add(sortDir===1?'sort-asc':'sort-desc');
+    }
+  });
+  render();
+}
+
+function setPage(p){currentPage=p;render();}
+function goPage(d){setPage(currentPage+d);}
+
+function setView(v){
+  activeView=v;
+  document.getElementById('table-view').style.display = v==='table' ? '' : 'none';
+  document.getElementById('card-view').style.display  = v==='card'  ? '' : 'none';
+  document.getElementById('view-table').style.cssText = v==='table'
+    ? 'border-radius:0;padding:6px 10px;border:none;background:var(--org-primary);color:white'
+    : 'border-radius:0;padding:6px 10px;border:none;background:var(--white);color:var(--navy-50)';
+  document.getElementById('view-card').style.cssText = v==='card'
+    ? 'border-radius:0;padding:6px 10px;border:none;background:var(--org-primary);color:white'
+    : 'border-radius:0;padding:6px 10px;border:none;background:var(--white);color:var(--navy-50)';
+  render();
+}
+
+function toggleAll(chk){
+  document.querySelectorAll('.row-chk').forEach(c=>c.checked=chk.checked);
+}
+
+function render(){
+  if(activeView==='table') renderTable();
+  else renderCards();
+}
+
+// ─── DETAIL PANEL ───────────────────────────────────────────
+function openDetail(id){
+  const b = BILLS.find(x=>x.id===id);
+  if(!b) return;
+  const outstanding = b.total - b.paid;
+  document.getElementById('dp-bill-no').textContent = b.id;
+  document.getElementById('dp-cycle').textContent = `${b.cycle} · ${b.type}`;
+  document.getElementById('dp-status-pill').innerHTML = `<span class="pill ${STATUS_CLASS[b.status]}"><span class="pill-dot"></span>${STATUS_LABEL[b.status]}</span>`;
+  document.getElementById('dp-address').textContent = b.house;
+  document.getElementById('dp-owner').textContent = b.owner;
+  document.getElementById('dp-zone').textContent = `โซน ${b.zone}`;
+  document.getElementById('dp-due').textContent = b.due;
+  document.getElementById('dp-paid').textContent = b.paid > 0 ? `฿${b.paid.toLocaleString()}` : '—';
+  document.getElementById('dp-outstanding').textContent = outstanding > 0 ? `฿${outstanding.toLocaleString()}` : '—';
+  document.getElementById('dp-outstanding').className = 'detail-row-val ' + (outstanding>0?(b.status==='overdue'?'amount-red':''):'amount-green');
+
+  // breakdown
+  const rows = b.services.map(s=>`<tr><td>${s.n}</td><td style="text-align:right">฿${s.v.toLocaleString()}</td></tr>`).join('');
+  document.getElementById('dp-breakdown').innerHTML = rows +
+    `<tr><td style="font-weight:700">รวมสุทธิ</td><td style="text-align:right;font-weight:700">฿${b.total.toLocaleString()}</td></tr>`;
+
+  // timeline
+  const tl = document.getElementById('dp-timeline');
+  tl.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><div style="width:6px;height:6px;border-radius:50%;background:var(--org-primary);flex-shrink:0"></div>ออกบิล — 22 เม.ย. 2568</div>`;
+  if(b.paid>0) tl.innerHTML += `<div style="display:flex;gap:8px;align-items:center"><div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0"></div>รับชำระ ฿${b.paid.toLocaleString()} — 28 เม.ย. 2568</div>`;
+  if(b.status==='overdue') tl.innerHTML += `<div style="display:flex;gap:8px;align-items:center"><div style="width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0"></div><span style="color:var(--red);font-weight:600">เกินกำหนด — ${b.due}</span></div>`;
+
+  // footer button
+  const footerPrimary = document.querySelector('.detail-footer .btn-primary');
+  if(b.status==='paid'){
+    footerPrimary.textContent='ดูใบเสร็จ';
+  } else {
+    footerPrimary.innerHTML=`<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>บันทึกรับชำระ`;
+  }
+
+  document.getElementById('detail-overlay').classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closeDetail(){
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeDetail()});
+
+// ─── TWEAKS ─────────────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "primaryColor": "#1b61c9"
+}/*EDITMODE-END*/;
+
+function setPrimary(c){
+  document.documentElement.style.setProperty('--org-primary',c);
+  // generate lighter variant
+  document.documentElement.style.setProperty('--org-primary-light', c+'22');
+  window.parent.postMessage({type:'__edit_mode_set_keys',edits:{primaryColor:c}},'*');
+}
+
+// Apply saved tweaks
+(function(){
+  const saved = localStorage.getItem('o05-tweaks');
+  if(saved){try{const t=JSON.parse(saved);if(t.primaryColor)setPrimary(t.primaryColor);}catch(e){}}
+  setPrimary(TWEAK_DEFAULTS.primaryColor);
+})();
+
+// Tweaks panel toggle
+window.addEventListener('message',e=>{
+  if(e.data?.type==='__activate_edit_mode') document.getElementById('tweaks-panel').style.display='block';
+  if(e.data?.type==='__deactivate_edit_mode') document.getElementById('tweaks-panel').style.display='none';
+});
+window.parent.postMessage({type:'__edit_mode_available'},'*');
+
+// ─── TOAST ──────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>

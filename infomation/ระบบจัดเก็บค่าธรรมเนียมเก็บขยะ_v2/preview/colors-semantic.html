@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#fff; padding:20px; }
+.grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; }
+.card { border-radius:10px; overflow:hidden; border:1px solid #e0e2e6; }
+.card-top { height:44px; }
+.card-body { padding:8px 10px; }
+.label { font-size:11px; font-weight:600; color:#181d26; }
+.desc { font-size:10px; color:#6b7280; margin-top:2px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:500; margin-top:4px; }
+</style>
+</head><body>
+<div class="grid">
+  <div class="card">
+    <div class="card-top" style="background:#16a34a"></div>
+    <div class="card-body">
+      <div class="label">Success</div>
+      <div class="desc">#006400 / #16a34a</div>
+      <div class="badge" style="background:#f0fdf4; color:#006400">ชำระแล้ว</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-top" style="background:#d97706"></div>
+    <div class="card-body">
+      <div class="label">Warning</div>
+      <div class="desc">#b45309 / #d97706</div>
+      <div class="badge" style="background:#fffbeb; color:#b45309">รอดำเนินการ</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-top" style="background:#dc2626"></div>
+    <div class="card-body">
+      <div class="label">Danger</div>
+      <div class="desc">#b91c1c / #dc2626</div>
+      <div class="badge" style="background:#fef2f2; color:#b91c1c">ค้างชำระ</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-top" style="background:#1b61c9"></div>
+    <div class="card-body">
+      <div class="label">Info</div>
+      <div class="desc">#1b61c9 / #3b82f6</div>
+      <div class="badge" style="background:#eff6ff; color:#1b61c9">ออกบิลแล้ว</div>
+    </div>
+  </div>
+</div>
+<div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap">
+  <div class="badge" style="background:#f0fdf4; color:#006400; border-radius:4px; padding:3px 10px; font-size:12px">paid ✓</div>
+  <div class="badge" style="background:#eff6ff; color:#1b61c9; border-radius:4px; padding:3px 10px; font-size:12px">issued</div>
+  <div class="badge" style="background:#fffbeb; color:#b45309; border-radius:4px; padding:3px 10px; font-size:12px">partial_paid</div>
+  <div class="badge" style="background:#fef2f2; color:#b91c1c; border-radius:4px; padding:3px 10px; font-size:12px">overdue</div>
+  <div class="badge" style="background:#f3f4f6; color:#4b5563; border-radius:4px; padding:3px 10px; font-size:12px">draft</div>
+  <div class="badge" style="background:#f3f4f6; color:#6b7280; border-radius:4px; padding:3px 10px; font-size:12px">cancelled</div>
+  <div class="badge" style="background:#fdf2f8; color:#9d174d; border-radius:4px; padding:3px 10px; font-size:12px">written_off</div>
+</div>
+</body></html>

@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-06 — Receipt · ใบเสร็จรับเงิน · Resident Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="../ios-frame.jsx"></script>
+<script type="text/babel" src="../design-canvas.jsx"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#f0eee9; }
+  @keyframes fadeSlideUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes popIn { 0%{transform:scale(0.6);opacity:0;} 65%{transform:scale(1.08);} 100%{transform:scale(1);opacity:1;} }
+  @keyframes stampDrop { 0%{transform:scale(1.6) rotate(-12deg);opacity:0;} 60%{transform:scale(0.95) rotate(3deg);opacity:1;} 100%{transform:scale(1) rotate(-4deg);opacity:1;} }
+</style>
+</head>
+<body>
+<script type="text/babel">
+
+/* ─── Design Tokens — exact match with R-01…R-05 ─── */
+const T = {
+  primary:      '#1b61c9',
+  primaryLight: '#e8f0fd',
+  primaryDark:  '#144fa8',
+  primaryMid:   '#2d6ed4',
+  navy:         '#181d26',
+  navyWeak:     'rgba(4,14,32,0.50)',
+  navyFaint:    'rgba(4,14,32,0.07)',
+  border:       '#e0e2e6',
+  surface:      '#f8fafc',
+  white:        '#ffffff',
+  success:      '#166534',
+  successBg:    '#f0fdf4',
+  successMid:   '#16a34a',
+  warning:      '#b45309',
+  warningBg:    '#fffbeb',
+  warningMid:   '#d97706',
+  danger:       '#b91c1c',
+  dangerBg:     '#fef2f2',
+  dangerMid:    '#dc2626',
+  font:         "'Sarabun', -apple-system, sans-serif",
+  radius:       { sm:8, md:14, lg:20, xl:28 },
+};
+
+/* ─── Shared micro-components ─── */
+const BackHeader = ({ title, sub, noShare, onShare }) => (
+  <div style={{ background:T.primary, padding:'14px 20px 20px' }}>
+    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+      <div style={{
+        width:40, height:40, borderRadius:10,
+        background:'rgba(255,255,255,0.18)',
+        display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0,
+      }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </div>
+      <div style={{ flex:1 }}>
+        <div style={{ fontSize:20, fontWeight:700, color:'#fff', fontFamily:T.font, lineHeight:1.2 }}>{title}</div>
+        {sub && <div style={{ fontSize:13, color:'rgba(255,255,255,0.70)', fontFamily:T.font, marginTop:2 }}>{sub}</div>}
+      </div>
+      {!noShare && (
+        <div onClick={onShare} style={{
+          width:40, height:40, borderRadius:10,
+          background:'rgba(255,255,255,0.18)',
+          display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0,
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+const BigBtn = ({ children, color, outline, onClick }) => (
+  <button onClick={onClick} style={{
+    width:'100%', height:58, borderRadius:T.radius.md,
+    background: outline ? T.white : (color || T.primary),
+    border: outline ? `1.5px solid ${T.border}` : 'none',
+    cursor:'pointer',
+    display:'flex', alignItems:'center', justifyContent:'center', gap:10,
+    boxShadow: outline ? 'none' : `0 4px 14px ${color ? color+'44' : 'rgba(27,97,201,0.28)'}`,
+    fontFamily:T.font, transition:'all 0.2s',
+  }}>
+    <span style={{ fontSize:18, fontWeight:700, color: outline ? T.navy : '#fff' }}>{children}</span>
+  </button>
+);
+
+/* ─── Divider ─── */
+const HR = ({ dashed }) => (
+  <div style={{
+    borderTop: dashed ? `1.5px dashed ${T.border}` : `1px solid ${T.border}`,
+    margin:'0',
+  }}/>
+);
+
+/* ─── Official Org Logo placeholder ─── */
+const OrgLogo = ({ size=52 }) => (
+  <div style={{
+    width:size, height:size, borderRadius:size*0.22, flexShrink:0,
+    background:`linear-gradient(135deg, ${T.primary} 0%, ${T.primaryDark} 100%)`,
+    display:'flex', alignItems:'center', justifyContent:'center',
+    boxShadow:`0 2px 8px rgba(27,97,201,0.30)`,
+  }}>
+    <svg width={size*0.55} height={size*0.55} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  </div>
+);
+
+/* ─── Digital Stamp ─── */
+const DigitalStamp = ({ cancelled }) => {
+  const color = cancelled ? T.dangerMid : T.successMid;
+  const text  = cancelled ? 'ยกเลิก' : 'ชำระแล้ว';
+  return (
+    <div style={{
+      width:88, height:88, borderRadius:'50%', flexShrink:0,
+      border:`3px solid ${color}`,
+      display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+      position:'relative', overflow:'hidden',
+      animation:'stampDrop 0.5s 0.6s cubic-bezier(0.34,1.56,0.64,1) both',
+      opacity:0,
+      transform: cancelled ? 'rotate(-8deg)' : 'rotate(-4deg)',
+    }}>
+      {/* inner ring */}
+      <div style={{
+        position:'absolute', inset:5,
+        borderRadius:'50%', border:`1.5px solid ${color}44`,
+      }}/>
+      <div style={{
+        fontSize: cancelled ? 15 : 14, fontWeight:800,
+        color, fontFamily:T.font, letterSpacing:0.5,
+        textAlign:'center', lineHeight:1.25, zIndex:1,
+      }}>
+        {text}
+      </div>
+      <div style={{ fontSize:10, color:`${color}bb`, fontFamily:T.font, fontWeight:600, letterSpacing:0.3, zIndex:1 }}>
+        {cancelled ? 'CANCELLED' : 'PAID'}
+      </div>
+    </div>
+  );
+};
+
+/* ─── Row in receipt detail table ─── */
+const DetailRow = ({ label, value, mono, bold, valueColor, indent }) => (
+  <div style={{
+    display:'flex', alignItems:'baseline', justifyContent:'space-between',
+    padding:`6px ${indent?'6px':'0px'}`,
+    paddingLeft: indent ? 14 : 0,
+  }}>
+    <span style={{
+      fontSize: indent?13:14, color: indent ? T.navyWeak : T.navyWeak,
+      fontFamily:T.font, flex:1, lineHeight:1.5,
+    }}>{label}</span>
+    <span style={{
+      fontSize: indent?13:14, fontWeight: bold?700:500,
+      color: valueColor || T.navy,
+      fontFamily: mono ? 'monospace' : T.font,
+      letterSpacing: mono ? 0.5 : 0,
+      textAlign:'right', marginLeft:12, flexShrink:0,
+    }}>{value}</span>
+  </div>
+);
+
+/* ═══════════════════════════════════════════════════════
+   SCREEN 1 — ใบเสร็จรับเงิน (Paid)
+═══════════════════════════════════════════════════════ */
+const ScreenReceiptPaid = () => {
+  const [animate, setAnimate] = React.useState(false);
+  React.useEffect(()=>{ setTimeout(()=>setAnimate(true),80); },[]);
+
+  const lineItems = [
+    { label:'ค่าเก็บขยะ', period:'เม.ย. – มิ.ย. 2569', amount:180 },
+    { label:'ค่าน้ำประปา', period:'รอบที่ 2/2569 (มี.ค.–เม.ย.)', amount:132 },
+  ];
+  const subtotal = lineItems.reduce((s,i)=>s+i.amount,0);
+  const discount = 0;
+  const penalty  = 0;
+  const total    = subtotal - discount + penalty;
+
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:130 }}>
+      <BackHeader title="ใบเสร็จรับเงิน" sub="เลขที่ RC-2569-0421-001"/>
+
+      {/* ── Status Banner ── */}
+      <div style={{
+        margin:'14px 16px 0',
+        background:'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+        border:`1.5px solid #86efac`,
+        borderRadius:T.radius.md, padding:'14px 16px',
+        display:'flex', alignItems:'center', gap:14,
+        animation: animate ? 'fadeSlideUp 0.45s both' : 'none',
+      }}>
+        <div style={{
+          width:44, height:44, borderRadius:12, flexShrink:0,
+          background:T.successMid,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          animation: animate ? 'popIn 0.4s 0.1s both' : 'none',
+          boxShadow:'0 4px 12px rgba(22,163,74,0.30)',
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:16, fontWeight:700, color:T.success, fontFamily:T.font }}>ชำระเงินสำเร็จแล้ว</div>
+          <div style={{ fontSize:13, color:`${T.success}99`, fontFamily:T.font, marginTop:2 }}>21 เมษายน 2569 เวลา 14:32 น.</div>
+        </div>
+        <div style={{ textAlign:'right' }}>
+          <div style={{ fontSize:11, color:`${T.success}99`, fontFamily:T.font, fontWeight:600 }}>ยอดชำระ</div>
+          <div style={{ fontSize:22, fontWeight:800, color:T.success, fontFamily:T.font, lineHeight:1.1 }}>฿{total}</div>
+        </div>
+      </div>
+
+      {/* ── Official Receipt Document ── */}
+      <div style={{
+        margin:'12px 16px 0',
+        background:T.white, borderRadius:T.radius.lg,
+        border:`1.5px solid ${T.border}`,
+        overflow:'hidden',
+        boxShadow:'0 4px 24px rgba(0,0,0,0.07)',
+        animation: animate ? 'fadeSlideUp 0.5s 0.15s both' : 'none',
+      }}>
+
+        {/* ── Header: Org identity ── */}
+        <div style={{
+          padding:'20px 20px 16px',
+          background:`linear-gradient(180deg, ${T.primaryLight} 0%, ${T.white} 100%)`,
+          borderBottom:`1px solid ${T.border}`,
+          display:'flex', flexDirection:'column', alignItems:'center', gap:12,
+        }}>
+          {/* Logo + stamp row */}
+          <div style={{ width:'100%', display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+              <OrgLogo size={52}/>
+              <div>
+                <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, letterSpacing:0.4, textTransform:'uppercase' }}>
+                  องค์การบริหารส่วนตำบล
+                </div>
+                <div style={{ fontSize:17, fontWeight:800, color:T.navy, fontFamily:T.font, lineHeight:1.25 }}>
+                  อบต.บ้านแป้ง
+                </div>
+                <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font, lineHeight:1.45, marginTop:1 }}>
+                  อ.พระนครศรีอยุธยา · จ.พระนครศรีอยุธยา
+                </div>
+              </div>
+            </div>
+            <DigitalStamp cancelled={false}/>
+          </div>
+
+          {/* Document title */}
+          <div style={{
+            width:'100%', textAlign:'center',
+            borderTop:`1.5px solid ${T.border}`,
+            paddingTop:12,
+          }}>
+            <div style={{
+              display:'inline-block',
+              fontSize:18, fontWeight:800, color:T.navy, fontFamily:T.font,
+              letterSpacing:0.5,
+            }}>
+              ใบเสร็จรับเงิน
+            </div>
+            <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font, marginTop:1 }}>
+              Receipt / Official Tax Document
+            </div>
+          </div>
+        </div>
+
+        {/* ── Receipt meta info ── */}
+        <div style={{ padding:'14px 20px', borderBottom:`1px solid ${T.border}` }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px 16px' }}>
+            {[
+              { label:'เลขที่ใบเสร็จ', value:'RC-2569-0421-001', mono:true, color:T.primary, bold:true },
+              { label:'วันที่ออกใบเสร็จ', value:'21 เม.ย. 2569' },
+              { label:'เลขที่บิลอ้างอิง', value:'บล-2569-1240, 1241', mono:true },
+              { label:'เวลา', value:'14:32:08 น.' },
+            ].map((r,i)=>(
+              <div key={i}>
+                <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.4, marginBottom:2 }}>
+                  {r.label}
+                </div>
+                <div style={{ fontSize:13, fontWeight:r.bold?700:600, color:r.color||T.navy, fontFamily:r.mono?'monospace':T.font, letterSpacing:r.mono?0.5:0 }}>
+                  {r.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Payer info ── */}
+        <div style={{ padding:'12px 20px', borderBottom:`1px solid ${T.border}`, background:T.navyFaint }}>
+          <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.4, marginBottom:8 }}>
+            ข้อมูลผู้ชำระเงิน
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px 16px' }}>
+            {[
+              { label:'ชื่อ-นามสกุล', value:'นายสมชาย ใจดี' },
+              { label:'เลขที่บ้าน', value:'42/1 หมู่ 3' },
+              { label:'รหัสบ้าน', value:'HH-2024-0042', mono:true },
+              { label:'ตำบล/อำเภอ', value:'บ้านแป้ง / พระนครฯ' },
+            ].map((r,i)=>(
+              <div key={i}>
+                <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.3, marginBottom:2 }}>
+                  {r.label}
+                </div>
+                <div style={{ fontSize:13, fontWeight:600, color:T.navy, fontFamily:r.mono?'monospace':T.font, letterSpacing:r.mono?0.5:0 }}>
+                  {r.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Line items ── */}
+        <div style={{ padding:'12px 20px 0' }}>
+          <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.4, marginBottom:10 }}>
+            รายการค่าธรรมเนียม
+          </div>
+
+          {/* Table head */}
+          <div style={{
+            display:'grid', gridTemplateColumns:'1fr auto',
+            padding:'6px 0', borderBottom:`1.5px solid ${T.navy}22`,
+          }}>
+            <span style={{ fontSize:12, fontWeight:700, color:T.navyWeak, fontFamily:T.font, textTransform:'uppercase', letterSpacing:0.3 }}>รายการ</span>
+            <span style={{ fontSize:12, fontWeight:700, color:T.navyWeak, fontFamily:T.font, textTransform:'uppercase', letterSpacing:0.3, textAlign:'right' }}>จำนวนเงิน</span>
+          </div>
+
+          {/* Items */}
+          {lineItems.map((item, i) => (
+            <div key={i} style={{
+              padding:'10px 0',
+              borderBottom:`1px solid ${T.border}`,
+            }}>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr auto', alignItems:'baseline', marginBottom:2 }}>
+                <span style={{ fontSize:15, fontWeight:600, color:T.navy, fontFamily:T.font }}>{item.label}</span>
+                <span style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font, textAlign:'right' }}>
+                  ฿{item.amount.toFixed(2)}
+                </span>
+              </div>
+              <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font }}>{item.period}</div>
+            </div>
+          ))}
+
+          {/* Subtotals */}
+          <div style={{ padding:'10px 0 0' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr auto', padding:'4px 0' }}>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>รวมก่อนหักส่วนลด</span>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font, textAlign:'right' }}>฿{subtotal.toFixed(2)}</span>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr auto', padding:'4px 0' }}>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>ส่วนลด</span>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font, textAlign:'right' }}>-฿{discount.toFixed(2)}</span>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr auto', padding:'4px 0' }}>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>เบี้ยปรับค้างชำระ</span>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font, textAlign:'right' }}>฿{penalty.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Total */}
+        <div style={{
+          margin:'0 20px 0',
+          borderTop:`2px solid ${T.navy}`,
+          padding:'12px 0 16px',
+          display:'grid', gridTemplateColumns:'1fr auto', alignItems:'baseline',
+        }}>
+          <div>
+            <div style={{ fontSize:16, fontWeight:800, color:T.navy, fontFamily:T.font }}>ยอดรวมทั้งสิ้น</div>
+            <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font, marginTop:2 }}>
+              สามร้อยสิบสองบาทถ้วน
+            </div>
+          </div>
+          <div style={{
+            fontSize:30, fontWeight:800, color:T.success, fontFamily:T.font, lineHeight:1,
+          }}>
+            ฿{total.toFixed(2)}
+          </div>
+        </div>
+
+        {/* Payment method */}
+        <div style={{
+          margin:'0 20px 16px',
+          background:T.primaryLight, borderRadius:T.radius.sm,
+          border:`1px solid #bfdbfe`,
+          padding:'10px 14px',
+          display:'flex', alignItems:'center', justifyContent:'space-between',
+        }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <div style={{
+              width:34, height:34, borderRadius:9, background:T.primary,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontSize:13, fontWeight:700, color:T.primaryDark, fontFamily:T.font }}>ช่องทางชำระ</div>
+              <div style={{ fontSize:14, fontWeight:700, color:T.primary, fontFamily:T.font }}>QR พร้อมเพย์</div>
+            </div>
+          </div>
+          <div style={{ textAlign:'right' }}>
+            <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font }}>เลขอ้างอิง</div>
+            <div style={{ fontSize:12, fontWeight:700, color:T.navy, fontFamily:'monospace', letterSpacing:0.5 }}>PAY-2569-0421-312</div>
+          </div>
+        </div>
+
+        {/* ── Signature Area ── */}
+        <div style={{
+          margin:'0 20px 0',
+          borderTop:`1.5px dashed ${T.border}`,
+          paddingTop:14,
+          display:'grid', gridTemplateColumns:'1fr 1fr', gap:12,
+        }}>
+          {/* Officer signature */}
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.3, marginBottom:8 }}>
+              เจ้าหน้าที่ผู้รับเงิน
+            </div>
+            {/* signature placeholder */}
+            <div style={{
+              height:48, border:`1.5px dashed ${T.border}`, borderRadius:8,
+              display:'flex', alignItems:'center', justifyContent:'center',
+              background:T.navyFaint, marginBottom:6,
+            }}>
+              <span style={{ fontSize:10, color:T.navyWeak, fontFamily:'monospace' }}>[ ลายมือชื่อ ]</span>
+            </div>
+            <div style={{ fontSize:13, fontWeight:600, color:T.navy, fontFamily:T.font }}>นางสาวรัตนา สุขใจ</div>
+            <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font }}>เจ้าหน้าที่กองคลัง</div>
+          </div>
+
+          {/* Digital stamp area */}
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.3, marginBottom:8 }}>
+              ตราประทับดิจิทัล
+            </div>
+            <div style={{
+              height:48, border:`1.5px dashed ${T.border}`, borderRadius:8,
+              display:'flex', alignItems:'center', justifyContent:'center',
+              background:T.navyFaint, marginBottom:6,
+            }}>
+              {/* QR micro for digital stamp */}
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                {[[0,0],[0,14],[14,0],[28,0],[28,14]].map(([x,y],i)=>(
+                  <rect key={i} x={x} y={y} width="8" height="8" rx="1.5" fill={T.navyWeak} opacity="0.5"/>
+                ))}
+                {[[14,14],[14,28],[28,28]].map(([x,y],i)=>(
+                  <rect key={i+10} x={x} y={y} width="8" height="8" rx="1.5" fill={T.navyWeak} opacity="0.5"/>
+                ))}
+                <rect x="4" y="4" width="4" height="4" rx="1" fill={T.navyWeak} opacity="0.7"/>
+                <rect x="28" y="4" width="4" height="4" rx="1" fill={T.navyWeak} opacity="0.7"/>
+              </svg>
+            </div>
+            <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font }}>ตรวจสอบความถูกต้อง</div>
+            <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font }}>ผ่าน QR Code</div>
+          </div>
+        </div>
+
+        {/* Footer note */}
+        <div style={{
+          margin:'14px 0 0',
+          padding:'12px 20px',
+          background:T.navyFaint,
+          borderTop:`1px solid ${T.border}`,
+        }}>
+          <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, lineHeight:1.6, textAlign:'center' }}>
+            เอกสารนี้ออกโดยระบบอัตโนมัติ · ใช้เป็นหลักฐานการชำระเงินได้<br/>
+            สอบถาม: 035-000-000 · อบต.บ้านแป้ง
+          </div>
+        </div>
+      </div>
+
+      {/* ── Action Buttons ── */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'12px 16px 28px',
+      }}>
+        {/* Download + Share row */}
+        <div style={{ display:'flex', gap:10, marginBottom:10 }}>
+          <button style={{
+            flex:1, height:52, borderRadius:T.radius.md,
+            background:T.primaryLight, border:`1.5px solid #bfdbfe`,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8, cursor:'pointer',
+            fontFamily:T.font,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2" strokeLinecap="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span style={{ fontSize:15, fontWeight:700, color:T.primary }}>บันทึก PDF</span>
+          </button>
+          <button style={{
+            flex:1, height:52, borderRadius:T.radius.md,
+            background:T.white, border:`1.5px solid ${T.border}`,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8, cursor:'pointer',
+            fontFamily:T.font,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.navy} strokeWidth="2" strokeLinecap="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span style={{ fontSize:15, fontWeight:700, color:T.navy }}>แชร์</span>
+          </button>
+        </div>
+        <BigBtn color={T.successMid}>กลับหน้าหลัก</BigBtn>
+      </div>
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════
+   SCREEN 2 — ใบเสร็จรับเงิน (Cancelled — Watermark)
+═══════════════════════════════════════════════════════ */
+const ScreenReceiptCancelled = () => {
+  const [animate, setAnimate] = React.useState(false);
+  React.useEffect(()=>{ setTimeout(()=>setAnimate(true),80); },[]);
+
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:130 }}>
+      <BackHeader title="ใบเสร็จรับเงิน" sub="เลขที่ RC-2569-0320-089" noShare/>
+
+      {/* Cancelled status banner */}
+      <div style={{
+        margin:'14px 16px 0',
+        background:T.dangerBg, border:`1.5px solid #fca5a5`,
+        borderRadius:T.radius.md, padding:'14px 16px',
+        display:'flex', alignItems:'center', gap:14,
+        animation: animate ? 'fadeSlideUp 0.45s both' : 'none',
+      }}>
+        <div style={{
+          width:44, height:44, borderRadius:12, flexShrink:0,
+          background:T.dangerMid,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          animation: animate ? 'popIn 0.4s 0.1s both' : 'none',
+          boxShadow:'0 4px 12px rgba(220,38,38,0.30)',
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.6" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:16, fontWeight:700, color:T.danger, fontFamily:T.font }}>ใบเสร็จนี้ถูกยกเลิกแล้ว</div>
+          <div style={{ fontSize:13, color:`${T.danger}99`, fontFamily:T.font, marginTop:2 }}>
+            ยกเลิกเมื่อ 25 มี.ค. 2569 · โดย เจ้าหน้าที่กองคลัง
+          </div>
+        </div>
+      </div>
+
+      {/* Reason card */}
+      <div style={{
+        margin:'10px 16px 0',
+        background:T.warningBg, border:`1.5px solid #fde68a`,
+        borderRadius:T.radius.sm, padding:'10px 14px',
+        display:'flex', gap:10, alignItems:'flex-start',
+      }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.warningMid} strokeWidth="2" strokeLinecap="round" style={{flexShrink:0,marginTop:2}}>
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill={T.warningMid}/>
+        </svg>
+        <span style={{ fontSize:13, color:T.warning, fontFamily:T.font, lineHeight:1.55 }}>
+          <strong>เหตุผล:</strong> ชำระซ้ำ — รายการนี้ถูกยกเลิกและออกใบเสร็จฉบับใหม่ RC-2569-0320-090 แทน
+        </span>
+      </div>
+
+      {/* ── Official Receipt Document (cancelled) ── */}
+      <div style={{
+        margin:'12px 16px 0',
+        background:T.white, borderRadius:T.radius.lg,
+        border:`1.5px solid #fca5a5`,
+        overflow:'hidden',
+        boxShadow:'0 4px 24px rgba(220,38,38,0.08)',
+        position:'relative',
+        animation: animate ? 'fadeSlideUp 0.5s 0.15s both' : 'none',
+      }}>
+
+        {/* ── Watermark overlay ── */}
+        <div style={{
+          position:'absolute', inset:0, zIndex:10,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          pointerEvents:'none',
+        }}>
+          <div style={{
+            fontSize:72, fontWeight:900, color:T.dangerMid,
+            fontFamily:T.font, opacity:0.10,
+            transform:'rotate(-30deg)',
+            letterSpacing:4,
+            userSelect:'none',
+            whiteSpace:'nowrap',
+          }}>
+            ยกเลิก
+          </div>
+        </div>
+
+        {/* ── Header ── */}
+        <div style={{
+          padding:'20px 20px 16px',
+          background:`linear-gradient(180deg, #fef2f2 0%, ${T.white} 100%)`,
+          borderBottom:`1px solid #fca5a5`,
+          display:'flex', flexDirection:'column', alignItems:'center', gap:12,
+        }}>
+          <div style={{ width:'100%', display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+              <OrgLogo size={52}/>
+              <div>
+                <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, letterSpacing:0.4, textTransform:'uppercase' }}>
+                  องค์การบริหารส่วนตำบล
+                </div>
+                <div style={{ fontSize:17, fontWeight:800, color:T.navy, fontFamily:T.font, lineHeight:1.25 }}>
+                  อบต.บ้านแป้ง
+                </div>
+                <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font, lineHeight:1.45, marginTop:1 }}>
+                  อ.พระนครศรีอยุธยา · จ.พระนครศรีอยุธยา
+                </div>
+              </div>
+            </div>
+            <DigitalStamp cancelled={true}/>
+          </div>
+
+          <div style={{ width:'100%', textAlign:'center', borderTop:`1.5px solid #fca5a5`, paddingTop:12 }}>
+            <div style={{ display:'inline-block', fontSize:18, fontWeight:800, color:T.navy, fontFamily:T.font, letterSpacing:0.5 }}>
+              ใบเสร็จรับเงิน
+            </div>
+            <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font, marginTop:1 }}>
+              Receipt / Official Tax Document
+            </div>
+          </div>
+        </div>
+
+        {/* Meta */}
+        <div style={{ padding:'14px 20px', borderBottom:`1px solid ${T.border}` }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px 16px' }}>
+            {[
+              { label:'เลขที่ใบเสร็จ', value:'RC-2569-0320-089', mono:true, color:T.danger, bold:true },
+              { label:'วันที่ออกใบเสร็จ', value:'20 มี.ค. 2569' },
+              { label:'เลขที่บิลอ้างอิง', value:'บล-2569-0988', mono:true },
+              { label:'วันที่ยกเลิก', value:'25 มี.ค. 2569', color:T.danger },
+            ].map((r,i)=>(
+              <div key={i}>
+                <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.4, marginBottom:2 }}>
+                  {r.label}
+                </div>
+                <div style={{ fontSize:13, fontWeight:r.bold?700:600, color:r.color||T.navy, fontFamily:r.mono?'monospace':T.font, letterSpacing:r.mono?0.5:0 }}>
+                  {r.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Payer */}
+        <div style={{ padding:'12px 20px', borderBottom:`1px solid ${T.border}`, background:T.navyFaint }}>
+          <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.4, marginBottom:8 }}>
+            ข้อมูลผู้ชำระเงิน
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px 16px' }}>
+            {[
+              { label:'ชื่อ-นามสกุล', value:'นายสมชาย ใจดี' },
+              { label:'เลขที่บ้าน', value:'42/1 หมู่ 3' },
+            ].map((r,i)=>(
+              <div key={i}>
+                <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.3, marginBottom:2 }}>{r.label}</div>
+                <div style={{ fontSize:13, fontWeight:600, color:T.navy, fontFamily:T.font }}>{r.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Items (greyed out) */}
+        <div style={{ padding:'12px 20px', opacity:0.45 }}>
+          <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.4, marginBottom:10 }}>
+            รายการค่าธรรมเนียม
+          </div>
+          {[
+            { label:'ค่าเก็บขยะ', period:'ม.ค. – มี.ค. 2569', amount:180 },
+          ].map((item,i)=>(
+            <div key={i} style={{ padding:'8px 0', borderBottom:`1px solid ${T.border}` }}>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr auto' }}>
+                <span style={{ fontSize:15, fontWeight:600, color:T.navy, fontFamily:T.font }}>{item.label}</span>
+                <span style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font }}>฿{item.amount.toFixed(2)}</span>
+              </div>
+              <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font }}>{item.period}</div>
+            </div>
+          ))}
+          <div style={{
+            borderTop:`2px solid ${T.navy}`, padding:'10px 0 0',
+            display:'grid', gridTemplateColumns:'1fr auto', alignItems:'baseline',
+          }}>
+            <div style={{ fontSize:15, fontWeight:800, color:T.navy, fontFamily:T.font }}>ยอดรวมทั้งสิ้น</div>
+            <div style={{ fontSize:26, fontWeight:800, color:T.navy, fontFamily:T.font }}>฿180.00</div>
+          </div>
+        </div>
+
+        {/* Cancelled notice */}
+        <div style={{
+          margin:'0',
+          padding:'12px 20px',
+          background:'#fef2f2', borderTop:`1px solid #fca5a5`,
+        }}>
+          <div style={{ fontSize:12, color:T.danger, fontFamily:T.font, lineHeight:1.6, textAlign:'center', fontWeight:600 }}>
+            ใบเสร็จนี้ถูกยกเลิกแล้ว — ไม่สามารถใช้เป็นหลักฐานการชำระเงินได้<br/>
+            กรุณาใช้ใบเสร็จฉบับใหม่ RC-2569-0320-090
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'12px 16px 28px',
+      }}>
+        <div style={{ display:'flex', gap:10, marginBottom:10 }}>
+          <button style={{
+            flex:1, height:52, borderRadius:T.radius.md,
+            background:T.navyFaint, border:`1.5px solid ${T.border}`,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8, cursor:'pointer',
+            fontFamily:T.font, opacity:0.6,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.navyWeak} strokeWidth="2" strokeLinecap="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span style={{ fontSize:15, fontWeight:700, color:T.navyWeak }}>บันทึก PDF</span>
+          </button>
+          <button style={{
+            flex:1, height:52, borderRadius:T.radius.md,
+            background:T.primaryLight, border:`1.5px solid #bfdbfe`,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8, cursor:'pointer',
+            fontFamily:T.font,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2" strokeLinecap="round">
+              <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+            <span style={{ fontSize:15, fontWeight:700, color:T.primary }}>ดูใบเสร็จใหม่</span>
+          </button>
+        </div>
+        <BigBtn>กลับหน้าหลัก</BigBtn>
+      </div>
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════
+   SCREEN 3 — Receipt Detail from History (compact view)
+   When accessed from R-07 Payment History
+═══════════════════════════════════════════════════════ */
+const ScreenReceiptHistory = () => {
+  const [animate, setAnimate] = React.useState(false);
+  React.useEffect(()=>{ setTimeout(()=>setAnimate(true),80); },[]);
+
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:130 }}>
+      <BackHeader title="ใบเสร็จรับเงิน" sub="ประวัติการชำระ · RC-2569-0321-055"/>
+
+      {/* Quick summary card */}
+      <div style={{
+        margin:'14px 16px 0',
+        background:'linear-gradient(135deg, #1b61c9 0%, #144fa8 100%)',
+        borderRadius:T.radius.md, padding:'18px 20px',
+        animation: animate ? 'fadeSlideUp 0.45s both' : 'none',
+      }}>
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:14 }}>
+          <div>
+            <div style={{ fontSize:13, color:'rgba(255,255,255,0.70)', fontFamily:T.font }}>ยอดที่ชำระ</div>
+            <div style={{ fontSize:38, fontWeight:800, color:'#fff', fontFamily:T.font, lineHeight:1.1 }}>฿480</div>
+            <div style={{ fontSize:13, color:'rgba(255,255,255,0.65)', fontFamily:T.font }}>สี่ร้อยแปดสิบบาทถ้วน</div>
+          </div>
+          <div style={{
+            background:'rgba(255,255,255,0.15)', borderRadius:10,
+            padding:'6px 12px', textAlign:'center',
+          }}>
+            <div style={{ fontSize:11, color:'rgba(255,255,255,0.75)', fontFamily:T.font, fontWeight:600 }}>สถานะ</div>
+            <div style={{ fontSize:14, fontWeight:700, color:'#86efac', fontFamily:T.font }}>ชำระแล้ว</div>
+          </div>
+        </div>
+
+        {/* Meta pills */}
+        <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+          {[
+            { icon:'📅', label:'21 มี.ค. 2569 · 09:14 น.' },
+            { icon:'💳', label:'โอนธนาคาร (กสิกร)' },
+            { icon:'🧾', label:'RC-2569-0321-055' },
+          ].map((p,i)=>(
+            <div key={i} style={{
+              background:'rgba(255,255,255,0.15)',
+              borderRadius:20, padding:'5px 10px',
+              display:'flex', alignItems:'center', gap:6,
+            }}>
+              <span style={{ fontSize:12 }}>{p.icon}</span>
+              <span style={{ fontSize:12, color:'rgba(255,255,255,0.90)', fontFamily:T.font, fontWeight:500 }}>{p.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Receipt document */}
+      <div style={{
+        margin:'12px 16px 0',
+        background:T.white, borderRadius:T.radius.lg,
+        border:`1.5px solid ${T.border}`,
+        overflow:'hidden',
+        boxShadow:'0 4px 24px rgba(0,0,0,0.07)',
+        animation: animate ? 'fadeSlideUp 0.5s 0.15s both' : 'none',
+      }}>
+        {/* Org header (compact) */}
+        <div style={{
+          padding:'14px 20px',
+          background:`linear-gradient(180deg, ${T.primaryLight} 0%, ${T.white} 100%)`,
+          borderBottom:`1px solid ${T.border}`,
+          display:'flex', alignItems:'center', gap:12,
+        }}>
+          <OrgLogo size={44}/>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:16, fontWeight:800, color:T.navy, fontFamily:T.font }}>อบต.บ้านแป้ง</div>
+            <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font }}>ใบเสร็จรับเงิน · Receipt</div>
+          </div>
+          <div style={{
+            background:T.successBg, border:`1.5px solid #86efac`,
+            borderRadius:8, padding:'4px 10px',
+          }}>
+            <span style={{ fontSize:12, fontWeight:700, color:T.success, fontFamily:T.font }}>ชำระแล้ว</span>
+          </div>
+        </div>
+
+        {/* Line items */}
+        <div style={{ padding:'12px 20px 0' }}>
+          {[
+            { label:'ค่าเก็บขยะ', period:'ต.ค. 2568 – มี.ค. 2569', amount:180 },
+            { label:'ค่าน้ำประปา', period:'รอบที่ 1/2569', amount:156 },
+            { label:'ค่าน้ำประปา', period:'รอบที่ 4/2568', amount:144 },
+          ].map((item,i,a)=>(
+            <div key={i} style={{
+              display:'grid', gridTemplateColumns:'1fr auto',
+              padding:'9px 0',
+              borderBottom: i<a.length-1 ? `1px solid ${T.border}` : 'none',
+              alignItems:'baseline',
+            }}>
+              <div>
+                <div style={{ fontSize:14, fontWeight:600, color:T.navy, fontFamily:T.font }}>{item.label}</div>
+                <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font }}>{item.period}</div>
+              </div>
+              <span style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font }}>฿{item.amount.toFixed(2)}</span>
+            </div>
+          ))}
+
+          <div style={{ borderTop:`2px solid ${T.navy}`, padding:'10px 0 14px', display:'grid', gridTemplateColumns:'1fr auto', alignItems:'baseline' }}>
+            <span style={{ fontSize:16, fontWeight:800, color:T.navy, fontFamily:T.font }}>รวม</span>
+            <span style={{ fontSize:28, fontWeight:800, color:T.success, fontFamily:T.font }}>฿480.00</span>
+          </div>
+        </div>
+
+        {/* Payment + Officer */}
+        <div style={{ borderTop:`1.5px dashed ${T.border}`, padding:'12px 20px' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 16px' }}>
+            {[
+              { label:'ช่องทาง', value:'โอนธนาคาร (KBANK)' },
+              { label:'เลขอ้างอิง', value:'PAY-2569-0321-480', mono:true },
+              { label:'เจ้าหน้าที่', value:'น.ส.รัตนา สุขใจ' },
+              { label:'เลขที่ใบเสร็จ', value:'RC-2569-0321-055', mono:true, color:T.primary },
+            ].map((r,i)=>(
+              <div key={i}>
+                <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, fontWeight:600, textTransform:'uppercase', letterSpacing:0.3, marginBottom:2 }}>{r.label}</div>
+                <div style={{ fontSize:12, fontWeight:600, color:r.color||T.navy, fontFamily:r.mono?'monospace':T.font, letterSpacing:r.mono?0.5:0 }}>{r.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding:'10px 20px', background:T.navyFaint, borderTop:`1px solid ${T.border}` }}>
+          <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font, textAlign:'center', lineHeight:1.6 }}>
+            เอกสารนี้ออกโดยระบบอัตโนมัติ · ใช้เป็นหลักฐานการชำระเงินได้
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'12px 16px 28px',
+      }}>
+        <div style={{ display:'flex', gap:10, marginBottom:10 }}>
+          <button style={{
+            flex:1, height:52, borderRadius:T.radius.md,
+            background:T.primaryLight, border:`1.5px solid #bfdbfe`,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8, cursor:'pointer',
+            fontFamily:T.font,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2" strokeLinecap="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span style={{ fontSize:15, fontWeight:700, color:T.primary }}>บันทึก PDF</span>
+          </button>
+          <button style={{
+            flex:1, height:52, borderRadius:T.radius.md,
+            background:T.white, border:`1.5px solid ${T.border}`,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8, cursor:'pointer',
+            fontFamily:T.font,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.navy} strokeWidth="2" strokeLinecap="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span style={{ fontSize:15, fontWeight:700, color:T.navy }}>แชร์</span>
+          </button>
+        </div>
+        <BigBtn>กลับหน้าหลัก</BigBtn>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Main ─── */
+const W=390, H=844;
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection
+        id="r06"
+        title="R-06 — ใบเสร็จรับเงิน · Receipt"
+        subtitle="Resident Portal · Mobile First · Sarabun · ราชการ official format · ตราประทับดิจิทัล">
+
+        <DCArtboard id="s1" label="1 · ใบเสร็จ — ชำระแล้ว (Paid)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenReceiptPaid/>
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s2" label="2 · ใบเสร็จ — ยกเลิก (Cancelled + Watermark)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenReceiptCancelled/>
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s3" label="3 · ใบเสร็จย้อนหลัง (from Payment History)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenReceiptHistory/>
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<div id="root"></div>
+</body>
+</html>

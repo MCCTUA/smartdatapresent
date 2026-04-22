@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-04 — Bill Details · Resident Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="../ios-frame.jsx"></script>
+<script type="text/babel" src="../design-canvas.jsx"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0eee9; }
+  @keyframes fadeSlideUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes checkPop { 0% { transform:scale(0.4); opacity:0; } 70% { transform:scale(1.12); } 100% { transform:scale(1); opacity:1; } }
+  @keyframes pulse { 0%,100% { opacity:0.55; transform:scale(0.97); } 50% { opacity:1; transform:scale(1.03); } }
+  @keyframes barGrow { from { transform: scaleY(0); transform-origin: bottom; } to { transform: scaleY(1); transform-origin: bottom; } }
+</style>
+</head>
+<body>
+<script type="text/babel">
+
+/* ─── Design Tokens (matches R-01 / R-02 / R-03 exactly) ─── */
+const T = {
+  primary:      '#1b61c9',
+  primaryLight: '#e8f0fd',
+  primaryDark:  '#144fa8',
+  primaryMid:   '#2d6ed4',
+  navy:         '#181d26',
+  navyWeak:     'rgba(4,14,32,0.50)',
+  navyFaint:    'rgba(4,14,32,0.07)',
+  border:       '#e0e2e6',
+  surface:      '#f8fafc',
+  white:        '#ffffff',
+  success:      '#166534',
+  successBg:    '#f0fdf4',
+  successMid:   '#16a34a',
+  warning:      '#b45309',
+  warningBg:    '#fffbeb',
+  warningMid:   '#d97706',
+  danger:       '#b91c1c',
+  dangerBg:     '#fef2f2',
+  dangerMid:    '#dc2626',
+  font:         "'Sarabun', -apple-system, sans-serif",
+  radius:       { sm: 8, md: 14, lg: 20, xl: 28 },
+};
+
+/* ─── Shared Components ─── */
+
+const BackHeader = ({ title, sub, color }) => (
+  <div style={{ background: color || T.primary, padding:'14px 20px 20px' }}>
+    <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom: sub ? 10 : 0 }}>
+      <div style={{
+        width:40, height:40, borderRadius:10,
+        background:'rgba(255,255,255,0.18)',
+        display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0,
+      }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </div>
+      <div>
+        <div style={{ fontSize:20, fontWeight:700, color:'#fff', fontFamily:T.font, lineHeight:1.2 }}>{title}</div>
+        {sub && <div style={{ fontSize:13, color:'rgba(255,255,255,0.70)', fontFamily:T.font, marginTop:2 }}>{sub}</div>}
+      </div>
+      {/* share icon right */}
+      <div style={{ marginLeft:'auto', flexShrink:0 }}>
+        <div style={{
+          width:40, height:40, borderRadius:10,
+          background:'rgba(255,255,255,0.18)',
+          display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const BigBtn = ({ children, color, disabled, outline, onClick }) => (
+  <button disabled={disabled} onClick={onClick} style={{
+    width:'100%', height:62, borderRadius:T.radius.md,
+    background: disabled ? T.border : outline ? T.white : (color || T.primary),
+    border: outline ? `2px solid ${T.border}` : 'none',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    display:'flex', alignItems:'center', justifyContent:'center', gap:10,
+    boxShadow: disabled||outline ? 'none' : `0 4px 16px ${color ? color+'44' : 'rgba(27,97,201,0.28)'}`,
+    fontFamily:T.font, transition:'all 0.2s',
+  }}>
+    <span style={{ fontSize:19, fontWeight:700, color: disabled ? T.navyWeak : outline ? T.navy : '#fff' }}>
+      {children}
+    </span>
+  </button>
+);
+
+const Pill = ({ status }) => {
+  const map = {
+    overdue: { label:'ค้างชำระ', bg:T.dangerBg, color:T.danger },
+    issued:  { label:'รอชำระ',   bg:T.primaryLight, color:T.primary },
+    partial: { label:'ชำระบางส่วน', bg:T.warningBg, color:T.warning },
+    paid:    { label:'ชำระแล้ว', bg:T.successBg, color:T.success },
+    pending: { label:'รอตรวจสอบ', bg:T.warningBg, color:T.warning },
+  };
+  const c = map[status] || map.issued;
+  return (
+    <span style={{
+      background:c.bg, color:c.color, borderRadius:6,
+      padding:'4px 10px', fontSize:13, fontWeight:600,
+      whiteSpace:'nowrap', fontFamily:T.font,
+    }}>{c.label}</span>
+  );
+};
+
+const Divider = ({ dashed }) => (
+  <div style={{ borderTop: `1px ${dashed?'dashed':'solid'} ${T.border}`, margin:'0' }}/>
+);
+
+const Row = ({ label, value, valueColor, bold, large, sub }) => (
+  <div style={{
+    display:'flex', justifyContent:'space-between', alignItems: sub ? 'flex-start' : 'center',
+    padding:'13px 16px',
+  }}>
+    <span style={{ fontSize:15, color:T.navyWeak, fontFamily:T.font, lineHeight:1.4 }}>{label}</span>
+    <div style={{ textAlign:'right' }}>
+      <span style={{
+        fontSize: large ? 22 : 15,
+        fontWeight: bold||large ? 700 : 600,
+        color: valueColor || T.navy,
+        fontFamily:T.font,
+        display:'block',
+      }}>{value}</span>
+      {sub && <span style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font }}>{sub}</span>}
+    </div>
+  </div>
+);
+
+/* ─────────────────────────────────────────────────────────
+   S1 — ค่าขยะ (Waste Fee) — ค้างชำระ / Overdue
+   Full detail: fee breakdown, late fee, penalty, pay CTA
+───────────────────────────────────────────────────────── */
+const ScreenWasteOverdue = () => {
+  const [expanded, setExpanded] = React.useState(false);
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:120 }}>
+      <BackHeader title="รายละเอียดบิล" sub="BL-2569-1240 · ค่าขยะ" color={T.dangerMid}/>
+
+      {/* Hero amount card */}
+      <div style={{ margin:'-1px 16px 0', position:'relative', zIndex:2 }}>
+        <div style={{
+          background:T.white, borderRadius:T.radius.lg,
+          border:`1.5px solid #fca5a5`,
+          boxShadow:'0 6px 24px rgba(185,28,28,0.12)',
+          overflow:'hidden',
+        }}>
+          {/* top stripe */}
+          <div style={{
+            background:'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+            padding:'20px 20px 18px',
+            display:'flex', alignItems:'center', justifyContent:'space-between',
+          }}>
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+                <div style={{
+                  width:48, height:48, borderRadius:13,
+                  background:'rgba(255,255,255,0.18)',
+                  display:'flex', alignItems:'center', justifyContent:'center', fontSize:24,
+                }}>🗑️</div>
+                <div>
+                  <div style={{ fontSize:20, fontWeight:700, color:'#fff', fontFamily:T.font }}>ค่าขยะ</div>
+                  <div style={{ fontSize:13, color:'rgba(255,255,255,0.75)', fontFamily:T.font }}>เมษายน 2569</div>
+                </div>
+              </div>
+              <div style={{ fontSize:13, color:'rgba(255,255,255,0.75)', fontFamily:T.font }}>ยอดที่ต้องชำระ</div>
+              <div style={{ fontSize:38, fontWeight:800, color:'#fff', fontFamily:T.font, lineHeight:1.15 }}>฿72</div>
+              <div style={{ fontSize:13, color:'#fca5a5', fontFamily:T.font, marginTop:2 }}>รวมค่าปรับล่าช้าแล้ว</div>
+            </div>
+            {/* overdue badge */}
+            <div style={{
+              background:'rgba(255,255,255,0.18)', borderRadius:12,
+              padding:'10px 14px', textAlign:'center',
+            }}>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.80)', fontFamily:T.font, marginBottom:3 }}>เกินกำหนด</div>
+              <div style={{ fontSize:24, fontWeight:800, color:'#fde68a', fontFamily:T.font, lineHeight:1 }}>21</div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.80)', fontFamily:T.font }}>วัน</div>
+            </div>
+          </div>
+
+          {/* deadline warning bar */}
+          <div style={{
+            background:'#fff5f5', padding:'10px 20px',
+            display:'flex', alignItems:'center', gap:10, borderBottom:`1px solid #fca5a5`,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.danger} strokeWidth="2" strokeLinecap="round" style={{flexShrink:0}}>
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span style={{ fontSize:14, color:T.danger, fontFamily:T.font, fontWeight:600 }}>
+              ครบกำหนด 30 มี.ค. 2569 — ค้างชำระ 21 วัน
+            </span>
+          </div>
+
+          {/* fee breakdown */}
+          <div>
+            <Row label="ค่าจัดเก็บขยะ (เม.ย. 2569)" value="฿60"/>
+            <Divider/>
+            <Row label="ค่าปรับล่าช้า (21 วัน × ฿0.57)" value="฿12" valueColor={T.danger}/>
+            <Divider dashed/>
+            <div style={{ padding:'12px 16px', background:T.dangerBg, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span style={{ fontSize:17, fontWeight:700, color:T.danger, fontFamily:T.font }}>รวมทั้งหมด</span>
+              <span style={{ fontSize:24, fontWeight:800, color:T.danger, fontFamily:T.font }}>฿72</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bill info card */}
+      <div style={{ padding:'14px 16px 0' }}>
+        <div style={{ background:T.white, border:`1.5px solid ${T.border}`, borderRadius:T.radius.md, overflow:'hidden' }}>
+          <div style={{ padding:'13px 16px', borderBottom:`1px solid ${T.border}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <span style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font }}>ข้อมูลใบแจ้งหนี้</span>
+            <button onClick={()=>setExpanded(e=>!e)} style={{
+              background:'none', border:'none', cursor:'pointer',
+              fontSize:13, color:T.primary, fontWeight:600, fontFamily:T.font,
+              display:'flex', alignItems:'center', gap:4,
+            }}>
+              {expanded ? 'ย่อ' : 'ดูทั้งหมด'}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <polyline points={expanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}/>
+              </svg>
+            </button>
+          </div>
+          <Row label="เลขที่ใบแจ้งหนี้" value="BL-2569-1240"/>
+          <Divider/>
+          <Row label="รอบบิล" value="เมษายน 2569"/>
+          <Divider/>
+          <Row label="วันออกใบแจ้งหนี้" value="1 เม.ย. 2569"/>
+          {expanded && (
+            <>
+              <Divider/>
+              <Row label="วันครบกำหนด" value="30 มี.ค. 2569" valueColor={T.danger}/>
+              <Divider/>
+              <Row label="ประเภทบริการ" value="จัดเก็บขยะ"/>
+              <Divider/>
+              <Row label="ความถี่" value="สัปดาห์ละ 3 ครั้ง"/>
+              <Divider/>
+              <Row label="บ้านเลขที่" value="45/2 ม.3 ต.บ้านแป้ง"/>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Payment history for this service */}
+      <div style={{ padding:'14px 16px 0' }}>
+        <div style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font, marginBottom:10 }}>
+          ประวัติค่าขยะ 3 เดือนล่าสุด
+        </div>
+        {[
+          { month:'มี.ค. 2569', amount:60, status:'overdue', daysLate:21 },
+          { month:'ก.พ. 2569', amount:60, status:'paid', date:'8 ก.พ.' },
+          { month:'ม.ค. 2569', amount:60, status:'paid', date:'5 ม.ค.' },
+        ].map((h,i) => (
+          <div key={i} style={{
+            background:T.white, border:`1.5px solid ${h.status==='overdue'?'#fca5a5':T.border}`,
+            borderRadius:T.radius.md, padding:'12px 14px',
+            marginBottom:8, display:'flex', alignItems:'center', gap:12,
+            boxShadow: h.status==='overdue' ? '0 2px 8px rgba(185,28,28,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
+          }}>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font }}>{h.month}</div>
+              {h.status==='paid' && <div style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font, marginTop:2 }}>ชำระ {h.date}</div>}
+              {h.status==='overdue' && <div style={{ fontSize:13, color:T.danger, fontFamily:T.font, fontWeight:600, marginTop:2 }}>ค้าง {h.daysLate} วัน</div>}
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:17, fontWeight:700, color: h.status==='overdue'?T.danger:T.success, fontFamily:T.font }}>
+                ฿{h.status==='overdue'?72:60}
+              </div>
+              <div style={{ marginTop:3 }}><Pill status={h.status}/></div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Sticky CTA */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'14px 20px 28px',
+      }}>
+        <BigBtn color={T.dangerMid}>ชำระ ฿72 เดี๋ยวนี้</BigBtn>
+        <div style={{ marginTop:10 }}>
+          <BigBtn outline>ขอผ่อนชำระ</BigBtn>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────
+   S2 — ค่าน้ำประปา (Water) — รอชำระ / Issued
+   Full detail: meter reading, usage chart, rate tier breakdown
+───────────────────────────────────────────────────────── */
+const ScreenWaterIssued = () => {
+  const bars = [
+    { month:'พ.ย.', units:12 },
+    { month:'ธ.ค.', units:16 },
+    { month:'ม.ค.', units:11 },
+    { month:'ก.พ.', units:13 },
+    { month:'มี.ค.', units:15 },
+    { month:'เม.ย.', units:18, current:true },
+  ];
+  const max = Math.max(...bars.map(b=>b.units));
+  const avg = Math.round(bars.slice(0,-1).reduce((s,b)=>s+b.units,0)/5);
+
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:120 }}>
+      <BackHeader title="รายละเอียดบิล" sub="BL-2569-1241 · ค่าน้ำประปา"/>
+
+      {/* Hero amount card */}
+      <div style={{ margin:'-1px 16px 0', position:'relative', zIndex:2 }}>
+        <div style={{
+          background:T.white, borderRadius:T.radius.lg,
+          border:`1.5px solid #bfdbfe`,
+          boxShadow:'0 6px 24px rgba(27,97,201,0.10)',
+          overflow:'hidden',
+        }}>
+          <div style={{
+            background:'linear-gradient(135deg, #1b61c9 0%, #144fa8 100%)',
+            padding:'20px 20px 18px',
+          }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+              <div style={{
+                width:48, height:48, borderRadius:13,
+                background:'rgba(255,255,255,0.18)',
+                display:'flex', alignItems:'center', justifyContent:'center', fontSize:24,
+              }}>💧</div>
+              <div>
+                <div style={{ fontSize:20, fontWeight:700, color:'#fff', fontFamily:T.font }}>ค่าน้ำประปา</div>
+                <div style={{ fontSize:13, color:'rgba(255,255,255,0.75)', fontFamily:T.font }}>เมษายน 2569</div>
+              </div>
+              <div style={{ marginLeft:'auto' }}><Pill status="issued"/></div>
+            </div>
+            {/* meter + amount row */}
+            <div style={{ display:'flex', gap:0 }}>
+              <div style={{ flex:1, borderRight:'1px solid rgba(255,255,255,0.2)', paddingRight:16 }}>
+                <div style={{ fontSize:13, color:'rgba(255,255,255,0.75)', fontFamily:T.font }}>หน่วยที่ใช้</div>
+                <div style={{ fontSize:32, fontWeight:800, color:'#fff', fontFamily:T.font, lineHeight:1.2 }}>18</div>
+                <div style={{ fontSize:12, color:'rgba(255,255,255,0.65)', fontFamily:T.font }}>หน่วย (+3 จากเดือนก่อน)</div>
+              </div>
+              <div style={{ flex:1, paddingLeft:16 }}>
+                <div style={{ fontSize:13, color:'rgba(255,255,255,0.75)', fontFamily:T.font }}>ยอดชำระ</div>
+                <div style={{ fontSize:32, fontWeight:800, color:'#fff', fontFamily:T.font, lineHeight:1.2 }}>฿240</div>
+                <div style={{ fontSize:12, color:'rgba(255,255,255,0.65)', fontFamily:T.font }}>ครบกำหนด 30 เม.ย. 2569</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Meter reading */}
+          <div style={{ padding:'0' }}>
+            <div style={{ padding:'12px 16px 8px', borderBottom:`1px solid ${T.border}` }}>
+              <div style={{ fontSize:13, fontWeight:700, color:T.navyWeak, fontFamily:T.font, textTransform:'uppercase', letterSpacing:0.5, marginBottom:10 }}>
+                บันทึกมิเตอร์
+              </div>
+              <div style={{ display:'flex', alignItems:'center', gap:0 }}>
+                <div style={{ flex:1, textAlign:'center' }}>
+                  <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font, marginBottom:4 }}>ต้นเดือน</div>
+                  <div style={{ fontSize:26, fontWeight:800, color:T.navy, fontFamily:T.font, letterSpacing:1 }}>00183</div>
+                  <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font }}>1 เม.ย. 2569</div>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'0 10px' }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                  <div style={{ fontSize:14, fontWeight:700, color:T.primary, fontFamily:T.font, marginTop:2 }}>18 หน่วย</div>
+                </div>
+                <div style={{ flex:1, textAlign:'center' }}>
+                  <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font, marginBottom:4 }}>ปลายเดือน</div>
+                  <div style={{ fontSize:26, fontWeight:800, color:T.navy, fontFamily:T.font, letterSpacing:1 }}>00201</div>
+                  <div style={{ fontSize:11, color:T.navyWeak, fontFamily:T.font }}>30 เม.ย. 2569</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rate tier breakdown */}
+            <div style={{ padding:'12px 16px', borderBottom:`1px solid ${T.border}` }}>
+              <div style={{ fontSize:13, fontWeight:700, color:T.navyWeak, fontFamily:T.font, textTransform:'uppercase', letterSpacing:0.5, marginBottom:10 }}>
+                คำนวณตามอัตราขั้นบันได
+              </div>
+              {[
+                { tier:'0–10 หน่วย', rate:'฿8/หน่วย',  units:10, subtotal:80,  active:true },
+                { tier:'11–20 หน่วย', rate:'฿10/หน่วย', units:8,  subtotal:80,  active:true },
+                { tier:'21–30 หน่วย', rate:'฿12/หน่วย', units:0,  subtotal:0,   active:false },
+              ].map((tier,i) => (
+                <div key={i} style={{
+                  display:'flex', alignItems:'center', gap:10, padding:'7px 0',
+                  opacity: tier.active ? 1 : 0.35,
+                }}>
+                  <div style={{
+                    width:8, height:8, borderRadius:'50%', flexShrink:0,
+                    background: tier.active ? T.primary : T.border,
+                  }}/>
+                  <div style={{ flex:1 }}>
+                    <span style={{ fontSize:14, color:T.navy, fontFamily:T.font }}>{tier.tier}</span>
+                    <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}> · {tier.rate}</span>
+                  </div>
+                  <div style={{ textAlign:'right' }}>
+                    <span style={{ fontSize:14, fontWeight:700, color:T.navy, fontFamily:T.font }}>
+                      {tier.units > 0 ? `${tier.units} × ฿${tier.subtotal/tier.units} = ฿${tier.subtotal}` : '—'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              <div style={{
+                borderTop:`2px solid ${T.border}`, marginTop:8, paddingTop:10,
+                display:'flex', justifyContent:'space-between',
+              }}>
+                <span style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font }}>รวมค่าน้ำ</span>
+                <span style={{ fontSize:19, fontWeight:800, color:T.primary, fontFamily:T.font }}>฿160</span>
+              </div>
+              <div style={{ marginTop:4, display:'flex', justifyContent:'space-between' }}>
+                <span style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font }}>ค่าบริการประจำเดือน</span>
+                <span style={{ fontSize:14, fontWeight:600, color:T.navy, fontFamily:T.font }}>฿80</span>
+              </div>
+              <div style={{
+                borderTop:`2px solid ${T.navy}22`, marginTop:8, paddingTop:8,
+                display:'flex', justifyContent:'space-between',
+              }}>
+                <span style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font }}>ยอดรวมทั้งหมด</span>
+                <span style={{ fontSize:22, fontWeight:800, color:T.primary, fontFamily:T.font }}>฿240</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Usage trend mini chart */}
+      <div style={{ padding:'14px 16px 0' }}>
+        <div style={{
+          background:T.white, border:`1.5px solid ${T.border}`,
+          borderRadius:T.radius.md, padding:'14px 16px',
+        }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+            <span style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font }}>การใช้น้ำ 6 เดือน</span>
+            <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>เฉลี่ย {avg} หน่วย/เดือน</span>
+          </div>
+          <div style={{ display:'flex', alignItems:'flex-end', gap:6, height:72 }}>
+            {bars.map((b,i) => (
+              <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+                <div style={{ fontSize:11, fontWeight:700, color: b.current ? T.primary : T.navyWeak, fontFamily:T.font }}>
+                  {b.units}
+                </div>
+                <div style={{
+                  width:'100%', borderRadius:'4px 4px 0 0',
+                  height:`${(b.units/max)*52}px`,
+                  background: b.current ? T.primary : T.primaryLight,
+                  position:'relative',
+                }}>
+                  {b.units > avg && b.current && (
+                    <div style={{
+                      position:'absolute', top:-18, left:'50%', transform:'translateX(-50%)',
+                      background:T.warning, color:'#fff', borderRadius:4,
+                      fontSize:9, padding:'1px 4px', fontFamily:T.font, fontWeight:700, whiteSpace:'nowrap',
+                    }}>+{b.units-avg}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display:'flex', gap:6, marginTop:4 }}>
+            {bars.map((b,i) => (
+              <div key={i} style={{
+                flex:1, textAlign:'center',
+                fontSize:11, color: b.current ? T.primary : T.navyWeak,
+                fontFamily:T.font, fontWeight: b.current ? 700 : 400,
+              }}>{b.month}</div>
+            ))}
+          </div>
+          {/* over average note */}
+          <div style={{
+            marginTop:12, background:T.warningBg, borderRadius:8,
+            padding:'8px 12px', display:'flex', gap:8, alignItems:'center',
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.warningMid} strokeWidth="2" strokeLinecap="round" style={{flexShrink:0}}>
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+            </svg>
+            <span style={{ fontSize:13, color:T.warning, fontFamily:T.font }}>
+              เดือนนี้ใช้เกินค่าเฉลี่ย <strong>3 หน่วย</strong> — ลองตรวจสอบก๊อกน้ำรั่ว
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky CTA */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'14px 20px 28px',
+      }}>
+        <BigBtn>ชำระ ฿240 เดี๋ยวนี้</BigBtn>
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────
+   S3 — ใบเสร็จรับเงิน (Receipt) — ชำระแล้ว
+   Official receipt layout with download / share actions
+───────────────────────────────────────────────────────── */
+const ScreenReceipt = () => {
+  const [downloaded, setDownloaded] = React.useState(false);
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:120 }}>
+      <BackHeader title="ใบเสร็จรับเงิน" sub="RC-2569-0415-002 · ชำระแล้ว" color={T.successMid}/>
+
+      {/* Receipt card */}
+      <div style={{ margin:'-1px 16px 0', position:'relative', zIndex:2 }}>
+        <div style={{
+          background:T.white, borderRadius:T.radius.lg,
+          border:`1.5px solid #bbf7d0`,
+          boxShadow:'0 6px 24px rgba(22,163,74,0.12)',
+          overflow:'hidden',
+        }}>
+          {/* official header */}
+          <div style={{
+            background:'linear-gradient(135deg, #16a34a 0%, #166534 100%)',
+            padding:'20px 20px 18px', textAlign:'center',
+          }}>
+            <div style={{ fontSize:12, color:'rgba(255,255,255,0.75)', fontFamily:T.font, letterSpacing:1, textTransform:'uppercase', marginBottom:4 }}>
+              องค์การบริหารส่วนตำบลบ้านแป้ง
+            </div>
+            <div style={{ fontSize:22, fontWeight:700, color:'#fff', fontFamily:T.font, marginBottom:4 }}>ใบเสร็จรับเงิน</div>
+            <div style={{
+              display:'inline-flex', alignItems:'center', gap:8,
+              background:'rgba(255,255,255,0.18)', borderRadius:10, padding:'6px 14px',
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span style={{ fontSize:14, fontWeight:700, color:'#fff', fontFamily:T.font }}>ชำระเงินแล้ว</span>
+            </div>
+          </div>
+
+          {/* receipt header info */}
+          <div style={{ padding:'14px 16px', background:'#f0fdf4', borderBottom:`1px solid #bbf7d0` }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>เลขที่ใบเสร็จ</span>
+              <span style={{ fontSize:14, fontWeight:700, color:T.success, fontFamily:T.font }}>RC-2569-0415-002</span>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>วันที่ชำระ</span>
+              <span style={{ fontSize:14, fontWeight:600, color:T.navy, fontFamily:T.font }}>15 เมษายน 2569 · 10:32 น.</span>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between' }}>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>ช่องทาง</span>
+              <span style={{ fontSize:14, fontWeight:600, color:T.navy, fontFamily:T.font }}>QR พร้อมเพย์</span>
+            </div>
+          </div>
+
+          {/* payer info */}
+          <div style={{ padding:'12px 16px', borderBottom:`1px solid ${T.border}` }}>
+            <div style={{ fontSize:13, fontWeight:700, color:T.navyWeak, fontFamily:T.font, textTransform:'uppercase', letterSpacing:0.5, marginBottom:8 }}>
+              ผู้ชำระเงิน
+            </div>
+            <div style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font }}>นางสาวสมหญิง วงษ์ทอง</div>
+            <div style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font, marginTop:2 }}>บ้านเลขที่ 45/2 ม.3 ต.บ้านแป้ง อ.บ้านแป้ง จ.พระนครศรีอยุธยา</div>
+          </div>
+
+          {/* items */}
+          <div style={{ padding:'12px 16px', borderBottom:`1px solid ${T.border}` }}>
+            <div style={{ fontSize:13, fontWeight:700, color:T.navyWeak, fontFamily:T.font, textTransform:'uppercase', letterSpacing:0.5, marginBottom:10 }}>
+              รายการที่ชำระ
+            </div>
+            {[
+              { icon:'🗑️', label:'ค่าขยะ', period:'เมษายน 2569', ref:'BL-2569-1240', amount:60 },
+              { icon:'💧', label:'ค่าน้ำประปา', period:'เมษายน 2569', ref:'BL-2569-1241', amount:240, sub:'18 หน่วย (00183→00201)' },
+            ].map((item, i) => (
+              <div key={i} style={{
+                display:'flex', alignItems:'flex-start', gap:12,
+                padding:'10px 0',
+                borderBottom: i===0 ? `1px dashed ${T.border}` : 'none',
+              }}>
+                <div style={{
+                  width:40, height:40, borderRadius:10, flexShrink:0,
+                  background:T.successBg,
+                  display:'flex', alignItems:'center', justifyContent:'center', fontSize:20,
+                }}>
+                  {item.icon}
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font }}>{item.label}</div>
+                  <div style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>{item.period}</div>
+                  {item.sub && <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font }}>{item.sub}</div>}
+                  <div style={{ fontSize:12, color:T.primary, fontFamily:T.font }}>อ้างอิง: {item.ref}</div>
+                </div>
+                <div style={{ fontSize:18, fontWeight:700, color:T.success, fontFamily:T.font }}>฿{item.amount}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* total */}
+          <div style={{ padding:'14px 16px', background:'#f0fdf4' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span style={{ fontSize:17, fontWeight:700, color:T.success, fontFamily:T.font }}>รวมเงินที่ชำระ</span>
+              <span style={{ fontSize:28, fontWeight:800, color:T.success, fontFamily:T.font }}>฿300</span>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', marginTop:4 }}>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>สามร้อยบาทถ้วน</span>
+              <span style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>ผู้รับเงิน: สมชาย ใจดี</span>
+            </div>
+          </div>
+
+          {/* perforated tear line */}
+          <div style={{
+            padding:'0 8px',
+            display:'flex', alignItems:'center', gap:0,
+            borderTop:`1px dashed ${T.border}`,
+          }}>
+            <div style={{
+              width:20, height:20, borderRadius:'50%',
+              background:T.surface, border:`1.5px solid ${T.border}`,
+              marginLeft:-18, flexShrink:0,
+            }}/>
+            <div style={{ flex:1 }}/>
+            <div style={{
+              width:20, height:20, borderRadius:'50%',
+              background:T.surface, border:`1.5px solid ${T.border}`,
+              marginRight:-18, flexShrink:0,
+            }}/>
+          </div>
+
+          {/* stub */}
+          <div style={{ padding:'12px 16px 16px', textAlign:'center' }}>
+            <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font, marginBottom:6 }}>
+              ขอบคุณที่ชำระตรงเวลา 🙏 · ชำระตรงเวลา 5 เดือนติดต่อกัน
+            </div>
+            {/* barcode placeholder */}
+            <div style={{
+              height:40, background:T.navyFaint, borderRadius:6,
+              display:'flex', alignItems:'center', justifyContent:'center',
+              gap:2, overflow:'hidden',
+            }}>
+              {Array.from({length:52}).map((_,i) => (
+                <div key={i} style={{
+                  width: i%5===0 ? 3 : i%3===0 ? 2 : 1,
+                  height: i%7===0 ? 30 : i%4===0 ? 36 : 24,
+                  background: T.navy,
+                  borderRadius:1,
+                }}/>
+              ))}
+            </div>
+            <div style={{ fontSize:11, letterSpacing:2, color:T.navyWeak, fontFamily:'monospace', marginTop:4 }}>
+              RC-2569-0415-002
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div style={{ padding:'14px 16px 0' }}>
+        <div style={{ display:'flex', gap:10, marginBottom:10 }}>
+          <button
+            onClick={()=>{setDownloaded(true); setTimeout(()=>setDownloaded(false),2500)}}
+            style={{
+              flex:1, height:56, borderRadius:T.radius.md,
+              background: downloaded ? T.successBg : T.white,
+              border:`1.5px solid ${downloaded ? '#bbf7d0' : T.border}`,
+              display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+              cursor:'pointer', fontFamily:T.font, transition:'all 0.3s',
+            }}>
+            {downloaded
+              ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.successMid} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.navy} strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            }
+            <span style={{ fontSize:16, fontWeight:600, color: downloaded ? T.success : T.navy }}>
+              {downloaded ? 'บันทึกแล้ว' : 'บันทึก PDF'}
+            </span>
+          </button>
+          <button style={{
+            flex:1, height:56, borderRadius:T.radius.md,
+            background:T.white, border:`1.5px solid ${T.border}`,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+            cursor:'pointer', fontFamily:T.font,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.navy} strokeWidth="2" strokeLinecap="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span style={{ fontSize:16, fontWeight:600, color:T.navy }}>แชร์</span>
+          </button>
+        </div>
+        <BigBtn outline>กลับหน้าหลัก</BigBtn>
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────
+   S4 — ขอผ่อนชำระ (Installment Request)
+   For overdue amounts — choose plan, confirm
+───────────────────────────────────────────────────────── */
+const ScreenInstallment = () => {
+  const [plan, setPlan] = React.useState('2');
+  const [agreed, setAgreed] = React.useState(false);
+  const plans = [
+    { id:'2', months:2, perMonth:36, fee:0, label:'2 งวด' },
+    { id:'3', months:3, perMonth:24, fee:5, label:'3 งวด' },
+    { id:'6', months:6, perMonth:13, fee:15, label:'6 งวด' },
+  ];
+  const sel = plans.find(p=>p.id===plan);
+
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', paddingBottom:120 }}>
+      <BackHeader title="ขอผ่อนชำระ" sub="BL-2569-1240 · ยอด ฿72" color={T.warningMid}/>
+
+      <div style={{ padding:'16px 16px 0' }}>
+        {/* Amount to settle */}
+        <div style={{
+          background:T.warningBg, border:`1.5px solid #fde68a`,
+          borderRadius:T.radius.md, padding:'14px 16px', marginBottom:14,
+          display:'flex', justifyContent:'space-between', alignItems:'center',
+        }}>
+          <div>
+            <div style={{ fontSize:13, color:T.warning, fontFamily:T.font }}>ยอดค้างที่ขอผ่อน</div>
+            <div style={{ fontSize:28, fontWeight:800, color:T.warning, fontFamily:T.font }}>฿72</div>
+          </div>
+          <div style={{ textAlign:'right' }}>
+            <div style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>ค่าขยะ + ค่าปรับ</div>
+            <div style={{ fontSize:13, fontWeight:600, color:T.navy, fontFamily:T.font }}>BL-2569-1240</div>
+          </div>
+        </div>
+
+        {/* Plan picker */}
+        <div style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font, marginBottom:10 }}>
+          เลือกจำนวนงวด
+        </div>
+        {plans.map(p => {
+          const active = plan === p.id;
+          return (
+            <div key={p.id} onClick={()=>setPlan(p.id)} style={{
+              background:T.white,
+              border:`2px solid ${active ? T.primary : T.border}`,
+              borderRadius:T.radius.md,
+              padding:'16px',
+              marginBottom:10,
+              display:'flex', alignItems:'center', gap:14,
+              cursor:'pointer',
+              boxShadow: active ? `0 0 0 4px ${T.primaryLight}` : '0 1px 3px rgba(0,0,0,0.05)',
+              transition:'all 0.2s',
+            }}>
+              {/* radio */}
+              <div style={{
+                width:24, height:24, borderRadius:'50%', flexShrink:0,
+                border:`2px solid ${active ? T.primary : T.border}`,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                transition:'all 0.2s',
+              }}>
+                {active && <div style={{ width:12, height:12, borderRadius:'50%', background:T.primary }}/>}
+              </div>
+
+              <div style={{ flex:1 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:3 }}>
+                  <span style={{ fontSize:18, fontWeight:700, color:T.navy, fontFamily:T.font }}>{p.label}</span>
+                  {p.id==='2' && (
+                    <span style={{
+                      background:T.primaryLight, color:T.primary,
+                      fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, fontFamily:T.font,
+                    }}>ไม่มีดอกเบี้ย</span>
+                  )}
+                </div>
+                {/* schedule preview */}
+                <div style={{ display:'flex', gap:6 }}>
+                  {Array.from({length:p.months}).map((_,i) => (
+                    <div key={i} style={{
+                      background: active ? T.primaryLight : T.navyFaint,
+                      borderRadius:6, padding:'3px 8px',
+                      fontSize:12, fontWeight:600,
+                      color: active ? T.primary : T.navyWeak,
+                      fontFamily:T.font,
+                    }}>
+                      งวด {i+1}: ฿{p.perMonth}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ textAlign:'right', flexShrink:0 }}>
+                <div style={{ fontSize:22, fontWeight:800, color: active?T.primary:T.navy, fontFamily:T.font }}>
+                  ฿{p.perMonth}
+                </div>
+                <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font }}>/ งวด</div>
+                {p.fee > 0 && (
+                  <div style={{ fontSize:12, color:T.warning, fontFamily:T.font, marginTop:2 }}>
+                    ค่าธรรมเนียม ฿{p.fee}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Payment schedule detail */}
+        <div style={{
+          background:T.white, border:`1.5px solid ${T.border}`,
+          borderRadius:T.radius.md, overflow:'hidden', marginBottom:14,
+        }}>
+          <div style={{ padding:'12px 16px', borderBottom:`1px solid ${T.border}`, background:T.navyFaint }}>
+            <span style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font }}>กำหนดการชำระ — {sel.label}</span>
+          </div>
+          {Array.from({length:sel.months}).map((_,i) => {
+            const monthNames = ['พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.'];
+            return (
+              <div key={i} style={{
+                display:'flex', justifyContent:'space-between', alignItems:'center',
+                padding:'12px 16px',
+                borderBottom: i < sel.months-1 ? `1px solid ${T.border}` : 'none',
+                background: i===0 ? T.primaryLight : T.white,
+              }}>
+                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                  <div style={{
+                    width:32, height:32, borderRadius:8, flexShrink:0,
+                    background: i===0 ? T.primary : T.navyFaint,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize:14, fontWeight:700,
+                    color: i===0 ? '#fff' : T.navyWeak, fontFamily:T.font,
+                  }}>{i+1}</div>
+                  <div>
+                    <div style={{ fontSize:15, fontWeight:700, color:T.navy, fontFamily:T.font }}>
+                      ภายใน 30 {monthNames[i]} 2569
+                    </div>
+                    {i===0 && <div style={{ fontSize:12, color:T.primary, fontFamily:T.font }}>งวดแรก (ชำระทันที)</div>}
+                  </div>
+                </div>
+                <div style={{ fontSize:18, fontWeight:800, color: i===0?T.primary:T.navy, fontFamily:T.font }}>
+                  ฿{sel.perMonth}
+                </div>
+              </div>
+            );
+          })}
+          <div style={{
+            padding:'12px 16px', background:T.navyFaint,
+            display:'flex', justifyContent:'space-between',
+          }}>
+            <span style={{ fontSize:14, fontWeight:600, color:T.navyWeak, fontFamily:T.font }}>
+              รวม{sel.fee>0?` (รวมค่าธรรมเนียม ฿${sel.fee})`:''}
+            </span>
+            <span style={{ fontSize:17, fontWeight:800, color:T.navy, fontFamily:T.font }}>
+              ฿{sel.months*sel.perMonth + (sel.fee||0)}
+            </span>
+          </div>
+        </div>
+
+        {/* Consent */}
+        <div
+          onClick={()=>setAgreed(a=>!a)}
+          style={{
+            display:'flex', gap:12, alignItems:'flex-start',
+            background:T.white, border:`1.5px solid ${agreed?T.primary:T.border}`,
+            borderRadius:T.radius.md, padding:'14px 16px', marginBottom:4,
+            cursor:'pointer', transition:'all 0.2s',
+          }}>
+          <div style={{
+            width:24, height:24, borderRadius:6, flexShrink:0, marginTop:1,
+            background: agreed ? T.primary : T.white,
+            border:`2px solid ${agreed ? T.primary : T.border}`,
+            display:'flex', alignItems:'center', justifyContent:'center',
+            transition:'all 0.2s',
+          }}>
+            {agreed && (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            )}
+          </div>
+          <span style={{ fontSize:14, color:T.navy, fontFamily:T.font, lineHeight:1.6 }}>
+            ข้าพเจ้ายินยอมผ่อนชำระตามกำหนดการข้างต้น หากไม่ชำระตามงวดที่กำหนด
+            ยอดคงเหลือทั้งหมดจะถือว่าครบกำหนดทันที
+          </span>
+        </div>
+      </div>
+
+      {/* Sticky CTA */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0,
+        background:T.white, borderTop:`1.5px solid ${T.border}`,
+        padding:'14px 20px 28px',
+      }}>
+        <BigBtn color={T.warningMid} disabled={!agreed}>
+          ยืนยันการผ่อนชำระ — ฿{sel.perMonth} งวดแรก
+        </BigBtn>
+        {!agreed && (
+          <div style={{ textAlign:'center', fontSize:13, color:T.navyWeak, fontFamily:T.font, marginTop:8 }}>
+            กรุณายอมรับเงื่อนไขก่อน
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────
+   S5 — สแกนบาร์โค้ดบิล (Scan Physical Bill Barcode)
+   Resident scans printed barcode → jumps straight to bill detail
+───────────────────────────────────────────────────────── */
+const ScreenScanBarcode = () => {
+  const [phase, setPhase] = React.useState('scan'); // 'scan' | 'found'
+  React.useEffect(() => {
+    if (phase === 'scan') {
+      const t = setTimeout(() => setPhase('found'), 2200);
+      return () => clearTimeout(t);
+    }
+  }, [phase]);
+
+  /* Barcode bars helper */
+  const BarcodeSVG = ({ color = '#181d26', opacity = 1 }) => {
+    const pattern = [3,1,2,1,1,3,1,2,2,1,1,2,3,1,1,2,1,3,2,1,1,1,3,2,1,1,2,1,2,3,1,1,2,1,3,1,2,1,1,2];
+    let x = 0;
+    const bars = pattern.map((w, i) => {
+      const bar = i % 2 === 0
+        ? <rect key={i} x={x} y="0" width={w * 3} height="56" rx="0.5" fill={color} opacity={opacity}/>
+        : null;
+      x += w * 3;
+      return bar;
+    });
+    return (
+      <svg width={x} height="56" viewBox={`0 0 ${x} 56`} style={{ display: 'block' }}>
+        {bars}
+      </svg>
+    );
+  };
+
+  if (phase === 'scan') return (
+    <div style={{ background: '#0a0f1a', minHeight: '100%', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+      {/* Top bar */}
+      <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 2 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 10,
+          background: 'rgba(255,255,255,0.12)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', fontFamily: T.font }}>สแกนบิล</div>
+        <div style={{ width: 40 }}/>
+      </div>
+
+      {/* Camera bg simulation */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, #0a0f1a 0%, #111827 40%, #0d1520 100%)',
+      }}/>
+
+      {/* Dark vignette sides */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, padding: '0 0 40px' }}>
+        {/* Viewfinder */}
+        <div style={{ position: 'relative', width: 300, height: 160 }}>
+          {/* dim overlay cutouts simulated via box-shadow */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            boxShadow: '0 0 0 1000px rgba(0,0,0,0.72)',
+            borderRadius: 6,
+          }}/>
+          {/* corner brackets */}
+          {[
+            { top: 0, left: 0, borderTop: true, borderLeft: true },
+            { top: 0, right: 0, borderTop: true, borderRight: true },
+            { bottom: 0, left: 0, borderBottom: true, borderLeft: true },
+            { bottom: 0, right: 0, borderBottom: true, borderRight: true },
+          ].map((c, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              width: 26, height: 26,
+              ...c,
+              borderTop: c.borderTop ? `3px solid ${T.primary}` : 'none',
+              borderLeft: c.borderLeft ? `3px solid ${T.primary}` : 'none',
+              borderRight: c.borderRight ? `3px solid ${T.primary}` : 'none',
+              borderBottom: c.borderBottom ? `3px solid ${T.primary}` : 'none',
+              borderRadius: c.top !== undefined && c.left !== undefined ? '3px 0 0 0'
+                : c.top !== undefined ? '0 3px 0 0'
+                : c.left !== undefined ? '0 0 0 3px' : '0 0 3px 0',
+            }}/>
+          ))}
+          {/* barcode content inside viewfinder */}
+          <div style={{
+            position: 'absolute', inset: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden',
+          }}>
+            <BarcodeSVG color="rgba(255,255,255,0.18)" opacity={1}/>
+          </div>
+          {/* animated scan line */}
+          <div style={{
+            position: 'absolute', left: 0, right: 0, height: 2,
+            background: `linear-gradient(90deg, transparent, ${T.primary}, ${T.primary}, transparent)`,
+            boxShadow: `0 0 10px 2px ${T.primary}88`,
+            animation: 'scanLine 1.5s ease-in-out infinite',
+            top: '20%',
+          }}/>
+        </div>
+
+        {/* Tip below viewfinder */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+        }}>
+          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.60)', fontFamily: T.font, textAlign: 'center', lineHeight: 1.7 }}>
+            วางบาร์โค้ดบนใบแจ้งหนี้กระดาษ<br/>ให้อยู่ในกรอบ
+          </div>
+          {/* pulse dot */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%', background: T.primary,
+              animation: 'pulse 1s ease-in-out infinite',
+            }}/>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontFamily: T.font }}>กำลังสแกน…</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Manual entry card at bottom */}
+      <div style={{
+        background: 'rgba(255,255,255,0.06)',
+        borderTop: '1px solid rgba(255,255,255,0.10)',
+        padding: '16px 20px 32px',
+        position: 'relative', zIndex: 2,
+      }}>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontFamily: T.font, marginBottom: 10, textAlign: 'center' }}>
+          หรือพิมพ์เลขบิลด้วยตนเอง
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{
+            flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: 10,
+            border: '1.5px solid rgba(255,255,255,0.14)',
+            padding: '12px 14px', display: 'flex', alignItems: 'center',
+          }}>
+            <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.35)', fontFamily: 'monospace', letterSpacing: 1 }}>BL-2569-____</span>
+          </div>
+          <button style={{
+            padding: '0 20px', borderRadius: 10, background: T.primary, border: 'none',
+            color: '#fff', fontFamily: T.font, fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          }}>ค้นหา</button>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes scanLine { 0%{top:15%} 50%{top:78%} 100%{top:15%} }
+      `}</style>
+    </div>
+  );
+
+  /* ── Found state ── */
+  return (
+    <div style={{ background: T.surface, minHeight: '100%', paddingBottom: 120 }}>
+      <BackHeader title="สแกนบิล" sub="BL-2569-1240 · พบในระบบ" color={T.successMid}/>
+
+      {/* Success banner */}
+      <div style={{ margin: '-1px 16px 0', position: 'relative', zIndex: 2 }}>
+        <div style={{
+          background: T.white, borderRadius: T.radius.lg,
+          border: '1.5px solid #bbf7d0',
+          boxShadow: '0 6px 24px rgba(22,163,74,0.12)',
+          overflow: 'hidden',
+        }}>
+          {/* green header */}
+          <div style={{
+            background: 'linear-gradient(135deg,#16a34a 0%,#166534 100%)',
+            padding: '18px 20px',
+            display: 'flex', alignItems: 'center', gap: 14,
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+              background: 'rgba(255,255,255,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontFamily: T.font }}>พบบิลในระบบ</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', fontFamily: T.font, lineHeight: 1.2 }}>BL-2569-1240</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.70)', fontFamily: T.font }}>ค่าขยะ · เมษายน 2569</div>
+            </div>
+          </div>
+
+          {/* Scanned barcode display */}
+          <div style={{ padding: '14px 20px', borderBottom: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: '#f8fff9' }}>
+            <BarcodeSVG/>
+            <div style={{ fontSize: 11, letterSpacing: 2, color: T.navyWeak, fontFamily: 'monospace', marginTop: 2 }}>
+              BL-2569-1240-0042
+            </div>
+          </div>
+
+          {/* Bill detail rows */}
+          <div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', borderBottom:`1px solid ${T.border}` }}>
+              <span style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font }}>เจ้าบ้าน</span>
+              <span style={{ fontSize:14, fontWeight:600, color:T.navy, fontFamily:T.font }}>นางสาวสมหญิง วงษ์ทอง</span>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', borderBottom:`1px solid ${T.border}` }}>
+              <span style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font }}>ที่อยู่</span>
+              <span style={{ fontSize:14, fontWeight:600, color:T.navy, fontFamily:T.font }}>45/2 ม.3 ต.บ้านแป้ง</span>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', borderBottom:`1px solid ${T.border}` }}>
+              <span style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font }}>กำหนดชำระ</span>
+              <span style={{ fontSize:14, fontWeight:600, color:T.danger, fontFamily:T.font }}>30 มี.ค. 2569 (เกิน 21 วัน)</span>
+            </div>
+            <div style={{ padding:'12px 16px', background:T.dangerBg, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span style={{ fontSize:16, fontWeight:700, color:T.danger, fontFamily:T.font }}>ยอดที่ต้องชำระ</span>
+              <span style={{ fontSize:26, fontWeight:800, color:T.danger, fontFamily:T.font }}>฿72</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div style={{ padding: '14px 16px 0' }}>
+        <BigBtn color={T.dangerMid}>ชำระ ฿72 เดี๋ยวนี้</BigBtn>
+        <div style={{ marginTop: 10 }}>
+          <BigBtn outline>ดูรายละเอียดบิลเต็ม</BigBtn>
+        </div>
+        <button onClick={() => setPhase('scan')} style={{
+          width: '100%', marginTop: 10, padding: '14px', borderRadius: T.radius.md,
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: 14, color: T.navyWeak, fontFamily: T.font, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M3 7V5a2 2 0 012-2h2"/><path d="M17 3h2a2 2 0 012 2v2"/>
+            <path d="M21 17v2a2 2 0 01-2 2h-2"/><path d="M7 21H5a2 2 0 01-2-2v-2"/>
+            <rect x="7" y="7" width="10" height="10" rx="1"/>
+          </svg>
+          สแกนบิลอื่น
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Main App ─── */
+const W = 390, H = 844;
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection
+        id="r04"
+        title="R-04 — Bill Details · รายละเอียดบิล"
+        subtitle="Resident Portal · Mobile First · ออกแบบสำหรับผู้สูงอายุ · Sarabun · ฿ Thai Baht">
+
+        <DCArtboard id="s1" label="1 · ค่าขยะ — ค้างชำระ (Waste · Overdue)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenWasteOverdue />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s2" label="2 · ค่าน้ำประปา — รอชำระ (Water · Issued)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenWaterIssued />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s3" label="3 · ใบเสร็จรับเงิน (Receipt · Paid)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenReceipt />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s4" label="4 · ขอผ่อนชำระ (Installment Request)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenInstallment />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s5" label="5 · สแกนบาร์โค้ดบิล (Scan Bill Barcode)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={true}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenScanBarcode />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<div id="root"></div>
+</body>
+</html>

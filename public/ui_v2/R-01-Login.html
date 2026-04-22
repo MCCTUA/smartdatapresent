@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-01 — Login · Resident Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="../ios-frame.jsx"></script>
+<script type="text/babel" src="../design-canvas.jsx"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0eee9; }
+</style>
+</head>
+<body>
+<script type="text/babel">
+
+/* ── Design tokens ── */
+const T = {
+  primary: '#1b61c9',
+  primaryLight: '#e8f0fd',
+  primaryDark: '#144fa8',
+  navy: '#181d26',
+  navyWeak: 'rgba(4,14,32,0.50)',
+  navyFaint: 'rgba(4,14,32,0.07)',
+  border: '#e0e2e6',
+  surface: '#f8fafc',
+  white: '#ffffff',
+  error: '#c0392b',
+  errorBg: '#fdf2f2',
+  success: '#166534',
+  successBg: '#f0fdf4',
+  lineGreen: '#06C755',
+  font: "'Sarabun', -apple-system, sans-serif",
+  radius: { sm: 8, md: 14, lg: 20, xl: 28 },
+};
+
+/* ── Shared micro-components ── */
+
+const OrgBadge = () => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+    {/* Logo placeholder */}
+    <div style={{
+      width: 72, height: 72, borderRadius: 20,
+      background: `linear-gradient(145deg, ${T.primary} 0%, ${T.primaryDark} 100%)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: `0 4px 16px rgba(27,97,201,0.30)`,
+    }}>
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <path d="M18 4L4 12v10c0 7.18 5.93 13.9 14 15.5C26.07 35.9 32 29.18 32 22V12L18 4z" fill="white" fillOpacity="0.9"/>
+        <path d="M14 18l3 3 6-6" stroke={T.primary} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ fontSize: 17, fontWeight: 700, color: T.navy, letterSpacing: 0.1, lineHeight: 1.3 }}>
+        อบต.บ้านแป้ง
+      </div>
+      <div style={{ fontSize: 13, color: T.navyWeak, marginTop: 2, lineHeight: 1.4 }}>
+        ระบบจัดเก็บค่าธรรมเนียม
+      </div>
+    </div>
+  </div>
+);
+
+const Heading = ({ children, sub }) => (
+  <div style={{ marginBottom: 24 }}>
+    <h1 style={{ fontSize: 26, fontWeight: 700, color: T.navy, lineHeight: 1.25, fontFamily: T.font }}>
+      {children}
+    </h1>
+    {sub && <p style={{ fontSize: 16, color: T.navyWeak, marginTop: 6, lineHeight: 1.6, fontFamily: T.font }}>{sub}</p>}
+  </div>
+);
+
+const Label = ({ children }) => (
+  <div style={{ fontSize: 15, fontWeight: 600, color: T.navy, marginBottom: 8, fontFamily: T.font }}>{children}</div>
+);
+
+const Input = ({ placeholder, value, icon, error, large }) => (
+  <div style={{
+    display: 'flex', alignItems: 'center', gap: 10,
+    border: `1.5px solid ${error ? T.error : T.border}`,
+    borderRadius: T.radius.md,
+    background: error ? T.errorBg : T.white,
+    padding: '0 16px',
+    height: large ? 64 : 56,
+    boxShadow: error ? 'none' : '0 1px 3px rgba(0,0,0,0.04)',
+  }}>
+    {icon && <span style={{ fontSize: 22, opacity: 0.5 }}>{icon}</span>}
+    <span style={{ fontSize: 18, color: value ? T.navy : T.navyWeak, fontFamily: T.font, flex: 1 }}>
+      {value || placeholder}
+    </span>
+  </div>
+);
+
+const PrimaryBtn = ({ children, loading, disabled, color }) => (
+  <button style={{
+    width: '100%', height: 58, borderRadius: T.radius.md,
+    background: disabled ? '#c8d6f0' : (color || T.primary),
+    border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+    boxShadow: disabled ? 'none' : `0 4px 14px rgba(27,97,201,0.30)`,
+    transition: 'all 0.15s',
+  }}>
+    {loading && (
+      <svg width="20" height="20" viewBox="0 0 20 20" style={{ animation: 'spin 0.8s linear infinite' }}>
+        <circle cx="10" cy="10" r="8" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" fill="none"/>
+        <path d="M10 2a8 8 0 018 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      </svg>
+    )}
+    <span style={{ fontSize: 18, fontWeight: 700, color: 'white', fontFamily: T.font }}>{children}</span>
+  </button>
+);
+
+const LineBtn = () => (
+  <button style={{
+    width: '100%', height: 58, borderRadius: T.radius.md,
+    background: T.lineGreen, border: 'none', cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+    boxShadow: '0 4px 14px rgba(6,199,85,0.28)',
+  }}>
+    {/* LINE logo */}
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <rect width="26" height="26" rx="6" fill="white"/>
+      <path d="M13 4.5C8.03 4.5 4 7.93 4 12.15c0 3.77 3.34 6.93 7.86 7.53.31.07.73.21.83.48.1.24.06.62.04.86l-.13.8c-.04.24-.18.94.82.51 1-.43 5.43-3.2 7.4-5.47A6.4 6.4 0 0022 12.15C22 7.93 17.97 4.5 13 4.5z" fill={T.lineGreen}/>
+      <path d="M17.9 14.2h-2.4a.2.2 0 01-.2-.2v-3.7c0-.11.09-.2.2-.2h2.4c.11 0 .2.09.2.2v.6c0 .11-.09.2-.2.2h-1.6v.6h1.6c.11 0 .2.09.2.2v.6c0 .11-.09.2-.2.2h-1.6v.6h1.6c.11 0 .2.09.2.2v.5a.2.2 0 01-.2.2zm-9.6 0a.2.2 0 01-.2-.2v-3.7c0-.11.09-.2.2-.2h.65c.11 0 .2.09.2.2v3c0 .03.02.05.05.05h1.55c.11 0 .2.09.2.2v.5a.2.2 0 01-.2.2H8.3zm3.05 0a.2.2 0 01-.2-.2v-3.7c0-.11.09-.2.2-.2h.65c.11 0 .2.09.2.2v3.7c0 .11-.09.2-.2.2h-.65zm3.3 0h-.65a.2.2 0 01-.2-.2v-3.7c0-.11.09-.2.2-.2h.65c.11 0 .2.09.2.2v3.7c0 .11-.09.2-.2.2z" fill="white"/>
+    </svg>
+    <span style={{ fontSize: 18, fontWeight: 700, color: 'white', fontFamily: T.font }}>เข้าสู่ระบบด้วย LINE</span>
+  </button>
+);
+
+const Divider = ({ label }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+    <div style={{ flex: 1, height: 1, background: T.border }} />
+    <span style={{ fontSize: 13, color: T.navyWeak, fontFamily: T.font }}>{label}</span>
+    <div style={{ flex: 1, height: 1, background: T.border }} />
+  </div>
+);
+
+const ErrorBox = ({ children }) => (
+  <div style={{
+    background: T.errorBg, border: `1px solid #f5c6c2`,
+    borderRadius: T.radius.sm, padding: '12px 14px',
+    display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 12,
+  }}>
+    <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+    <span style={{ fontSize: 15, color: T.error, lineHeight: 1.5, fontFamily: T.font }}>{children}</span>
+  </div>
+);
+
+const StepDots = ({ total, current }) => (
+  <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 28 }}>
+    {Array.from({ length: total }).map((_, i) => (
+      <div key={i} style={{
+        width: i === current ? 20 : 7, height: 7, borderRadius: 4,
+        background: i === current ? T.primary : T.border,
+        transition: 'all 0.25s',
+      }} />
+    ))}
+  </div>
+);
+
+/* ── State screens ── */
+
+/* S1 — Default: enter phone number */
+const ScreenDefault = () => (
+  <div style={{ padding: '28px 22px 24px', fontFamily: T.font, background: T.white, minHeight: '100%' }}>
+    <OrgBadge />
+    <Heading sub="กรอกเบอร์โทรศัพท์เพื่อรับรหัส OTP หรือเข้าสู่ระบบด้วย LINE">
+      ยินดีต้อนรับ 👋
+    </Heading>
+
+    <div style={{ marginBottom: 20 }}>
+      <Label>เบอร์โทรศัพท์</Label>
+      <Input placeholder="0XX-XXX-XXXX" icon="📱" />
+    </div>
+
+    <PrimaryBtn>ส่งรหัส OTP</PrimaryBtn>
+
+    <Divider label="หรือ" />
+
+    <LineBtn />
+
+    <p style={{
+      fontSize: 13, color: T.navyWeak, textAlign: 'center',
+      lineHeight: 1.6, marginTop: 20,
+    }}>
+      การเข้าสู่ระบบถือว่าคุณยอมรับ<br/>
+      <span style={{ color: T.primary, textDecoration: 'underline' }}>นโยบายความเป็นส่วนตัว</span>
+    </p>
+  </div>
+);
+
+/* S2 — OTP entry (after sending) */
+const ScreenOTP = () => {
+  const boxes = [null, '4', '7', null, null, null];
+  return (
+    <div style={{ padding: '28px 22px 24px', fontFamily: T.font, background: T.white, minHeight: '100%' }}>
+      <OrgBadge />
+      <StepDots total={3} current={1} />
+      <Heading sub="ส่งรหัส 6 หลักไปที่ 089-xxx-xx56 แล้ว กรุณากรอกภายใน 5 นาที">
+        กรอกรหัส OTP
+      </Heading>
+
+      {/* OTP boxes — large for elderly */}
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 28 }}>
+        {boxes.map((v, i) => (
+          <div key={i} style={{
+            width: 48, height: 62, borderRadius: 12,
+            border: `2px solid ${i === 3 ? T.primary : v ? T.border : T.border}`,
+            background: i === 3 ? T.primaryLight : T.white,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 28, fontWeight: 700, color: T.navy,
+            boxShadow: i === 3 ? `0 0 0 3px rgba(27,97,201,0.15)` : 'none',
+          }}>
+            {v || (i === 3 ? <div style={{ width: 2, height: 26, background: T.primary, borderRadius: 1, animation: 'blink 1s step-end infinite' }} /> : '')}
+          </div>
+        ))}
+      </div>
+
+      {/* countdown */}
+      <div style={{
+        textAlign: 'center', marginBottom: 24,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+      }}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="6.5" stroke={T.navyWeak} strokeWidth="1.5"/>
+          <path d="M8 5v3.5L10 10" stroke={T.navyWeak} strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+        <span style={{ fontSize: 15, color: T.navyWeak }}>รหัสหมดอายุใน <strong style={{ color: T.navy }}>4:23</strong></span>
+      </div>
+
+      <PrimaryBtn disabled>ยืนยัน OTP</PrimaryBtn>
+
+      <button style={{
+        width: '100%', height: 52, background: 'none', border: 'none',
+        cursor: 'pointer', marginTop: 12, fontFamily: T.font,
+        fontSize: 16, color: T.primary, fontWeight: 600,
+      }}>
+        ส่งรหัสใหม่อีกครั้ง
+      </button>
+
+      <button style={{
+        width: '100%', height: 48, background: 'none', border: 'none',
+        cursor: 'pointer', fontFamily: T.font,
+        fontSize: 15, color: T.navyWeak,
+      }}>
+        ← แก้ไขเบอร์โทรศัพท์
+      </button>
+    </div>
+  );
+};
+
+/* S3 — OTP Error */
+const ScreenOTPError = () => (
+  <div style={{ padding: '28px 22px 24px', fontFamily: T.font, background: T.white, minHeight: '100%' }}>
+    <OrgBadge />
+    <StepDots total={3} current={1} />
+    <Heading sub="กรุณาลองใหม่หรือส่งรหัสใหม่อีกครั้ง">
+      กรอกรหัส OTP
+    </Heading>
+
+    <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 8 }}>
+      {['3','9','1','5','X','X'].map((v, i) => (
+        <div key={i} style={{
+          width: 48, height: 62, borderRadius: 12,
+          border: `2px solid ${T.error}`,
+          background: T.errorBg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 28, fontWeight: 700, color: T.error,
+        }}>
+          {v}
+        </div>
+      ))}
+    </div>
+
+    <ErrorBox>รหัส OTP ไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง (เหลืออีก 2 ครั้ง)</ErrorBox>
+
+    <div style={{ marginTop: 24 }}>
+      <PrimaryBtn color={T.error}>ลองใหม่</PrimaryBtn>
+    </div>
+
+    <button style={{
+      width: '100%', height: 52, background: 'none', border: 'none',
+      cursor: 'pointer', marginTop: 10, fontFamily: T.font,
+      fontSize: 16, color: T.primary, fontWeight: 600,
+    }}>
+      ส่งรหัสใหม่อีกครั้ง
+    </button>
+
+    <button style={{
+      width: '100%', height: 48, background: 'none', border: 'none',
+      cursor: 'pointer', fontFamily: T.font,
+      fontSize: 15, color: T.navyWeak,
+    }}>
+      ← แก้ไขเบอร์โทรศัพท์
+    </button>
+  </div>
+);
+
+/* S4 — New user: verify with National ID */
+const ScreenNewUser = () => (
+  <div style={{ padding: '28px 22px 24px', fontFamily: T.font, background: T.white, minHeight: '100%' }}>
+    <OrgBadge />
+    <StepDots total={3} current={2} />
+
+    {/* New user banner */}
+    <div style={{
+      background: '#fffbeb', border: '1.5px solid #fde68a',
+      borderRadius: T.radius.md, padding: '14px 16px',
+      display: 'flex', gap: 12, marginBottom: 24, alignItems: 'flex-start',
+    }}>
+      <span style={{ fontSize: 24, flexShrink: 0 }}>👋</span>
+      <div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: '#92400e', marginBottom: 4 }}>เข้าสู่ระบบครั้งแรก</div>
+        <div style={{ fontSize: 14, color: '#a16207', lineHeight: 1.5 }}>
+          กรุณายืนยันตัวตนด้วยเลขบัตรประชาชน เพื่อเชื่อมกับข้อมูลบ้านของคุณ
+        </div>
+      </div>
+    </div>
+
+    <Heading sub="กรอกเลข 13 หลักตามบัตรประชาชน">
+      ยืนยันตัวตน
+    </Heading>
+
+    <div style={{ marginBottom: 6 }}>
+      <Label>เลขบัตรประชาชน</Label>
+      <Input placeholder="X-XXXX-XXXXX-XX-X" icon="🪪" large />
+    </div>
+
+    {/* ID card illustration hint */}
+    <div style={{
+      display: 'flex', gap: 10, alignItems: 'center',
+      background: T.surface, borderRadius: T.radius.sm,
+      padding: '10px 14px', marginBottom: 24,
+    }}>
+      <span style={{ fontSize: 18 }}>💡</span>
+      <span style={{ fontSize: 13, color: T.navyWeak, lineHeight: 1.5 }}>
+        เลขบัตรอยู่ด้านหน้าบัตรประชาชน บรรทัดแรกใต้รูปถ่าย
+      </span>
+    </div>
+
+    <PrimaryBtn>ยืนยันและเข้าสู่ระบบ</PrimaryBtn>
+
+    {/* Privacy note */}
+    <div style={{
+      marginTop: 16, padding: '12px 14px',
+      background: T.surface, borderRadius: T.radius.sm,
+      display: 'flex', gap: 8, alignItems: 'flex-start',
+    }}>
+      <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>🔒</span>
+      <span style={{ fontSize: 13, color: T.navyWeak, lineHeight: 1.5 }}>
+        ข้อมูลบัตรประชาชนใช้เพื่อยืนยันตัวตนครั้งแรกเท่านั้น ไม่มีการบันทึกหรือส่งต่อ
+      </span>
+    </div>
+  </div>
+);
+
+/* S5 — Loading (sending OTP) */
+const ScreenLoading = () => (
+  <div style={{ padding: '28px 22px 24px', fontFamily: T.font, background: T.white, minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+    <OrgBadge />
+
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+      {/* Spinner */}
+      <div style={{
+        width: 72, height: 72, borderRadius: 36,
+        background: T.primaryLight,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="36" height="36" viewBox="0 0 36 36" style={{ animation: 'spin 0.85s linear infinite' }}>
+          <circle cx="18" cy="18" r="14" stroke="rgba(27,97,201,0.15)" strokeWidth="3.5" fill="none"/>
+          <path d="M18 4a14 14 0 0114 14" stroke={T.primary} strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+        </svg>
+      </div>
+
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 22, fontWeight: 700, color: T.navy, marginBottom: 8 }}>กำลังส่งรหัส OTP…</div>
+        <div style={{ fontSize: 16, color: T.navyWeak, lineHeight: 1.6 }}>
+          กรุณารอสักครู่<br/>รหัสจะส่งไปที่ 089-xxx-xx56
+        </div>
+      </div>
+
+      {/* animated dots */}
+      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+        {[0,1,2].map(i => (
+          <div key={i} style={{
+            width: 8, height: 8, borderRadius: 4,
+            background: T.primary, opacity: 0.3,
+            animation: `pulse 1.2s ${i*0.2}s ease-in-out infinite`,
+          }} />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+/* ── Animation keyframes ── */
+const styleTag = document.createElement('style');
+styleTag.textContent = `
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0 } }
+  @keyframes pulse { 0%,100% { opacity:0.3; transform:scale(1) } 50% { opacity:1; transform:scale(1.2) } }
+`;
+document.head.appendChild(styleTag);
+
+/* ── Main app ── */
+const W = 390, H = 844;
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="r01" title="R-01 — หน้าเข้าสู่ระบบ (Login)" subtitle="Resident Portal · ออกแบบสำหรับผู้สูงอายุ · Mobile First">
+
+        <DCArtboard id="s1" label="1 · Default (กรอกเบอร์โทร)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop: 90, height: '100%', overflowY: 'auto' }}>
+              <ScreenDefault />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s2" label="2 · กำลังส่ง OTP (Loading)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop: 90, height: '100%' }}>
+              <ScreenLoading />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s3" label="3 · กรอก OTP" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop: 90, height: '100%', overflowY: 'auto' }}>
+              <ScreenOTP />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s4" label="4 · Error (OTP ผิด/หมดอายุ)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop: 90, height: '100%', overflowY: 'auto' }}>
+              <ScreenOTPError />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s5" label="5 · New User (ยืนยันบัตรประชาชน)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop: 90, height: '100%', overflowY: 'auto' }}>
+              <ScreenNewUser />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<div id="root"></div>
+</body>
+</html>

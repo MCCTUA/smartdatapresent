@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-09 — กล่องอนุมัติ · Gismo Officer Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; }
+  body {
+    font-family: 'Prompt', 'Inter', sans-serif;
+    background: #f8fafc;
+    color: #181d26;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+  button { font-family: inherit; cursor: pointer; }
+  input, textarea, select { font-family: inherit; }
+
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .tweak-panel {
+    position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+    background: white; border-radius: 16px; padding: 20px 24px;
+    box-shadow: rgba(0,0,0,0.32) 0 0 1px, rgba(0,0,0,0.08) 0 0 2px, rgba(45,127,249,0.28) 0 1px 3px, rgba(0,0,0,0.06) 0 0 0 0.5px inset;
+    width: 280px; animation: fadeIn 0.2s ease;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ── Tweaks ── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "primaryColor": "#1b61c9",
+  "orgName": "เทศบาลตำบลสุขสวัสดิ์",
+  "compactMode": false,
+  "showAvatars": true
+}/*EDITMODE-END*/;
+
+/* ── Config ── */
+const TYPE_CFG = {
+  bill_adjust:      { label: 'ปรับยอดบิล',              color: '#b45309', bg: '#fef3c7', dot: '#f59e0b' },
+  bill_cancel:      { label: 'ยกเลิกบิล',                color: '#b91c1c', bg: '#fee2e2', dot: '#ef4444' },
+  refund:           { label: 'คืนเงิน',                  color: '#047857', bg: '#d1fae5', dot: '#10b981' },
+  installment:      { label: 'แผนผ่อนชำระ',             color: '#6d28d9', bg: '#ede9fe', dot: '#8b5cf6' },
+  legal_action:     { label: 'ดำเนินการทางกฎหมาย',      color: '#be123c', bg: '#ffe4e6', dot: '#f43f5e' },
+  rate_change:      { label: 'เปลี่ยนอัตราค่าบริการ',   color: '#c2410c', bg: '#ffedd5', dot: '#f97316' },
+  arrears_escalate: { label: 'ปรับระดับค้างชำระ',       color: '#4338ca', bg: '#e0e7ff', dot: '#6366f1' },
+};
+
+const STATUS_CFG = {
+  pending:  { label: 'รออนุมัติ',    color: '#92400e', bg: '#fef3c7', border: '#fcd34d' },
+  expiring: { label: 'ใกล้หมดอายุ', color: '#991b1b', bg: '#fee2e2', border: '#fca5a5' },
+  expired:  { label: 'หมดอายุแล้ว', color: '#6b7280', bg: '#f3f4f6', border: '#d1d5db' },
+  approved: { label: 'อนุมัติแล้ว', color: '#065f46', bg: '#d1fae5', border: '#6ee7b7' },
+  rejected: { label: 'ปฏิเสธแล้ว',  color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb' },
+};
+
+const NAV_ITEMS = [
+  { id: 'dashboard',   icon: '▤',  label: 'ภาพรวม KPI' },
+  { id: 'households',  icon: '⌂',  label: 'ครัวเรือน' },
+  { id: 'bills',       icon: '◫',  label: 'บิล' },
+  { id: 'payments',    icon: '◈',  label: 'รับชำระ' },
+  { id: 'arrears',     icon: '⚠',  label: 'ค้างชำระ' },
+  { id: 'approvals',   icon: '✓',  label: 'กล่องอนุมัติ', badge: 7 },
+  { id: 'issues',      icon: '◉',  label: 'ร้องเรียน', badge: 3 },
+  { id: 'reports',     icon: '▦',  label: 'รายงาน' },
+];
+
+const NAV_BOTTOM = [
+  { id: 'settings',   icon: '⚙',  label: 'ตั้งค่า' },
+];
+
+/* ── Sample Data ── */
+const INITIAL_REQUESTS = [
+  {
+    id: 'APV-2567-0089', type: 'bill_adjust', status: 'expiring',
+    requester: 'อรอุมา ขยันทำงาน', requesterRole: 'เจ้าหน้าที่กองคลัง',
+    houseName: 'บ้าน 45/2 ม.3', resident: 'สมศักดิ์ วงศ์ใหญ่',
+    amount: -120, submittedAt: '19 เม.ย. 2567 14:22', waitDays: 3,
+    expiresAt: '22 เม.ย. 2567', expiresHours: 4,
+    reason: 'บันทึกค่ามิเตอร์ผิดพลาด พนักงานจดเลข 5 แทน 3 ทำให้ยอดบิลสูงกว่าความเป็นจริง',
+    before: { billNo: 'B-0067/2567', status: 'issued', amount: 520, items: [{ name: 'ค่าเก็บขยะ', val: 120 }, { name: 'ค่าน้ำประปา (ใช้ 25 ม³)', val: 400 }] },
+    after:  { billNo: 'B-0067/2567', status: 'issued', amount: 400, items: [{ name: 'ค่าเก็บขยะ', val: 120 }, { name: 'ค่าน้ำประปา (ใช้ 15 ม³)', val: 280 }] },
+    docs: ['สำเนารูปถ่ายมิเตอร์.jpg', 'บันทึกขอแก้ไขบิล.pdf'],
+    chain: [{ role: 'Supervisor', name: 'รอดำเนินการ', done: false }],
+  },
+  {
+    id: 'APV-2567-0088', type: 'bill_cancel', status: 'expiring',
+    requester: 'อรอุมา ขยันทำงาน', requesterRole: 'เจ้าหน้าที่กองคลัง',
+    houseName: 'บ้าน 12/7 ม.1', resident: 'บุญมี มีสุข',
+    amount: -480, submittedAt: '18 เม.ย. 2567 09:15', waitDays: 4,
+    expiresAt: '22 เม.ย. 2567', expiresHours: 2,
+    reason: 'ครัวเรือนย้ายออกก่อนรอบบิล เจ้าบ้านได้ทำเรื่องย้ายทะเบียนบ้านแล้วเมื่อ 28 มี.ค. 2567',
+    before: { billNo: 'B-0048/2567', status: 'issued', amount: 480, items: [{ name: 'ค่าเก็บขยะ', val: 120 }, { name: 'ค่าน้ำประปา (ใช้ 22 ม³)', val: 360 }] },
+    after:  { billNo: 'B-0048/2567', status: 'cancelled', amount: 0, items: [{ name: 'ค่าเก็บขยะ', val: 0 }, { name: 'ค่าน้ำประปา', val: 0 }] },
+    docs: ['ใบแจ้งย้ายออก.pdf', 'หลักฐานการย้ายทะเบียน.jpg'],
+    chain: [{ role: 'Supervisor', name: 'รอดำเนินการ', done: false }],
+  },
+  {
+    id: 'APV-2567-0087', type: 'refund', status: 'pending',
+    requester: 'วิไล จันทร์แก้ว', requesterRole: 'เจ้าหน้าที่กองคลัง',
+    houseName: 'บ้าน 78 ม.5', resident: 'ประไพ สุขดี',
+    amount: -350, submittedAt: '20 เม.ย. 2567 11:05', waitDays: 2,
+    expiresAt: '27 เม.ย. 2567', expiresHours: null,
+    reason: 'ประชาชนชำระซ้ำ 2 ครั้ง ผ่าน QR PromptPay และเงินสดที่เคาน์เตอร์ ในวันเดียวกัน',
+    before: { billNo: 'B-0033/2567', status: 'paid', amount: 350, items: [{ name: 'ยอดชำระทั้งหมด (ชำระ 2 ครั้ง)', val: 700 }] },
+    after:  { billNo: 'B-0033/2567', status: 'paid', amount: 350, items: [{ name: 'ยอดชำระสุทธิ (คืนเงินส่วนเกิน)', val: 350 }] },
+    docs: ['สลิปโอนเงิน_1.jpg', 'สลิปโอนเงิน_2.jpg', 'คำร้องขอคืนเงิน.pdf'],
+    chain: [{ role: 'Supervisor', name: 'รอดำเนินการ', done: false }],
+  },
+  {
+    id: 'APV-2567-0086', type: 'installment', status: 'pending',
+    requester: 'อรอุมา ขยันทำงาน', requesterRole: 'เจ้าหน้าที่กองคลัง',
+    houseName: 'บ้าน 33/1 ม.2', resident: 'ประสิทธิ์ ดีงาม',
+    amount: 2400, submittedAt: '17 เม.ย. 2567 16:30', waitDays: 5,
+    expiresAt: '29 เม.ย. 2567', expiresHours: null,
+    reason: 'ผู้พักอาศัยมีรายได้น้อย ขอแบ่งชำระ 3 งวด เดือนละ 800 บาท ยอดค้างรวม 2,400 บาท (4 เดือน)',
+    before: { billNo: 'หลายบิล', status: 'overdue', amount: 2400, items: [{ name: 'ยอดค้างชำระรวม 4 รอบบิล', val: 2400 }] },
+    after:  { billNo: 'แผนผ่อน 3 งวด', status: 'installment', amount: 2400, items: [{ name: 'งวดที่ 1 (ครบ 30 เม.ย.)', val: 800 }, { name: 'งวดที่ 2 (ครบ 31 พ.ค.)', val: 800 }, { name: 'งวดที่ 3 (ครบ 30 มิ.ย.)', val: 800 }] },
+    docs: ['คำร้องขอผ่อนชำระ.pdf'],
+    chain: [{ role: 'Supervisor', name: 'รอดำเนินการ', done: false }],
+  },
+  {
+    id: 'APV-2567-0085', type: 'legal_action', status: 'pending',
+    requester: 'สมใจ มีความสุข', requesterRole: 'หัวหน้างาน',
+    houseName: 'บ้าน 22 ม.4', resident: 'นิดา ขัดใจ',
+    amount: 4800, submittedAt: '16 เม.ย. 2567 10:00', waitDays: 6,
+    expiresAt: '30 เม.ย. 2567', expiresHours: null,
+    reason: 'ค้างชำระมาแล้ว 8 เดือน ยอดรวม 4,800 บาท แจ้งเตือน Level 3 แล้ว ไม่มีการตอบสนอง ขอดำเนินการทางกฎหมาย',
+    before: { billNo: 'arrears_level', status: 'level_3', amount: 4800, items: [{ name: 'ยอดค้างชำระรวม 8 รอบบิล', val: 4800 }] },
+    after:  { billNo: 'legal_referral', status: 'legal_action', amount: 4800, items: [{ name: 'ส่งเรื่องดำเนินคดีทางกฎหมาย', val: 4800 }] },
+    docs: ['หนังสือเตือน Level 1.pdf', 'หนังสือเตือน Level 2.pdf', 'หนังสือเตือน Level 3.pdf'],
+    chain: [{ role: 'Supervisor', name: 'รอดำเนินการ', done: false }, { role: 'Admin', name: 'รอดำเนินการ', done: false }],
+  },
+  {
+    id: 'APV-2567-0084', type: 'bill_adjust', status: 'expired',
+    requester: 'อรอุมา ขยันทำงาน', requesterRole: 'เจ้าหน้าที่กองคลัง',
+    houseName: 'บ้าน 67/3 ม.1', resident: 'บุญมา รักดี',
+    amount: -80, submittedAt: '14 เม.ย. 2567 13:45', waitDays: 8,
+    expiresAt: '21 เม.ย. 2567', expiresHours: null,
+    reason: 'ปรับลดค่าธรรมเนียม กรณีครัวเรือนนำขยะไปทิ้งเองที่จุดรวมขยะ',
+    before: { billNo: 'B-0072/2567', status: 'issued', amount: 200, items: [{ name: 'ค่าเก็บขยะ', val: 120 }, { name: 'ค่าบริการอื่น', val: 80 }] },
+    after:  { billNo: 'B-0072/2567', status: 'issued', amount: 120, items: [{ name: 'ค่าเก็บขยะ', val: 120 }] },
+    docs: ['หลักฐานการนำขยะไปทิ้งเอง.jpg'],
+    chain: [{ role: 'Supervisor', name: 'หมดอายุ', done: false }],
+  },
+  {
+    id: 'APV-2567-0083', type: 'rate_change', status: 'expired',
+    requester: 'Admin ระบบ', requesterRole: 'Supervisor',
+    houseName: '—', resident: 'ทุกครัวเรือน',
+    amount: 15, submittedAt: '13 เม.ย. 2567 09:00', waitDays: 9,
+    expiresAt: '20 เม.ย. 2567', expiresHours: null,
+    reason: 'มติสภา อปท. ปรับขึ้นอัตราค่าเก็บขยะ 15 บาท/หลัง/เดือน มีผล 1 พ.ค. 2567',
+    before: { billNo: 'อัตราปัจจุบัน', status: 'active', amount: 120, items: [{ name: 'ค่าเก็บขยะ (ปัจจุบัน)', val: 120 }] },
+    after:  { billNo: 'อัตราใหม่', status: 'proposed', amount: 135, items: [{ name: 'ค่าเก็บขยะ (ใหม่)', val: 135 }] },
+    docs: ['มติสภา อปท. 8 เม.ย. 2567.pdf', 'ประกาศอัตราใหม่.pdf'],
+    chain: [{ role: 'Supervisor', name: 'หมดอายุ', done: false }, { role: 'Admin', name: 'หมดอายุ', done: false }],
+  },
+  {
+    id: 'APV-2567-0082', type: 'refund', status: 'approved',
+    requester: 'วิไล จันทร์แก้ว', requesterRole: 'เจ้าหน้าที่กองคลัง',
+    houseName: 'บ้าน 10/2 ม.3', resident: 'มาลี ดวงดี',
+    amount: -200, submittedAt: '12 เม.ย. 2567 15:00', waitDays: 10,
+    expiresAt: null, expiresHours: null,
+    reason: 'ชำระเกินมา 200 บาท เนื่องจากอ่านยอดบิลผิด',
+    before: { billNo: 'B-0021/2567', status: 'paid', amount: 200, items: [{ name: 'ยอดชำระส่วนเกิน', val: 200 }] },
+    after:  { billNo: 'B-0021/2567', status: 'paid', amount: 0, items: [{ name: 'คืนเงินให้ประชาชน', val: 200 }] },
+    docs: ['คำร้องขอคืนเงิน.pdf'],
+    chain: [{ role: 'Supervisor', name: 'สมใจ มีความสุข', done: true }],
+    approvedBy: 'สมใจ มีความสุข', approvedAt: '15 เม.ย. 2567 10:30',
+  },
+  {
+    id: 'APV-2567-0081', type: 'bill_cancel', status: 'approved',
+    requester: 'อรอุมา ขยันทำงาน', requesterRole: 'เจ้าหน้าที่กองคลัง',
+    houseName: 'บ้าน 55 ม.2', resident: 'สุรชัย ใจดี',
+    amount: -360, submittedAt: '10 เม.ย. 2567 08:45', waitDays: 12,
+    expiresAt: null, expiresHours: null,
+    reason: 'บิลออกซ้ำสองรอบสำหรับรอบเดียวกัน ข้อผิดพลาดของระบบ',
+    before: { billNo: 'B-0015/2567', status: 'issued', amount: 360, items: [{ name: 'ค่าเก็บขยะ', val: 120 }, { name: 'ค่าน้ำประปา', val: 240 }] },
+    after:  { billNo: 'B-0015/2567', status: 'cancelled', amount: 0, items: [] },
+    docs: ['รายงานบิลซ้ำ.pdf'],
+    chain: [{ role: 'Supervisor', name: 'สมใจ มีความสุข', done: true }],
+    approvedBy: 'สมใจ มีความสุข', approvedAt: '13 เม.ย. 2567 14:15',
+  },
+  {
+    id: 'APV-2567-0080', type: 'installment', status: 'rejected',
+    requester: 'วิไล จันทร์แก้ว', requesterRole: 'เจ้าหน้าที่กองคลัง',
+    houseName: 'บ้าน 41/5 ม.1', resident: 'กนกวรรณ พรม',
+    amount: 1800, submittedAt: '9 เม.ย. 2567 11:20', waitDays: 13,
+    expiresAt: null, expiresHours: null,
+    reason: 'ขอผ่อนชำระ 6 งวด ยอดค้างรวม 1,800 บาท',
+    before: { billNo: 'หลายบิล', status: 'overdue', amount: 1800, items: [{ name: 'ยอดค้างชำระรวม 3 รอบบิล', val: 1800 }] },
+    after:  { billNo: 'แผน 6 งวด', status: 'installment', amount: 1800, items: [{ name: '6 งวด × 300 บาท', val: 1800 }] },
+    docs: ['คำร้องขอผ่อนชำระ.pdf'],
+    chain: [{ role: 'Supervisor', name: 'สมใจ มีความสุข', done: true }],
+    rejectedBy: 'สมใจ มีความสุข', rejectedAt: '11 เม.ย. 2567 09:00',
+    rejectReason: 'ยอดค้างชำระไม่สูงพอที่จะอนุมัติแผนผ่อน — กรุณาชำระเต็มจำนวน หรือขอเว้นพักชำระแทน',
+  },
+  {
+    id: 'APV-2567-0079', type: 'bill_adjust', status: 'approved',
+    requester: 'อรอุมา ขยันทำงาน', requesterRole: 'เจ้าหน้าที่กองคลัง',
+    houseName: 'บ้าน 88 ม.6', resident: 'อรรถพล ทอง',
+    amount: -50, submittedAt: '8 เม.ย. 2567 14:00', waitDays: 14,
+    expiresAt: null, expiresHours: null,
+    reason: 'ส่วนลดผู้สูงอายุ (อายุ 72 ปี) ตามนโยบาย อปท.',
+    before: { billNo: 'B-0008/2567', status: 'issued', amount: 170, items: [{ name: 'ค่าเก็บขยะ', val: 120 }, { name: 'ค่าบริการ', val: 50 }] },
+    after:  { billNo: 'B-0008/2567', status: 'issued', amount: 120, items: [{ name: 'ค่าเก็บขยะ', val: 120 }] },
+    docs: ['สำเนาบัตรประชาชน.jpg'],
+    chain: [{ role: 'Supervisor', name: 'สมใจ มีความสุข', done: true }],
+    approvedBy: 'สมใจ มีความสุข', approvedAt: '10 เม.ย. 2567 11:00',
+  },
+  {
+    id: 'APV-2567-0078', type: 'arrears_escalate', status: 'rejected',
+    requester: 'สมใจ มีความสุข', requesterRole: 'หัวหน้างาน',
+    houseName: 'บ้าน 3/1 ม.4', resident: 'สมหญิง ดี',
+    amount: 1200, submittedAt: '7 เม.ย. 2567 13:30', waitDays: 15,
+    expiresAt: null, expiresHours: null,
+    reason: 'ค้างชำระ 3 เดือน ขอปรับระดับเป็น Level 2 และส่งหนังสือเตือน',
+    before: { billNo: 'ระดับค้างชำระ', status: 'level_1', amount: 1200, items: [{ name: 'ค้างชำระรวม Level 1', val: 1200 }] },
+    after:  { billNo: 'ระดับค้างชำระ', status: 'level_2', amount: 1200, items: [{ name: 'ปรับขึ้น Level 2 + ส่งหนังสือเตือน', val: 1200 }] },
+    docs: ['ประวัติค้างชำระ.pdf'],
+    chain: [{ role: 'Admin', name: 'ผู้ดูแลระบบ', done: true }],
+    rejectedBy: 'ผู้ดูแลระบบ', rejectedAt: '9 เม.ย. 2567 10:00',
+    rejectReason: 'ยังอยู่ใน grace period — รอให้ครบ 90 วันก่อนปรับระดับ',
+  },
+];
+
+/* ── Helpers ── */
+const fmt = n => n == null ? '—' : (n >= 0 ? '+' : '') + n.toLocaleString('th-TH') + ' บาท';
+const fmtAbs = n => n == null ? '—' : Math.abs(n).toLocaleString('th-TH') + ' บาท';
+
+function Avatar({ name, size = 32, color = '#1b61c9' }) {
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0,2);
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: color + '18', color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.38, fontWeight: 600, flexShrink: 0 }}>
+      {initials}
+    </div>
+  );
+}
+
+function TypeBadge({ type }) {
+  const cfg = TYPE_CFG[type] || { label: type, color: '#6b7280', bg: '#f3f4f6' };
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: cfg.bg, color: cfg.color, borderRadius: 6, padding: '3px 9px', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.dot || cfg.color, flexShrink: 0 }} />
+      {cfg.label}
+    </span>
+  );
+}
+
+function StatusBadge({ status }) {
+  const cfg = STATUS_CFG[status] || { label: status, color: '#6b7280', bg: '#f3f4f6', border: '#e5e7eb' };
+  return (
+    <span style={{ display: 'inline-block', background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, borderRadius: 6, padding: '2px 8px', fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap' }}>
+      {cfg.label}
+    </span>
+  );
+}
+
+function Divider({ style }) {
+  return <div style={{ height: 1, background: '#e0e2e6', ...style }} />;
+}
+
+/* ── Sidebar ── */
+function Sidebar({ orgName, primaryColor }) {
+  const activeId = 'approvals';
+  return (
+    <div style={{ width: 232, background: '#181d26', display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100vh', position: 'sticky', top: 0 }}>
+      {/* Logo + Org */}
+      <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 8, background: primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0 }}>ก</div>
+          <div>
+            <div style={{ color: '#fff', fontWeight: 600, fontSize: 13, lineHeight: 1.3 }}>Gismo</div>
+            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, lineHeight: 1.3, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{orgName}</div>
+          </div>
+        </div>
+      </div>
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '10px 8px', overflowY: 'auto' }}>
+        {NAV_ITEMS.map(item => {
+          const isActive = item.id === activeId;
+          return (
+            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, marginBottom: 2, cursor: 'pointer', background: isActive ? `${primaryColor}22` : 'transparent', color: isActive ? '#fff' : 'rgba(255,255,255,0.55)', transition: 'all 0.15s', position: 'relative', userSelect: 'none' }}>
+              {isActive && <div style={{ position: 'absolute', left: 0, top: '25%', bottom: '25%', width: 3, borderRadius: 3, background: primaryColor }} />}
+              <span style={{ fontSize: 14, width: 18, textAlign: 'center', opacity: isActive ? 1 : 0.7 }}>{item.icon}</span>
+              <span style={{ fontSize: 13, fontWeight: isActive ? 600 : 400, flex: 1 }}>{item.label}</span>
+              {item.badge > 0 && (
+                <span style={{ background: isActive ? primaryColor : 'rgba(255,255,255,0.15)', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11, fontWeight: 600, animation: isActive ? 'none' : 'none' }}>
+                  {item.badge}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+      <Divider style={{ background: 'rgba(255,255,255,0.08)' }} />
+      <div style={{ padding: '10px 8px 16px' }}>
+        {NAV_BOTTOM.map(item => (
+          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>
+            <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>{item.icon}</span>
+            {item.label}
+          </div>
+        ))}
+        {/* User */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', marginTop: 4 }}>
+          <Avatar name="สมใจ มีความสุข" size={28} color={primaryColor} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ color: '#fff', fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>สมใจ มีความสุข</div>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>Supervisor</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Stats Bar ── */
+function StatsBar({ requests, primaryColor }) {
+  const pending = requests.filter(r => r.status === 'pending' || r.status === 'expiring').length;
+  const expiring = requests.filter(r => r.status === 'expiring').length;
+  const approvedToday = requests.filter(r => r.status === 'approved').length;
+  const rejectedToday = requests.filter(r => r.status === 'rejected').length;
+
+  const cards = [
+    { label: 'รออนุมัติ', value: pending, color: '#b45309', bg: '#fffbeb', border: '#fcd34d', icon: '◷' },
+    { label: 'ใกล้หมดอายุ (<24 ชม.)', value: expiring, color: '#b91c1c', bg: '#fee2e2', border: '#fca5a5', icon: '⚠', urgent: true },
+    { label: 'อนุมัติแล้ว (ทั้งหมด)', value: approvedToday, color: '#065f46', bg: '#d1fae5', border: '#6ee7b7', icon: '✓' },
+    { label: 'ปฏิเสธแล้ว (ทั้งหมด)', value: rejectedToday, color: '#6b7280', bg: '#f3f4f6', border: '#d1d5db', icon: '✕' },
+  ];
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, padding: '16px 24px 0' }}>
+      {cards.map(c => (
+        <div key={c.label} style={{ background: '#fff', border: `1px solid ${c.border}`, borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: c.urgent ? `0 0 0 2px ${c.border}40` : 'none', animation: c.urgent && c.value > 0 ? 'pulse 2s infinite' : 'none' }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: c.color, flexShrink: 0 }}>{c.icon}</div>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: c.color, lineHeight: 1 }}>{c.value}</div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, lineHeight: 1.4 }}>{c.label}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Filter Bar ── */
+function FilterBar({ activeTab, setActiveTab, typeFilter, setTypeFilter, search, setSearch, primaryColor, counts }) {
+  const tabs = [
+    { id: 'all', label: 'ทั้งหมด', count: counts.all },
+    { id: 'action', label: 'ต้องดำเนินการ', count: counts.action },
+    { id: 'expiring', label: 'ใกล้หมดอายุ', count: counts.expiring },
+    { id: 'expired', label: 'หมดอายุ', count: counts.expired },
+    { id: 'approved', label: 'อนุมัติแล้ว', count: counts.approved },
+    { id: 'rejected', label: 'ปฏิเสธแล้ว', count: counts.rejected },
+  ];
+
+  return (
+    <div style={{ padding: '16px 24px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 2, background: '#f1f5f9', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+        {tabs.map(t => {
+          const active = activeTab === t.id;
+          return (
+            <button key={t.id} onClick={() => setActiveTab(t.id)}
+              style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: active ? '#fff' : 'transparent', color: active ? '#181d26' : '#6b7280', fontWeight: active ? 600 : 400, fontSize: 13, cursor: 'pointer', boxShadow: active ? 'rgba(0,0,0,0.08) 0 1px 3px' : 'none', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s' }}>
+              {t.label}
+              {t.count > 0 && <span style={{ background: active ? primaryColor : '#e5e7eb', color: active ? '#fff' : '#6b7280', borderRadius: 10, padding: '1px 7px', fontSize: 11, fontWeight: 600 }}>{t.count}</span>}
+            </button>
+          );
+        })}
+      </div>
+      {/* Search + Type filter row */}
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
+          <span style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: 14 }}>⌕</span>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="ค้นหาเลขที่คำขอ ชื่อ ที่อยู่..." style={{ width: '100%', padding: '8px 12px 8px 32px', border: '1px solid #e0e2e6', borderRadius: 8, fontSize: 13, outline: 'none', background: '#fff', color: '#181d26', fontFamily: 'inherit' }} />
+        </div>
+        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #e0e2e6', borderRadius: 8, fontSize: 13, color: '#181d26', background: '#fff', cursor: 'pointer', fontFamily: 'inherit', outline: 'none' }}>
+          <option value="all">ทุกประเภทคำขอ</option>
+          {Object.entries(TYPE_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+/* ── Detail Panel ── */
+function DetailPanel({ req, onClose, onApprove, onReject, primaryColor }) {
+  if (!req) return null;
+  const isActionable = req.status === 'pending' || req.status === 'expiring';
+  const amtChanged = req.before && req.after && req.before.amount !== req.after.amount;
+
+  return (
+    <div style={{ width: 460, background: '#fff', borderLeft: '1px solid #e0e2e6', display: 'flex', flexDirection: 'column', height: '100%', animation: 'slideIn 0.22s ease', flexShrink: 0 }}>
+      {/* Panel Header */}
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e2e6', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 700, fontSize: 15, color: '#181d26' }}>{req.id}</span>
+            <TypeBadge type={req.type} />
+            <StatusBadge status={req.status} />
+          </div>
+          <div style={{ color: '#6b7280', fontSize: 12, marginTop: 4 }}>ส่งเมื่อ {req.submittedAt} · รอมาแล้ว {req.waitDays} วัน</div>
+        </div>
+        <button onClick={onClose} style={{ padding: '4px 8px', border: '1px solid #e0e2e6', borderRadius: 7, background: '#fff', color: '#6b7280', fontSize: 18, cursor: 'pointer', lineHeight: 1 }}>×</button>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 24px' }}>
+        {/* Expiry Warning */}
+        {req.status === 'expiring' && (
+          <div style={{ margin: '16px 20px 0', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 10, padding: '10px 14px', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 16 }}>⚠</span>
+            <div>
+              <div style={{ fontWeight: 600, color: '#b91c1c', fontSize: 13 }}>ใกล้หมดอายุ — เหลือเวลา {req.expiresHours} ชั่วโมง</div>
+              <div style={{ color: '#991b1b', fontSize: 12 }}>คำขอนี้จะหมดอายุโดยอัตโนมัติใน {req.expiresAt}</div>
+            </div>
+          </div>
+        )}
+        {req.status === 'rejected' && req.rejectReason && (
+          <div style={{ margin: '16px 20px 0', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 14px' }}>
+            <div style={{ fontWeight: 600, color: '#6b7280', fontSize: 12, marginBottom: 4 }}>เหตุผลที่ปฏิเสธ (โดย {req.rejectedBy} · {req.rejectedAt})</div>
+            <div style={{ color: '#374151', fontSize: 13 }}>{req.rejectReason}</div>
+          </div>
+        )}
+        {req.status === 'approved' && (
+          <div style={{ margin: '16px 20px 0', background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 10, padding: '10px 14px', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 16, color: '#065f46' }}>✓</span>
+            <div style={{ color: '#065f46', fontSize: 13 }}>อนุมัติโดย <strong>{req.approvedBy}</strong> · {req.approvedAt}</div>
+          </div>
+        )}
+
+        {/* Section: ผู้ขอ / ครัวเรือน */}
+        <div style={{ padding: '16px 20px 0' }}>
+          <div style={{ fontWeight: 600, fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>ข้อมูลคำขอ</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px' }}>
+            <InfoRow label="ผู้ยื่นคำขอ" value={req.requester} sub={req.requesterRole} />
+            <InfoRow label="ครัวเรือน" value={req.houseName} sub={req.resident} />
+          </div>
+        </div>
+
+        <Divider style={{ margin: '16px 20px' }} />
+
+        {/* Reason */}
+        <div style={{ padding: '0 20px' }}>
+          <div style={{ fontWeight: 600, fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>เหตุผลของคำขอ</div>
+          <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.7 }}>{req.reason}</p>
+        </div>
+
+        <Divider style={{ margin: '16px 20px' }} />
+
+        {/* Before / After Diff */}
+        {req.before && req.after && (
+          <div style={{ padding: '0 20px' }}>
+            <div style={{ fontWeight: 600, fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>ก่อน → หลัง การเปลี่ยนแปลง</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {/* Before */}
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#b91c1c', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>ก่อน</div>
+                {req.before.items.map((it, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                    <span style={{ fontSize: 12, color: '#6b7280' }}>{it.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: '#181d26' }}>{it.val.toLocaleString('th-TH')}</span>
+                  </div>
+                ))}
+                <Divider style={{ margin: '8px 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>รวม</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#b91c1c' }}>{req.before.amount.toLocaleString('th-TH')} บาท</span>
+                </div>
+              </div>
+              {/* After */}
+              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#065f46', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>หลัง</div>
+                {req.after.items.map((it, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                    <span style={{ fontSize: 12, color: '#6b7280' }}>{it.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: '#181d26' }}>{it.val.toLocaleString('th-TH')}</span>
+                  </div>
+                ))}
+                <Divider style={{ margin: '8px 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>รวม</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#065f46' }}>{req.after.amount.toLocaleString('th-TH')} บาท</span>
+                </div>
+              </div>
+            </div>
+            {amtChanged && (
+              <div style={{ marginTop: 10, background: '#f8fafc', border: '1px solid #e0e2e6', borderRadius: 8, padding: '8px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 13, color: '#6b7280' }}>ผลต่างสุทธิ</span>
+                <span style={{ fontSize: 15, fontWeight: 700, color: req.amount < 0 ? '#b91c1c' : '#065f46' }}>
+                  {fmt(req.amount)}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        <Divider style={{ margin: '16px 20px' }} />
+
+        {/* Docs */}
+        {req.docs && req.docs.length > 0 && (
+          <div style={{ padding: '0 20px' }}>
+            <div style={{ fontWeight: 600, fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>เอกสารแนบ</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {req.docs.map((d, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: '#f8fafc', border: '1px solid #e0e2e6', borderRadius: 8, cursor: 'pointer' }}>
+                  <span style={{ fontSize: 16 }}>{d.endsWith('.pdf') ? '📄' : '🖼'}</span>
+                  <span style={{ fontSize: 13, color: '#1b61c9', fontWeight: 500, flex: 1 }}>{d}</span>
+                  <span style={{ fontSize: 12, color: '#9ca3af' }}>↓</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Divider style={{ margin: '16px 20px' }} />
+
+        {/* Approval Chain */}
+        <div style={{ padding: '0 20px' }}>
+          <div style={{ fontWeight: 600, fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>สายการอนุมัติ</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {req.chain.map((step, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: step.done ? '#d1fae5' : '#f3f4f6', border: `2px solid ${step.done ? '#6ee7b7' : '#e0e2e6'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: step.done ? '#065f46' : '#9ca3af', fontWeight: 700, flexShrink: 0 }}>
+                  {step.done ? '✓' : i + 1}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{step.role}</div>
+                  <div style={{ fontSize: 12, color: '#9ca3af' }}>{step.name}</div>
+                </div>
+                {!step.done && isActionable && <span style={{ fontSize: 11, background: '#fffbeb', color: '#b45309', padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>ดำเนินการ</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      {isActionable && (
+        <div style={{ padding: '16px 20px', borderTop: '1px solid #e0e2e6', display: 'flex', gap: 10, background: '#fff' }}>
+          <button onClick={() => onReject(req)} style={{ flex: 1, padding: '10px', border: '1px solid #e0e2e6', borderRadius: 10, background: '#fff', color: '#6b7280', fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.target.style.background = '#fee2e2'; e.target.style.borderColor = '#fca5a5'; e.target.style.color = '#b91c1c'; }}
+            onMouseLeave={e => { e.target.style.background = '#fff'; e.target.style.borderColor = '#e0e2e6'; e.target.style.color = '#6b7280'; }}>
+            ✕ ปฏิเสธ
+          </button>
+          <button onClick={() => onApprove(req)} style={{ flex: 2, padding: '10px', border: 'none', borderRadius: 10, background: primaryColor, color: '#fff', fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `rgba(45,127,249,0.28) 0 1px 3px`, transition: 'opacity 0.15s' }}
+            onMouseEnter={e => e.target.style.opacity = '0.9'}
+            onMouseLeave={e => e.target.style.opacity = '1'}>
+            ✓ อนุมัติคำขอนี้
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InfoRow({ label, value, sub }) {
+  return (
+    <div>
+      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 500, color: '#181d26' }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: '#6b7280' }}>{sub}</div>}
+    </div>
+  );
+}
+
+/* ── Approve Modal ── */
+function ApproveModal({ req, onConfirm, onCancel, primaryColor }) {
+  if (!req) return null;
+  return (
+    <ModalOverlay onClose={onCancel}>
+      <div style={{ width: 420 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: '#065f46' }}>✓</div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>ยืนยันการอนุมัติ</div>
+            <div style={{ fontSize: 13, color: '#6b7280' }}>{req.id}</div>
+          </div>
+        </div>
+        <div style={{ background: '#f8fafc', border: '1px solid #e0e2e6', borderRadius: 10, padding: 14, marginBottom: 20 }}>
+          <div style={{ fontSize: 13, color: '#374151' }}>กำลังอนุมัติ: <strong><TypeBadge type={req.type} /></strong></div>
+          <div style={{ fontSize: 13, color: '#374151', marginTop: 6 }}>ผู้ขอ: <strong>{req.requester}</strong> · ครัวเรือน: <strong>{req.houseName}</strong></div>
+          {req.amount !== 0 && <div style={{ fontSize: 13, marginTop: 6 }}>ผลต่างเงิน: <strong style={{ color: req.amount < 0 ? '#b91c1c' : '#065f46' }}>{fmt(req.amount)}</strong></div>}
+        </div>
+        <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>การอนุมัตินี้จะมีผลทันทีและบันทึกลงในระบบพร้อม audit log</p>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onCancel} style={{ flex: 1, padding: '10px', border: '1px solid #e0e2e6', borderRadius: 10, background: '#fff', color: '#374151', fontWeight: 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>ยกเลิก</button>
+          <button onClick={onConfirm} style={{ flex: 2, padding: '10px', border: 'none', borderRadius: 10, background: primaryColor, color: '#fff', fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>ยืนยันอนุมัติ</button>
+        </div>
+      </div>
+    </ModalOverlay>
+  );
+}
+
+/* ── Reject Modal ── */
+function RejectModal({ req, onConfirm, onCancel }) {
+  const [reason, setReason] = useState('');
+  if (!req) return null;
+  return (
+    <ModalOverlay onClose={onCancel}>
+      <div style={{ width: 460 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: '#b91c1c' }}>✕</div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>ปฏิเสธคำขอ</div>
+            <div style={{ fontSize: 13, color: '#6b7280' }}>{req.id} · {TYPE_CFG[req.type]?.label}</div>
+          </div>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>เหตุผลในการปฏิเสธ <span style={{ color: '#ef4444' }}>*</span></label>
+          <textarea value={reason} onChange={e => setReason(e.target.value)} rows={4} placeholder="ระบุเหตุผลอย่างชัดเจน เพื่อให้ผู้ขอเข้าใจและดำเนินการใหม่ได้ถูกต้อง..." style={{ width: '100%', padding: '10px 12px', border: '1px solid #e0e2e6', borderRadius: 10, fontSize: 13, resize: 'vertical', outline: 'none', fontFamily: 'inherit', color: '#181d26', lineHeight: 1.7 }} />
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onCancel} style={{ flex: 1, padding: '10px', border: '1px solid #e0e2e6', borderRadius: 10, background: '#fff', color: '#374151', fontWeight: 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>ยกเลิก</button>
+          <button onClick={() => reason.trim() && onConfirm(reason)} disabled={!reason.trim()} style={{ flex: 2, padding: '10px', border: 'none', borderRadius: 10, background: reason.trim() ? '#ef4444' : '#e5e7eb', color: reason.trim() ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 14, cursor: reason.trim() ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+            ยืนยันปฏิเสธ
+          </button>
+        </div>
+      </div>
+    </ModalOverlay>
+  );
+}
+
+function ModalOverlay({ children, onClose }) {
+  return (
+    <div onClick={e => e.target === e.currentTarget && onClose()} style={{ position: 'fixed', inset: 0, background: 'rgba(24,29,38,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 500, backdropFilter: 'blur(2px)', animation: 'fadeIn 0.15s ease' }}>
+      <div style={{ background: '#fff', borderRadius: 16, padding: 28, boxShadow: 'rgba(0,0,0,0.32) 0 0 1px, rgba(0,0,0,0.2) 0 8px 32px', animation: 'fadeIn 0.2s ease' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ── Table Row ── */
+function RequestRow({ req, isSelected, onClick, compact, primaryColor }) {
+  const isUrgent = req.status === 'expiring';
+  const rowBg = isSelected ? `${primaryColor}08` : isUrgent ? '#fff7f7' : '#fff';
+  return (
+    <tr onClick={onClick} style={{ cursor: 'pointer', background: rowBg, transition: 'background 0.1s', borderLeft: isSelected ? `3px solid ${primaryColor}` : '3px solid transparent' }}
+      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f8fafc'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = rowBg; }}>
+      <td style={{ padding: compact ? '10px 16px' : '14px 16px', fontFamily: 'Inter, monospace', fontSize: 12, color: '#6b7280', whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {isUrgent && <span style={{ fontSize: 10, color: '#ef4444' }}>▲</span>}
+          {req.id}
+        </div>
+      </td>
+      <td style={{ padding: compact ? '10px 16px' : '14px 16px' }}><TypeBadge type={req.type} /></td>
+      <td style={{ padding: compact ? '10px 16px' : '14px 16px' }}>
+        <div style={{ fontSize: 13, fontWeight: 500, color: '#181d26' }}>{req.requester}</div>
+        <div style={{ fontSize: 12, color: '#9ca3af' }}>{req.requesterRole}</div>
+      </td>
+      <td style={{ padding: compact ? '10px 16px' : '14px 16px' }}>
+        <div style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{req.houseName}</div>
+        <div style={{ fontSize: 12, color: '#9ca3af' }}>{req.resident}</div>
+      </td>
+      <td style={{ padding: compact ? '10px 16px' : '14px 16px', textAlign: 'right', fontFamily: 'Inter', fontSize: 13, fontWeight: 600, color: req.amount < 0 ? '#b91c1c' : req.amount > 0 ? '#065f46' : '#6b7280', whiteSpace: 'nowrap' }}>
+        {req.amount !== 0 ? fmt(req.amount) : '—'}
+      </td>
+      <td style={{ padding: compact ? '10px 16px' : '14px 16px', color: '#6b7280', fontSize: 13, whiteSpace: 'nowrap' }}>
+        {req.waitDays} วัน
+      </td>
+      <td style={{ padding: compact ? '10px 16px' : '14px 16px' }}>
+        {req.status === 'expiring' ? (
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#b91c1c' }}>อีก {req.expiresHours} ชม.</div>
+            <div style={{ fontSize: 11, color: '#9ca3af' }}>{req.expiresAt}</div>
+          </div>
+        ) : req.expiresAt ? (
+          <div style={{ fontSize: 12, color: '#6b7280' }}>{req.expiresAt}</div>
+        ) : <span style={{ color: '#e5e7eb' }}>—</span>}
+      </td>
+      <td style={{ padding: compact ? '10px 16px' : '14px 16px' }}><StatusBadge status={req.status} /></td>
+      <td style={{ padding: compact ? '10px 12px' : '14px 12px', paddingRight: 16 }}>
+        <div style={{ color: primaryColor, fontSize: 18, opacity: isSelected ? 1 : 0.3 }}>›</div>
+      </td>
+    </tr>
+  );
+}
+
+/* ── Toast ── */
+function Toast({ msg, type }) {
+  return (
+    <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: type === 'approve' ? '#065f46' : '#b91c1c', color: '#fff', borderRadius: 10, padding: '12px 24px', fontWeight: 600, fontSize: 14, zIndex: 600, boxShadow: '0 4px 20px rgba(0,0,0,0.2)', animation: 'fadeIn 0.2s ease' }}>
+      {type === 'approve' ? '✓' : '✕'} {msg}
+    </div>
+  );
+}
+
+/* ── Main App ── */
+function App() {
+  const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
+  const [editMode, setEditMode] = useState(false);
+  const [requests, setRequests] = useState(INITIAL_REQUESTS);
+  const [selectedReq, setSelectedReq] = useState(null);
+  const [activeTab, setActiveTab] = useState('action');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [approveTarget, setApproveTarget] = useState(null);
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg, type) => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleApprove = (req) => { setApproveTarget(req); };
+  const handleReject = (req) => { setRejectTarget(req); };
+
+  const confirmApprove = () => {
+    setRequests(rs => rs.map(r => r.id === approveTarget.id ? { ...r, status: 'approved', approvedBy: 'สมใจ มีความสุข', approvedAt: '22 เม.ย. 2567 ตอนนี้' } : r));
+    if (selectedReq?.id === approveTarget.id) setSelectedReq(prev => ({ ...prev, status: 'approved', approvedBy: 'สมใจ มีความสุข', approvedAt: '22 เม.ย. 2567 ตอนนี้' }));
+    showToast(`อนุมัติ ${approveTarget.id} สำเร็จ`, 'approve');
+    setApproveTarget(null);
+  };
+
+  const confirmReject = (reason) => {
+    setRequests(rs => rs.map(r => r.id === rejectTarget.id ? { ...r, status: 'rejected', rejectedBy: 'สมใจ มีความสุข', rejectedAt: '22 เม.ย. 2567 ตอนนี้', rejectReason: reason } : r));
+    if (selectedReq?.id === rejectTarget.id) setSelectedReq(prev => ({ ...prev, status: 'rejected', rejectedBy: 'สมใจ มีความสุข', rejectedAt: '22 เม.ย. 2567 ตอนนี้', rejectReason: reason }));
+    showToast(`ปฏิเสธ ${rejectTarget.id} แล้ว`, 'reject');
+    setRejectTarget(null);
+  };
+
+  // Filter
+  const filtered = requests.filter(r => {
+    if (activeTab === 'action') { if (r.status !== 'pending' && r.status !== 'expiring') return false; }
+    else if (activeTab === 'expiring') { if (r.status !== 'expiring') return false; }
+    else if (activeTab === 'expired') { if (r.status !== 'expired') return false; }
+    else if (activeTab === 'approved') { if (r.status !== 'approved') return false; }
+    else if (activeTab === 'rejected') { if (r.status !== 'rejected') return false; }
+
+    if (typeFilter !== 'all' && r.type !== typeFilter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      if (!r.id.toLowerCase().includes(q) && !r.requester.toLowerCase().includes(q) && !r.houseName.toLowerCase().includes(q) && !r.resident.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  const counts = {
+    all: requests.length,
+    action: requests.filter(r => r.status === 'pending' || r.status === 'expiring').length,
+    expiring: requests.filter(r => r.status === 'expiring').length,
+    expired: requests.filter(r => r.status === 'expired').length,
+    approved: requests.filter(r => r.status === 'approved').length,
+    rejected: requests.filter(r => r.status === 'rejected').length,
+  };
+
+  const p = tweaks.primaryColor;
+
+  // Tweaks
+  useEffect(() => {
+    window.addEventListener('message', e => {
+      if (e.data?.type === '__activate_edit_mode') setEditMode(true);
+      if (e.data?.type === '__deactivate_edit_mode') setEditMode(false);
+    });
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+  }, []);
+
+  const updateTweak = (key, val) => {
+    const next = { ...tweaks, [key]: val };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+  };
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#f8fafc' }}>
+      <Sidebar orgName={tweaks.orgName} primaryColor={p} />
+
+      {/* Main */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Page Header */}
+        <div style={{ background: '#fff', borderBottom: '1px solid #e0e2e6', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#181d26', lineHeight: 1 }}>กล่องอนุมัติ</h1>
+            <p style={{ fontSize: 13, color: '#9ca3af', marginTop: 4 }}>Approval Inbox — O-09 · อัปเดตล่าสุด 22 เม.ย. 2567 08:00</p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 9, border: '1px solid #e0e2e6', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: '#fff', fontSize: 16, color: '#6b7280' }}>🔔</div>
+              <div style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: 10, padding: '1px 5px', fontSize: 10, fontWeight: 700, lineHeight: 1.5 }}>7</div>
+            </div>
+            <Avatar name="สมใจ มีความสุข" size={36} color={p} />
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <StatsBar requests={requests} primaryColor={p} />
+          <FilterBar activeTab={activeTab} setActiveTab={setActiveTab} typeFilter={typeFilter} setTypeFilter={setTypeFilter} search={search} setSearch={setSearch} primaryColor={p} counts={counts} />
+
+          {/* Table + Detail Panel */}
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden', margin: '16px 24px 24px', gap: 0, borderRadius: 14, border: '1px solid #e0e2e6', boxShadow: 'rgba(15,48,106,0.05) 0 0 20px', background: '#fff' }}>
+            {/* Table */}
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: 140 }} />
+                  <col style={{ width: 160 }} />
+                  <col style={{ width: 160 }} />
+                  <col style={{ width: 150 }} />
+                  <col style={{ width: 120 }} />
+                  <col style={{ width: 80 }} />
+                  <col style={{ width: 110 }} />
+                  <col style={{ width: 110 }} />
+                  <col style={{ width: 36 }} />
+                </colgroup>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e0e2e6' }}>
+                    {['เลขที่คำขอ', 'ประเภท', 'ผู้ยื่นคำขอ', 'ครัวเรือน', 'ผลต่างเงิน', 'รอมา', 'หมดอายุ', 'สถานะ', ''].map((h, i) => (
+                      <th key={i} style={{ padding: '10px 16px', textAlign: i === 4 ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap', borderBottom: 'none' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr><td colSpan={9} style={{ padding: '60px 24px', textAlign: 'center', color: '#9ca3af' }}>
+                      <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
+                      <div style={{ fontSize: 15, fontWeight: 500, color: '#6b7280' }}>ไม่พบคำขออนุมัติ</div>
+                      <div style={{ fontSize: 13, marginTop: 4 }}>ลองเปลี่ยน filter หรือตรวจสอบ tab อื่น</div>
+                    </td></tr>
+                  ) : filtered.map((req, i) => (
+                    <React.Fragment key={req.id}>
+                      {i > 0 && <tr style={{ height: 0 }}><td colSpan={9} style={{ padding: 0, borderTop: '1px solid #f1f5f9' }} /></tr>}
+                      <RequestRow req={req} isSelected={selectedReq?.id === req.id} onClick={() => setSelectedReq(selectedReq?.id === req.id ? null : req)} compact={tweaks.compactMode} primaryColor={p} />
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Detail Panel */}
+            {selectedReq && (
+              <DetailPanel req={selectedReq} onClose={() => setSelectedReq(null)} onApprove={req => { handleApprove(req); }} onReject={req => { handleReject(req); }} primaryColor={p} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {approveTarget && <ApproveModal req={approveTarget} onConfirm={confirmApprove} onCancel={() => setApproveTarget(null)} primaryColor={p} />}
+      {rejectTarget && <RejectModal req={rejectTarget} onConfirm={confirmReject} onCancel={() => setRejectTarget(null)} />}
+
+      {/* Toast */}
+      {toast && <Toast msg={toast.msg} type={toast.type} />}
+
+      {/* Tweaks */}
+      {editMode && (
+        <div className="tweak-panel">
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14, color: '#181d26', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Tweaks
+            <button onClick={() => setEditMode(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 16 }}>×</button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 500 }}>สีหลัก (Primary Color)</span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input type="color" value={tweaks.primaryColor} onChange={e => updateTweak('primaryColor', e.target.value)} style={{ width: 40, height: 30, border: '1px solid #e0e2e6', borderRadius: 6, cursor: 'pointer', padding: 2 }} />
+                <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#374151' }}>{tweaks.primaryColor}</span>
+              </div>
+            </label>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 500 }}>ชื่อ อปท.</span>
+              <input type="text" value={tweaks.orgName} onChange={e => updateTweak('orgName', e.target.value)} style={{ padding: '7px 10px', border: '1px solid #e0e2e6', borderRadius: 8, fontSize: 12, fontFamily: 'inherit', outline: 'none', color: '#181d26' }} />
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+              <input type="checkbox" checked={tweaks.compactMode} onChange={e => updateTweak('compactMode', e.target.checked)} style={{ width: 16, height: 16, accentColor: p }} />
+              <span style={{ fontSize: 12, color: '#374151', fontWeight: 500 }}>Compact Mode (ตารางแน่นขึ้น)</span>
+            </label>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

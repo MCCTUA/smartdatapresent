@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-13 ตั้งค่าช่องทางการแจ้งเตือน — Resident Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #e8e8ed; }
+  body { font-family: 'Noto Sans Thai', -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  :root {
+    --org-primary: #1b61c9;
+    --org-primary-light: #e8f0fc;
+    --org-primary-dark: #1450a8;
+    --text-primary: #181d26;
+    --text-secondary: rgba(60,60,67,0.6);
+    --text-tertiary: rgba(60,60,67,0.35);
+    --bg-system: #F2F2F7;
+    --bg-card: #FFFFFF;
+    --separator: rgba(60,60,67,0.12);
+    --success: #34c759;
+    --danger: #ff3b30;
+    --warning: #ff9500;
+  }
+  input:focus { outline: none; }
+  input::placeholder { color: var(--text-tertiary); }
+  @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "orgPrimary": "#1b61c9",
+  "orgName": "อบต. ท่าขอนยาง",
+  "lineAuthorized": true,
+  "showAllStates": true
+}/*EDITMODE-END*/;
+
+// ─── Toggle ──────────────────────────────────────────────────
+function Toggle({ on, onChange, primary, disabled }) {
+  return (
+    <div
+      onClick={() => !disabled && onChange(!on)}
+      style={{
+        width: 51, height: 31, borderRadius: 100,
+        background: on ? primary : 'rgba(120,120,128,0.16)',
+        position: 'relative', cursor: disabled ? 'not-allowed' : 'pointer',
+        transition: 'background 0.22s ease', flexShrink: 0,
+        opacity: disabled ? 0.4 : 1,
+      }}
+    >
+      <div style={{
+        position: 'absolute', top: 2, left: on ? 22 : 2,
+        width: 27, height: 27, borderRadius: 100,
+        background: '#fff',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.22), 0 1px 2px rgba(0,0,0,0.12)',
+        transition: 'left 0.22s ease',
+      }} />
+    </div>
+  );
+}
+
+// ─── Status Badge ─────────────────────────────────────────────
+function StatusBadge({ status }) {
+  const map = {
+    consented:  { label: 'ยินยอมแล้ว',  bg: '#f0fdf4', color: '#16a34a' },
+    pending:    { label: 'รอยืนยัน',    bg: '#fffbeb', color: '#d97706' },
+    revoked:    { label: 'ถอนแล้ว',     bg: '#fef2f2', color: '#dc2626' },
+    unset:      { label: 'ยังไม่ได้ตั้งค่า', bg: '#f3f4f6', color: '#6b7280' },
+  };
+  const s = map[status] || map.unset;
+  return (
+    <span style={{
+      fontSize: 11, fontWeight: 600, fontFamily: "'Noto Sans Thai', system-ui",
+      background: s.bg, color: s.color,
+      borderRadius: 20, padding: '2px 8px', letterSpacing: 0.2,
+    }}>{s.label}</span>
+  );
+}
+
+// ─── Consent Text Box ─────────────────────────────────────────
+function ConsentBox({ text }) {
+  return (
+    <div style={{
+      margin: '0 0 12px', padding: '10px 12px',
+      background: '#f8fafc', borderRadius: 10,
+      border: '1px solid #e0e2e6',
+      fontSize: 12, lineHeight: 1.7, color: 'rgba(60,60,67,0.75)',
+      fontFamily: "'Noto Sans Thai', system-ui",
+    }}>{text}</div>
+  );
+}
+
+// ─── Channel Card ─────────────────────────────────────────────
+function ChannelCard({ icon, iconBg, title, subtitle, status, expanded, onToggle, children, primary }) {
+  return (
+    <div style={{
+      background: '#fff', borderRadius: 16,
+      marginBottom: 10, overflow: 'hidden',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.07), 0 0 1px rgba(0,0,0,0.1)',
+      transition: 'box-shadow 0.2s',
+    }}>
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '14px 16px', cursor: 'pointer',
+        }}
+        onClick={onToggle}
+      >
+        <div style={{
+          width: 40, height: 40, borderRadius: 12,
+          background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0, fontSize: 20,
+        }}>{icon}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 15, fontWeight: 600, color: '#181d26',
+            fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.3,
+          }}>{title}</div>
+          <div style={{
+            fontSize: 12, color: 'rgba(60,60,67,0.55)',
+            fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.4, marginTop: 1,
+          }}>{subtitle}</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <StatusBadge status={status} />
+          <svg
+            width="16" height="16" viewBox="0 0 16 16"
+            style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', opacity: 0.35 }}
+          >
+            <path d="M3 6l5 5 5-5" stroke="#181d26" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      {expanded && (
+        <div style={{
+          padding: '0 16px 16px',
+          borderTop: '1px solid rgba(60,60,67,0.08)',
+          animation: 'slideUp 0.2s ease both',
+        }}>
+          <div style={{ height: 12 }} />
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAK_DEFAULTS);
+  const primary = tweaks.orgPrimary;
+  const lineAuthorized = tweaks.lineAuthorized;
+
+  // Consent state per channel
+  const [email, setEmail] = React.useState('');
+  const [emailOn, setEmailOn] = React.useState(false);
+  const [emailStatus, setEmailStatus] = React.useState('unset');
+  const [lineOn, setLineOn] = React.useState(false);
+  const [lineStatus, setLineStatus] = React.useState('unset');
+  const [smsOn, setSmsOn] = React.useState(false);
+  const [smsStatus, setSmsStatus] = React.useState('unset');
+  const [emailConsent, setEmailConsent] = React.useState(false);
+  const [lineConsent, setLineConsent] = React.useState(false);
+  const [smsConsent, setSmsConsent] = React.useState(false);
+  const [expanded, setExpanded] = React.useState('email');
+  const [saved, setSaved] = React.useState(false);
+  const [revokeDialog, setRevokeDialog] = React.useState(null);
+  const [activeState, setActiveState] = React.useState('default');
+
+  // Demo states
+  const demoStates = {
+    default:   { label: 'Default (ยังไม่ตั้งค่า)' },
+    partial:   { label: 'Partially consented' },
+    full:      { label: 'Fully consented' },
+    pending:   { label: 'Email pending verify' },
+  };
+
+  React.useEffect(() => {
+    if (activeState === 'partial') {
+      setEmailOn(true); setEmailStatus('consented'); setEmailConsent(true); setEmail('somchai@gmail.com');
+      setSmsOn(false); setSmsStatus('unset'); setSmsConsent(false);
+      setLineOn(false); setLineStatus('unset'); setLineConsent(false);
+    } else if (activeState === 'full') {
+      setEmailOn(true); setEmailStatus('consented'); setEmailConsent(true); setEmail('somchai@gmail.com');
+      setSmsOn(true); setSmsStatus('consented'); setSmsConsent(true);
+      setLineOn(true); setLineStatus('consented'); setLineConsent(true);
+    } else if (activeState === 'pending') {
+      setEmailOn(true); setEmailStatus('pending'); setEmailConsent(true); setEmail('somchai@gmail.com');
+      setSmsOn(false); setSmsStatus('unset'); setSmsConsent(false);
+      setLineOn(false); setLineStatus('unset'); setLineConsent(false);
+    } else {
+      setEmailOn(false); setEmailStatus('unset'); setEmailConsent(false); setEmail('');
+      setSmsOn(false); setSmsStatus('unset'); setSmsConsent(false);
+      setLineOn(false); setLineStatus('unset'); setLineConsent(false);
+    }
+  }, [activeState]);
+
+  // Tweaks
+  React.useEffect(() => {
+    window.addEventListener('message', e => {
+      if (e.data?.type === '__activate_edit_mode') setShowTweaks(true);
+      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
+    });
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+  }, []);
+  const [showTweaks, setShowTweaks] = React.useState(false);
+
+  function handleSave() {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  function handleRevoke(channel) {
+    setRevokeDialog(channel);
+  }
+
+  function confirmRevoke() {
+    if (revokeDialog === 'email') { setEmailOn(false); setEmailStatus('revoked'); setEmailConsent(false); }
+    if (revokeDialog === 'line') { setLineOn(false); setLineStatus('revoked'); setLineConsent(false); }
+    if (revokeDialog === 'sms') { setSmsOn(false); setSmsStatus('revoked'); setSmsConsent(false); }
+    setRevokeDialog(null);
+  }
+
+  const screenContent = (
+    <div style={{ flex: 1, background: '#F2F2F7', overflowY: 'auto', paddingBottom: 40 }}>
+      {/* Header */}
+      <div style={{
+        background: '#fff', padding: '14px 16px 14px',
+        borderBottom: '1px solid rgba(60,60,67,0.10)',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: `${primary}18`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 1.5A7.5 7.5 0 1 1 1.5 9 7.5 7.5 0 0 1 9 1.5Z" stroke={primary} strokeWidth="1.5" fill="none"/>
+            <path d="M9 8v5M9 5.5v.5" stroke={primary} strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#181d26', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.3 }}>
+            การแจ้งเตือนและความยินยอม
+          </div>
+          <div style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.4 }}>
+            ตาม PDPA มาตรา 19 — เลือกได้ทุกช่องทาง
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: '14px 14px 0' }}>
+
+        {/* Postal — always on */}
+        <div style={{
+          background: '#fff', borderRadius: 16, marginBottom: 10,
+          padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12,
+          boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+        }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 12,
+            background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 20, flexShrink: 0,
+          }}>📬</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: '#181d26', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.3 }}>
+              ไปรษณีย์ลงทะเบียน
+            </div>
+            <div style={{ fontSize: 12, color: 'rgba(60,60,67,0.55)', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.5, marginTop: 2 }}>
+              หนังสือทางราชการส่งทางไปรษณีย์<br/>โดยไม่ต้องขอความยินยอม
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+            <StatusBadge status="consented" />
+            <span style={{ fontSize: 11, color: 'rgba(60,60,67,0.4)', fontFamily: "'Noto Sans Thai', system-ui" }}>บังคับโดยกฎหมาย</span>
+          </div>
+        </div>
+
+        {/* Email */}
+        <ChannelCard
+          icon="📧" iconBg="#eff6ff"
+          title="อีเมล"
+          subtitle="รับบิล ใบเสร็จ และการแจ้งเตือน"
+          status={emailStatus}
+          expanded={expanded === 'email'}
+          onToggle={() => setExpanded(expanded === 'email' ? null : 'email')}
+          primary={primary}
+        >
+          <ConsentBox text="ข้าพเจ้ายินยอมให้ อปท. ส่งข้อมูลบิล ใบเสร็จ และการแจ้งเตือนการชำระเงินผ่านอีเมลที่ระบุ สามารถถอนความยินยอมได้ทุกเมื่อ — ตาม PDPA มาตรา 19" />
+          <div style={{ marginBottom: 10 }}>
+            <label style={{ fontSize: 12, color: 'rgba(60,60,67,0.6)', fontFamily: "'Noto Sans Thai', system-ui", display: 'block', marginBottom: 4 }}>
+              ที่อยู่อีเมล
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="กรอกอีเมลของคุณ"
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 10,
+                border: '1.5px solid #e0e2e6', fontSize: 14,
+                fontFamily: "'Noto Sans Thai', system-ui", color: '#181d26',
+                background: '#fafafa',
+              }}
+            />
+          </div>
+          <label style={{
+            display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14, cursor: 'pointer',
+          }}>
+            <div
+              onClick={() => setEmailConsent(!emailConsent)}
+              style={{
+                width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1,
+                border: emailConsent ? 'none' : '1.5px solid #d1d5db',
+                background: emailConsent ? primary : '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}
+            >
+              {emailConsent && <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L4 7.5L10 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+            </div>
+            <span style={{ fontSize: 12, color: 'rgba(60,60,67,0.75)', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.6 }}>
+              ข้าพเจ้ายอมรับเงื่อนไขการรับการแจ้งเตือนทางอีเมล และยินยอมให้เก็บข้อมูลอีเมลตามนโยบายคุ้มครองข้อมูลส่วนบุคคล
+            </span>
+          </label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <Toggle on={emailOn} onChange={v => { setEmailOn(v); if (v) setEmailStatus('pending'); else setEmailStatus('unset'); }} primary={primary} disabled={!emailConsent || !email} />
+            </div>
+            <span style={{ fontSize: 13, color: 'rgba(60,60,67,0.6)', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 2 }}>
+              {emailOn ? 'เปิดใช้งาน' : 'ปิดอยู่'}
+            </span>
+            {emailStatus === 'consented' && (
+              <button
+                onClick={() => handleRevoke('email')}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 12, color: '#dc2626', fontFamily: "'Noto Sans Thai', system-ui",
+                  padding: '0 4px',
+                }}
+              >ถอนความยินยอม</button>
+            )}
+          </div>
+          {emailStatus === 'pending' && (
+            <div style={{
+              marginTop: 10, padding: '8px 10px', borderRadius: 8,
+              background: '#fffbeb', border: '1px solid #fde68a',
+              fontSize: 12, color: '#92400e', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.5,
+            }}>
+              ⏳ ส่ง link ยืนยันไปที่ <strong>{email}</strong> แล้ว — กรุณาคลิก link ในอีเมล
+            </div>
+          )}
+        </ChannelCard>
+
+        {/* LINE — conditional on org authorization */}
+        {lineAuthorized && (
+          <ChannelCard
+            icon="💬" iconBg="#f0fdf4"
+            title="LINE Official"
+            subtitle="รับการแจ้งเตือนผ่าน LINE"
+            status={lineStatus}
+            expanded={expanded === 'line'}
+            onToggle={() => setExpanded(expanded === 'line' ? null : 'line')}
+            primary={primary}
+          >
+            <ConsentBox text="ข้าพเจ้ายินยอมให้ อปท. ส่งข้อมูลและการแจ้งเตือนผ่าน LINE Official Account ของ อปท. สามารถถอนความยินยอมและ block ได้ทุกเมื่อ — ตาม PDPA มาตรา 19" />
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14, cursor: 'pointer' }}>
+              <div
+                onClick={() => setLineConsent(!lineConsent)}
+                style={{
+                  width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1,
+                  border: lineConsent ? 'none' : '1.5px solid #d1d5db',
+                  background: lineConsent ? primary : '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+              >
+                {lineConsent && <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L4 7.5L10 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <span style={{ fontSize: 12, color: 'rgba(60,60,67,0.75)', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.6 }}>
+                ข้าพเจ้ายินยอมรับการแจ้งเตือนผ่าน LINE จาก {tweaks.orgName} และยอมรับนโยบายคุ้มครองข้อมูลส่วนบุคคล
+              </span>
+            </label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Toggle on={lineOn} onChange={v => { setLineOn(v); setLineStatus(v ? 'consented' : 'unset'); }} primary={primary} disabled={!lineConsent} />
+              <span style={{ fontSize: 13, color: 'rgba(60,60,67,0.6)', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 2 }}>
+                {lineOn ? 'เปิดใช้งาน' : 'ปิดอยู่'}
+              </span>
+              {lineStatus === 'consented' && (
+                <button onClick={() => handleRevoke('line')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#dc2626', fontFamily: "'Noto Sans Thai', system-ui", padding: '0 4px' }}>ถอนความยินยอม</button>
+              )}
+            </div>
+          </ChannelCard>
+        )}
+
+        {/* SMS */}
+        <ChannelCard
+          icon="📱" iconBg="#fdf4ff"
+          title="SMS"
+          subtitle="รับ SMS แจ้งเตือนกำหนดชำระ"
+          status={smsStatus}
+          expanded={expanded === 'sms'}
+          onToggle={() => setExpanded(expanded === 'sms' ? null : 'sms')}
+          primary={primary}
+        >
+          <ConsentBox text="ข้าพเจ้ายินยอมให้ อปท. ส่ง SMS ไปยังเบอร์โทรศัพท์ที่ลงทะเบียนไว้ เพื่อแจ้งเตือนกำหนดชำระและข้อมูลสำคัญ — สามารถถอนได้ทุกเมื่อ ตาม PDPA มาตรา 19" />
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14, cursor: 'pointer' }}>
+            <div
+              onClick={() => setSmsConsent(!smsConsent)}
+              style={{
+                width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1,
+                border: smsConsent ? 'none' : '1.5px solid #d1d5db',
+                background: smsConsent ? primary : '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}
+            >
+              {smsConsent && <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L4 7.5L10 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+            </div>
+            <span style={{ fontSize: 12, color: 'rgba(60,60,67,0.75)', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.6 }}>
+              ข้าพเจ้ายินยอมรับ SMS จาก {tweaks.orgName} และยอมรับนโยบายคุ้มครองข้อมูลส่วนบุคคล
+            </span>
+          </label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Toggle on={smsOn} onChange={v => { setSmsOn(v); setSmsStatus(v ? 'consented' : 'unset'); }} primary={primary} disabled={!smsConsent} />
+            <span style={{ fontSize: 13, color: 'rgba(60,60,67,0.6)', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 2 }}>
+              {smsOn ? 'เปิดใช้งาน' : 'ปิดอยู่'}
+            </span>
+            {smsStatus === 'consented' && (
+              <button onClick={() => handleRevoke('sms')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#dc2626', fontFamily: "'Noto Sans Thai', system-ui", padding: '0 4px' }}>ถอนความยินยอม</button>
+            )}
+          </div>
+        </ChannelCard>
+
+        {/* Save button */}
+        <button
+          onClick={handleSave}
+          style={{
+            width: '100%', height: 50, borderRadius: 14, border: 'none',
+            background: saved ? '#16a34a' : primary,
+            color: '#fff', fontSize: 16, fontWeight: 600,
+            fontFamily: "'Noto Sans Thai', system-ui",
+            cursor: 'pointer', marginTop: 6,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            transition: 'background 0.25s',
+          }}
+        >
+          {saved ? (
+            <><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l5 5 7-8" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> บันทึกแล้ว</>
+          ) : 'บันทึก'}
+        </button>
+
+        <p style={{
+          textAlign: 'center', fontSize: 11, color: 'rgba(60,60,67,0.45)',
+          fontFamily: "'Noto Sans Thai', system-ui", marginTop: 14, lineHeight: 1.6,
+        }}>
+          คุณสามารถเปลี่ยนการตั้งค่าได้ทุกเมื่อ<br/>การถอนความยินยอมจะมีผลภายใน 24 ชั่วโมง
+        </p>
+      </div>
+
+      {/* Revoke dialog */}
+      {revokeDialog && (
+        <div style={{
+          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 50,
+          display: 'flex', alignItems: 'flex-end', animation: 'fadeIn 0.15s ease',
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '20px 20px 0 0', width: '100%', padding: '24px 20px 36px',
+            animation: 'slideUp 0.25s ease both',
+          }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: '#181d26', fontFamily: "'Noto Sans Thai', system-ui", marginBottom: 8 }}>
+              ถอนความยินยอม?
+            </div>
+            <div style={{ fontSize: 13, color: 'rgba(60,60,67,0.65)', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.6, marginBottom: 20 }}>
+              คุณต้องการถอนความยินยอมช่องทางนี้ใช่หรือไม่ การถอนจะหยุดการรับการแจ้งเตือนทันที
+            </div>
+            <button
+              onClick={confirmRevoke}
+              style={{
+                width: '100%', height: 48, borderRadius: 12, border: 'none',
+                background: '#dc2626', color: '#fff', fontSize: 15, fontWeight: 600,
+                fontFamily: "'Noto Sans Thai', system-ui", cursor: 'pointer', marginBottom: 10,
+              }}
+            >ยืนยันการถอนความยินยอม</button>
+            <button
+              onClick={() => setRevokeDialog(null)}
+              style={{
+                width: '100%', height: 48, borderRadius: 12, border: 'none',
+                background: '#f3f4f6', color: '#181d26', fontSize: 15,
+                fontFamily: "'Noto Sans Thai', system-ui", cursor: 'pointer',
+              }}
+            >ยกเลิก</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', padding:'40px 20px', gap: 40, flexWrap:'wrap' }}>
+      {/* Main state */}
+      <div>
+        <div style={{ textAlign:'center', marginBottom:12 }}>
+          <span style={{ fontSize:12, fontWeight:600, color:'#6b7280', letterSpacing:0.5, textTransform:'uppercase', fontFamily:"'Noto Sans Thai', system-ui" }}>R-13 ตั้งค่าช่องทางการแจ้งเตือน</span>
+        </div>
+        {/* State selector */}
+        <div style={{ display:'flex', gap:6, justifyContent:'center', marginBottom:14, flexWrap:'wrap' }}>
+          {Object.entries(demoStates).map(([k,v]) => (
+            <button key={k} onClick={() => setActiveState(k)} style={{
+              padding:'4px 10px', borderRadius:20, border:'none', cursor:'pointer',
+              fontSize:11, fontFamily:"'Noto Sans Thai', system-ui", fontWeight:500,
+              background: activeState===k ? primary : '#e5e7eb',
+              color: activeState===k ? '#fff' : '#374151',
+              transition:'all 0.15s',
+            }}>{v.label}</button>
+          ))}
+        </div>
+        <IOSDevice>
+          <IOSStatusBar />
+          <IOSNavBar title="การแจ้งเตือน" primary={primary} showBack />
+          {screenContent}
+        </IOSDevice>
+      </div>
+
+      {/* LINE hidden state */}
+      {tweaks.showAllStates && (
+        <div>
+          <div style={{ textAlign:'center', marginBottom:12 }}>
+            <span style={{ fontSize:12, fontWeight:600, color:'#6b7280', letterSpacing:0.5, textTransform:'uppercase', fontFamily:"'Noto Sans Thai', system-ui" }}>LINE ไม่พร้อม (org ไม่อนุมัติ)</span>
+          </div>
+          <IOSDevice>
+            <IOSStatusBar />
+            <IOSNavBar title="การแจ้งเตือน" primary={primary} showBack />
+            <div style={{ flex: 1, background: '#F2F2F7', overflowY: 'auto', paddingBottom: 40 }}>
+              <div style={{
+                background: '#fff', padding: '14px 16px 14px',
+                borderBottom: '1px solid rgba(60,60,67,0.10)',
+                display: 'flex', alignItems: 'center', gap: 12,
+              }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: `${primary}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1.5A7.5 7.5 0 1 1 1.5 9 7.5 7.5 0 0 1 9 1.5Z" stroke={primary} strokeWidth="1.5" fill="none"/><path d="M9 8v5M9 5.5v.5" stroke={primary} strokeWidth="1.5" strokeLinecap="round"/></svg>
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#181d26', fontFamily: "'Noto Sans Thai', system-ui", lineHeight: 1.3 }}>การแจ้งเตือนและความยินยอม</div>
+                  <div style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', fontFamily: "'Noto Sans Thai', system-ui" }}>ตาม PDPA มาตรา 19</div>
+                </div>
+              </div>
+              <div style={{ padding: '14px 14px 0' }}>
+                {/* Postal */}
+                <div style={{ background:'#fff', borderRadius:16, marginBottom:10, padding:'14px 16px', display:'flex', alignItems:'center', gap:12, boxShadow:'0 1px 4px rgba(0,0,0,0.07)' }}>
+                  <div style={{ width:40, height:40, borderRadius:12, background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>📬</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:15, fontWeight:600, color:'#181d26', fontFamily:"'Noto Sans Thai', system-ui" }}>ไปรษณีย์ลงทะเบียน</div>
+                    <div style={{ fontSize:12, color:'rgba(60,60,67,0.55)', fontFamily:"'Noto Sans Thai', system-ui", lineHeight:1.5, marginTop:2 }}>หนังสือทางราชการส่งทางไปรษณีย์<br/>โดยไม่ต้องขอความยินยอม</div>
+                  </div>
+                  <StatusBadge status="consented" />
+                </div>
+                {/* Email card */}
+                <div style={{ background:'#fff', borderRadius:16, marginBottom:10, padding:'14px 16px', display:'flex', alignItems:'center', gap:12, boxShadow:'0 1px 4px rgba(0,0,0,0.07)' }}>
+                  <div style={{ width:40, height:40, borderRadius:12, background:'#eff6ff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>📧</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:15, fontWeight:600, color:'#181d26', fontFamily:"'Noto Sans Thai', system-ui" }}>อีเมล</div>
+                    <div style={{ fontSize:12, color:'rgba(60,60,67,0.55)', fontFamily:"'Noto Sans Thai', system-ui" }}>รับบิล ใบเสร็จ และการแจ้งเตือน</div>
+                  </div>
+                  <StatusBadge status="unset" />
+                </div>
+                {/* SMS card - no LINE */}
+                <div style={{ background:'#fff', borderRadius:16, marginBottom:10, padding:'14px 16px', display:'flex', alignItems:'center', gap:12, boxShadow:'0 1px 4px rgba(0,0,0,0.07)' }}>
+                  <div style={{ width:40, height:40, borderRadius:12, background:'#fdf4ff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>📱</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:15, fontWeight:600, color:'#181d26', fontFamily:"'Noto Sans Thai', system-ui" }}>SMS</div>
+                    <div style={{ fontSize:12, color:'rgba(60,60,67,0.55)', fontFamily:"'Noto Sans Thai', system-ui" }}>รับ SMS แจ้งเตือนกำหนดชำระ</div>
+                  </div>
+                  <StatusBadge status="unset" />
+                </div>
+                <div style={{ padding:'10px 4px', fontSize:12, color:'rgba(60,60,67,0.45)', fontFamily:"'Noto Sans Thai', system-ui", lineHeight:1.6, textAlign:'center' }}>
+                  LINE ไม่แสดงเนื่องจาก {tweaks.orgName}<br/>ยังไม่ได้รับอนุมัติใช้ LINE เป็นช่องทางราชการ
+                </div>
+              </div>
+            </div>
+          </IOSDevice>
+        </div>
+      )}
+
+      {/* Tweaks Panel */}
+      {showTweaks && (
+        <div style={{
+          position:'fixed', bottom:20, right:20, zIndex:9999,
+          background:'#fff', borderRadius:16, padding:20, width:260,
+          boxShadow:'0 8px 32px rgba(0,0,0,0.18)', fontFamily:"'Noto Sans Thai', system-ui",
+        }}>
+          <div style={{ fontSize:14, fontWeight:700, marginBottom:14, color:'#181d26' }}>Tweaks</div>
+          <label style={{ fontSize:12, color:'#6b7280', display:'block', marginBottom:4 }}>Org Primary Color</label>
+          <input type="color" value={tweaks.orgPrimary}
+            onChange={e => { const t={...tweaks, orgPrimary:e.target.value}; setTweaks(t); window.parent.postMessage({type:'__edit_mode_set_keys',edits:{orgPrimary:e.target.value}},'*'); }}
+            style={{ width:'100%', height:36, borderRadius:8, border:'1px solid #e0e2e6', cursor:'pointer', marginBottom:12 }}
+          />
+          <label style={{ fontSize:12, color:'#6b7280', display:'block', marginBottom:4 }}>ชื่อ อปท.</label>
+          <input type="text" value={tweaks.orgName}
+            onChange={e => { const t={...tweaks, orgName:e.target.value}; setTweaks(t); window.parent.postMessage({type:'__edit_mode_set_keys',edits:{orgName:e.target.value}},'*'); }}
+            style={{ width:'100%', padding:'7px 10px', borderRadius:8, border:'1px solid #e0e2e6', fontSize:13, fontFamily:"'Noto Sans Thai', system-ui", marginBottom:12 }}
+          />
+          <label style={{ display:'flex', alignItems:'center', gap:8, fontSize:12, color:'#6b7280', cursor:'pointer', marginBottom:8 }}>
+            <input type="checkbox" checked={tweaks.lineAuthorized}
+              onChange={e => { const t={...tweaks, lineAuthorized:e.target.checked}; setTweaks(t); window.parent.postMessage({type:'__edit_mode_set_keys',edits:{lineAuthorized:e.target.checked}},'*'); }}
+            />
+            LINE ได้รับอนุมัติ (แสดง LINE toggle)
+          </label>
+          <label style={{ display:'flex', alignItems:'center', gap:8, fontSize:12, color:'#6b7280', cursor:'pointer' }}>
+            <input type="checkbox" checked={tweaks.showAllStates}
+              onChange={e => { const t={...tweaks, showAllStates:e.target.checked}; setTweaks(t); window.parent.postMessage({type:'__edit_mode_set_keys',edits:{showAllStates:e.target.checked}},'*'); }}
+            />
+            แสดง state "LINE ไม่พร้อม"
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.body.appendChild(Object.assign(document.createElement('div'), {style:'display:contents'}))).render(<App />);
+</script>
+</body>
+</html>

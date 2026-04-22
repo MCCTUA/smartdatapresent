@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>R-11 — Issue Tracking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f1623;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'IBM Plex Sans Thai', system-ui, sans-serif;
+  }
+  .stage {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+    padding: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .phone-label {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+  /* Tweaks panel */
+  #tweaks-panel {
+    display: none;
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    width: 240px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    z-index: 9999;
+    font-family: system-ui;
+    font-size: 13px;
+  }
+  #tweaks-panel h3 { font-size: 13px; font-weight: 600; margin-bottom: 14px; color: #181d26; }
+  #tweaks-panel label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; color: #444; }
+  #tweaks-panel input[type=color] { border: none; width: 32px; height: 24px; border-radius: 6px; cursor: pointer; }
+  #tweaks-panel select { border: 1px solid #e0e2e6; border-radius: 6px; padding: 3px 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="stage" id="root"></div>
+<div id="tweaks-panel">
+  <h3>Tweaks</h3>
+  <label>สีหลัก <input type="color" id="tw-primary" value="#1b61c9" /></label>
+  <label>หน้าที่แสดง
+    <select id="tw-screen">
+      <option value="list">รายการ (List)</option>
+      <option value="detail-open">รายละเอียด — เปิด</option>
+      <option value="detail-resolved">รายละเอียด — แก้ไขแล้ว</option>
+      <option value="detail-closed">รายละเอียด — ปิด</option>
+    </select>
+  </label>
+</div>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel">
+// ─── Design Tokens (Airtable-inspired) ───────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "primaryColor": "#1b61c9",
+  "activeScreen": "list"
+}/*EDITMODE-END*/;
+
+// ─── Data ─────────────────────────────────────────────────────
+const ISSUES = [
+  {
+    id: 'ISS-2025-0041',
+    category: 'bill_dispute',
+    categoryLabel: 'โต้แย้งบิล',
+    priority: 'high',
+    status: 'investigating',
+    statusLabel: 'กำลังตรวจสอบ',
+    title: 'ยอดค่าน้ำสูงผิดปกติ เดือนมีนาคม',
+    description: 'ยอดบิลค่าน้ำเดือนมีนาคม 2568 สูงกว่าปกติถึง 3 เท่า ขอให้ตรวจสอบมิเตอร์และยอดการใช้งาน',
+    submittedAt: '14 เม.ย. 2568',
+    updatedAt: '18 เม.ย. 2568',
+    sla: '20 เม.ย. 2568',
+    slaHours: 48,
+    hoursLeft: 36,
+    relatedBill: 'BIL-2025-0312',
+    timeline: [
+      { status: 'open', label: 'รับเรื่องแล้ว', date: '14 เม.ย. 2568 · 10:32', detail: 'ระบบรับเรื่องร้องเรียนเรียบร้อยแล้ว เลขที่เรื่อง ISS-2025-0041', isPublic: true },
+      { status: 'acknowledged', label: 'เจ้าหน้าที่รับทราบ', date: '14 เม.ย. 2568 · 14:05', detail: 'เจ้าหน้าที่ นางสาวพรรณิภา รับเรื่องและอยู่ระหว่างพิจารณา', isPublic: true },
+      { status: 'investigating', label: 'กำลังตรวจสอบ', date: '16 เม.ย. 2568 · 09:20', detail: 'เจ้าหน้าที่กำลังดำเนินการตรวจสอบค่ามิเตอร์ในพื้นที่ คาดว่าจะแล้วเสร็จภายใน 2-3 วันทำการ', isPublic: true },
+    ],
+    officerNote: 'กำลังนัดหมายช่างตรวจสอบมิเตอร์ในพื้นที่ คาดว่าจะทราบผลภายในวันที่ 20 เม.ย.',
+  },
+  {
+    id: 'ISS-2025-0038',
+    category: 'service_complaint',
+    categoryLabel: 'ร้องเรียนบริการ',
+    priority: 'medium',
+    status: 'resolved',
+    statusLabel: 'แก้ไขแล้ว',
+    title: 'รถเก็บขยะไม่มาตามกำหนดเวลา',
+    description: 'สัปดาห์ที่ผ่านมารถเก็บขยะไม่มาเก็บ 2 ครั้ง ขยะล้นถัง ส่งกลิ่นรบกวน',
+    submittedAt: '8 เม.ย. 2568',
+    updatedAt: '12 เม.ย. 2568',
+    sla: '11 เม.ย. 2568',
+    rating: null,
+    relatedBill: null,
+    timeline: [
+      { status: 'open', label: 'รับเรื่องแล้ว', date: '8 เม.ย. 2568 · 08:15', detail: 'ระบบรับเรื่องร้องเรียนเรียบร้อยแล้ว', isPublic: true },
+      { status: 'acknowledged', label: 'เจ้าหน้าที่รับทราบ', date: '8 เม.ย. 2568 · 11:30', detail: 'เจ้าหน้าที่ฝ่ายสิ่งแวดล้อมรับทราบปัญหา', isPublic: true },
+      { status: 'pending_action', label: 'รอดำเนินการ', date: '9 เม.ย. 2568 · 08:00', detail: 'ประสานงานกับหัวหน้าคนขับรถเก็บขยะในเส้นทางแล้ว', isPublic: true },
+      { status: 'resolved', label: 'แก้ไขแล้ว', date: '12 เม.ย. 2568 · 16:00', detail: 'ได้จัดรถพิเศษเข้าเก็บขยะในพื้นที่เรียบร้อยแล้ว และปรับปรุงตารางเส้นทางให้ชัดเจนขึ้น', isPublic: true },
+    ],
+    officerNote: 'จัดรถพิเศษเข้าพื้นที่และปรับตารางเส้นทางเรียบร้อยแล้ว',
+  },
+  {
+    id: 'ISS-2025-0029',
+    category: 'penalty_dispute',
+    categoryLabel: 'โต้แย้งค่าปรับ',
+    priority: 'low',
+    status: 'closed',
+    statusLabel: 'ปิดเรื่อง',
+    title: 'ขอยกเว้นค่าปรับล่าช้า เนื่องจากป่วยโรงพยาบาล',
+    description: 'ระหว่างช่วงกำหนดชำระบิลอยู่ระหว่างรักษาตัวในโรงพยาบาล ขอให้พิจารณายกเว้นค่าปรับ',
+    submittedAt: '2 มี.ค. 2568',
+    updatedAt: '15 มี.ค. 2568',
+    rating: 5,
+    relatedBill: 'BIL-2025-0218',
+    timeline: [
+      { status: 'open', label: 'รับเรื่องแล้ว', date: '2 มี.ค. 2568 · 13:40', detail: 'ระบบรับเรื่องร้องเรียนเรียบร้อยแล้ว', isPublic: true },
+      { status: 'acknowledged', label: 'เจ้าหน้าที่รับทราบ', date: '3 มี.ค. 2568 · 10:00', detail: 'รับเรื่องแล้ว อยู่ระหว่างรวบรวมเอกสารประกอบ', isPublic: true },
+      { status: 'pending_action', label: 'รอการอนุมัติ', date: '5 มี.ค. 2568 · 14:22', detail: 'ส่งเรื่องให้ผู้บังคับบัญชาพิจารณาอนุมัติยกเว้นค่าปรับแล้ว', isPublic: true },
+      { status: 'resolved', label: 'อนุมัติยกเว้นค่าปรับ', date: '10 มี.ค. 2568 · 09:15', detail: 'ผู้บังคับบัญชาอนุมัติยกเว้นค่าปรับให้ จำนวน 45 บาท เรียบร้อยแล้ว', isPublic: true },
+      { status: 'closed', label: 'ปิดเรื่อง', date: '15 มี.ค. 2568 · 16:00', detail: 'ปิดเรื่องเรียบร้อย ขอบคุณที่ใช้บริการ', isPublic: true },
+    ],
+    officerNote: '',
+  },
+];
+
+// ─── Status config ─────────────────────────────────────────────
+const STATUS_CFG = {
+  open:           { color: '#1b61c9', bg: '#e8f0fb', label: 'เปิดเรื่อง',       dot: '#1b61c9' },
+  acknowledged:   { color: '#6b3cc4', bg: '#f0eafd', label: 'รับทราบแล้ว',     dot: '#6b3cc4' },
+  investigating:  { color: '#b45309', bg: '#fef3c7', label: 'กำลังตรวจสอบ',   dot: '#f59e0b' },
+  pending_action: { color: '#c2410c', bg: '#fff0eb', label: 'รอดำเนินการ',     dot: '#f97316' },
+  resolved:       { color: '#065f46', bg: '#d1fae5', label: 'แก้ไขแล้ว',       dot: '#10b981' },
+  closed:         { color: '#6b7280', bg: '#f3f4f6', label: 'ปิดเรื่อง',       dot: '#9ca3af' },
+  reopened:       { color: '#b91c1c', bg: '#fef2f2', label: 'เปิดใหม่',        dot: '#ef4444' },
+};
+
+const CAT_ICONS = {
+  bill_dispute:      '🧾',
+  meter_dispute:     '📊',
+  payment_issue:     '💳',
+  service_complaint: '🚛',
+  penalty_dispute:   '⚖️',
+  data_correction:   '📝',
+  refund_request:    '↩️',
+  general_inquiry:   '💬',
+};
+
+// ─── Shared helpers ────────────────────────────────────────────
+function StatusBadge({ status }) {
+  const cfg = STATUS_CFG[status] || STATUS_CFG.open;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      background: cfg.bg, color: cfg.color,
+      borderRadius: 20, padding: '3px 10px',
+      fontSize: 11.5, fontWeight: 600, letterSpacing: 0.1,
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.dot, display: 'inline-block' }} />
+      {cfg.label}
+    </span>
+  );
+}
+
+function PriorityDot({ priority }) {
+  const map = { urgent: '#ef4444', high: '#f97316', medium: '#f59e0b', low: '#6b7280' };
+  return <span style={{ width: 7, height: 7, borderRadius: '50%', background: map[priority] || '#999', display: 'inline-block' }} />;
+}
+
+// ─── Issue List Screen ─────────────────────────────────────────
+function IssueListScreen({ issues, onSelect, primaryColor }) {
+  const [filter, setFilter] = React.useState('all');
+  const tabs = [
+    { id: 'all', label: 'ทั้งหมด' },
+    { id: 'active', label: 'กำลังดำเนินการ' },
+    { id: 'resolved', label: 'เสร็จสิ้น' },
+  ];
+  const filtered = issues.filter(i => {
+    if (filter === 'active') return !['resolved','closed'].includes(i.status);
+    if (filter === 'resolved') return ['resolved','closed'].includes(i.status);
+    return true;
+  });
+
+  const activeCount = issues.filter(i => !['resolved','closed'].includes(i.status)).length;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#f5f6fa' }}>
+      {/* Header */}
+      <div style={{
+        background: '#fff',
+        padding: '16px 20px 0',
+        borderBottom: '1px solid #eaecf0',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#181d26', letterSpacing: -0.3 }}>การร้องเรียน</div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 1 }}>กำลังดำเนินการ {activeCount} เรื่อง</div>
+          </div>
+          <button style={{
+            background: primaryColor, color: '#fff',
+            border: 'none', borderRadius: 10,
+            padding: '8px 14px', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
+            fontFamily: 'inherit',
+          }}>
+            <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> แจ้งเรื่องใหม่
+          </button>
+        </div>
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 0 }}>
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setFilter(t.id)} style={{
+              background: 'none', border: 'none',
+              padding: '10px 14px 11px',
+              fontSize: 13, fontWeight: filter === t.id ? 600 : 400,
+              color: filter === t.id ? primaryColor : '#6b7280',
+              borderBottom: filter === t.id ? `2.5px solid ${primaryColor}` : '2.5px solid transparent',
+              cursor: 'pointer', transition: 'all 0.15s',
+              fontFamily: 'inherit',
+            }}>{t.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* List */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {filtered.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px 24px', color: '#9ca3af' }}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>📭</div>
+            <div style={{ fontSize: 14, fontWeight: 500 }}>ไม่มีเรื่องร้องเรียน</div>
+          </div>
+        )}
+        {filtered.map(issue => (
+          <IssueCard key={issue.id} issue={issue} onSelect={onSelect} primaryColor={primaryColor} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function IssueCard({ issue, onSelect, primaryColor }) {
+  const isActive = !['resolved','closed'].includes(issue.status);
+  return (
+    <div onClick={() => onSelect(issue)} style={{
+      background: '#fff',
+      borderRadius: 14,
+      padding: '14px 16px',
+      cursor: 'pointer',
+      border: '1px solid #eaecf0',
+      boxShadow: '0 1px 3px rgba(27,97,201,0.06)',
+      transition: 'box-shadow 0.15s',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* left accent for active */}
+      {isActive && <div style={{
+        position: 'absolute', left: 0, top: 0, bottom: 0, width: 3,
+        background: primaryColor, borderRadius: '14px 0 0 14px',
+      }} />}
+      <div style={{ paddingLeft: isActive ? 8 : 0 }}>
+        {/* Top row */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 7 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{ fontSize: 18 }}>{CAT_ICONS[issue.category] || '📋'}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#181d26', lineHeight: 1.3 }}>{issue.title}</div>
+              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{issue.id} · {issue.categoryLabel}</div>
+            </div>
+          </div>
+          <StatusBadge status={issue.status} />
+        </div>
+        {/* Description */}
+        <div style={{
+          fontSize: 12, color: '#6b7280', lineHeight: 1.55,
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          marginBottom: 8,
+        }}>{issue.description}</div>
+        {/* Footer */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 11, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span>แจ้งเมื่อ {issue.submittedAt}</span>
+            {issue.relatedBill && <span style={{ color: primaryColor }}>• {issue.relatedBill}</span>}
+          </div>
+          {issue.status === 'resolved' && issue.rating == null && (
+            <span style={{ fontSize: 11, color: primaryColor, fontWeight: 600 }}>ให้คะแนน →</span>
+          )}
+          {issue.rating != null && (
+            <span style={{ fontSize: 11, color: '#f59e0b' }}>{'★'.repeat(issue.rating)}{'☆'.repeat(5 - issue.rating)}</span>
+          )}
+          {isActive && issue.sla && (
+            <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 500 }}>⏱ ครบกำหนด {issue.sla}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Issue Detail Screen ───────────────────────────────────────
+function IssueDetailScreen({ issue, onBack, primaryColor }) {
+  const [rating, setRating] = React.useState(issue.rating || 0);
+  const [hoverRating, setHoverRating] = React.useState(0);
+  const [rated, setRated] = React.useState(issue.rating != null);
+  const isResolved = issue.status === 'resolved';
+  const isClosed = issue.status === 'closed';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#f5f6fa' }}>
+      {/* Header */}
+      <div style={{
+        background: '#fff',
+        padding: '14px 20px 14px',
+        borderBottom: '1px solid #eaecf0',
+        display: 'flex', flexDirection: 'column', gap: 10,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={onBack} style={{
+            background: '#f3f4f6', border: 'none', borderRadius: 8,
+            width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', flexShrink: 0,
+          }}>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+              <path d="M7 1L1 7l6 6" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 1 }}>{issue.id} · {issue.categoryLabel}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#181d26', lineHeight: 1.3 }}>{issue.title}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <StatusBadge status={issue.status} />
+          <PriorityDot priority={issue.priority} />
+          <span style={{ fontSize: 11.5, color: '#9ca3af' }}>
+            อัปเดต {issue.updatedAt}
+          </span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+
+        {/* SLA card — only if active */}
+        {!['resolved','closed'].includes(issue.status) && issue.sla && (
+          <div style={{
+            background: '#fef9ec', border: '1px solid #fde68a', borderRadius: 12,
+            padding: '12px 14px', marginBottom: 12,
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <span style={{ fontSize: 20 }}>⏱</span>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#92400e' }}>กำหนดแล้วเสร็จ {issue.sla}</div>
+              <div style={{ fontSize: 11.5, color: '#b45309', marginTop: 1 }}>เหลือเวลาอีกประมาณ {issue.hoursLeft} ชั่วโมง</div>
+            </div>
+          </div>
+        )}
+
+        {/* Description card */}
+        <div style={{
+          background: '#fff', borderRadius: 12, padding: '14px 16px', marginBottom: 12,
+          border: '1px solid #eaecf0',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>รายละเอียดเรื่อง</div>
+          <div style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.65 }}>{issue.description}</div>
+          {issue.relatedBill && (
+            <div style={{
+              marginTop: 10, padding: '8px 10px', background: '#eff6ff', borderRadius: 8,
+              fontSize: 12, color: primaryColor, fontWeight: 500,
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              🧾 เกี่ยวข้องกับบิล: <span style={{ fontWeight: 700 }}>{issue.relatedBill}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Officer note */}
+        {issue.officerNote && (
+          <div style={{
+            background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 12,
+            padding: '12px 14px', marginBottom: 12,
+            display: 'flex', gap: 10,
+          }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>💬</span>
+            <div>
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: '#1b61c9', marginBottom: 4 }}>ความคิดเห็นจากเจ้าหน้าที่</div>
+              <div style={{ fontSize: 12.5, color: '#374151', lineHeight: 1.6 }}>{issue.officerNote}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Timeline */}
+        <div style={{
+          background: '#fff', borderRadius: 12, padding: '14px 16px', marginBottom: 12,
+          border: '1px solid #eaecf0',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>ความคืบหน้า</div>
+          <Timeline events={issue.timeline} primaryColor={primaryColor} />
+        </div>
+
+        {/* Rating card */}
+        {isResolved && (
+          <div style={{
+            background: rated ? '#f0fdf4' : '#fff',
+            border: rated ? '1px solid #86efac' : '1px solid #eaecf0',
+            borderRadius: 12, padding: '16px', marginBottom: 12,
+            textAlign: 'center',
+          }}>
+            {!rated ? (
+              <>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#181d26', marginBottom: 4 }}>เรื่องได้รับการแก้ไขแล้ว</div>
+                <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 14 }}>โปรดให้คะแนนความพึงพอใจในการให้บริการ</div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 14 }}>
+                  {[1,2,3,4,5].map(n => (
+                    <span key={n}
+                      onMouseEnter={() => setHoverRating(n)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      onClick={() => setRating(n)}
+                      style={{ fontSize: 30, cursor: 'pointer', color: n <= (hoverRating || rating) ? '#f59e0b' : '#d1d5db', transition: 'color 0.1s' }}>★</span>
+                  ))}
+                </div>
+                {rating > 0 && (
+                  <button onClick={() => setRated(true)} style={{
+                    background: primaryColor, color: '#fff', border: 'none',
+                    borderRadius: 10, padding: '10px 28px', fontSize: 14, fontWeight: 600,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}>ยืนยันคะแนน</button>
+                )}
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 28, marginBottom: 6 }}>🙏</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#065f46', marginBottom: 2 }}>ขอบคุณสำหรับคะแนน</div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginTop: 6 }}>
+                  {[1,2,3,4,5].map(n => (
+                    <span key={n} style={{ fontSize: 22, color: n <= rating ? '#f59e0b' : '#d1d5db' }}>★</span>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Closed note */}
+        {isClosed && issue.rating && (
+          <div style={{
+            background: '#f0fdf4', border: '1px solid #86efac',
+            borderRadius: 12, padding: '12px 16px', marginBottom: 12,
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <span style={{ fontSize: 20 }}>✅</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#065f46' }}>ปิดเรื่องเรียบร้อย</div>
+              <div style={{ fontSize: 11.5, color: '#6b7280', marginTop: 2 }}>
+                คะแนนความพึงพอใจ: <span style={{ color: '#f59e0b' }}>{'★'.repeat(issue.rating)}{'☆'.repeat(5 - issue.rating)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ height: 20 }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Timeline ─────────────────────────────────────────────────
+function Timeline({ events, primaryColor }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      {events.map((ev, i) => {
+        const isLast = i === events.length - 1;
+        const cfg = STATUS_CFG[ev.status] || STATUS_CFG.open;
+        const isLatest = isLast;
+        return (
+          <div key={i} style={{ display: 'flex', gap: 12, position: 'relative' }}>
+            {/* Line + dot column */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, flexShrink: 0 }}>
+              <div style={{
+                width: isLatest ? 14 : 10,
+                height: isLatest ? 14 : 10,
+                borderRadius: '50%',
+                background: isLatest ? cfg.dot : '#d1d5db',
+                border: isLatest ? `2px solid ${cfg.dot}33` : '2px solid #e5e7eb',
+                marginTop: 3, flexShrink: 0,
+                boxShadow: isLatest ? `0 0 0 3px ${cfg.dot}22` : 'none',
+                transition: 'all 0.2s',
+              }} />
+              {!isLast && (
+                <div style={{ flex: 1, width: 1.5, background: '#e5e7eb', margin: '3px 0 3px' }} />
+              )}
+            </div>
+            {/* Content */}
+            <div style={{ flex: 1, paddingBottom: isLast ? 0 : 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                <span style={{ fontSize: 12.5, fontWeight: isLatest ? 700 : 500, color: isLatest ? '#181d26' : '#374151' }}>{ev.label}</span>
+              </div>
+              <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 4 }}>{ev.date}</div>
+              <div style={{
+                fontSize: 12, color: '#6b7280', lineHeight: 1.6,
+                background: isLatest ? '#f8faff' : 'transparent',
+                border: isLatest ? `1px solid #e0e8f7` : 'none',
+                borderRadius: isLatest ? 8 : 0,
+                padding: isLatest ? '8px 10px' : 0,
+              }}>{ev.detail}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── App ───────────────────────────────────────────────────────
+function App() {
+  const [primaryColor, setPrimaryColor] = React.useState(TWEAK_DEFAULTS.primaryColor);
+  const [selectedIssue, setSelectedIssue] = React.useState(null);
+  const [showTweaks, setShowTweaks] = React.useState(false);
+
+  // Tweak panel wiring
+  React.useEffect(() => {
+    window.addEventListener('message', e => {
+      if (e.data?.type === '__activate_edit_mode') setShowTweaks(true);
+      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
+    });
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+    // Wire up tweaks panel inputs
+    const colorInput = document.getElementById('tw-primary');
+    const screenSelect = document.getElementById('tw-screen');
+    if (colorInput) {
+      colorInput.value = primaryColor;
+      colorInput.addEventListener('input', e => {
+        setPrimaryColor(e.target.value);
+        window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { primaryColor: e.target.value } }, '*');
+      });
+    }
+    if (screenSelect) {
+      screenSelect.addEventListener('change', e => {
+        const val = e.target.value;
+        if (val === 'list') setSelectedIssue(null);
+        else if (val === 'detail-open') setSelectedIssue(ISSUES[0]);
+        else if (val === 'detail-resolved') setSelectedIssue(ISSUES[1]);
+        else if (val === 'detail-closed') setSelectedIssue(ISSUES[2]);
+      });
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const panel = document.getElementById('tweaks-panel');
+    if (panel) panel.style.display = showTweaks ? 'block' : 'none';
+  }, [showTweaks]);
+
+  const phoneFrame = (content, label) => (
+    <div>
+      <IOSDevice width={390} height={844} dark={false}>
+        {/* Custom status bar overlay area */}
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* iOS status bar fake top */}
+          <div style={{ height: 52, background: '#fff', flexShrink: 0 }} />
+          {/* Content fills rest */}
+          <div style={{ flex: 1, overflow: 'hidden' }}>{content}</div>
+        </div>
+      </IOSDevice>
+      <div className="phone-label">{label}</div>
+    </div>
+  );
+
+  // Single-phone interactive mode
+  const detailIssue = selectedIssue;
+
+  return (
+    <>
+      {/* Show 3 phones side by side for overview */}
+      <div style={{ display: 'flex', gap: 36, flexWrap: 'wrap', justifyContent: 'center' }}>
+
+        {/* Phone 1: List view */}
+        <div data-screen-label="01 List — รายการร้องเรียน">
+          <IOSDevice width={390} height={844} dark={false}>
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ height: 52, background: '#fff', flexShrink: 0 }} />
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <IssueListScreen issues={ISSUES} onSelect={setSelectedIssue} primaryColor={primaryColor} />
+              </div>
+            </div>
+          </IOSDevice>
+          <div className="phone-label">01 — รายการร้องเรียน</div>
+        </div>
+
+        {/* Phone 2: Detail — In Progress */}
+        <div data-screen-label="02 Detail — กำลังตรวจสอบ">
+          <IOSDevice width={390} height={844} dark={false}>
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ height: 52, background: '#fff', flexShrink: 0 }} />
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <IssueDetailScreen issue={ISSUES[0]} onBack={() => {}} primaryColor={primaryColor} />
+              </div>
+            </div>
+          </IOSDevice>
+          <div className="phone-label">02 — รายละเอียด · กำลังตรวจสอบ</div>
+        </div>
+
+        {/* Phone 3: Detail — Resolved with rating */}
+        <div data-screen-label="03 Detail — แก้ไขแล้ว">
+          <IOSDevice width={390} height={844} dark={false}>
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ height: 52, background: '#fff', flexShrink: 0 }} />
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <IssueDetailScreen issue={ISSUES[1]} onBack={() => {}} primaryColor={primaryColor} />
+              </div>
+            </div>
+          </IOSDevice>
+          <div className="phone-label">03 — รายละเอียด · แก้ไขแล้ว</div>
+        </div>
+
+      </div>
+
+      {/* Interactive overlay if an issue is selected from list */}
+      {detailIssue && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000,
+        }} onClick={() => setSelectedIssue(null)}>
+          <div onClick={e => e.stopPropagation()}>
+            <IOSDevice width={390} height={844} dark={false}>
+              <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ height: 52, background: '#fff', flexShrink: 0 }} />
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <IssueDetailScreen issue={detailIssue} onBack={() => setSelectedIssue(null)} primaryColor={primaryColor} />
+                </div>
+              </div>
+            </IOSDevice>
+            <div className="phone-label" style={{ color: 'rgba(255,255,255,0.5)' }}>กดพื้นหลังเพื่อปิด</div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

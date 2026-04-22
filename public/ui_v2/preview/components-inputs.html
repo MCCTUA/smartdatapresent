@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#fff; padding:20px; color:#181d26; }
+.section { margin-bottom:16px; }
+.title { font-size:10px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:rgba(4,14,32,.4); margin-bottom:8px; }
+.field { margin-bottom:10px; }
+label { display:block; font-size:13px; font-weight:500; color:#181d26; margin-bottom:4px; letter-spacing:.08px; }
+input, select, textarea { font-family:'DM Sans',sans-serif; font-size:14px; color:#181d26; background:#fff; border:1px solid #e0e2e6; border-radius:8px; padding:8px 12px; width:100%; outline:none; transition:border 150ms,box-shadow 150ms; letter-spacing:.08px; }
+input:focus, select:focus { border-color:#1b61c9; box-shadow:0 0 0 3px rgba(27,97,201,0.15); }
+input::placeholder { color:rgba(4,14,32,.38); }
+input.error { border-color:#dc2626; }
+input.error:focus { box-shadow:0 0 0 3px rgba(220,38,38,.15); }
+.hint { font-size:12px; color:rgba(4,14,32,.55); margin-top:3px; letter-spacing:.1px; }
+.error-msg { font-size:12px; color:#dc2626; margin-top:3px; }
+.row { display:flex; gap:10px; }
+.row .field { flex:1; }
+</style>
+</head><body>
+<div class="row">
+  <div class="field">
+    <label>เลขที่บ้าน</label>
+    <input type="text" placeholder="เช่น 123/4">
+    <div class="hint">กรอกเลขที่บ้านตามทะเบียนราษฎร์</div>
+  </div>
+  <div class="field">
+    <label>ชื่อผู้ชำระเงิน</label>
+    <input type="text" placeholder="ชื่อ-นามสกุล" style="border-color:#1b61c9;box-shadow:0 0 0 3px rgba(27,97,201,0.15)">
+  </div>
+</div>
+<div class="row">
+  <div class="field">
+    <label>จำนวนเงิน (บาท)</label>
+    <input type="text" value="360.00" class="error">
+    <div class="error-msg">จำนวนเงินต้องไม่เกินยอดค้างชำระ</div>
+  </div>
+  <div class="field">
+    <label>ช่องทางชำระ</label>
+    <select>
+      <option>เงินสด</option>
+      <option>PromptPay / QR</option>
+      <option>Counter Service</option>
+      <option>LINE Pay</option>
+    </select>
+  </div>
+</div>
+<div class="field">
+  <label>หมายเหตุ</label>
+  <textarea rows="2" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)" style="resize:none"></textarea>
+</div>
+<div class="field">
+  <label>ค้นหาครัวเรือน</label>
+  <div style="position:relative">
+    <input type="text" placeholder="ชื่อ, เลขที่บ้าน, หรือเบอร์โทร" style="padding-left:36px">
+    <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:rgba(4,14,32,.38)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </div>
+</div>
+</body></html>

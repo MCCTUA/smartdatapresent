@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-12 โปรไฟล์ / ตั้งค่า — Resident Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #f0f0f0; }
+  body {
+    font-family: 'Noto Sans Thai', -apple-system, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  :root {
+    --org-primary: #1b61c9;
+    --org-primary-light: #e8f0fc;
+    --org-primary-dark: #1450a8;
+    --text-primary: #181d26;
+    --text-secondary: rgba(60,60,67,0.6);
+    --text-tertiary: rgba(60,60,67,0.35);
+    --bg-system: #F2F2F7;
+    --bg-card: #FFFFFF;
+    --bg-grouped: #FFFFFF;
+    --separator: rgba(60,60,67,0.12);
+    --border: #e0e2e6;
+    --success: #34c759;
+    --danger: #ff3b30;
+    --warning: #ff9500;
+  }
+  input:focus { outline: none; }
+  input::placeholder { color: var(--text-tertiary); }
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "orgPrimary": "#1b61c9",
+  "orgName": "อบต. ท่าขอนยาง",
+  "darkMode": false,
+  "showAllStates": true
+}/*EDITMODE-END*/;
+
+// ─── Toggle Switch ───────────────────────────────────────────
+function Toggle({ on, onChange, primary }) {
+  return (
+    <div
+      onClick={() => onChange(!on)}
+      style={{
+        width: 51, height: 31, borderRadius: 100,
+        background: on ? primary : 'rgba(120,120,128,0.16)',
+        position: 'relative', cursor: 'pointer',
+        transition: 'background 0.22s ease',
+        flexShrink: 0,
+      }}
+    >
+      <div style={{
+        position: 'absolute',
+        top: 2, left: on ? 22 : 2,
+        width: 27, height: 27, borderRadius: 100,
+        background: '#fff',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.22), 0 1px 2px rgba(0,0,0,0.12)',
+        transition: 'left 0.22s ease',
+      }} />
+    </div>
+  );
+}
+
+// ─── Row ─────────────────────────────────────────────────────
+function Row({ label, value, isLast, icon, action, danger, dark }) {
+  const text = dark ? '#fff' : '#181d26';
+  const sec = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+  const sep = dark ? 'rgba(84,84,88,0.45)' : 'rgba(60,60,67,0.10)';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', minHeight: 50,
+      padding: '0 16px', position: 'relative', gap: 10,
+    }}>
+      {icon && <span style={{ fontSize: 20, width: 28, textAlign: 'center', flexShrink: 0 }}>{icon}</span>}
+      <div style={{
+        flex: 1, fontFamily: "'Noto Sans Thai', system-ui",
+        fontSize: 15, color: danger ? '#ff3b30' : text, lineHeight: 1.4,
+      }}>{label}</div>
+      {action && <div style={{ flexShrink: 0 }}>{action}</div>}
+      {value && <div style={{ fontSize: 15, color: sec, textAlign: 'right', maxWidth: 160, lineHeight: 1.4 }}>{value}</div>}
+      {!isLast && (
+        <div style={{
+          position: 'absolute', bottom: 0,
+          left: icon ? 56 : 16, right: 0,
+          height: 0.5, background: sep,
+        }} />
+      )}
+    </div>
+  );
+}
+
+// ─── Section ─────────────────────────────────────────────────
+function Section({ header, children, dark, footer }) {
+  const hc = dark ? 'rgba(235,235,245,0.5)' : 'rgba(60,60,67,0.5)';
+  const bg = dark ? '#1C1C1E' : '#FFFFFF';
+  return (
+    <div style={{ marginBottom: 8 }}>
+      {header && (
+        <div style={{
+          fontFamily: "'Noto Sans Thai', system-ui", fontSize: 12, fontWeight: 500,
+          color: hc, textTransform: 'uppercase', letterSpacing: 0.5,
+          padding: '6px 28px 4px',
+        }}>{header}</div>
+      )}
+      <div style={{
+        background: bg, borderRadius: 20,
+        margin: '0 14px', overflow: 'hidden',
+        boxShadow: dark ? 'none' : '0 1px 3px rgba(45,127,249,0.06)',
+      }}>{children}</div>
+      {footer && (
+        <div style={{
+          fontFamily: "'Noto Sans Thai', system-ui", fontSize: 12,
+          color: hc, padding: '4px 28px 0', lineHeight: 1.5,
+        }}>{footer}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── Input Row ───────────────────────────────────────────────
+function InputRow({ label, value, onChange, placeholder, isLast, type = 'text', primary, dark }) {
+  const text = dark ? '#fff' : '#181d26';
+  const sec = dark ? 'rgba(235,235,245,0.5)' : 'rgba(60,60,67,0.5)';
+  const sep = dark ? 'rgba(84,84,88,0.45)' : 'rgba(60,60,67,0.10)';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', minHeight: 50,
+      padding: '8px 16px', position: 'relative', gap: 10,
+    }}>
+      <div style={{
+        width: 90, flexShrink: 0,
+        fontFamily: "'Noto Sans Thai', system-ui",
+        fontSize: 14, color: sec, lineHeight: 1.4,
+      }}>{label}</div>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          flex: 1, border: 'none', background: 'transparent',
+          fontFamily: "'Noto Sans Thai', system-ui",
+          fontSize: 15, color: text, lineHeight: 1.4,
+          caretColor: primary,
+        }}
+      />
+      {!isLast && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 106, right: 0,
+          height: 0.5, background: sep,
+        }} />
+      )}
+    </div>
+  );
+}
+
+// ─── Avatar ──────────────────────────────────────────────────
+function Avatar({ name, size = 80, primary }) {
+  const initials = (name || '').split(' ').map(w => w[0]).join('').slice(0, 2);
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: `linear-gradient(135deg, ${primary}, ${primary}cc)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: `0 4px 14px ${primary}44`,
+      color: '#fff',
+      fontFamily: "'Noto Sans Thai', system-ui",
+      fontSize: size * 0.32, fontWeight: 600,
+      flexShrink: 0,
+    }}>
+      {initials || 'ท'}
+    </div>
+  );
+}
+
+// ─── Saving Overlay ──────────────────────────────────────────
+function SavingOverlay({ primary }) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 40,
+      background: 'rgba(255,255,255,0.8)',
+      backdropFilter: 'blur(6px)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: 16,
+    }}>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+      `}</style>
+      <div style={{
+        width: 56, height: 56, borderRadius: '50%',
+        border: `3px solid ${primary}22`,
+        borderTopColor: primary,
+        animation: 'spin 0.8s linear infinite',
+      }} />
+      <div style={{
+        fontFamily: "'Noto Sans Thai', system-ui",
+        fontSize: 16, fontWeight: 500, color: '#181d26',
+        animation: 'fadeUp 0.3s ease both',
+      }}>กำลังบันทึกข้อมูล...</div>
+    </div>
+  );
+}
+
+// ─── SCREEN: View Mode ───────────────────────────────────────
+function ViewScreen({ state, primary, orgName, dark, onEdit, onLogout }) {
+  const bg = dark ? '#000' : '#F2F2F7';
+  const text = dark ? '#fff' : '#181d26';
+  const sec = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.55)';
+  return (
+    <div style={{
+      flex: 1, background: bg, overflowY: 'auto',
+      paddingBottom: 40,
+    }}>
+      {/* Profile Header */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        padding: '20px 20px 24px', gap: 10,
+      }}>
+        <div style={{ position: 'relative' }}>
+          <Avatar name={state.firstName + ' ' + state.lastName} size={84} primary={primary} />
+          <div style={{
+            position: 'absolute', bottom: 0, right: 0,
+            width: 26, height: 26, borderRadius: '50%',
+            background: primary, border: '2px solid ' + bg,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M8.5 1.5L10.5 3.5L4 10L1.5 10.5L2 8L8.5 1.5Z" fill="white" strokeWidth="0" />
+            </svg>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            fontFamily: "'Noto Sans Thai', system-ui",
+            fontSize: 20, fontWeight: 600, color: text, letterSpacing: 0.1,
+          }}>{state.firstName} {state.lastName}</div>
+          <div style={{
+            fontFamily: "'Noto Sans Thai', system-ui",
+            fontSize: 13, color: sec, marginTop: 2,
+          }}>เลขบัตร: X-XXXX-{state.idCard.slice(5, 10)}-XX-X</div>
+        </div>
+        {/* org badge */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: dark ? 'rgba(255,255,255,0.08)' : `${primary}12`,
+          borderRadius: 20, padding: '5px 12px',
+        }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: primary }} />
+          <span style={{
+            fontFamily: "'Noto Sans Thai', system-ui",
+            fontSize: 12, color: primary, fontWeight: 500,
+          }}>{orgName}</span>
+        </div>
+      </div>
+
+      {/* Personal Info */}
+      <Section header="ข้อมูลส่วนตัว" dark={dark}>
+        <Row label="ชื่อ-นามสกุล" value={`${state.firstName} ${state.lastName}`} dark={dark} />
+        <Row label="เบอร์โทรศัพท์" value={state.phone} dark={dark} />
+        <Row label="อีเมล" value={state.email || '—'} isLast dark={dark} />
+      </Section>
+
+      {/* Notifications */}
+      <Section header="การแจ้งเตือน" dark={dark}
+        footer={state.lineOn || state.smsOn ? "คุณจะได้รับการแจ้งเตือนเมื่อมีบิลใหม่หรือรายการค้างชำระ" : "เปิดการแจ้งเตือนอย่างน้อยหนึ่งช่องทาง เพื่อไม่พลาดกำหนดชำระ"}>
+        <Row
+          label="แจ้งเตือนผ่าน LINE" icon="💬"
+          action={<Toggle on={state.lineOn} onChange={() => {}} primary={primary} />}
+          dark={dark}
+        />
+        <Row
+          label="แจ้งเตือนผ่าน SMS" icon="📱"
+          action={<Toggle on={state.smsOn} onChange={() => {}} primary={primary} />}
+          isLast dark={dark}
+        />
+      </Section>
+
+      {/* Registered property */}
+      <Section header="บ้านที่ลงทะเบียน" dark={dark}>
+        <Row
+          label={state.address}
+          value="รายละเอียด"
+          action={
+            <svg width="8" height="14" viewBox="0 0 8 14">
+              <path d="M1 1l6 6-6 6" stroke={sec} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          }
+          isLast dark={dark}
+        />
+      </Section>
+
+      {/* Actions */}
+      <div style={{ margin: '8px 14px 0', borderRadius: 20, overflow: 'hidden', background: dark ? '#1C1C1E' : '#fff' }}>
+        <div
+          onClick={onEdit}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: 50, cursor: 'pointer', gap: 8,
+            borderBottom: `0.5px solid ${dark ? 'rgba(84,84,88,0.45)' : 'rgba(60,60,67,0.10)'}`,
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M10.5 1.5L13.5 4.5L5 13H2V10L10.5 1.5Z" stroke={primary} strokeWidth="1.5" fill="none" strokeLinejoin="round"/>
+          </svg>
+          <span style={{
+            fontFamily: "'Noto Sans Thai', system-ui",
+            fontSize: 15, fontWeight: 500, color: primary,
+          }}>แก้ไขข้อมูล</span>
+        </div>
+        <div
+          onClick={onLogout}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: 50, cursor: 'pointer',
+          }}
+        >
+          <span style={{
+            fontFamily: "'Noto Sans Thai', system-ui",
+            fontSize: 15, fontWeight: 500, color: '#ff3b30',
+          }}>ออกจากระบบ</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: Edit Mode ───────────────────────────────────────
+function EditScreen({ state, setState, primary, dark, onSave, onCancel }) {
+  const bg = dark ? '#000' : '#F2F2F7';
+  const text = dark ? '#fff' : '#181d26';
+  const cardBg = dark ? '#1C1C1E' : '#fff';
+  return (
+    <div style={{ flex: 1, background: bg, overflowY: 'auto', paddingBottom: 40 }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        padding: '20px 20px 18px', gap: 10,
+      }}>
+        <div style={{ position: 'relative', opacity: 0.7 }}>
+          <Avatar name={state.firstName + ' ' + state.lastName} size={72} primary={primary} />
+          <div style={{
+            position: 'absolute', bottom: 0, right: 0,
+            width: 24, height: 24, borderRadius: '50%',
+            background: '#888', border: '2px solid ' + bg,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+              <path d="M8.5 1.5L10.5 3.5L4 10L1.5 10.5L2 8L8.5 1.5Z" fill="white"/>
+            </svg>
+          </div>
+        </div>
+        <div style={{
+          fontFamily: "'Noto Sans Thai', system-ui",
+          fontSize: 13, color: primary, fontWeight: 500,
+        }}>แตะเพื่อเปลี่ยนรูปโปรไฟล์</div>
+      </div>
+
+      {/* Edit fields */}
+      <Section header="แก้ไขข้อมูลส่วนตัว" dark={dark}>
+        <InputRow label="ชื่อ" value={state.firstName}
+          onChange={v => setState(s => ({ ...s, firstName: v }))}
+          placeholder="ชื่อจริง" primary={primary} dark={dark} />
+        <InputRow label="นามสกุล" value={state.lastName}
+          onChange={v => setState(s => ({ ...s, lastName: v }))}
+          placeholder="นามสกุล" primary={primary} dark={dark} />
+        <InputRow label="อีเมล" value={state.email}
+          onChange={v => setState(s => ({ ...s, email: v }))}
+          placeholder="example@email.com" type="email" primary={primary} dark={dark} isLast />
+      </Section>
+
+      <Section header="" dark={dark}
+        footer="เบอร์โทรศัพท์เชื่อมกับ LINE — ติดต่อเจ้าหน้าที่เพื่อเปลี่ยน">
+        <Row label="เบอร์โทรศัพท์" value={state.phone} dark={dark}
+          action={
+            <span style={{
+              fontFamily: "'Noto Sans Thai', system-ui",
+              fontSize: 12, color: 'rgba(60,60,67,0.4)',
+              background: 'rgba(60,60,67,0.08)', padding: '2px 8px',
+              borderRadius: 6,
+            }}>ล็อก</span>
+          }
+          isLast />
+      </Section>
+
+      {/* Notifications */}
+      <Section header="การแจ้งเตือน" dark={dark}>
+        <Row
+          label="แจ้งเตือนผ่าน LINE" icon="💬"
+          action={<Toggle on={state.lineOn} onChange={v => setState(s => ({ ...s, lineOn: v }))} primary={primary} />}
+          dark={dark}
+        />
+        <Row
+          label="แจ้งเตือนผ่าน SMS" icon="📱"
+          action={<Toggle on={state.smsOn} onChange={v => setState(s => ({ ...s, smsOn: v }))} primary={primary} />}
+          isLast dark={dark}
+        />
+      </Section>
+
+      {/* Save / Cancel */}
+      <div style={{ padding: '8px 14px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button
+          onClick={onSave}
+          style={{
+            width: '100%', height: 52, borderRadius: 14,
+            background: primary, border: 'none', cursor: 'pointer',
+            fontFamily: "'Noto Sans Thai', system-ui",
+            fontSize: 16, fontWeight: 600, color: '#fff',
+            boxShadow: `0 4px 14px ${primary}44`,
+            letterSpacing: 0.2,
+          }}
+        >บันทึกข้อมูล</button>
+        <button
+          onClick={onCancel}
+          style={{
+            width: '100%', height: 52, borderRadius: 14,
+            background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(60,60,67,0.06)',
+            border: 'none', cursor: 'pointer',
+            fontFamily: "'Noto Sans Thai', system-ui",
+            fontSize: 16, fontWeight: 500, color: dark ? '#fff' : '#181d26',
+          }}
+        >ยกเลิก</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: Saving ──────────────────────────────────────────
+function SavingScreen({ state, primary, dark }) {
+  const bg = dark ? '#000' : '#F2F2F7';
+  return (
+    <div style={{ flex: 1, background: bg, overflowY: 'hidden', position: 'relative' }}>
+      {/* reuse edit layout but blurred */}
+      <div style={{ filter: 'blur(2px)', opacity: 0.4 }}>
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '20px 20px 18px', gap: 10,
+        }}>
+          <Avatar name={state.firstName + ' ' + state.lastName} size={72} primary={primary} />
+        </div>
+        <Section header="แก้ไขข้อมูลส่วนตัว" dark={dark}>
+          <InputRow label="ชื่อ" value={state.firstName} onChange={() => {}} primary={primary} dark={dark} />
+          <InputRow label="นามสกุล" value={state.lastName} onChange={() => {}} primary={primary} dark={dark} />
+          <InputRow label="อีเมล" value={state.email} onChange={() => {}} primary={primary} dark={dark} isLast />
+        </Section>
+        <div style={{ padding: '8px 14px 0' }}>
+          <div style={{ width: '100%', height: 52, borderRadius: 14, background: primary }} />
+        </div>
+      </div>
+      <SavingOverlay primary={primary} />
+    </div>
+  );
+}
+
+// ─── SCREEN: Success Toast ───────────────────────────────────
+function SuccessToast({ primary }) {
+  return (
+    <div style={{
+      position: 'absolute', bottom: 60, left: 20, right: 20, zIndex: 50,
+      background: '#181d26', borderRadius: 14,
+      padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10,
+      boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+      animation: 'fadeUp 0.3s ease',
+    }}>
+      <div style={{
+        width: 28, height: 28, borderRadius: '50%',
+        background: '#34c759', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <svg width="14" height="10" viewBox="0 0 14 10">
+          <path d="M1 5l4 4 8-8" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+      <div style={{
+        fontFamily: "'Noto Sans Thai', system-ui",
+        fontSize: 14, fontWeight: 500, color: '#fff',
+      }}>บันทึกข้อมูลเรียบร้อยแล้ว</div>
+    </div>
+  );
+}
+
+// ─── Interactive Phone ────────────────────────────────────────
+function InteractivePhone({ primary, orgName, dark }) {
+  const [screenState, setScreenState] = React.useState('view'); // view | edit | saving | success
+  const [profileData, setProfileData] = React.useState({
+    firstName: 'สมชาย', lastName: 'ใจดี',
+    idCard: '1234567890123',
+    phone: '081-234-5678',
+    email: 'somchai@email.com',
+    address: '123/4 หมู่ 5 ต.ท่าขอนยาง อ.กันทรวิชัย',
+    lineOn: true, smsOn: false,
+  });
+
+  const handleSave = () => {
+    setScreenState('saving');
+    setTimeout(() => setScreenState('success'), 1800);
+    setTimeout(() => setScreenState('view'), 3200);
+  };
+
+  const getNavTitle = () => ({
+    view: 'โปรไฟล์',
+    edit: 'แก้ไขข้อมูล',
+    saving: 'แก้ไขข้อมูล',
+    success: 'โปรไฟล์',
+  }[screenState]);
+
+  return (
+    <IOSDevice width={390} height={844} dark={dark} title={getNavTitle()}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+        {screenState === 'view' && (
+          <ViewScreen
+            state={profileData} primary={primary} orgName={orgName} dark={dark}
+            onEdit={() => setScreenState('edit')}
+            onLogout={() => {}}
+          />
+        )}
+        {(screenState === 'edit') && (
+          <EditScreen
+            state={profileData} setState={setProfileData} primary={primary} dark={dark}
+            onSave={handleSave}
+            onCancel={() => setScreenState('view')}
+          />
+        )}
+        {screenState === 'saving' && (
+          <SavingScreen state={profileData} primary={primary} dark={dark} />
+        )}
+        {screenState === 'success' && (
+          <>
+            <ViewScreen
+              state={profileData} primary={primary} orgName={orgName} dark={dark}
+              onEdit={() => setScreenState('edit')}
+              onLogout={() => {}}
+            />
+            <SuccessToast primary={primary} />
+          </>
+        )}
+      </div>
+    </IOSDevice>
+  );
+}
+
+// ─── Static State Phone ───────────────────────────────────────
+function StaticPhone({ mode, primary, orgName, dark }) {
+  const profileData = {
+    firstName: 'สมชาย', lastName: 'ใจดี',
+    idCard: '1234567890123',
+    phone: '081-234-5678',
+    email: 'somchai@email.com',
+    address: '123/4 หมู่ 5 ต.ท่าขอนยาง',
+    lineOn: true, smsOn: false,
+  };
+  const setData = () => {};
+  const titles = { view: 'โปรไฟล์', edit: 'แก้ไขข้อมูล', saving: 'แก้ไขข้อมูล' };
+
+  return (
+    <IOSDevice width={390} height={844} dark={dark} title={titles[mode]}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+        {mode === 'view' && (
+          <ViewScreen state={profileData} primary={primary} orgName={orgName} dark={dark}
+            onEdit={() => {}} onLogout={() => {}} />
+        )}
+        {mode === 'edit' && (
+          <EditScreen state={profileData} setState={setData} primary={primary} dark={dark}
+            onSave={() => {}} onCancel={() => {}} />
+        )}
+        {mode === 'saving' && (
+          <SavingScreen state={profileData} primary={primary} dark={dark} />
+        )}
+      </div>
+    </IOSDevice>
+  );
+}
+
+// ─── Main App ────────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAK_DEFAULTS);
+  const [showTweaks, setShowTweaks] = React.useState(false);
+
+  React.useEffect(() => {
+    document.documentElement.style.setProperty('--org-primary', tweaks.orgPrimary);
+  }, [tweaks.orgPrimary]);
+
+  // Tweaks protocol
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setShowTweaks(true);
+      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  const updateTweak = (key, val) => {
+    setTweaks(t => {
+      const next = { ...t, [key]: val };
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+      return next;
+    });
+  };
+
+  const primary = tweaks.orgPrimary;
+  const dark = tweaks.darkMode;
+  const orgName = tweaks.orgName;
+
+  const canvasBg = dark ? '#1a1a1a' : '#e8e8ec';
+
+  return (
+    <div style={{
+      minHeight: '100vh', background: canvasBg,
+      display: 'flex', flexDirection: 'column',
+    }}>
+      <style>{`
+        @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        ::-webkit-scrollbar { width: 0; }
+      `}</style>
+
+      {/* Canvas label */}
+      <div style={{
+        padding: '28px 40px 20px',
+        fontFamily: "'Noto Sans Thai', system-ui",
+        display: 'flex', alignItems: 'baseline', gap: 12,
+      }}>
+        <div style={{
+          fontSize: 11, fontWeight: 600, letterSpacing: 1.5,
+          color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+          textTransform: 'uppercase',
+        }}>R-12 · Resident Portal</div>
+        <div style={{
+          fontSize: 20, fontWeight: 700,
+          color: dark ? 'rgba(255,255,255,0.85)' : '#181d26',
+          letterSpacing: 0.2,
+        }}>โปรไฟล์ / ตั้งค่า</div>
+        <div style={{
+          fontSize: 11, background: `${primary}22`, color: primary,
+          borderRadius: 6, padding: '2px 8px', fontWeight: 600, letterSpacing: 0.5,
+        }}>P2 · Mobile</div>
+      </div>
+
+      {/* Phones row */}
+      <div style={{
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        gap: 48, padding: '0 40px 48px',
+        flexWrap: 'wrap',
+      }}>
+        {/* Interactive */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{
+              background: primary, color: '#fff', borderRadius: 20,
+              padding: '4px 12px', fontSize: 11, fontWeight: 600, letterSpacing: 0.5,
+              fontFamily: "'Noto Sans Thai', system-ui",
+            }}>INTERACTIVE</div>
+          </div>
+          <InteractivePhone primary={primary} orgName={orgName} dark={dark} />
+          <div style={{
+            fontFamily: "'Noto Sans Thai', system-ui",
+            fontSize: 13, color: dark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)',
+            textAlign: 'center', maxWidth: 300, lineHeight: 1.6,
+          }}>กดปุ่มแก้ไขข้อมูล / บันทึก เพื่อทดสอบ transition ระหว่าง states</div>
+        </div>
+
+        {/* Static states */}
+        {tweaks.showAllStates && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+            {/* Edit + Saving side by side */}
+            <div style={{ display: 'flex', gap: 36 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                <StateTag label="State 2 — Edit Mode" color={primary} />
+                <StaticPhone mode="edit" primary={primary} orgName={orgName} dark={dark} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                <StateTag label="State 3 — Saving" color="#ff9500" />
+                <StaticPhone mode="saving" primary={primary} orgName={orgName} dark={dark} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Tweaks Panel */}
+      {showTweaks && (
+        <div style={{
+          position: 'fixed', bottom: 24, right: 24, zIndex: 100,
+          background: '#fff', borderRadius: 20,
+          boxShadow: '0 12px 40px rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.06)',
+          padding: '20px', width: 280,
+          fontFamily: "'Noto Sans Thai', system-ui",
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#181d26', marginBottom: 16, letterSpacing: 0.5 }}>TWEAKS</div>
+
+          <TweakRow label="สีหลักของ อปท.">
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['#1b61c9','#0e7f5c','#8b2fc9','#c94a1b','#c91b7b'].map(c => (
+                <div key={c}
+                  onClick={() => updateTweak('orgPrimary', c)}
+                  style={{
+                    width: 28, height: 28, borderRadius: '50%', background: c,
+                    cursor: 'pointer', border: primary === c ? '3px solid #181d26' : '2px solid transparent',
+                    boxSizing: 'border-box', transition: 'border 0.15s',
+                  }} />
+              ))}
+              <input type="color" value={tweaks.orgPrimary}
+                onChange={e => updateTweak('orgPrimary', e.target.value)}
+                style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', padding: 0, cursor: 'pointer' }} />
+            </div>
+          </TweakRow>
+
+          <TweakRow label="ชื่อ อปท.">
+            <input value={tweaks.orgName} onChange={e => updateTweak('orgName', e.target.value)}
+              style={{
+                width: '100%', border: '1px solid #e0e2e6', borderRadius: 8,
+                padding: '6px 10px', fontSize: 13, fontFamily: "'Noto Sans Thai', system-ui",
+                color: '#181d26',
+              }} />
+          </TweakRow>
+
+          <TweakRow label="Dark Mode">
+            <Toggle on={tweaks.darkMode} onChange={v => updateTweak('darkMode', v)} primary={primary} />
+          </TweakRow>
+
+          <TweakRow label="แสดงทุก States" isLast>
+            <Toggle on={tweaks.showAllStates} onChange={v => updateTweak('showAllStates', v)} primary={primary} />
+          </TweakRow>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StateTag({ label, color }) {
+  return (
+    <div style={{
+      background: color + '18', color: color,
+      borderRadius: 20, padding: '4px 12px',
+      fontSize: 11, fontWeight: 600, letterSpacing: 0.5,
+      fontFamily: "'Noto Sans Thai', system-ui",
+      border: `1px solid ${color}30`,
+    }}>{label}</div>
+  );
+}
+
+function TweakRow({ label, children, isLast }) {
+  return (
+    <div style={{
+      paddingBottom: 14, marginBottom: isLast ? 0 : 14,
+      borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
+    }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(0,0,0,0.4)', marginBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>{label}</div>
+      {children}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<div id="root"></div>
+</body>
+</html>

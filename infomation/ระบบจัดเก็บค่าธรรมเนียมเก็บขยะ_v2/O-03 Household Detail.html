@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-03 · รายละเอียดครัวเรือน — Officer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --org-primary:       #1b61c9;
+  --org-primary-light: #e8f0fd;
+  --org-primary-dark:  #1349a0;
+
+  --navy:    #181d26;
+  --navy-80: rgba(24,29,38,0.80);
+  --navy-50: rgba(24,29,38,0.50);
+  --navy-30: rgba(24,29,38,0.30);
+  --navy-10: rgba(24,29,38,0.07);
+
+  --white:       #ffffff;
+  --surface:     #f8fafc;
+  --surface-2:   #f1f4f8;
+  --border:      #e0e2e6;
+  --border-light:#edf0f4;
+
+  --green:       #059669;
+  --green-light: #d1fae5;
+  --red:         #dc2626;
+  --red-light:   #fee2e2;
+  --amber:       #d97706;
+  --amber-light: #fef3c7;
+  --purple:      #7c3aed;
+  --purple-light:#ede9fe;
+
+  --shadow-card: 0 0 1px rgba(0,0,0,.12), 0 1px 3px rgba(45,127,249,.10), 0 0 0 .5px rgba(0,0,0,.04) inset;
+  --shadow-hover: 0 0 1px rgba(0,0,0,.14), 0 4px 12px rgba(45,127,249,.18);
+  --shadow-sidebar: 1px 0 0 var(--border);
+
+  --font: 'Prompt','Inter',sans-serif;
+  --sidebar-w:   220px;
+  --topbar-h:    56px;
+  --radius-card: 12px;
+  --radius-sm:   8px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);color:var(--navy);background:var(--surface)}
+button{font-family:var(--font);cursor:pointer;border:none;background:none}
+a{text-decoration:none;color:inherit}
+
+/* ─── LAYOUT ─────────────────────────────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ─── SIDEBAR ────────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);height:100vh;background:var(--white);
+  box-shadow:var(--shadow-sidebar);display:flex;flex-direction:column;
+  flex-shrink:0;overflow-y:auto;z-index:10;
+}
+.sidebar-logo{
+  display:flex;align-items:center;gap:10px;padding:0 16px;
+  height:var(--topbar-h);border-bottom:1px solid var(--border);
+}
+.org-avatar{
+  width:32px;height:32px;border-radius:8px;background:var(--org-primary);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:12px;font-weight:700;letter-spacing:.5px;flex-shrink:0;
+}
+.org-name{font-size:13px;font-weight:600;color:var(--navy);line-height:1.3}
+.org-sub{font-size:11px;color:var(--navy-50)}
+
+.nav-section{padding:8px 8px 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--navy-30);letter-spacing:1px;
+  text-transform:uppercase;padding:0 8px;margin-bottom:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);
+  font-size:13.5px;font-weight:400;color:var(--navy-80);cursor:pointer;
+  transition:background .12s,color .12s;
+}
+.nav-item:hover{background:var(--navy-10);color:var(--navy)}
+.nav-item.active{background:var(--org-primary-light);color:var(--org-primary);font-weight:600}
+.nav-item .icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .icon{opacity:1}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:white;
+  font-size:10px;font-weight:700;border-radius:99px;
+  padding:1px 6px;min-width:18px;text-align:center;
+}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border)}
+.user-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;
+}
+.user-row:hover{background:var(--navy-10)}
+.user-avatar{
+  width:30px;height:30px;border-radius:50%;background:var(--org-primary-light);
+  color:var(--org-primary);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.user-name{font-size:13px;font-weight:500}
+.user-role{font-size:11px;color:var(--navy-50)}
+
+/* ─── MAIN ───────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─── TOPBAR ─────────────────────────────────────────────── */
+.topbar{
+  height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;
+}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.breadcrumb-link{color:var(--navy-50);cursor:pointer;transition:color .12s}
+.breadcrumb-link:hover{color:var(--org-primary)}
+.breadcrumb-sep{color:var(--navy-30);font-size:12px}
+.breadcrumb-cur{font-weight:600;color:var(--navy)}
+.topbar-spacer{flex:1}
+
+.btn{
+  display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;
+  font-size:13px;font-weight:500;transition:all .12s;
+}
+.btn-secondary{
+  background:var(--white);color:var(--navy);border:1px solid var(--border);
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.btn-secondary:hover{background:var(--surface);border-color:var(--navy-30)}
+.btn-primary{background:var(--org-primary);color:white;box-shadow:0 1px 3px rgba(27,97,201,.25)}
+.btn-primary:hover{background:var(--org-primary-dark)}
+.btn-ghost{color:var(--navy-50);padding:6px 10px}
+.btn-ghost:hover{color:var(--navy);background:var(--navy-10)}
+.btn-danger{background:var(--red-light);color:var(--red);border:1px solid #fca5a5}
+.btn-danger:hover{background:#fecaca}
+
+/* ─── CONTENT ────────────────────────────────────────────── */
+.content{flex:1;overflow-y:auto;padding:0;display:flex;flex-direction:column;}
+
+/* ─── ALERT BANNER ───────────────────────────────────────── */
+.alert-banner{
+  display:flex;align-items:center;gap:12px;padding:10px 24px;
+  font-size:13px;font-weight:500;flex-shrink:0;
+}
+.alert-banner.arrears{background:#fff7ed;border-bottom:1px solid #fed7aa;color:#9a3412}
+.alert-banner.suspended{background:var(--red-light);border-bottom:1px solid #fca5a5;color:var(--red)}
+.alert-banner svg{flex-shrink:0}
+.alert-banner-actions{margin-left:auto;display:flex;gap:8px}
+.alert-dismiss{
+  font-size:12px;font-weight:500;color:inherit;opacity:.7;cursor:pointer;
+  padding:3px 8px;border-radius:4px;border:1px solid currentColor;
+  transition:opacity .12s;
+}
+.alert-dismiss:hover{opacity:1}
+
+/* ─── HOUSEHOLD HEADER ───────────────────────────────────── */
+.hh-header{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:20px 24px;flex-shrink:0;
+}
+.hh-header-top{display:flex;align-items:flex-start;gap:16px}
+.hh-icon{
+  width:52px;height:52px;border-radius:12px;background:var(--org-primary-light);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.hh-identity{flex:1}
+.hh-title-row{display:flex;align-items:center;gap:10px;margin-bottom:3px}
+.hh-title{font-size:20px;font-weight:700;color:var(--navy)}
+.hh-subtitle{font-size:13px;color:var(--navy-50);margin-bottom:6px}
+.hh-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hh-actions{display:flex;gap:8px;align-items:flex-start;flex-shrink:0}
+
+.prop-tag{
+  display:inline-flex;align-items:center;padding:2px 9px;border-radius:4px;
+  font-size:11.5px;font-weight:500;
+}
+.prop-house{background:#eff6ff;color:#1d4ed8}
+.prop-condo{background:#faf5ff;color:#7c3aed}
+.prop-commercial{background:#fff7ed;color:#c2410c}
+
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:99px;font-size:12px;font-weight:500;
+}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge-active{background:var(--green-light);color:var(--green)}
+.badge-overdue{background:var(--red-light);color:var(--red)}
+.badge-suspended{background:var(--surface-2);color:var(--navy-50)}
+.badge-warning{background:var(--amber-light);color:var(--amber)}
+
+/* ─── KPI STRIP ──────────────────────────────────────────── */
+.kpi-strip{
+  display:flex;gap:0;border-top:1px solid var(--border-light);margin-top:18px;
+}
+.kpi-item{
+  flex:1;padding:14px 16px;border-right:1px solid var(--border-light);
+  display:flex;flex-direction:column;gap:2px;
+}
+.kpi-item:last-child{border-right:none}
+.kpi-label{font-size:11px;color:var(--navy-50);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.kpi-value{font-size:18px;font-weight:700;color:var(--navy);line-height:1}
+.kpi-sub{font-size:11px;color:var(--navy-30);margin-top:2px}
+.kpi-value.danger{color:var(--red)}
+.kpi-value.warn{color:var(--amber)}
+.kpi-value.good{color:var(--green)}
+
+/* ─── TABS ───────────────────────────────────────────────── */
+.tabs-bar{
+  background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;gap:0;padding:0 24px;flex-shrink:0;
+  position:sticky;top:0;z-index:5;
+}
+.tab-btn{
+  display:flex;align-items:center;gap:6px;padding:14px 16px;
+  font-size:13.5px;font-weight:500;color:var(--navy-50);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:color .12s,border-color .12s;white-space:nowrap;
+}
+.tab-btn:hover{color:var(--navy)}
+.tab-btn.active{color:var(--org-primary);border-bottom-color:var(--org-primary)}
+.tab-count{
+  background:var(--surface-2);color:var(--navy-50);font-size:10.5px;font-weight:700;
+  border-radius:99px;padding:1px 6px;min-width:18px;text-align:center;
+  transition:all .12s;
+}
+.tab-btn.active .tab-count{background:var(--org-primary-light);color:var(--org-primary)}
+.tab-count.alert{background:var(--red-light);color:var(--red)}
+.tab-btn.active .tab-count.alert{background:var(--red-light);color:var(--red)}
+
+/* ─── TAB PANELS ─────────────────────────────────────────── */
+.tab-panel{display:none;padding:20px 24px;flex-direction:column;gap:16px}
+.tab-panel.active{display:flex}
+
+/* ─── SECTION CARD ───────────────────────────────────────── */
+.section-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  box-shadow:var(--shadow-card);overflow:hidden;
+}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border-light);
+}
+.section-title{font-size:13px;font-weight:600;color:var(--navy);
+  display:flex;align-items:center;gap:8px}
+.section-title-icon{
+  width:24px;height:24px;border-radius:6px;background:var(--org-primary-light);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.section-body{padding:16px 18px}
+
+/* ─── INFO GRID ──────────────────────────────────────────── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.info-row{
+  display:flex;flex-direction:column;gap:3px;padding:10px 0;
+  border-bottom:1px solid var(--border-light);
+}
+.info-row:nth-child(even){padding-left:20px}
+.info-row:last-child,.info-row:nth-last-child(2):nth-child(odd){border-bottom:none}
+.info-key{font-size:11.5px;color:var(--navy-50);font-weight:500}
+.info-val{font-size:13.5px;font-weight:500;color:var(--navy)}
+.info-val.monospace{font-family:monospace;font-size:13px}
+
+/* ─── MEMBERS ────────────────────────────────────────────── */
+.member-list{display:flex;flex-direction:column;gap:0}
+.member-row{
+  display:flex;align-items:center;gap:12px;padding:11px 0;
+  border-bottom:1px solid var(--border-light);transition:background .1s;
+}
+.member-row:last-child{border-bottom:none}
+.member-avatar{
+  width:34px;height:34px;border-radius:50%;background:var(--org-primary-light);
+  color:var(--org-primary);font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.member-avatar.head{background:var(--org-primary);color:white}
+.member-name{font-size:13.5px;font-weight:500;color:var(--navy)}
+.member-role{font-size:11.5px;color:var(--navy-50);margin-top:1px}
+.member-phone{font-size:12px;color:var(--navy-50);margin-left:auto}
+
+/* ─── METER CARD ─────────────────────────────────────────── */
+.meter-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;display:flex;align-items:center;gap:14px;
+}
+.meter-icon{
+  width:40px;height:40px;border-radius:9px;background:#e0f2fe;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.meter-num{font-size:13px;font-weight:600;color:var(--navy)}
+.meter-label{font-size:11.5px;color:var(--navy-50);margin-top:1px}
+.meter-reading{text-align:right;margin-left:auto}
+.meter-val{font-size:18px;font-weight:700;color:var(--navy)}
+.meter-unit{font-size:11.5px;color:var(--navy-50);margin-top:1px;text-align:right}
+
+/* ─── BILLS TABLE ────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse}
+thead{background:var(--surface)}
+th{
+  padding:9px 14px;text-align:left;font-size:11px;font-weight:600;
+  color:var(--navy-50);text-transform:uppercase;letter-spacing:.6px;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid var(--border-light);transition:background .1s;cursor:pointer}
+tbody tr:hover{background:var(--surface)}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 14px;font-size:13px;color:var(--navy);vertical-align:middle}
+
+.bill-number{font-size:12.5px;font-family:monospace;color:var(--navy-80)}
+.bill-period{font-size:13px;font-weight:500}
+.bill-sub{font-size:11px;color:var(--navy-50);margin-top:2px}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
+  border-radius:99px;font-size:11.5px;font-weight:500;white-space:nowrap;
+}
+.s-paid{background:var(--green-light);color:var(--green)}
+.s-overdue{background:var(--red-light);color:var(--red)}
+.s-partial{background:var(--amber-light);color:var(--amber)}
+.s-issued{background:#dbeafe;color:#1d4ed8}
+.s-draft{background:var(--surface-2);color:var(--navy-50)}
+.s-cancelled{background:var(--surface-2);color:var(--navy-30);text-decoration:line-through}
+.s-written_off{background:#f5f3ff;color:#6d28d9}
+
+/* ─── TIMELINE ───────────────────────────────────────────── */
+.timeline{display:flex;flex-direction:column;gap:0;padding:0 4px}
+.tl-item{display:flex;gap:14px;padding-bottom:20px;position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-item:not(:last-child)::before{
+  content:'';position:absolute;left:15px;top:30px;bottom:0;
+  width:2px;background:var(--border);z-index:0;
+}
+.tl-dot{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;position:relative;z-index:1;
+}
+.tl-dot.success{background:var(--green-light);color:var(--green)}
+.tl-dot.warn{background:var(--amber-light);color:var(--amber)}
+.tl-dot.danger{background:var(--red-light);color:var(--red)}
+.tl-dot.info{background:var(--org-primary-light);color:var(--org-primary)}
+.tl-dot.neutral{background:var(--surface-2);color:var(--navy-50)}
+.tl-body{flex:1;padding-top:6px}
+.tl-title{font-size:13.5px;font-weight:600;color:var(--navy)}
+.tl-sub{font-size:12px;color:var(--navy-50);margin-top:2px;line-height:1.5}
+.tl-time{font-size:11px;color:var(--navy-30);margin-top:4px}
+.tl-amount{font-size:14px;font-weight:700;color:var(--green);margin-left:auto;padding-top:6px;flex-shrink:0}
+.tl-amount.negative{color:var(--red)}
+
+/* ─── ARREARS ESCALATION ─────────────────────────────────── */
+.escalation-track{
+  display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;
+}
+.esc-step{
+  flex:1;padding:12px 14px;border-right:1px solid var(--border);
+  transition:background .12s;position:relative;
+}
+.esc-step:last-child{border-right:none}
+.esc-step.current{background:var(--amber-light)}
+.esc-step.passed{background:var(--surface-2)}
+.esc-step.future{background:var(--white)}
+.esc-step-label{font-size:10.5px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--navy-50);margin-bottom:4px}
+.esc-step-name{font-size:12.5px;font-weight:600;color:var(--navy)}
+.esc-step.current .esc-step-name{color:var(--amber)}
+.esc-step.passed .esc-step-name{color:var(--navy-30)}
+.esc-step-date{font-size:11px;color:var(--navy-50);margin-top:2px}
+.esc-current-badge{
+  position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  background:var(--amber);color:white;font-size:9px;font-weight:700;
+  padding:2px 6px;border-radius:0 0 4px 4px;letter-spacing:.5px;text-transform:uppercase;
+}
+
+/* ─── STICKER ────────────────────────────────────────────── */
+.sticker-display{
+  display:flex;align-items:center;gap:20px;padding:20px;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+}
+.sticker-swatch{
+  width:80px;height:80px;border-radius:12px;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.sticker-year{font-size:22px;font-weight:900;color:white;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.sticker-info-main{font-size:15px;font-weight:700;color:var(--navy)}
+.sticker-info-sub{font-size:12px;color:var(--navy-50);margin-top:3px;line-height:1.5}
+.sticker-status-big{
+  margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;
+}
+
+/* ─── NOTES ──────────────────────────────────────────────── */
+.note-item{
+  display:flex;gap:12px;padding:12px 0;
+  border-bottom:1px solid var(--border-light);
+}
+.note-item:last-child{border-bottom:none}
+.note-avatar{
+  width:30px;height:30px;border-radius:50%;background:var(--surface-2);
+  color:var(--navy-50);font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.note-content{flex:1}
+.note-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.note-author{font-size:13px;font-weight:600;color:var(--navy)}
+.note-type{
+  font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:4px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.nt-internal{background:var(--surface-2);color:var(--navy-50)}
+.nt-action{background:var(--org-primary-light);color:var(--org-primary)}
+.nt-warning{background:var(--amber-light);color:var(--amber)}
+.note-text{font-size:13px;color:var(--navy-80);line-height:1.5}
+.note-time{font-size:11px;color:var(--navy-30);margin-top:4px}
+.note-compose{
+  display:flex;gap:10px;padding:14px 18px;
+  border-top:1px solid var(--border);background:var(--surface);
+}
+.note-input{
+  flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;
+  font-family:var(--font);font-size:13px;color:var(--navy);background:var(--white);
+  outline:none;resize:none;transition:border .15s;line-height:1.5;
+}
+.note-input:focus{border-color:var(--org-primary);box-shadow:0 0 0 3px rgba(27,97,201,.1)}
+.note-input::placeholder{color:var(--navy-30)}
+
+/* ─── EMPTY ──────────────────────────────────────────────── */
+.empty-panel{
+  padding:40px 20px;text-align:center;color:var(--navy-50);
+}
+.empty-panel-icon{
+  width:48px;height:48px;border-radius:12px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 12px;
+}
+.empty-panel-title{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:5px}
+.empty-panel-sub{font-size:12.5px;color:var(--navy-50)}
+
+/* ─── GRID 2 ──────────────────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ─── PAYMENT ROW ────────────────────────────────────────── */
+.pay-method-icon{
+  width:26px;height:26px;border-radius:6px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+}
+
+/* ─── TWEAKS PANEL ───────────────────────────────────────── */
+#tweaks-panel{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--white);border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.14);padding:16px;width:260px;display:none;
+}
+#tweaks-panel h4{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--navy)}
+.tweak-row{margin-bottom:12px}
+.tweak-label{font-size:12px;color:var(--navy-50);margin-bottom:4px}
+.tweak-row select,.tweak-row input[type=color]{
+  width:100%;padding:6px 8px;border:1px solid var(--border);
+  border-radius:6px;font-family:var(--font);font-size:13px;
+  background:var(--surface);color:var(--navy);
+}
+.tweak-row input[type=color]{height:34px;padding:2px 4px;cursor:pointer}
+
+/* ─── MODAL ──────────────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:900;
+  display:none;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--white);border-radius:16px;width:520px;max-width:95vw;
+  box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;
+  animation:modal-in .18s ease;
+}
+@keyframes modal-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--border);
+}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{
+  width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  color:var(--navy-50);transition:all .12s;cursor:pointer;
+}
+.modal-close:hover{background:var(--surface-2);color:var(--navy)}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:12.5px;font-weight:500;color:var(--navy-80)}
+.form-input{
+  padding:8px 11px;border:1px solid var(--border);border-radius:8px;
+  font-family:var(--font);font-size:13.5px;color:var(--navy);outline:none;
+  transition:border .15s;
+}
+.form-input:focus{border-color:var(--org-primary);box-shadow:0 0 0 3px rgba(27,97,201,.12)}
+.modal-foot{
+  display:flex;justify-content:flex-end;gap:8px;
+  padding:14px 20px;border-top:1px solid var(--border);background:var(--surface);
+}
+
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:white;padding:10px 18px;border-radius:8px;
+  font-size:13px;font-weight:500;opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:9999;
+}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ─── SIDEBAR ──────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="org-avatar" id="org-avatar">อบต</div>
+      <div>
+        <div class="org-name">อบต.สาธิต</div>
+        <div class="org-sub">Officer Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ภาพรวม</div>
+      <div class="nav-item" onclick="window.location='O-01 KPI Dashboard.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm8-9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1v-5z"/></svg>
+        Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">จัดการ</div>
+      <div class="nav-item active">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        ครัวเรือน
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+        บิลทั้งหมด
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+        รับชำระเงิน
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ติดตาม</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ค้างชำระ
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        อนุมัติคำขอ
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ร้องเรียน
+        <span class="nav-badge" style="background:var(--amber)">12</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">บริการ</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+        สติ๊กเกอร์
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/></svg>
+        รายงาน
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">สม</div>
+        <div>
+          <div class="user-name">สมหญิง ใจดี</div>
+          <div class="user-role">Account Officer</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ──────────────────────────────── -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span class="breadcrumb-link" onclick="window.location='O-02 Household List.html'">ครัวเรือน</span>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-cur">บ้านเลขที่ 24/1 หมู่ 3</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <button class="btn btn-ghost" id="btn-prev" onclick="showToast('ครัวเรือนก่อนหน้า')">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        ก่อนหน้า
+      </button>
+      <button class="btn btn-ghost" onclick="showToast('ครัวเรือนถัดไป')">
+        ถัดไป
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+      </button>
+    </div>
+
+    <!-- SCROLLABLE CONTENT -->
+    <div class="content" id="main-content">
+
+      <!-- ALERT BANNER (arrears) -->
+      <div class="alert-banner arrears" id="arrears-banner">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        <span>บ้านหลังนี้มียอดค้างชำระ <strong>฿3,850</strong> · ค้างมา <strong>23 วัน</strong> — อยู่ในระดับ <strong>เตือนครั้งที่ 1</strong></span>
+        <div class="alert-banner-actions">
+          <button class="btn btn-secondary" style="font-size:12px;padding:4px 12px" onclick="openPaymentModal()">บันทึกรับชำระ</button>
+          <button class="alert-dismiss" onclick="this.closest('.alert-banner').style.display='none'">ปิด</button>
+        </div>
+      </div>
+
+      <!-- HOUSEHOLD HEADER -->
+      <div class="hh-header">
+        <div class="hh-header-top">
+          <div class="hh-icon">
+            <svg width="26" height="26" viewBox="0 0 20 20" fill="var(--org-primary)"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+          </div>
+          <div class="hh-identity">
+            <div class="hh-title-row">
+              <span class="hh-title">บ้านเลขที่ 24/1</span>
+              <span class="prop-tag prop-house">บ้านเดี่ยว</span>
+              <span class="badge badge-warning" id="status-badge">
+                <span class="badge-dot"></span>ค้างชำระ
+              </span>
+            </div>
+            <div class="hh-subtitle">หมู่ 3 ต.สาธิต อ.เมือง จ.ชลบุรี 20000 · โซนเก็บขยะ B</div>
+            <div class="hh-meta-row">
+              <span style="font-size:12.5px;color:var(--navy-50)">
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:3px"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                เจ้าบ้าน: <strong>สมชาย สุขใจ</strong>
+              </span>
+              <span style="font-size:12.5px;color:var(--navy-50)">·</span>
+              <span style="font-size:12.5px;color:var(--navy-50)">
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:3px"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+                081-2341-5678
+              </span>
+              <span style="font-size:12.5px;color:var(--navy-50)">·</span>
+              <span style="font-size:12.5px;color:var(--navy-50)">
+                เลขทะเบียน: <span style="font-family:monospace">HH-2024-00341</span>
+              </span>
+            </div>
+          </div>
+          <div class="hh-actions">
+            <button class="btn btn-secondary" onclick="openEditModal()">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+              แก้ไข
+            </button>
+            <button class="btn btn-primary" onclick="openPaymentModal()">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+              รับชำระ
+            </button>
+            <button class="btn btn-ghost" onclick="showToast('เมนูเพิ่มเติม')">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI STRIP -->
+        <div class="kpi-strip">
+          <div class="kpi-item">
+            <div class="kpi-label">ยอดค้างชำระ</div>
+            <div class="kpi-value danger">฿3,850</div>
+            <div class="kpi-sub">+ค่าปรับ ฿57 (รอ 23 วัน)</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">บิลทั้งหมด</div>
+            <div class="kpi-value">18</div>
+            <div class="kpi-sub">ปีงบ 2567–2568</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">ชำระล่าสุด</div>
+            <div class="kpi-value" style="font-size:14px;font-weight:600">15 ก.พ. 2568</div>
+            <div class="kpi-sub">฿1,200 · เงินสด</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">สติ๊กเกอร์ปัจจุบัน</div>
+            <div class="kpi-value good" style="display:flex;align-items:center;gap:5px">
+              <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#f59e0b;flex-shrink:0"></span>สีเหลือง
+            </div>
+            <div class="kpi-sub">ปีงบ 2568 · ได้รับแล้ว</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">ระดับค้างชำระ</div>
+            <div class="kpi-value warn" style="font-size:14px">เตือนครั้งที่ 1</div>
+            <div class="kpi-sub">เตือนล่าสุด: 20 มี.ค. 2568</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs-bar">
+        <button class="tab-btn active" onclick="switchTab('info',this)">ข้อมูลทั่วไป</button>
+        <button class="tab-btn" onclick="switchTab('bills',this)">
+          บิล <span class="tab-count alert">1</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('payments',this)">
+          ประวัติการชำระ <span class="tab-count">7</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('arrears',this)">
+          ค้างชำระ <span class="tab-count alert">1</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('sticker',this)">สติ๊กเกอร์</button>
+        <button class="tab-btn" onclick="switchTab('notes',this)">
+          หมายเหตุ <span class="tab-count">3</span>
+        </button>
+      </div>
+
+      <!-- ═══ TAB: ข้อมูลทั่วไป ══════════════════════ -->
+      <div class="tab-panel active" id="tab-info">
+        <div class="grid-2">
+
+          <!-- House Info -->
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-title">
+                <div class="section-title-icon">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                </div>
+                ข้อมูลบ้าน
+              </div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px" onclick="openEditModal()">แก้ไข</button>
+            </div>
+            <div class="section-body" style="padding:0">
+              <div class="info-grid">
+                <div class="info-row" style="padding:10px 18px">
+                  <div class="info-key">เลขที่บ้าน</div>
+                  <div class="info-val">24/1</div>
+                </div>
+                <div class="info-row" style="padding:10px 18px">
+                  <div class="info-key">หมู่ที่</div>
+                  <div class="info-val">หมู่ 3</div>
+                </div>
+                <div class="info-row" style="padding:10px 18px">
+                  <div class="info-key">ตำบล</div>
+                  <div class="info-val">ต.สาธิต</div>
+                </div>
+                <div class="info-row" style="padding:10px 18px">
+                  <div class="info-key">อำเภอ</div>
+                  <div class="info-val">อ.เมือง</div>
+                </div>
+                <div class="info-row" style="padding:10px 18px">
+                  <div class="info-key">จังหวัด</div>
+                  <div class="info-val">ชลบุรี</div>
+                </div>
+                <div class="info-row" style="padding:10px 18px">
+                  <div class="info-key">รหัสไปรษณีย์</div>
+                  <div class="info-val monospace">20000</div>
+                </div>
+                <div class="info-row" style="padding:10px 18px">
+                  <div class="info-key">ประเภทอสังหาฯ</div>
+                  <div class="info-val"><span class="prop-tag prop-house">บ้านเดี่ยว</span></div>
+                </div>
+                <div class="info-row" style="padding:10px 18px">
+                  <div class="info-key">โซนเก็บขยะ</div>
+                  <div class="info-val">โซน B</div>
+                </div>
+                <div class="info-row" style="padding:10px 18px;border-bottom:none">
+                  <div class="info-key">เนื้อที่</div>
+                  <div class="info-val">120 ตร.ม.</div>
+                </div>
+                <div class="info-row" style="padding:10px 18px;border-bottom:none">
+                  <div class="info-key">สถานะ</div>
+                  <div class="info-val"><span class="badge badge-active"><span class="badge-dot"></span>ใช้งานปกติ</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Members -->
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-title">
+                <div class="section-title-icon">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+                </div>
+                สมาชิกในครัวเรือน
+              </div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px" onclick="showToast('เพิ่มสมาชิก')">+ เพิ่มสมาชิก</button>
+            </div>
+            <div class="section-body" style="padding:0 18px">
+              <div class="member-list">
+                <div class="member-row">
+                  <div class="member-avatar head">สม</div>
+                  <div>
+                    <div class="member-name">สมชาย สุขใจ</div>
+                    <div class="member-role">เจ้าบ้าน · บัตรประชาชน 3-2012-34567-12-3</div>
+                  </div>
+                  <div class="member-phone">081-234-5678</div>
+                </div>
+                <div class="member-row">
+                  <div class="member-avatar">นภ</div>
+                  <div>
+                    <div class="member-name">นภา สุขใจ</div>
+                    <div class="member-role">คู่สมรส · บัตรประชาชน 3-2012-34567-88-1</div>
+                  </div>
+                  <div class="member-phone">089-765-4321</div>
+                </div>
+                <div class="member-row">
+                  <div class="member-avatar">วช</div>
+                  <div>
+                    <div class="member-name">วชิรวิทย์ สุขใจ</div>
+                    <div class="member-role">บุตร · ย้ายเข้า 1 ม.ค. 2566</div>
+                  </div>
+                  <div class="member-phone">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Meters row -->
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title">
+              <div class="section-title-icon">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+              </div>
+              มิเตอร์
+            </div>
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px" onclick="showToast('เพิ่มมิเตอร์')">+ เพิ่มมิเตอร์</button>
+          </div>
+          <div class="section-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="meter-card">
+              <div class="meter-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="#0284c7"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9A7 7 0 015.05 4.05zm1.414 8.486a5 5 0 107.072-7.072 5 5 0 00-7.072 7.072zM10 11a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <div class="meter-num">มิเตอร์น้ำ #W-00241</div>
+                <div class="meter-label">อ่านล่าสุด: 15 มี.ค. 2568</div>
+              </div>
+              <div class="meter-reading">
+                <div class="meter-val">1,842</div>
+                <div class="meter-unit">ลบ.ม. (ใช้ 12 ลบ.ม./เดือน)</div>
+              </div>
+            </div>
+            <div class="meter-card">
+              <div class="meter-icon" style="background:#fef9c3">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="#ca8a04"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <div class="meter-num">มิเตอร์ไฟ #E-00119</div>
+                <div class="meter-label">อ่านล่าสุด: 15 มี.ค. 2568</div>
+              </div>
+              <div class="meter-reading">
+                <div class="meter-val">24,310</div>
+                <div class="meter-unit">kWh (ใช้ 284 kWh/เดือน)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ TAB: บิล ════════════════════════════════ -->
+      <div class="tab-panel" id="tab-bills">
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title">บิลทั้งหมด</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12.5px;background:var(--surface);color:var(--navy);outline:none">
+                <option>ทุกปีงบ</option>
+                <option selected>ปีงบ 2568</option>
+                <option>ปีงบ 2567</option>
+              </select>
+              <select style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12.5px;background:var(--surface);color:var(--navy);outline:none">
+                <option>ทุกสถานะ</option>
+                <option>ค้างชำระ</option>
+                <option>ชำระแล้ว</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <table>
+              <thead>
+                <tr>
+                  <th>เลขที่บิล</th>
+                  <th>รอบบิล</th>
+                  <th>ประเภทบริการ</th>
+                  <th>ยอดบิล</th>
+                  <th>ยอดค้าง</th>
+                  <th>กำหนดชำระ</th>
+                  <th>สถานะ</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="showToast('ดูรายละเอียดบิล BL-2568-0341')">
+                  <td><div class="bill-number">BL-2568-0341</div></td>
+                  <td><div class="bill-period">มี.ค. 2568</div><div class="bill-sub">Q1/2568</div></td>
+                  <td><span style="font-size:12.5px">ค่าขยะ + ค่าน้ำ</span></td>
+                  <td style="font-weight:600">฿3,850</td>
+                  <td style="font-weight:700;color:var(--red)">฿3,850</td>
+                  <td style="color:var(--red);font-size:12.5px">31 มี.ค. 2568 <div style="font-size:11px;color:var(--red)">เกินกำหนด 23 วัน</div></td>
+                  <td><span class="status-pill s-overdue">ค้างชำระ</span></td>
+                  <td><button class="btn btn-primary" style="font-size:11.5px;padding:4px 10px" onclick="event.stopPropagation();openPaymentModal()">รับชำระ</button></td>
+                </tr>
+                <tr onclick="showToast('ดูรายละเอียดบิล BL-2568-0218')">
+                  <td><div class="bill-number">BL-2568-0218</div></td>
+                  <td><div class="bill-period">ธ.ค. 2567</div><div class="bill-sub">Q4/2567</div></td>
+                  <td><span style="font-size:12.5px">ค่าขยะ + ค่าน้ำ</span></td>
+                  <td style="font-weight:600">฿1,200</td>
+                  <td style="color:var(--navy-30)">—</td>
+                  <td style="font-size:12.5px">15 ก.พ. 2568</td>
+                  <td><span class="status-pill s-paid">ชำระแล้ว</span></td>
+                  <td><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 8px" onclick="event.stopPropagation();showToast('ดูใบเสร็จ')">ใบเสร็จ</button></td>
+                </tr>
+                <tr onclick="showToast('ดูรายละเอียดบิล BL-2567-0984')">
+                  <td><div class="bill-number">BL-2567-0984</div></td>
+                  <td><div class="bill-period">ก.ย. 2567</div><div class="bill-sub">Q3/2567</div></td>
+                  <td><span style="font-size:12.5px">ค่าขยะ + ค่าน้ำ</span></td>
+                  <td style="font-weight:600">฿1,350</td>
+                  <td style="color:var(--navy-30)">—</td>
+                  <td style="font-size:12.5px">30 ก.ย. 2567</td>
+                  <td><span class="status-pill s-paid">ชำระแล้ว</span></td>
+                  <td><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 8px" onclick="event.stopPropagation();showToast('ดูใบเสร็จ')">ใบเสร็จ</button></td>
+                </tr>
+                <tr onclick="showToast('ดูรายละเอียดบิล BL-2567-0712')">
+                  <td><div class="bill-number">BL-2567-0712</div></td>
+                  <td><div class="bill-period">มิ.ย. 2567</div><div class="bill-sub">Q2/2567</div></td>
+                  <td><span style="font-size:12.5px">ค่าขยะ + ค่าน้ำ + ค่าไฟ</span></td>
+                  <td style="font-weight:600">฿4,100</td>
+                  <td style="color:var(--navy-30)">—</td>
+                  <td style="font-size:12.5px">30 มิ.ย. 2567</td>
+                  <td><span class="status-pill s-paid">ชำระแล้ว</span></td>
+                  <td><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 8px" onclick="event.stopPropagation();showToast('ดูใบเสร็จ')">ใบเสร็จ</button></td>
+                </tr>
+                <tr onclick="showToast('ดูรายละเอียดบิล BL-2567-0431')">
+                  <td><div class="bill-number">BL-2567-0431</div></td>
+                  <td><div class="bill-period">มี.ค. 2567</div><div class="bill-sub">Q1/2567</div></td>
+                  <td><span style="font-size:12.5px">ค่าขยะ + ค่าน้ำ</span></td>
+                  <td style="font-weight:600">฿1,200</td>
+                  <td style="color:var(--navy-30)">—</td>
+                  <td style="font-size:12.5px">31 มี.ค. 2567</td>
+                  <td><span class="status-pill s-paid">ชำระแล้ว</span></td>
+                  <td><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 8px" onclick="event.stopPropagation();showToast('ดูใบเสร็จ')">ใบเสร็จ</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--navy-50);text-align:right">
+            แสดง 5 จาก 18 รายการ · <a href="#" style="color:var(--org-primary)" onclick="return false">ดูทั้งหมด</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: ประวัติการชำระ ══════════════════════ -->
+      <div class="tab-panel" id="tab-payments">
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title">ประวัติการชำระเงิน</div>
+            <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="showToast('Export Excel')">
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+              Export
+            </button>
+          </div>
+          <div class="section-body">
+            <div class="timeline">
+              <div class="tl-item">
+                <div class="tl-dot success">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+                </div>
+                <div class="tl-body">
+                  <div class="tl-title">ชำระค่าขยะ + ค่าน้ำ รอบ ธ.ค. 2567</div>
+                  <div class="tl-sub">เงินสด · รับโดย สมหญิง ใจดี · ใบเสร็จ RC-2568-00218</div>
+                  <div class="tl-time">15 ก.พ. 2568, 09:42 น.</div>
+                </div>
+                <div class="tl-amount">฿1,200</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot success">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+                </div>
+                <div class="tl-body">
+                  <div class="tl-title">ชำระค่าขยะ + ค่าน้ำ รอบ ก.ย. 2567</div>
+                  <div class="tl-sub">QR Code / PromptPay · ชำระผ่านแอปประชาชน · ใบเสร็จ RC-2567-00984</div>
+                  <div class="tl-time">28 ก.ย. 2567, 14:15 น.</div>
+                </div>
+                <div class="tl-amount">฿1,350</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot warn">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                </div>
+                <div class="tl-body">
+                  <div class="tl-title">ชำระบางส่วน รอบ มิ.ย. 2567</div>
+                  <div class="tl-sub">เงินสด · ชำระ ฿2,000 จาก ฿4,100 (ยอดค้าง ฿2,100 ชำระในครั้งถัดไป)</div>
+                  <div class="tl-time">5 ก.ค. 2567, 10:30 น.</div>
+                </div>
+                <div class="tl-amount">฿2,000</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot success">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+                </div>
+                <div class="tl-body">
+                  <div class="tl-title">ชำระส่วนที่ค้าง + รอบ มิ.ย. 2567</div>
+                  <div class="tl-sub">โอนเงิน · เลขอ้างอิง TRF-2567-88731 · ใบเสร็จ RC-2567-00712</div>
+                  <div class="tl-time">30 ก.ค. 2567, 16:05 น.</div>
+                </div>
+                <div class="tl-amount">฿2,100</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot success">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+                </div>
+                <div class="tl-body">
+                  <div class="tl-title">ชำระค่าขยะ + ค่าน้ำ รอบ มี.ค. 2567</div>
+                  <div class="tl-sub">เงินสด · รับโดย สมหญิง ใจดี · ใบเสร็จ RC-2567-00431</div>
+                  <div class="tl-time">29 มี.ค. 2567, 11:20 น.</div>
+                </div>
+                <div class="tl-amount">฿1,200</div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--navy-50);text-align:right">
+            แสดง 5 จาก 7 รายการ · <a href="#" style="color:var(--org-primary)" onclick="return false">ดูทั้งหมด</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: ค้างชำระ ════════════════════════════ -->
+      <div class="tab-panel" id="tab-arrears">
+
+        <!-- Escalation Track -->
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title">ระดับการติดตามค้างชำระ</div>
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px;color:var(--amber)" onclick="showToast('อัพเดทระดับค้างชำระ')">อัพเดทระดับ</button>
+          </div>
+          <div class="section-body">
+            <div class="escalation-track">
+              <div class="esc-step passed">
+                <div class="esc-step-label">ระดับ 0</div>
+                <div class="esc-step-name">ค้างชำระ</div>
+                <div class="esc-step-date">8 มี.ค. 2568</div>
+              </div>
+              <div class="esc-step current">
+                <div class="esc-current-badge">ปัจจุบัน</div>
+                <div class="esc-step-label">ระดับ 1</div>
+                <div class="esc-step-name">เตือนครั้งที่ 1</div>
+                <div class="esc-step-date">20 มี.ค. 2568</div>
+              </div>
+              <div class="esc-step future">
+                <div class="esc-step-label">ระดับ 2</div>
+                <div class="esc-step-name">เตือนครั้งที่ 2</div>
+                <div class="esc-step-date">—</div>
+              </div>
+              <div class="esc-step future">
+                <div class="esc-step-label">ระดับ 3</div>
+                <div class="esc-step-name">เตือนครั้งที่ 3</div>
+                <div class="esc-step-date">—</div>
+              </div>
+              <div class="esc-step future">
+                <div class="esc-step-label">ระดับ 4</div>
+                <div class="esc-step-name">ดำเนินการทางกฎหมาย</div>
+                <div class="esc-step-date">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Arrears Detail -->
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-title">รายละเอียดยอดค้าง</div>
+            </div>
+            <div class="section-body" style="padding:0">
+              <div style="padding:14px 18px;display:flex;flex-direction:column;gap:0">
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px">
+                  <span style="color:var(--navy-50)">ยอดค้างหลัก</span>
+                  <span style="font-weight:600">฿3,850</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px">
+                  <span style="color:var(--navy-50)">ค่าปรับ (1.5%/เดือน หลัง 7 วัน)</span>
+                  <span style="font-weight:600;color:var(--amber)">฿57</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px">
+                  <span style="color:var(--navy-50)">วันที่เกินกำหนด</span>
+                  <span style="font-weight:600;color:var(--red)">23 วัน</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:700">
+                  <span>ยอดรวมที่ต้องชำระ</span>
+                  <span style="color:var(--red)">฿3,907</span>
+                </div>
+              </div>
+              <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px">
+                <button class="btn btn-primary" style="flex:1" onclick="openPaymentModal()">บันทึกรับชำระ</button>
+                <button class="btn btn-secondary" onclick="showToast('ส่งหนังสือเตือน')">ส่งหนังสือเตือน</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Log -->
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-title">ประวัติการติดต่อ</div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px" onclick="showToast('บันทึกการติดต่อใหม่')">+ บันทึก</button>
+            </div>
+            <div class="section-body">
+              <div class="timeline">
+                <div class="tl-item">
+                  <div class="tl-dot warn">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+                  </div>
+                  <div class="tl-body">
+                    <div class="tl-title">โทรแจ้งเตือน</div>
+                    <div class="tl-sub">โทรหาเจ้าบ้าน สมชาย สุขใจ · ติดต่อได้ · รับทราบและจะมาชำระภายใน 7 วัน</div>
+                    <div class="tl-time">20 มี.ค. 2568 · สมหญิง ใจดี</div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot info">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+                  </div>
+                  <div class="tl-body">
+                    <div class="tl-title">ส่ง SMS แจ้งเตือน</div>
+                    <div class="tl-sub">ระบบส่ง SMS อัตโนมัติ · ส่งแล้ว</div>
+                    <div class="tl-time">8 มี.ค. 2568 · ระบบอัตโนมัติ</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ TAB: สติ๊กเกอร์ ══════════════════════════ -->
+      <div class="tab-panel" id="tab-sticker">
+        <div class="grid-2">
+
+          <!-- Current Sticker -->
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-title">สติ๊กเกอร์ปีปัจจุบัน (ปีงบ 2568)</div>
+              <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="showToast('ออกสติ๊กเกอร์')">ออกสติ๊กเกอร์</button>
+            </div>
+            <div class="section-body">
+              <div class="sticker-display">
+                <div class="sticker-swatch" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+                  <div class="sticker-year">68</div>
+                </div>
+                <div>
+                  <div class="sticker-info-main">สีเหลือง · ปีงบ 2568</div>
+                  <div class="sticker-info-sub">
+                    ใช้ได้: 1 ต.ค. 2567 – 30 ก.ย. 2568<br>
+                    รับสติ๊กเกอร์: walk-in · 15 พ.ย. 2567<br>
+                    ออกโดย: สมหญิง ใจดี
+                  </div>
+                </div>
+                <div class="sticker-status-big">
+                  <span class="badge badge-active" style="font-size:12px">
+                    <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    ได้รับแล้ว
+                  </span>
+                  <div style="font-size:11px;color:var(--navy-30);text-align:right;margin-top:4px">เหลือ 153 วัน</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sticker History -->
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-title">ประวัติสติ๊กเกอร์ย้อนหลัง</div>
+            </div>
+            <div class="section-body" style="padding:0">
+              <table>
+                <thead><tr><th>ปีงบ</th><th>สี</th><th>สถานะ</th><th>วันที่รับ</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight:600">2568</td>
+                    <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f59e0b"></span>เหลือง</span></td>
+                    <td><span class="status-pill s-paid" style="font-size:11px">ได้รับแล้ว</span></td>
+                    <td style="font-size:12px">15 พ.ย. 2567</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600">2567</td>
+                    <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#3b82f6"></span>น้ำเงิน</span></td>
+                    <td><span class="status-pill s-paid" style="font-size:11px">ได้รับแล้ว</span></td>
+                    <td style="font-size:12px">3 ต.ค. 2566</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600">2566</td>
+                    <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#10b981"></span>เขียว</span></td>
+                    <td><span class="status-pill s-paid" style="font-size:11px">ได้รับแล้ว</span></td>
+                    <td style="font-size:12px">12 พ.ย. 2565</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600">2565</td>
+                    <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#ef4444"></span>แดง</span></td>
+                    <td><span class="status-pill s-overdue" style="font-size:11px">ไม่ได้รับ</span></td>
+                    <td style="font-size:12px;color:var(--navy-30)">—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═══ TAB: หมายเหตุ ════════════════════════════ -->
+      <div class="tab-panel" id="tab-notes">
+        <div class="section-card" style="flex:1">
+          <div class="section-head">
+            <div class="section-title">บันทึกและหมายเหตุ</div>
+            <div style="display:flex;gap:6px">
+              <button class="filter-chip active" style="display:flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--org-primary);border-radius:99px;font-size:12px;font-weight:500;color:var(--org-primary);background:var(--org-primary-light);cursor:pointer">ทั้งหมด</button>
+              <button class="filter-chip" style="display:flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--border);border-radius:99px;font-size:12px;font-weight:500;color:var(--navy-80);background:var(--white);cursor:pointer">Internal</button>
+              <button class="filter-chip" style="display:flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--border);border-radius:99px;font-size:12px;font-weight:500;color:var(--navy-80);background:var(--white);cursor:pointer">Action</button>
+            </div>
+          </div>
+          <div class="section-body" style="padding:0 18px">
+            <div class="note-item">
+              <div class="note-avatar">สม</div>
+              <div class="note-content">
+                <div class="note-header">
+                  <span class="note-author">สมหญิง ใจดี</span>
+                  <span class="note-type nt-action">Action</span>
+                </div>
+                <div class="note-text">โทรแจ้งเตือนเจ้าบ้านเรื่องค้างชำระ สมชายรับสายและรับปากว่าจะมาจ่ายภายใน 7 วัน</div>
+                <div class="note-time">20 มี.ค. 2568, 10:15 น.</div>
+              </div>
+            </div>
+            <div class="note-item">
+              <div class="note-avatar">วช</div>
+              <div class="note-content">
+                <div class="note-header">
+                  <span class="note-author">วิชัย รักดี</span>
+                  <span class="note-type nt-warning">Warning</span>
+                </div>
+                <div class="note-text">ปีงบ 2565 ไม่ได้รับสติ๊กเกอร์เพราะค้างชำระ — บ้านหลังนี้มีประวัติค้างชำระในปี 2565 ด้วย ควรติดตามใกล้ชิด</div>
+                <div class="note-time">2 ต.ค. 2565, 16:40 น.</div>
+              </div>
+            </div>
+            <div class="note-item">
+              <div class="note-avatar">สม</div>
+              <div class="note-content">
+                <div class="note-header">
+                  <span class="note-author">สมหญิง ใจดี</span>
+                  <span class="note-type nt-internal">Internal</span>
+                </div>
+                <div class="note-text">บ้านหลังนี้มักมาชำระหลังกำหนดประมาณ 1–2 เดือน แต่ไม่เคยเกิน Warning 1 หากยังไม่มาภายใน 30 วันนับจากนี้ให้ยกระดับเป็น Warning 2</div>
+                <div class="note-time">5 มี.ค. 2568, 09:00 น.</div>
+              </div>
+            </div>
+          </div>
+          <div class="note-compose">
+            <div class="note-avatar" style="background:var(--org-primary-light);color:var(--org-primary)">สม</div>
+            <textarea class="note-input" rows="2" placeholder="เพิ่มหมายเหตุหรือบันทึกการติดต่อ…"></textarea>
+            <div style="display:flex;flex-direction:column;gap:6px;align-self:flex-end">
+              <select style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;background:var(--surface);color:var(--navy);outline:none">
+                <option>Internal</option>
+                <option>Action</option>
+                <option>Warning</option>
+              </select>
+              <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="showToast('บันทึกหมายเหตุแล้ว')">บันทึก</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ─── PAYMENT MODAL ────────────────────────────────────── -->
+<div class="modal-overlay" id="payment-modal" onclick="if(event.target===this)closePaymentModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">บันทึกรับชำระเงิน</div>
+      <div class="modal-close" onclick="closePaymentModal()">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;color:var(--navy-50)">บิลที่ค้างชำระ</div>
+          <div style="font-size:14px;font-weight:600;margin-top:2px">BL-2568-0341 · รอบ มี.ค. 2568</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:12px;color:var(--navy-50)">ยอดค้างทั้งหมด</div>
+          <div style="font-size:18px;font-weight:700;color:var(--red)">฿3,907</div>
+          <div style="font-size:11px;color:var(--amber)">รวมค่าปรับ ฿57</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ยอดที่รับชำระ (บาท) *</label>
+          <input class="form-input" type="text" value="3,907" style="font-size:16px;font-weight:600">
+        </div>
+        <div class="form-group">
+          <label class="form-label">วิธีชำระเงิน *</label>
+          <select class="form-input">
+            <option>เงินสด</option>
+            <option>QR Code / PromptPay</option>
+            <option>โอนเงิน</option>
+            <option>บัตรเครดิต/เดบิต</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">เลขอ้างอิง (กรณีโอน/QR)</label>
+        <input class="form-input" type="text" placeholder="เช่น เลข slip หรือ transaction ID">
+      </div>
+      <div class="form-group">
+        <label class="form-label">หมายเหตุ</label>
+        <input class="form-input" type="text" placeholder="ไม่บังคับ">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closePaymentModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="savePayment()">บันทึกและออกใบเสร็จ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── EDIT MODAL ────────────────────────────────────────── -->
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">แก้ไขข้อมูลบ้าน</div>
+      <div class="modal-close" onclick="closeEditModal()">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">เลขที่บ้าน *</label>
+          <input class="form-input" type="text" value="24/1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">หมู่ที่ *</label>
+          <select class="form-input">
+            <option>หมู่ 1</option><option>หมู่ 2</option>
+            <option selected>หมู่ 3</option><option>หมู่ 4</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ประเภทอสังหาฯ</label>
+          <select class="form-input">
+            <option selected>บ้านเดี่ยว</option>
+            <option>คอนโด/อพาร์ตเมนต์</option>
+            <option>พาณิชย์</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">โซนเก็บขยะ</label>
+          <select class="form-input">
+            <option>โซน A</option><option selected>โซน B</option>
+            <option>โซน C</option><option>โซน D</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">เนื้อที่ (ตร.ม.)</label>
+          <input class="form-input" type="text" value="120">
+        </div>
+        <div class="form-group">
+          <label class="form-label">สถานะ</label>
+          <select class="form-input">
+            <option selected>ใช้งานปกติ</option>
+            <option>ระงับการใช้งาน</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeEditModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveEdit()">บันทึกข้อมูล</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TWEAKS PANEL ───────────────────────────────────────── -->
+<div id="tweaks-panel">
+  <h4>Tweaks</h4>
+  <div class="tweak-row">
+    <div class="tweak-label">สี Primary ของ อปท.</div>
+    <input type="color" id="tweak-color" value="#1b61c9" oninput="applyPrimary(this.value)">
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">สถานะครัวเรือน</div>
+    <select id="tweak-state" onchange="applyHouseholdState(this.value)">
+      <option value="arrears">ค้างชำระ (Warning 1)</option>
+      <option value="normal">ปกติ (ไม่มียอดค้าง)</option>
+      <option value="suspended">ระงับการใช้งาน</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">Tab เริ่มต้น</div>
+    <select onchange="switchTabByName(this.value)">
+      <option value="info">ข้อมูลทั่วไป</option>
+      <option value="bills">บิล</option>
+      <option value="payments">ประวัติการชำระ</option>
+      <option value="arrears">ค้างชำระ</option>
+      <option value="sticker">สติ๊กเกอร์</option>
+      <option value="notes">หมายเหตุ</option>
+    </select>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "primaryColor": "#1b61c9",
+  "householdState": "arrears",
+  "startTab": "info"
+}/*EDITMODE-END*/;
+
+/* ─── TWEAKS ──────────────────────────────────────── */
+function applyPrimary(hex){
+  document.documentElement.style.setProperty('--org-primary', hex);
+  document.documentElement.style.setProperty('--org-primary-dark', shadeColor(hex,-15));
+  document.documentElement.style.setProperty('--org-primary-light', shadeColor(hex,85));
+  document.getElementById('org-avatar').style.background = hex;
+  window.parent.postMessage({type:'__edit_mode_set_keys',edits:{primaryColor:hex}},'*');
+}
+function shadeColor(hex,pct){
+  let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  if(pct>0){r=Math.round(r+(255-r)*(pct/100));g=Math.round(g+(255-g)*(pct/100));b=Math.round(b+(255-b)*(pct/100));}
+  else{r=Math.round(r*(1+pct/100));g=Math.round(g*(1+pct/100));b=Math.round(b*(1+pct/100));}
+  return '#'+[r,g,b].map(v=>Math.min(255,Math.max(0,v)).toString(16).padStart(2,'0')).join('');
+}
+
+function applyHouseholdState(state){
+  const banner = document.getElementById('arrears-banner');
+  const badge  = document.getElementById('status-badge');
+  if(state==='arrears'){
+    banner.className='alert-banner arrears';
+    banner.style.display='';
+    banner.innerHTML=`<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg><span>บ้านหลังนี้มียอดค้างชำระ <strong>฿3,850</strong> · ค้างมา <strong>23 วัน</strong> — อยู่ในระดับ <strong>เตือนครั้งที่ 1</strong></span><div class="alert-banner-actions"><button class="btn btn-secondary" style="font-size:12px;padding:4px 12px" onclick="openPaymentModal()">บันทึกรับชำระ</button><button class="alert-dismiss" onclick="this.closest('.alert-banner').style.display='none'">ปิด</button></div>`;
+    badge.className='badge badge-warning';badge.innerHTML='<span class="badge-dot"></span>ค้างชำระ';
+  } else if(state==='suspended'){
+    banner.className='alert-banner suspended';
+    banner.style.display='';
+    banner.innerHTML=`<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/></svg><span>บ้านหลังนี้ <strong>ถูกระงับการใช้งาน</strong> — ติดต่อ Supervisor เพื่อดำเนินการ</span><div class="alert-banner-actions"><button class="alert-dismiss" onclick="this.closest('.alert-banner').style.display='none'">ปิด</button></div>`;
+    badge.className='badge badge-suspended';badge.innerHTML='<span class="badge-dot"></span>ระงับ';
+  } else {
+    banner.style.display='none';
+    badge.className='badge badge-active';badge.innerHTML='<span class="badge-dot"></span>ปกติ';
+  }
+  window.parent.postMessage({type:'__edit_mode_set_keys',edits:{householdState:state}},'*');
+}
+
+function switchTabByName(name){
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  tabs.forEach(t=>t.classList.remove('active'));
+  panels.forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  const idx = ['info','bills','payments','arrears','sticker','notes'].indexOf(name);
+  if(idx>-1) tabs[idx].classList.add('active');
+}
+
+/* ─── TABS ────────────────────────────────────────── */
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+/* ─── MODALS ──────────────────────────────────────── */
+function openPaymentModal(){ document.getElementById('payment-modal').classList.add('open') }
+function closePaymentModal(){ document.getElementById('payment-modal').classList.remove('open') }
+function savePayment(){ closePaymentModal(); showToast('บันทึกรับชำระแล้ว — กำลังออกใบเสร็จ RC-2568-00341') }
+function openEditModal(){ document.getElementById('edit-modal').classList.add('open') }
+function closeEditModal(){ document.getElementById('edit-modal').classList.remove('open') }
+function saveEdit(){ closeEditModal(); showToast('บันทึกข้อมูลบ้านแล้ว') }
+
+/* ─── TOAST ───────────────────────────────────────── */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ─── TWEAKS WIRING ───────────────────────────────── */
+window.addEventListener('message',e=>{
+  if(e.data?.type==='__activate_edit_mode')   document.getElementById('tweaks-panel').style.display='block';
+  if(e.data?.type==='__deactivate_edit_mode') document.getElementById('tweaks-panel').style.display='none';
+});
+window.parent.postMessage({type:'__edit_mode_available'},'*');
+
+/* ─── INIT ────────────────────────────────────────── */
+applyPrimary(TWEAK_DEFAULTS.primaryColor||'#1b61c9');
+document.getElementById('tweak-color').value = TWEAK_DEFAULTS.primaryColor||'#1b61c9';
+</script>
+</body>
+</html>

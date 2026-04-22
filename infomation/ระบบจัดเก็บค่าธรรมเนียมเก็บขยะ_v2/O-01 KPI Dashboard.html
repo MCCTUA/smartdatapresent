@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-01 · KPI Dashboard — Officer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --org-primary: #1b61c9;
+  --org-primary-light: #e8f0fd;
+  --org-primary-dark: #1349a0;
+
+  --navy: #181d26;
+  --navy-80: rgba(24,29,38,0.80);
+  --navy-50: rgba(24,29,38,0.50);
+  --navy-30: rgba(24,29,38,0.30);
+  --navy-10: rgba(24,29,38,0.07);
+
+  --white: #ffffff;
+  --surface: #f8fafc;
+  --surface-2: #f1f4f8;
+  --border: #e0e2e6;
+  --border-light: #edf0f4;
+
+  --green: #059669;
+  --green-light: #d1fae5;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --amber: #d97706;
+  --amber-light: #fef3c7;
+
+  --shadow-card: 0 0 1px rgba(0,0,0,.12), 0 1px 3px rgba(45,127,249,.10), 0 0 0 .5px rgba(0,0,0,.04) inset;
+  --shadow-hover: 0 0 1px rgba(0,0,0,.14), 0 4px 12px rgba(45,127,249,.18);
+  --shadow-sidebar: 1px 0 0 var(--border);
+
+  --font-th: 'Prompt', sans-serif;
+  --font-en: 'Inter', sans-serif;
+  --font: 'Prompt', 'Inter', sans-serif;
+
+  --sidebar-w: 220px;
+  --topbar-h: 56px;
+  --radius-card: 12px;
+  --radius-sm: 8px;
+}
+
+/* ─── RESET ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: var(--font); color: var(--navy); background: var(--surface); }
+button { font-family: var(--font); cursor: pointer; border: none; background: none; }
+a { text-decoration: none; color: inherit; }
+
+/* ─── LAYOUT ──────────────────────────────────────────────── */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ─── SIDEBAR ─────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--white);
+  box-shadow: var(--shadow-sidebar);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  height: var(--topbar-h);
+  border-bottom: 1px solid var(--border);
+}
+.org-avatar {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--org-primary);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  flex-shrink: 0;
+}
+.org-name { font-size: 13px; font-weight: 600; color: var(--navy); line-height: 1.3; }
+.org-sub  { font-size: 11px; color: var(--navy-50); }
+
+.nav-section { padding: 8px 8px 4px; }
+.nav-label {
+  font-size: 10px; font-weight: 600; color: var(--navy-30);
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 0 8px; margin-bottom: 2px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  font-size: 13.5px; font-weight: 400; color: var(--navy-80);
+  cursor: pointer; transition: background .12s, color .12s;
+  position: relative;
+}
+.nav-item:hover { background: var(--navy-10); color: var(--navy); }
+.nav-item.active {
+  background: var(--org-primary-light);
+  color: var(--org-primary);
+  font-weight: 600;
+}
+.nav-item .icon {
+  width: 18px; height: 18px; flex-shrink: 0; opacity: .7;
+}
+.nav-item.active .icon { opacity: 1; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--red); color: white;
+  font-size: 10px; font-weight: 700;
+  border-radius: 99px; padding: 1px 6px; min-width: 18px;
+  text-align: center;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 8px;
+  border-top: 1px solid var(--border);
+}
+.user-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: background .12s;
+}
+.user-row:hover { background: var(--navy-10); }
+.user-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--org-primary-light);
+  color: var(--org-primary); font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.user-name { font-size: 13px; font-weight: 500; }
+.user-role { font-size: 11px; color: var(--navy-50); }
+
+/* ─── MAIN ────────────────────────────────────────────────── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ─── TOPBAR ──────────────────────────────────────────────── */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 16px; flex-shrink: 0;
+}
+.topbar-title { font-size: 16px; font-weight: 600; color: var(--navy); }
+.topbar-sub { font-size: 13px; color: var(--navy-50); margin-left: 4px; }
+.topbar-spacer { flex: 1; }
+
+.period-tabs {
+  display: flex; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 3px; gap: 2px;
+}
+.period-tab {
+  padding: 4px 12px; border-radius: 6px;
+  font-size: 13px; font-weight: 500; color: var(--navy-50);
+  cursor: pointer; transition: all .12s;
+}
+.period-tab.active {
+  background: var(--white); color: var(--navy);
+  box-shadow: 0 1px 3px rgba(0,0,0,.10);
+}
+
+.btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  transition: all .12s;
+}
+.btn-secondary {
+  background: var(--white); color: var(--navy);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.btn-secondary:hover { background: var(--surface); border-color: var(--navy-30); }
+.btn-primary {
+  background: var(--org-primary); color: white;
+  box-shadow: 0 1px 3px rgba(27,97,201,.25);
+}
+.btn-primary:hover { background: var(--org-primary-dark); }
+
+/* ─── CONTENT ─────────────────────────────────────────────── */
+.content {
+  flex: 1; overflow-y: auto;
+  padding: 24px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+/* ─── ALERT BANNER ────────────────────────────────────────── */
+.alert-banner {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-left: 4px solid var(--amber);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13.5px; color: #92400e;
+}
+.alert-banner svg { flex-shrink: 0; color: var(--amber); }
+
+/* ─── KPI GRID ────────────────────────────────────────────── */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+.kpi-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: box-shadow .15s, transform .15s;
+  position: relative; overflow: hidden;
+}
+.kpi-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+.kpi-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: var(--org-primary); border-radius: var(--radius-card) var(--radius-card) 0 0;
+  opacity: 0; transition: opacity .15s;
+}
+.kpi-card:hover::before { opacity: 1; }
+.kpi-card.danger::before { background: var(--red); opacity: 1; }
+.kpi-card.warning::before { background: var(--amber); opacity: 1; }
+.kpi-card.success::before { background: var(--green); opacity: 1; }
+
+.kpi-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+.kpi-label { font-size: 13px; font-weight: 500; color: var(--navy-50); }
+.kpi-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.kpi-icon.blue  { background: var(--org-primary-light); color: var(--org-primary); }
+.kpi-icon.green { background: var(--green-light); color: var(--green); }
+.kpi-icon.red   { background: var(--red-light); color: var(--red); }
+.kpi-icon.amber { background: var(--amber-light); color: var(--amber); }
+
+.kpi-value { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; margin-bottom: 8px; }
+.kpi-value span { font-size: 16px; font-weight: 500; }
+
+.kpi-delta {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 600; padding: 2px 7px;
+  border-radius: 99px;
+}
+.kpi-delta.up   { background: var(--green-light); color: var(--green); }
+.kpi-delta.down { background: var(--red-light); color: var(--red); }
+.kpi-delta.neutral { background: var(--navy-10); color: var(--navy-50); }
+
+.kpi-footer { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-light); }
+.kpi-target { font-size: 12px; color: var(--navy-50); }
+
+/* Progress bar for collection rate */
+.rate-bar-wrap { margin-top: 8px; }
+.rate-bar-track { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.rate-bar-fill { height: 100%; border-radius: 99px; background: var(--org-primary); transition: width .5s; }
+.rate-bar-fill.danger { background: var(--red); }
+.rate-bar-fill.warning { background: var(--amber); }
+.rate-bar-fill.success { background: var(--green); }
+
+/* ─── SECONDARY GRID ─────────────────────────────────────── */
+.secondary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-card);
+  display: flex; align-items: center; gap: 16px;
+}
+.stat-icon-wrap {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.stat-label { font-size: 12.5px; color: var(--navy-50); margin-bottom: 2px; }
+.stat-value { font-size: 22px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+.stat-sub { font-size: 12px; color: var(--navy-50); margin-top: 2px; }
+
+/* ─── CHARTS ROW ──────────────────────────────────────────── */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.chart-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.chart-header {
+  padding: 16px 20px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border-light);
+}
+.chart-title { font-size: 14px; font-weight: 600; color: var(--navy); }
+.chart-sub { font-size: 12px; color: var(--navy-50); margin-top: 1px; }
+.chart-body { padding: 16px 20px 20px; }
+
+.chart-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--navy-50); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* Donut sub-labels */
+.donut-wrap { position: relative; width: 160px; height: 160px; margin: 0 auto; }
+.donut-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.donut-center-val { font-size: 22px; font-weight: 700; color: var(--navy); }
+.donut-center-lbl { font-size: 11px; color: var(--navy-50); }
+
+/* ─── BOTTOM ROW ──────────────────────────────────────────── */
+.bottom-row { display: grid; grid-template-columns: 1fr 380px; gap: 14px; }
+
+/* Heat map */
+.heatmap-grid {
+  display: grid; grid-template-columns: 28px repeat(12, 1fr);
+  gap: 3px; padding: 4px 0;
+}
+.heatmap-col-label {
+  font-size: 10px; color: var(--navy-30); text-align: center;
+  grid-column: span 1; align-self: end; padding-bottom: 2px;
+}
+.heatmap-row-label {
+  font-size: 10px; color: var(--navy-30); text-align: right;
+  padding-right: 6px; display: flex; align-items: center; justify-content: flex-end;
+}
+.heatmap-cell {
+  aspect-ratio: 1; border-radius: 3px;
+  background: var(--surface-2);
+  transition: transform .1s;
+  cursor: pointer;
+}
+.heatmap-cell:hover { transform: scale(1.15); }
+.heatmap-cell[data-v="0"] { background: var(--surface-2); }
+.heatmap-cell[data-v="1"] { background: rgba(27,97,201,.12); }
+.heatmap-cell[data-v="2"] { background: rgba(27,97,201,.28); }
+.heatmap-cell[data-v="3"] { background: rgba(27,97,201,.48); }
+.heatmap-cell[data-v="4"] { background: rgba(27,97,201,.68); }
+.heatmap-cell[data-v="5"] { background: rgba(27,97,201,.88); }
+
+.heatmap-legend { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--navy-30); }
+.heatmap-swatch {
+  display: flex; gap: 2px;
+}
+.heatmap-swatch span {
+  width: 14px; height: 14px; border-radius: 2px;
+}
+
+/* Activity list */
+.activity-list { list-style: none; }
+.activity-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 13px;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  margin-top: 4px;
+}
+.activity-text { flex: 1; color: var(--navy-80); line-height: 1.45; }
+.activity-text strong { color: var(--navy); font-weight: 600; }
+.activity-time { font-size: 11px; color: var(--navy-30); flex-shrink: 0; margin-top: 2px; }
+
+/* ─── LOADING SKELETON ────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, #e8edf2 50%, var(--surface-2) 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+
+/* ─── EMPTY STATE ─────────────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 24px; color: var(--navy-30); font-size: 14px; gap: 8px;
+}
+
+/* ─── TOOLTIPS ────────────────────────────────────────────── */
+.tooltip-wrap { position: relative; display: inline-flex; }
+.tooltip-wrap:hover .tooltip-box { opacity: 1; pointer-events: auto; }
+.tooltip-box {
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--navy); color: white; font-size: 11.5px;
+  padding: 5px 10px; border-radius: 6px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 100;
+}
+
+/* ─── TWEAKS PANEL ────────────────────────────────────────── */
+#tweaks-panel {
+  position: fixed; bottom: 24px; right: 24px; z-index: 999;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.14);
+  padding: 16px; width: 260px; display: none;
+}
+#tweaks-panel h4 { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--navy); }
+.tweak-row { margin-bottom: 12px; }
+.tweak-label { font-size: 12px; color: var(--navy-50); margin-bottom: 4px; }
+.tweak-row select, .tweak-row input[type=color] {
+  width: 100%; padding: 6px 8px; border: 1px solid var(--border);
+  border-radius: 6px; font-family: var(--font); font-size: 13px;
+  background: var(--surface); color: var(--navy);
+}
+.tweak-row input[type=color] { height: 34px; padding: 2px 4px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ─── SIDEBAR ──────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="org-avatar" id="org-avatar">อบต</div>
+      <div>
+        <div class="org-name" id="org-name-short">อบต.สาธิต</div>
+        <div class="org-sub">Officer Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ภาพรวม</div>
+      <div class="nav-item active">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm8-9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1v-5z"/></svg>
+        Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">จัดการ</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        ครัวเรือน
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+        บิลทั้งหมด
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+        รับชำระเงิน
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ติดตาม</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ค้างชำระ
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        อนุมัติคำขอ
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ร้องเรียน
+        <span class="nav-badge" style="background:var(--amber)">12</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">บริการ</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+        สติ๊กเกอร์
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/></svg>
+        รายงาน
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">สม</div>
+        <div>
+          <div class="user-name">สมหญิง ใจดี</div>
+          <div class="user-role">Account Officer</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ──────────────────────────────── -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <span class="topbar-title">KPI Dashboard</span>
+        <span class="topbar-sub">ภาพรวมการจัดเก็บ</span>
+      </div>
+      <div class="topbar-spacer"></div>
+
+      <div class="period-tabs" id="period-tabs">
+        <div class="period-tab" data-p="week">7 วัน</div>
+        <div class="period-tab active" data-p="month">เดือนนี้</div>
+        <div class="period-tab" data-p="quarter">ไตรมาส</div>
+        <div class="period-tab" data-p="year">ปีงบฯ 68</div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="toggleLoading()">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+        Refresh
+      </button>
+      <button class="btn btn-primary" onclick="exportReport()">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        Export รายงาน
+      </button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" id="content">
+
+      <!-- ALERT -->
+      <div class="alert-banner" id="alert-banner">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        <span>อัตราการจัดเก็บเดือนนี้ <strong>78.4%</strong> — ต่ำกว่าเป้าหมาย 85% มีบ้านค้างชำระเพิ่มขึ้น 23 หลังจากสัปดาห์ที่แล้ว <a href="#" style="color:var(--amber);text-decoration:underline;margin-left:8px">ดูรายการค้างชำระ →</a></span>
+      </div>
+
+      <!-- KPI CARDS -->
+      <div class="kpi-grid" id="kpi-grid">
+
+        <!-- Revenue -->
+        <div class="kpi-card success" onclick="drillDown('revenue')">
+          <div class="kpi-header">
+            <div class="kpi-label">ยอดรายได้เดือนนี้</div>
+            <div class="kpi-icon green">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.077 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.077-2.354-1.253V5z" clip-rule="evenodd"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value">฿485<span>,200</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <span class="kpi-delta up">↑ 12.3%</span>
+            <span style="font-size:12px;color:var(--navy-50)">จากเดือนที่แล้ว</span>
+          </div>
+          <div class="kpi-footer">
+            <div class="kpi-target">เป้าหมายปีนี้: ฿5,800,000 · สะสม ฿3,214,050 (55.4%)</div>
+          </div>
+        </div>
+
+        <!-- Collection Rate -->
+        <div class="kpi-card warning" onclick="drillDown('rate')">
+          <div class="kpi-header">
+            <div class="kpi-label">อัตราการจัดเก็บ</div>
+            <div class="kpi-icon amber">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value">78.4<span>%</span></div>
+          <div class="rate-bar-wrap">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--navy-30);margin-bottom:4px">
+              <span>0%</span><span style="color:var(--amber)">เป้า 85%</span><span>100%</span>
+            </div>
+            <div class="rate-bar-track">
+              <div class="rate-bar-fill warning" style="width:78.4%"></div>
+            </div>
+          </div>
+          <div class="kpi-footer">
+            <div style="display:flex;justify-content:space-between">
+              <span class="kpi-delta down">↓ 2.1%</span>
+              <span style="font-size:12px;color:var(--navy-50)">เดือนที่แล้ว 80.5%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overdue Bills -->
+        <div class="kpi-card danger" onclick="drillDown('overdue')">
+          <div class="kpi-header">
+            <div class="kpi-label">บิลค้างชำระ</div>
+            <div class="kpi-icon red">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value">342<span> ใบ</span></div>
+          <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--navy-50)">เพิ่มขึ้น</span>
+            <span class="kpi-delta down">↑ 23 ใบ</span>
+            <span style="font-size:12px;color:var(--navy-50)">จากสัปดาห์ที่แล้ว</span>
+          </div>
+          <div class="kpi-footer">
+            <div style="display:flex;gap:12px">
+              <span style="font-size:12px;color:var(--navy-50)">⚠ เกิน 90 วัน: <strong style="color:var(--red)">48 ใบ</strong></span>
+              <span style="font-size:12px;color:var(--navy-50)">กำลังดำเนินการ: 12</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Arrears -->
+        <div class="kpi-card danger" onclick="drillDown('arrears')">
+          <div class="kpi-header">
+            <div class="kpi-label">ยอดค้างรวมทั้งหมด</div>
+            <div class="kpi-icon red">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 7l2.55 2.4A1 1 0 0116 11H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value">฿1.28<span>M</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <span class="kpi-delta down">↑ ฿84,200</span>
+            <span style="font-size:12px;color:var(--navy-50)">จากเดือนที่แล้ว</span>
+          </div>
+          <div class="kpi-footer">
+            <div style="font-size:12px;color:var(--navy-50)">342 ครัวเรือน · เฉลี่ย ฿3,747/หลัง</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECONDARY STATS -->
+      <div class="secondary-grid">
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:#fef2f2">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="#dc2626"><path fill-rule="evenodd" d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" clip-rule="evenodd"/></svg>
+          </div>
+          <div>
+            <div class="stat-label">บ้านที่ถูกข้าม (ไม่จ่าย)</div>
+            <div class="stat-value" style="color:var(--red)">87 <span style="font-size:14px;font-weight:400">หลัง</span></div>
+            <div class="stat-sub">เดือนที่แล้ว 64 หลัง · <span style="color:var(--red)">+35.9%</span></div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:#ecfdf5">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="#059669"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clip-rule="evenodd"/></svg>
+          </div>
+          <div>
+            <div class="stat-label">คัดแยกขยะถูกต้อง</div>
+            <div class="stat-value" style="color:var(--green)">61.2<span style="font-size:14px;font-weight:400">%</span></div>
+            <div class="stat-sub">1,847 / 3,016 หลัง · <span style="color:var(--green)">↑ 4.1%</span></div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:#eff6ff">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="#1b61c9"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H11a1 1 0 001-1v-1h2.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1v-2a4 4 0 00-4-4h-3V5a1 1 0 00-1-1H3z"/></svg>
+          </div>
+          <div>
+            <div class="stat-label">เที่ยวเก็บขยะเดือนนี้</div>
+            <div class="stat-value">68 <span style="font-size:14px;font-weight:400">เที่ยว</span></div>
+            <div class="stat-sub">รถ 4 คัน · 3,016 หลังในระบบ</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div class="charts-row">
+
+        <!-- Bar chart: monthly revenue -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">รายได้รายเดือน</div>
+              <div class="chart-sub">ปีงบประมาณ 2568 (ต.ค. 67 – ก.ย. 68)</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="toggleChartTarget()">เป้าหมาย</button>
+            </div>
+          </div>
+          <div class="chart-body" style="padding-bottom:12px">
+            <canvas id="revenueChart" height="190"></canvas>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--org-primary)"></div>รายได้จริง</div>
+              <div class="legend-item" id="target-legend" style="display:none"><div class="legend-dot" style="background:#e0e2e6"></div>เป้าหมาย</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Donut chart: bill status breakdown -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">สถานะบิลเดือนนี้</div>
+              <div class="chart-sub">จำนวน 3,016 ใบที่ออกในรอบนี้</div>
+            </div>
+          </div>
+          <div class="chart-body" style="display:flex;gap:20px;align-items:center">
+            <div class="donut-wrap">
+              <canvas id="statusChart"></canvas>
+              <div class="donut-center">
+                <div class="donut-center-val">3,016</div>
+                <div class="donut-center-lbl">บิลทั้งหมด</div>
+              </div>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#059669;flex-shrink:0"></div>
+                  <div style="flex:1;font-size:13px">ชำระแล้ว</div>
+                  <div style="font-size:14px;font-weight:600">2,365</div>
+                  <div style="font-size:12px;color:var(--navy-30);width:36px;text-align:right">78.4%</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#fbbf24;flex-shrink:0"></div>
+                  <div style="flex:1;font-size:13px">ชำระบางส่วน</div>
+                  <div style="font-size:14px;font-weight:600">108</div>
+                  <div style="font-size:12px;color:var(--navy-30);width:36px;text-align:right">3.6%</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#f87171;flex-shrink:0"></div>
+                  <div style="flex:1;font-size:13px">ค้างชำระ</div>
+                  <div style="font-size:14px;font-weight:600">342</div>
+                  <div style="font-size:12px;color:var(--navy-30);width:36px;text-align:right">11.3%</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#93c5fd;flex-shrink:0"></div>
+                  <div style="flex:1;font-size:13px">รอชำระ (ยังไม่ถึงกำหนด)</div>
+                  <div style="font-size:14px;font-weight:600">201</div>
+                  <div style="font-size:12px;color:var(--navy-30);width:36px;text-align:right">6.7%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM ROW -->
+      <div class="bottom-row">
+
+        <!-- Heatmap -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">แผนที่ความหนาแน่นการค้างชำระ</div>
+              <div class="chart-sub">แสดงตามหมู่บ้านและรายเดือน · สีเข้ม = ค้างชำระมาก</div>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="heatmap-grid" id="heatmap"></div>
+            <div class="heatmap-legend">
+              <span>น้อย</span>
+              <div class="heatmap-swatch">
+                <span style="background:var(--surface-2)"></span>
+                <span style="background:rgba(27,97,201,.12)"></span>
+                <span style="background:rgba(27,97,201,.28)"></span>
+                <span style="background:rgba(27,97,201,.48)"></span>
+                <span style="background:rgba(27,97,201,.68)"></span>
+                <span style="background:rgba(27,97,201,.88)"></span>
+              </div>
+              <span>มาก</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">กิจกรรมล่าสุด</div>
+              <div class="chart-sub">วันนี้ · อัปเดตอัตโนมัติ</div>
+            </div>
+          </div>
+          <div class="chart-body" style="padding-top:4px">
+            <ul class="activity-list">
+              <li class="activity-item">
+                <div class="activity-dot" style="background:var(--green)"></div>
+                <div class="activity-text">รับชำระเงิน <strong>฿1,200</strong> — บ้านเลขที่ 42/3 ม.5 โดย สมหญิง</div>
+                <div class="activity-time">08:52</div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-dot" style="background:var(--green)"></div>
+                <div class="activity-text">ออกสติ๊กเกอร์ปี 68 — บ้านเลขที่ 12 ม.2 (ชำระครบแล้ว)</div>
+                <div class="activity-time">08:44</div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-dot" style="background:var(--amber)"></div>
+                <div class="activity-text">คำขออนุมัติ: ยกเลิกบิล <strong>#INV-2568-0892</strong> รอ Supervisor</div>
+                <div class="activity-time">08:31</div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-dot" style="background:var(--red)"></div>
+                <div class="activity-text">ร้องเรียนใหม่: เรื่องมิเตอร์น้ำผิดปกติ บ้านเลขที่ 88 ม.7</div>
+                <div class="activity-time">08:15</div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-dot" style="background:var(--org-primary)"></div>
+                <div class="activity-text">ออกบิลรอบเดือนเมษา 68 เสร็จสิ้น — 3,016 ใบ</div>
+                <div class="activity-time">เมื่อวาน</div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-dot" style="background:var(--green)"></div>
+                <div class="activity-text">ทริปเก็บขยะ เส้นทาง A3 เสร็จสิ้น — 248/251 หลัง (98.8%)</div>
+                <div class="activity-time">เมื่อวาน</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ─── TWEAKS ──────────────────────────────────────────── -->
+<div id="tweaks-panel">
+  <h4>⚙ Tweaks</h4>
+  <div class="tweak-row">
+    <div class="tweak-label">สี Primary ของ อปท.</div>
+    <input type="color" id="tweak-color" value="#1b61c9" oninput="applyPrimary(this.value)">
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">ชื่อ อปท.</div>
+    <select id="tweak-org" onchange="applyOrg(this.value)">
+      <option value="อบต.สาธิต">อบต.สาธิต</option>
+      <option value="เทศบาลตำบลสาธิต">เทศบาลตำบลสาธิต</option>
+      <option value="อบจ.สาธิต">อบจ.สาธิต</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">สถานะข้อมูล</div>
+    <select id="tweak-state" onchange="applyState(this.value)">
+      <option value="data">มีข้อมูล (ปกติ)</option>
+      <option value="loading">กำลังโหลด</option>
+      <option value="empty">ไม่มีข้อมูลปีนี้</option>
+    </select>
+  </div>
+</div>
+
+<script>
+/* ─── CHARTS ──────────────────────────────────────────────── */
+const months = ['ต.ค. 67','พ.ย. 67','ธ.ค. 67','ม.ค. 68','ก.พ. 68','มี.ค. 68','เม.ย. 68'];
+const revenueData = [430200, 412500, 468000, 395800, 441200, 510400, 485200];
+const targetData  = [483333, 483333, 483333, 483333, 483333, 483333, 483333];
+
+let showTarget = false;
+let revenueChart, statusChart;
+
+const primaryColor = () => getComputedStyle(document.documentElement).getPropertyValue('--org-primary').trim() || '#1b61c9';
+
+function buildRevenueChart() {
+  const ctx = document.getElementById('revenueChart');
+  if (!ctx) return;
+  const color = primaryColor();
+  revenueChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: 'รายได้จริง',
+          data: revenueData,
+          backgroundColor: revenueData.map((v,i) => i === revenueData.length-1 ? color : color + '80'),
+          borderRadius: 5,
+          borderSkipped: false,
+        },
+        {
+          label: 'เป้าหมาย',
+          data: showTarget ? targetData : [],
+          type: 'line',
+          borderColor: '#cbd5e1',
+          borderDash: [5,4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ฿' + ctx.parsed.y.toLocaleString()
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Prompt', size: 11 }, color: '#9ca3af' } },
+        y: {
+          grid: { color: '#f1f4f8' },
+          ticks: {
+            font: { family: 'Prompt', size: 11 }, color: '#9ca3af',
+            callback: v => '฿' + (v/1000).toFixed(0) + 'k'
+          },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function toggleChartTarget() {
+  showTarget = !showTarget;
+  document.getElementById('target-legend').style.display = showTarget ? 'flex' : 'none';
+  revenueChart.data.datasets[1].data = showTarget ? targetData : [];
+  revenueChart.update();
+}
+
+function buildStatusChart() {
+  const ctx = document.getElementById('statusChart');
+  if (!ctx) return;
+  statusChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['ชำระแล้ว', 'บางส่วน', 'ค้างชำระ', 'รอชำระ'],
+      datasets: [{
+        data: [2365, 108, 342, 201],
+        backgroundColor: ['#059669','#fbbf24','#f87171','#93c5fd'],
+        borderWidth: 0,
+        hoverOffset: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.parsed.toLocaleString() + ' ใบ' }
+        }
+      }
+    }
+  });
+}
+
+/* ─── HEATMAP ────────────────────────────────────────────── */
+const villages = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6','ม.7','ม.8'];
+const hmMonths = ['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.'];
+const hmData = [
+  [1,0,2,1,0,0,1,0,0,0,0,0],
+  [2,3,2,3,1,2,3,0,0,0,0,0],
+  [0,1,1,0,0,1,0,0,0,0,0,0],
+  [3,4,3,5,4,3,4,0,0,0,0,0],
+  [1,2,2,1,2,1,2,0,0,0,0,0],
+  [0,0,1,0,0,0,1,0,0,0,0,0],
+  [4,5,4,4,5,4,5,0,0,0,0,0],
+  [1,2,1,2,1,1,2,0,0,0,0,0],
+];
+
+function buildHeatmap() {
+  const container = document.getElementById('heatmap');
+  if (!container) return;
+  container.innerHTML = '';
+  // header row
+  container.appendChild(Object.assign(document.createElement('div'), {className:'heatmap-row-label', textContent:''}));
+  hmMonths.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'heatmap-col-label';
+    el.textContent = m;
+    container.appendChild(el);
+  });
+  // data rows
+  villages.forEach((v, ri) => {
+    const rowLabel = document.createElement('div');
+    rowLabel.className = 'heatmap-row-label';
+    rowLabel.textContent = v;
+    container.appendChild(rowLabel);
+    hmMonths.forEach((_, ci) => {
+      const cell = document.createElement('div');
+      cell.className = 'heatmap-cell';
+      const val = hmData[ri][ci];
+      cell.dataset.v = val;
+      cell.title = v + ' · ' + hmMonths[ci] + ': ' + (val === 0 ? '-' : val + ' ระดับค้าง');
+      container.appendChild(cell);
+    });
+  });
+}
+
+/* ─── PERIOD TABS ─────────────────────────────────────────── */
+document.getElementById('period-tabs').addEventListener('click', e => {
+  const tab = e.target.closest('.period-tab');
+  if (!tab) return;
+  document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+});
+
+/* ─── DRILL DOWN ─────────────────────────────────────────── */
+function drillDown(type) {
+  const labels = {
+    revenue: 'รายได้รายเดือน',
+    rate: 'อัตราการจัดเก็บ — Drill Down',
+    overdue: 'รายการบิลค้างชำระ',
+    arrears: 'รายงานยอดค้างชำระ'
+  };
+  // In real implementation this navigates; here we just hint
+  const banner = document.getElementById('alert-banner');
+  const old = banner.innerHTML;
+  banner.style.background = '#eff6ff';
+  banner.style.borderColor = '#bfdbfe';
+  banner.style.borderLeftColor = '#1b61c9';
+  banner.style.color = '#1e3a8a';
+  banner.innerHTML = `<svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 4a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg><span>นำทางไปยัง: <strong>${labels[type]}</strong> (prototype — ยังไม่ได้เชื่อม)</span>`;
+  setTimeout(() => {
+    banner.style.background = '';
+    banner.style.borderColor = '';
+    banner.style.borderLeftColor = '';
+    banner.style.color = '';
+    banner.innerHTML = old;
+  }, 2000);
+}
+
+/* ─── EXPORT ──────────────────────────────────────────────── */
+function exportReport() {
+  const btn = document.querySelector('.btn-primary');
+  btn.textContent = '⏳ กำลัง Export...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg> Export รายงาน`;
+    btn.disabled = false;
+  }, 1500);
+}
+
+/* ─── LOADING TOGGLE (demo) ──────────────────────────────── */
+function toggleLoading() {
+  const kpi = document.getElementById('kpi-grid');
+  kpi.querySelectorAll('.kpi-card').forEach(c => {
+    c.style.opacity = '0.4';
+    c.style.pointerEvents = 'none';
+  });
+  setTimeout(() => {
+    kpi.querySelectorAll('.kpi-card').forEach(c => {
+      c.style.opacity = '';
+      c.style.pointerEvents = '';
+    });
+  }, 1200);
+}
+
+/* ─── TWEAKS ──────────────────────────────────────────────── */
+window.addEventListener('message', e => {
+  if (e.data?.type === '__activate_edit_mode')   document.getElementById('tweaks-panel').style.display = 'block';
+  if (e.data?.type === '__deactivate_edit_mode') document.getElementById('tweaks-panel').style.display = 'none';
+});
+window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "primaryColor": "#1b61c9",
+  "orgName": "อบต.สาธิต"
+}/*EDITMODE-END*/;
+
+function applyPrimary(hex) {
+  document.documentElement.style.setProperty('--org-primary', hex);
+  // compute light/dark variants
+  document.documentElement.style.setProperty('--org-primary-light', hex + '18');
+  document.documentElement.style.setProperty('--org-primary-dark', hex);
+  if (revenueChart) {
+    revenueChart.data.datasets[0].backgroundColor = revenueData.map((v,i) =>
+      i === revenueData.length-1 ? hex : hex + '80');
+    revenueChart.update();
+  }
+  window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { primaryColor: hex } }, '*');
+}
+
+function applyOrg(name) {
+  document.getElementById('org-name-short').textContent = name;
+  const initials = name.replace(/[อ-๙]/g,'').slice(0,2) || name.slice(0,2);
+  document.getElementById('org-avatar').textContent = name.includes('อบต') ? 'อบต' : name.includes('เทศบาล') ? 'ทบ.' : 'อบจ';
+  window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { orgName: name } }, '*');
+}
+
+function applyState(state) {
+  const content = document.getElementById('content');
+  if (state === 'loading') {
+    document.getElementById('kpi-grid').querySelectorAll('.kpi-card').forEach(c => {
+      c.style.opacity = '0.3';
+    });
+  } else {
+    document.getElementById('kpi-grid').querySelectorAll('.kpi-card').forEach(c => {
+      c.style.opacity = '';
+    });
+  }
+}
+
+// Apply saved tweaks
+if (TWEAK_DEFAULTS.primaryColor) applyPrimary(TWEAK_DEFAULTS.primaryColor);
+if (TWEAK_DEFAULTS.orgName) {
+  document.getElementById('org-name-short').textContent = TWEAK_DEFAULTS.orgName;
+  document.getElementById('tweak-org').value = TWEAK_DEFAULTS.orgName;
+}
+
+/* ─── INIT ────────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  buildRevenueChart();
+  buildStatusChart();
+  buildHeatmap();
+});
+</script>
+</body>
+</html>

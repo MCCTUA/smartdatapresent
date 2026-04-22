@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>R-10 แจ้งร้องเรียน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: #0d1117;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      font-family: 'Noto Sans Thai', -apple-system, system-ui, sans-serif;
+    }
+    #root { width: 100%; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 16px; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; }
+    button, input, textarea { font-family: 'Noto Sans Thai', -apple-system, system-ui, sans-serif; }
+    textarea:focus, input:focus { outline: none; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel">
+
+// ─── Tweak defaults ───────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "orgColor": "#1b61c9",
+  "orgName": "อบต.สุขสมบูรณ์",
+  "screenState": "form",
+  "slaHours": 48
+}/*EDITMODE-END*/;
+
+// ─── Issue categories ─────────────────────────────────────────
+const ISSUE_TYPES = [
+  { id: "bill_dispute",   label: "โต้แย้งบิล",          sub: "ยอดไม่ถูกต้อง",         color: "#d97706" },
+  { id: "missed_pickup",  label: "รถไม่มาเก็บขยะ",       sub: "ไม่ตรงตามตาราง",        color: "#dc2626" },
+  { id: "sticker",        label: "สติ๊กเกอร์",           sub: "ยังไม่ได้รับ / ผิดพลาด", color: "#7c3aed" },
+  { id: "fee_error",      label: "ค่าธรรมเนียมผิดพลาด",  sub: "ถูกคิดเกิน / คิดซ้ำ",   color: "#0891b2" },
+  { id: "other",          label: "อื่น ๆ",               sub: "ระบุรายละเอียด",          color: "#6b7280" },
+];
+
+const MOCK_BILLS = [
+  { id: "B-2025-0341", label: "บิล มี.ค. 2569", amount: "₿ 480 บาท" },
+  { id: "B-2025-0298", label: "บิล ก.พ. 2569", amount: "₿ 480 บาท" },
+  { id: "B-2025-0241", label: "บิล ม.ค. 2569", amount: "₿ 480 บาท" },
+];
+
+function genTicketId() {
+  return "ISS-" + Math.floor(Math.random() * 90000 + 10000);
+}
+
+// ─── Icons ────────────────────────────────────────────────────
+function IcChevronLeft({ size = 9, color }) {
+  return (
+    <svg width={size} height={size * 15/9} viewBox="0 0 9 15" fill="none">
+      <path d="M7.5 1L1 7.5L7.5 14" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function IcChevronDown({ size = 14, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
+      <path d="M3 5l4 4 4-4" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function IcCamera({ size = 20, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <rect x="1.5" y="5.5" width="17" height="12" rx="3" stroke={color} strokeWidth="1.5"/>
+      <circle cx="10" cy="12" r="3" stroke={color} strokeWidth="1.5"/>
+      <path d="M7 5.5l1.2-2.5h3.6L13 5.5" stroke={color} strokeWidth="1.5" strokeLinejoin="round"/>
+      <circle cx="15.5" cy="8.5" r="0.8" fill={color}/>
+    </svg>
+  );
+}
+function IcFile({ size = 18, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="none">
+      <path d="M4 2h7l4 4v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M11 2v4h4" stroke={color} strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M6 10h6M6 13h4" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function IcCheck({ size = 48, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <path d="M12 24L21 33L36 15" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function IcClose({ size = 14, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
+      <path d="M2 2l10 10M12 2L2 12" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function IcAlert({ size = 22, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 22 22" fill="none">
+      <path d="M11 2L2 19h18L11 2Z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M11 9v4" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+      <circle cx="11" cy="15.5" r="0.8" fill={color}/>
+    </svg>
+  );
+}
+function IcTicket({ size = 22, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 22 22" fill="none">
+      <rect x="1.5" y="5.5" width="19" height="11" rx="3" stroke={color} strokeWidth="1.5"/>
+      <path d="M7.5 5.5v11" stroke={color} strokeWidth="1.5" strokeDasharray="2 2"/>
+      <path d="M10 10h7M10 13h5" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function IcClock({ size = 16, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="6.5" stroke={color} strokeWidth="1.4"/>
+      <path d="M8 4.5V8.5l3 1.5" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function IcBill({ size = 18, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="none">
+      <rect x="2" y="1.5" width="14" height="15" rx="2.5" stroke={color} strokeWidth="1.4"/>
+      <path d="M5.5 6h7M5.5 9h7M5.5 12h4" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// ─── Field label ──────────────────────────────────────────────
+function FieldLabel({ children, required }) {
+  return (
+    <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+      {children}
+      {required && <span style={{ color: '#dc2626', fontSize: 10 }}>*</span>}
+    </div>
+  );
+}
+
+// ─── Issue type selector ──────────────────────────────────────
+function IssueTypeSelector({ value, onChange, orgColor }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {ISSUE_TYPES.map(t => {
+        const active = value === t.id;
+        return (
+          <button key={t.id} onClick={() => onChange(t.id)} style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '11px 14px', borderRadius: 14,
+            background: active ? `${t.color}12` : '#f5f5f7',
+            border: active ? `1.5px solid ${t.color}40` : '1.5px solid transparent',
+            cursor: 'pointer', textAlign: 'left',
+            transition: 'all 0.15s',
+          }}>
+            {/* Color dot */}
+            <div style={{
+              width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+              background: t.color,
+              boxShadow: active ? `0 0 0 3px ${t.color}25` : 'none',
+            }}/>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: active ? 600 : 500, color: active ? t.color : '#333', lineHeight: 1.2 }}>
+                {t.label}
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(60,60,67,0.45)', marginTop: 2 }}>{t.sub}</div>
+            </div>
+            {active && (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="7.5" fill={t.color}/>
+                <path d="M4.5 8.5L7 11L11.5 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Photo attachment area ────────────────────────────────────
+function PhotoAttach({ photos, onAdd, onRemove, orgColor }) {
+  // Fake 3 colored placeholder "photos"
+  const PLACEHOLDER_COLORS = ["#dbeafe","#dcfce7","#fef9c3"];
+
+  return (
+    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      {photos.map((ph, i) => (
+        <div key={ph.id} style={{
+          width: 70, height: 70, borderRadius: 14, position: 'relative',
+          background: PLACEHOLDER_COLORS[i % 3],
+          border: '1.5px solid rgba(0,0,0,0.06)',
+          overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {/* striped placeholder */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: `repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(0,0,0,0.04) 6px, rgba(0,0,0,0.04) 7px)`,
+          }}/>
+          <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.3)', fontFamily: 'monospace', zIndex: 1, textAlign: 'center', padding: '0 4px' }}>
+            {ph.label}
+          </span>
+          <button onClick={() => onRemove(ph.id)} style={{
+            position: 'absolute', top: 4, right: 4,
+            width: 18, height: 18, borderRadius: '50%',
+            background: 'rgba(0,0,0,0.45)', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <IcClose size={9} color="white"/>
+          </button>
+        </div>
+      ))}
+
+      {photos.length < 3 && (
+        <button onClick={onAdd} style={{
+          width: 70, height: 70, borderRadius: 14,
+          background: `${orgColor}0a`,
+          border: `1.5px dashed ${orgColor}40`,
+          cursor: 'pointer',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
+        }}>
+          <IcCamera size={20} color={orgColor}/>
+          <span style={{ fontSize: 10, fontWeight: 600, color: orgColor }}>เพิ่มรูป</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Bill picker ──────────────────────────────────────────────
+function BillPicker({ value, onChange, orgColor }) {
+  const [open, setOpen] = React.useState(false);
+  const selected = MOCK_BILLS.find(b => b.id === value);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button onClick={() => setOpen(o => !o)} style={{
+        width: '100%', padding: '12px 14px',
+        borderRadius: 14, background: '#f5f5f7',
+        border: open ? `1.5px solid ${orgColor}` : '1.5px solid transparent',
+        display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+        boxShadow: open ? `0 0 0 3px ${orgColor}18` : 'none',
+        transition: 'all 0.15s',
+      }}>
+        <IcBill size={16} color={selected ? orgColor : '#9ca3af'}/>
+        <span style={{ flex: 1, fontSize: 14, color: selected ? '#181d26' : 'rgba(60,60,67,0.4)', textAlign: 'left', fontWeight: selected ? 500 : 400 }}>
+          {selected ? `${selected.label}` : 'เลือกบิลที่เกี่ยวข้อง (ไม่บังคับ)'}
+        </span>
+        {value && (
+          <button onClick={e => { e.stopPropagation(); onChange(null); }} style={{
+            background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '50%',
+            width: 18, height: 18, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <IcClose size={8} color="#666"/>
+          </button>
+        )}
+        <IcChevronDown size={14} color="#9ca3af"/>
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
+          background: 'white', borderRadius: 14, marginTop: 6,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08)',
+          overflow: 'hidden',
+        }}>
+          {MOCK_BILLS.map((b, i) => (
+            <button key={b.id} onClick={() => { onChange(b.id); setOpen(false); }} style={{
+              width: '100%', padding: '12px 14px',
+              background: value === b.id ? `${orgColor}0a` : 'white',
+              border: 'none', borderBottom: i < MOCK_BILLS.length - 1 ? '0.5px solid #f0f0f5' : 'none',
+              display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+            }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10,
+                background: value === b.id ? `${orgColor}15` : '#f5f5f7',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <IcBill size={16} color={value === b.id ? orgColor : '#9ca3af'}/>
+              </div>
+              <div style={{ flex: 1, textAlign: 'left' }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#181d26' }}>{b.label}</div>
+                <div style={{ fontSize: 12, color: 'rgba(60,60,67,0.45)' }}>{b.id}</div>
+              </div>
+              {value === b.id && (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8.5L6.5 12L13 5" stroke={orgColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Form screen ──────────────────────────────────────────────
+function FormScreen({ orgColor, orgName, onSubmit }) {
+  const [issueType, setIssueType] = React.useState(null);
+  const [title, setTitle] = React.useState('');
+  const [details, setDetails] = React.useState('');
+  const [photos, setPhotos] = React.useState([]);
+  const [relatedBill, setRelatedBill] = React.useState(null);
+  const [titleFocus, setTitleFocus] = React.useState(false);
+  const [detailFocus, setDetailFocus] = React.useState(false);
+  const [errors, setErrors] = React.useState({});
+
+  const PHOTO_LABELS = ["รูปที่ 1","รูปที่ 2","รูปที่ 3"];
+
+  const addPhoto = () => {
+    if (photos.length >= 3) return;
+    setPhotos(p => [...p, { id: Date.now(), label: PHOTO_LABELS[p.length] }]);
+  };
+  const removePhoto = id => setPhotos(p => p.filter(ph => ph.id !== id));
+
+  const canSubmit = issueType && title.trim().length >= 3 && details.trim().length >= 10;
+
+  const handleSubmit = () => {
+    const errs = {};
+    if (!issueType) errs.issueType = true;
+    if (title.trim().length < 3) errs.title = true;
+    if (details.trim().length < 10) errs.details = true;
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    onSubmit({ issueType, title, details, photos, relatedBill });
+  };
+
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 44 }}>
+
+      {/* Issue type */}
+      <div style={{ margin: '4px 16px 16px', background: 'white', borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '16px 16px 18px' }}>
+        <FieldLabel required>ประเภทเรื่อง</FieldLabel>
+        {errors.issueType && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 10 }}>
+            <IcAlert size={13} color="#dc2626"/>
+            <span style={{ fontSize: 12, color: '#dc2626' }}>กรุณาเลือกประเภทเรื่อง</span>
+          </div>
+        )}
+        <IssueTypeSelector value={issueType} onChange={v => { setIssueType(v); setErrors(e => ({...e, issueType: false})); }} orgColor={orgColor}/>
+      </div>
+
+      {/* Title */}
+      <div style={{ margin: '0 16px 16px', background: 'white', borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '16px 16px 18px' }}>
+        <FieldLabel required>หัวข้อ</FieldLabel>
+        <input
+          value={title}
+          onChange={e => { setTitle(e.target.value); setErrors(er => ({...er, title: false})); }}
+          onFocus={() => setTitleFocus(true)}
+          onBlur={() => setTitleFocus(false)}
+          placeholder="สรุปเรื่องในประโยคสั้น ๆ"
+          maxLength={80}
+          style={{
+            width: '100%', padding: '12px 14px',
+            borderRadius: 14, fontSize: 14, color: '#181d26',
+            background: '#f5f5f7',
+            border: errors.title ? '1.5px solid #dc2626' : titleFocus ? `1.5px solid ${orgColor}` : '1.5px solid transparent',
+            boxShadow: titleFocus ? `0 0 0 3px ${orgColor}18` : 'none',
+            transition: 'all 0.15s',
+          }}
+        />
+        {errors.title && (
+          <div style={{ fontSize: 12, color: '#dc2626', marginTop: 5 }}>กรุณากรอกหัวข้ออย่างน้อย 3 ตัวอักษร</div>
+        )}
+        <div style={{ fontSize: 11, color: 'rgba(60,60,67,0.35)', marginTop: 6, textAlign: 'right' }}>{title.length}/80</div>
+      </div>
+
+      {/* Details */}
+      <div style={{ margin: '0 16px 16px', background: 'white', borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '16px 16px 18px' }}>
+        <FieldLabel required>รายละเอียด</FieldLabel>
+        <textarea
+          value={details}
+          onChange={e => { setDetails(e.target.value); setErrors(er => ({...er, details: false})); }}
+          onFocus={() => setDetailFocus(true)}
+          onBlur={() => setDetailFocus(false)}
+          placeholder="อธิบายปัญหาให้ละเอียดเพื่อให้เจ้าหน้าที่ดำเนินการได้รวดเร็ว เช่น วันที่เกิดเหตุ จำนวนเงินที่คลาดเคลื่อน ฯลฯ"
+          maxLength={500}
+          rows={4}
+          style={{
+            width: '100%', padding: '12px 14px', resize: 'none',
+            borderRadius: 14, fontSize: 14, color: '#181d26', lineHeight: 1.6,
+            background: '#f5f5f7',
+            border: errors.details ? '1.5px solid #dc2626' : detailFocus ? `1.5px solid ${orgColor}` : '1.5px solid transparent',
+            boxShadow: detailFocus ? `0 0 0 3px ${orgColor}18` : 'none',
+            transition: 'all 0.15s',
+          }}
+        />
+        {errors.details && (
+          <div style={{ fontSize: 12, color: '#dc2626', marginTop: 5 }}>กรุณากรอกรายละเอียดอย่างน้อย 10 ตัวอักษร</div>
+        )}
+        <div style={{ fontSize: 11, color: 'rgba(60,60,67,0.35)', marginTop: 6, textAlign: 'right' }}>{details.length}/500</div>
+      </div>
+
+      {/* Photo attach */}
+      <div style={{ margin: '0 16px 16px', background: 'white', borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '16px 16px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <FieldLabel>แนบรูปภาพ</FieldLabel>
+          <span style={{ fontSize: 11, color: 'rgba(60,60,67,0.4)', marginBottom: 10 }}>ไม่บังคับ · สูงสุด 3 รูป</span>
+        </div>
+        <PhotoAttach photos={photos} onAdd={addPhoto} onRemove={removePhoto} orgColor={orgColor}/>
+      </div>
+
+      {/* Related bill */}
+      <div style={{ margin: '0 16px 16px', background: 'white', borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '16px 16px 18px', overflow: 'visible', position: 'relative', zIndex: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <FieldLabel>บิลที่เกี่ยวข้อง</FieldLabel>
+          <span style={{ fontSize: 11, color: 'rgba(60,60,67,0.4)', marginBottom: 10 }}>ไม่บังคับ</span>
+        </div>
+        <BillPicker value={relatedBill} onChange={setRelatedBill} orgColor={orgColor}/>
+      </div>
+
+      {/* Submit */}
+      <div style={{ margin: '0 16px 8px' }}>
+        <button onClick={handleSubmit} style={{
+          width: '100%', height: 52, borderRadius: 16,
+          background: canSubmit ? orgColor : `${orgColor}40`,
+          border: 'none', color: 'white', fontSize: 16, fontWeight: 700,
+          cursor: canSubmit ? 'pointer' : 'not-allowed',
+          boxShadow: canSubmit ? `0 6px 20px ${orgColor}40` : 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          transition: 'all 0.2s',
+        }}>
+          <IcTicket size={18} color="white"/>
+          ส่งเรื่อง
+        </button>
+        <div style={{ fontSize: 12, color: 'rgba(60,60,67,0.4)', textAlign: 'center', marginTop: 10, lineHeight: 1.6 }}>
+          ข้อมูลของคุณจะถูกส่งถึงเจ้าหน้าที่ {orgName} โดยตรง
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+// ─── Submitting screen ────────────────────────────────────────
+function SubmittingScreen({ orgColor }) {
+  const [dots, setDots] = React.useState(1);
+  React.useEffect(() => {
+    const t = setInterval(() => setDots(d => (d % 3) + 1), 500);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '0 32px' }}>
+      {/* Spinner ring */}
+      <div style={{
+        width: 80, height: 80, borderRadius: '50%',
+        border: `3px solid ${orgColor}18`,
+        borderTop: `3px solid ${orgColor}`,
+        animation: 'spin 0.9s linear infinite',
+        position: 'relative',
+      }}>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div style={{
+          position: 'absolute', inset: 8,
+          borderRadius: '50%', background: `${orgColor}0a`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <IcTicket size={22} color={orgColor}/>
+        </div>
+      </div>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 18, fontWeight: 700, color: '#181d26', marginBottom: 6 }}>กำลังส่งเรื่อง</div>
+        <div style={{ fontSize: 14, color: 'rgba(60,60,67,0.5)' }}>{'โปรดรอสักครู่' + '.'.repeat(dots)}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Success screen ───────────────────────────────────────────
+function SuccessScreen({ orgColor, orgName, ticketId, slaHours, onDone }) {
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 44 }}>
+
+      {/* Success hero */}
+      <div style={{ margin: '4px 16px 16px', background: 'white', borderRadius: 28, boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04)', padding: '32px 24px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+        {/* Animated checkmark circle */}
+        <div style={{
+          width: 84, height: 84, borderRadius: '50%',
+          background: `linear-gradient(135deg, ${orgColor}18, ${orgColor}08)`,
+          border: `2px solid ${orgColor}25`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: '50%',
+            background: orgColor,
+            boxShadow: `0 6px 20px ${orgColor}40`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <IcCheck size={30} color="white"/>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#181d26', marginBottom: 6 }}>ส่งเรื่องสำเร็จ</div>
+          <div style={{ fontSize: 14, color: 'rgba(60,60,67,0.5)', lineHeight: 1.65 }}>
+            เจ้าหน้าที่ {orgName} ได้รับเรื่องของคุณแล้ว<br/>และจะดำเนินการโดยเร็วที่สุด
+          </div>
+        </div>
+      </div>
+
+      {/* Ticket number */}
+      <div style={{ margin: '0 16px 16px', background: `${orgColor}08`, border: `1.5px solid ${orgColor}20`, borderRadius: 20, padding: '18px 20px' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: orgColor, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>เลขที่เรื่อง</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: orgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <IcTicket size={20} color="white"/>
+          </div>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: orgColor, letterSpacing: 1, lineHeight: 1 }}>{ticketId}</div>
+            <div style={{ fontSize: 12, color: 'rgba(60,60,67,0.45)', marginTop: 3 }}>บันทึกเลขนี้ไว้เพื่อติดตามสถานะ</div>
+          </div>
+        </div>
+      </div>
+
+      {/* SLA card */}
+      <div style={{ margin: '0 16px 16px', background: 'white', borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '16px 18px' }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(60,60,67,0.45)', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 14 }}>ขั้นตอนถัดไป</div>
+        {[
+          { label: 'รับเรื่องแล้ว', sub: 'เจ้าหน้าที่ได้รับการแจ้งเตือน', done: true },
+          { label: 'ตรวจสอบข้อมูล', sub: `ภายใน ${slaHours} ชั่วโมงทำการ`, done: false, current: true },
+          { label: 'แจ้งผลการดำเนินการ', sub: 'ผ่าน SMS / LINE', done: false },
+        ].map((step, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: i < 2 ? 14 : 0 }}>
+            {/* Node */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                background: step.done ? orgColor : step.current ? `${orgColor}15` : '#f0f0f5',
+                border: step.current ? `2px solid ${orgColor}` : 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {step.done ? (
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5L5.5 9.5L10.5 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                ) : step.current ? (
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: orgColor }}/>
+                ) : (
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#d1d5db' }}/>
+                )}
+              </div>
+              {i < 2 && (
+                <div style={{ width: 2, height: 14, background: step.done ? orgColor : '#e0e2e6', borderRadius: 1, marginTop: 3 }}/>
+              )}
+            </div>
+            <div style={{ paddingTop: 4 }}>
+              <div style={{ fontSize: 14, fontWeight: step.current ? 600 : 500, color: step.done || step.current ? '#181d26' : 'rgba(60,60,67,0.4)', lineHeight: 1.2 }}>
+                {step.label}
+              </div>
+              <div style={{ fontSize: 12, color: step.current ? orgColor : 'rgba(60,60,67,0.4)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                {step.current && <IcClock size={12} color={orgColor}/>}
+                {step.sub}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* SLA note */}
+      <div style={{ margin: '0 16px 16px', background: '#fffbeb', border: '1px solid #fed7aa', borderRadius: 16, padding: '13px 16px', display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+        <IcAlert size={16} color="#d97706"/>
+        <div style={{ fontSize: 12, color: '#92400e', lineHeight: 1.65 }}>
+          เราจะดำเนินการภายใน <strong>{slaHours} ชั่วโมงทำการ</strong> หากเกินกำหนด กรุณาติดต่อ {orgName} โดยตรง
+        </div>
+      </div>
+
+      {/* Done button */}
+      <div style={{ margin: '0 16px' }}>
+        <button onClick={onDone} style={{
+          width: '100%', height: 52, borderRadius: 16,
+          background: orgColor, border: 'none',
+          color: 'white', fontSize: 16, fontWeight: 700,
+          cursor: 'pointer',
+          boxShadow: `0 6px 20px ${orgColor}40`,
+        }}>
+          กลับหน้าหลัก
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Error screen ─────────────────────────────────────────────
+function ErrorScreen({ orgColor, orgName, onRetry }) {
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '0 32px' }}>
+      <div style={{
+        width: 84, height: 84, borderRadius: '50%',
+        background: '#fef2f2', border: '2px solid #fecaca',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <IcAlert size={38} color="#dc2626"/>
+      </div>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: '#181d26', marginBottom: 8 }}>ส่งเรื่องไม่สำเร็จ</div>
+        <div style={{ fontSize: 14, color: 'rgba(60,60,67,0.55)', lineHeight: 1.7, maxWidth: 240 }}>
+          เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง หรือติดต่อ {orgName} โดยตรง
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 280 }}>
+        <button onClick={onRetry} style={{
+          height: 50, borderRadius: 14,
+          background: orgColor, border: 'none',
+          color: 'white', fontSize: 15, fontWeight: 700,
+          cursor: 'pointer', boxShadow: `0 5px 16px ${orgColor}40`,
+        }}>
+          ลองอีกครั้ง
+        </button>
+        <button onClick={onRetry} style={{
+          height: 50, borderRadius: 14,
+          background: '#f0f0f5', border: 'none',
+          color: '#333', fontSize: 15, fontWeight: 500,
+          cursor: 'pointer',
+        }}>
+          ยกเลิก
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Submit Issue screen ─────────────────────────────────
+function SubmitIssueScreen({ orgColor, orgName, screenState }) {
+  const [state, setState] = React.useState(screenState); // form | submitting | success | error
+  const [ticketId] = React.useState(genTicketId);
+
+  React.useEffect(() => { setState(screenState); }, [screenState]);
+
+  const handleSubmit = () => {
+    setState('submitting');
+    setTimeout(() => setState('success'), 2200);
+  };
+
+  const navTitle = {
+    form: 'แจ้งร้องเรียน',
+    submitting: 'กำลังส่ง',
+    success: 'ส่งเรื่องสำเร็จ',
+    error: 'เกิดข้อผิดพลาด',
+  }[state] || 'แจ้งร้องเรียน';
+
+  return (
+    <div style={{
+      fontFamily: "'Noto Sans Thai', -apple-system, system-ui, sans-serif",
+      height: '100%', display: 'flex', flexDirection: 'column',
+      background: '#F2F2F7', position: 'relative',
+    }}>
+      {/* Status bar spacer */}
+      <div style={{ height: 62, flexShrink: 0 }}/>
+
+      {/* Nav bar */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '4px 16px 12px', flexShrink: 0 }}>
+        <button style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 5,
+          color: orgColor, fontSize: 16, padding: '4px 0',
+        }}>
+          <IcChevronLeft size={9} color={orgColor}/>
+          กลับ
+        </button>
+        <div style={{ flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 600, color: '#181d26' }}>
+          {navTitle}
+        </div>
+        <div style={{ width: 52 }}/>
+      </div>
+
+      {/* Content */}
+      {state === 'form'       && <FormScreen orgColor={orgColor} orgName={orgName} onSubmit={handleSubmit}/>}
+      {state === 'submitting' && <SubmittingScreen orgColor={orgColor}/>}
+      {state === 'success'    && <SuccessScreen orgColor={orgColor} orgName={orgName} ticketId={ticketId} slaHours={48} onDone={() => setState('form')}/>}
+      {state === 'error'      && <ErrorScreen orgColor={orgColor} orgName={orgName} onRetry={() => setState('form')}/>}
+    </div>
+  );
+}
+
+// ─── Tweaks Panel ─────────────────────────────────────────────
+const ORG_COLORS = ["#1b61c9","#DC2626","#059669","#D97706","#7C3AED","#DB2777","#0891B2"];
+
+function TweaksPanel({ tweaks, onChange, onClose }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
+    }} onClick={onClose}>
+      <div style={{
+        background: 'white', borderRadius: '22px 22px 0 0',
+        padding: '16px 20px 40px', width: '100%', maxWidth: 500,
+        boxShadow: '0 -4px 28px rgba(0,0,0,0.14)',
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(60,60,67,0.2)' }}/>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <span style={{ fontSize: 17, fontWeight: 600, color: '#181d26' }}>Tweaks</span>
+          <button onClick={onClose} style={{ background: '#f0f0f5', border: 'none', width: 28, height: 28, borderRadius: 8, cursor: 'pointer', fontSize: 14, color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+        </div>
+
+        {/* Screen State */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 12, color: 'rgba(60,60,67,0.55)', marginBottom: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+            สถานะหน้าจอ
+          </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              ["form",       "แบบฟอร์ม (Form)",         "#1b61c9"],
+              ["submitting", "กำลังส่ง (Submitting)",    "#d97706"],
+              ["success",    "สำเร็จ (Success)",         "#059669"],
+              ["error",      "ผิดพลาด (Error)",          "#dc2626"],
+            ].map(([v, l, c]) => (
+              <button key={v} onClick={() => onChange('screenState', v)} style={{
+                padding: '11px 14px', borderRadius: 12, border: 'none', textAlign: 'left',
+                background: tweaks.screenState === v ? `${c}15` : '#f0f0f5',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <span style={{ fontSize: 14, fontWeight: 500, color: tweaks.screenState === v ? c : '#444' }}>{l}</span>
+                {tweaks.screenState === v && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8.5L6.5 12L13 5" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* SLA hours */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 12, color: 'rgba(60,60,67,0.55)', marginBottom: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+            SLA (ชั่วโมงทำการ): {tweaks.slaHours} ชม.
+          </label>
+          <input type="range" min={2} max={120} step={2} value={tweaks.slaHours}
+            onChange={e => onChange('slaHours', Number(e.target.value))}
+            style={{ width: '100%', accentColor: tweaks.orgColor }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(60,60,67,0.4)', marginTop: 4 }}>
+            <span>2 ชม.</span><span>120 ชม.</span>
+          </div>
+        </div>
+
+        {/* Org Color */}
+        <div>
+          <label style={{ display: 'block', fontSize: 12, color: 'rgba(60,60,67,0.55)', marginBottom: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+            สี อปท. (Org Color)
+          </label>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            {ORG_COLORS.map(c => (
+              <button key={c} onClick={() => onChange('orgColor', c)} style={{
+                width: 34, height: 34, borderRadius: 10, background: c, border: 'none', cursor: 'pointer',
+                boxShadow: tweaks.orgColor === c ? `0 0 0 3px white, 0 0 0 5px ${c}` : 'none',
+                transition: 'box-shadow 0.15s',
+              }}/>
+            ))}
+            <input type="color" value={tweaks.orgColor}
+              onChange={e => onChange('orgColor', e.target.value)}
+              style={{ width: 34, height: 34, borderRadius: 10, border: '1.5px solid #e0e2e6', cursor: 'pointer', padding: 2 }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweaks] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem('r10-tweaks');
+      return saved ? { ...TWEAK_DEFAULTS, ...JSON.parse(saved) } : TWEAK_DEFAULTS;
+    } catch { return TWEAK_DEFAULTS; }
+  });
+  const [showTweaks, setShowTweaks] = React.useState(false);
+
+  const handleChange = (key, val) => {
+    const next = { ...tweaks, [key]: val };
+    setTweaks(next);
+    localStorage.setItem('r10-tweaks', JSON.stringify(next));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+  };
+
+  React.useEffect(() => {
+    const handler = e => {
+      if (e.data?.type === '__activate_edit_mode')   setShowTweaks(true);
+      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  return (
+    <>
+      <IOSDevice width={393} height={852}>
+        <SubmitIssueScreen
+          orgColor={tweaks.orgColor}
+          orgName={tweaks.orgName}
+          screenState={tweaks.screenState}
+        />
+      </IOSDevice>
+      {showTweaks && (
+        <TweaksPanel tweaks={tweaks} onChange={handleChange} onClose={() => setShowTweaks(false)}/>
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

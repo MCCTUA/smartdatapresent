@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#fff; padding:20px; color:#181d26; font-size:12px; }
+.section { margin-bottom:18px; }
+.title { font-size:10px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:rgba(4,14,32,.4); margin-bottom:8px; }
+.tokens { display:flex; flex-wrap:wrap; gap:6px; }
+.token { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.token-name { font-size:9px; color:rgba(4,14,32,.45); }
+
+/* Radius demo */
+.r-box { background:#eff6ff; border:1.5px solid #1b61c9; width:48px; height:32px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#1b61c9; }
+
+/* Spacing scale */
+.sp-row { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+.sp-bar { background:#1b61c9; height:14px; border-radius:2px; opacity:.7; }
+.sp-label { font-size:10px; color:rgba(4,14,32,.55); width:56px; flex-shrink:0; }
+.sp-val { font-size:10px; color:rgba(4,14,32,.35); }
+</style>
+</head><body>
+<div class="section">
+  <div class="title">Border Radius</div>
+  <div class="tokens">
+    <div class="token"><div class="r-box" style="border-radius:2px">2</div><div class="token-name">xs · 2px<br>badge</div></div>
+    <div class="token"><div class="r-box" style="border-radius:4px">4</div><div class="token-name">sm · 4px<br>element</div></div>
+    <div class="token"><div class="r-box" style="border-radius:8px">8</div><div class="token-name">md · 8px<br>input</div></div>
+    <div class="token"><div class="r-box" style="border-radius:12px">12</div><div class="token-name">btn · 12px<br>button</div></div>
+    <div class="token"><div class="r-box" style="border-radius:16px; width:56px; height:40px">16</div><div class="token-name">card · 16px<br>card</div></div>
+    <div class="token"><div class="r-box" style="border-radius:24px; width:64px; height:44px">24</div><div class="token-name">lg · 24px<br>modal</div></div>
+    <div class="token"><div class="r-box" style="border-radius:50%; width:36px; height:36px">50%</div><div class="token-name">circle<br>avatar</div></div>
+  </div>
+</div>
+<div class="section">
+  <div class="title">Spacing Scale (8px base)</div>
+  <div class="sp-row"><div class="sp-label">--space-1</div><div class="sp-bar" style="width:4px"></div><div class="sp-val">4px</div></div>
+  <div class="sp-row"><div class="sp-label">--space-2</div><div class="sp-bar" style="width:8px"></div><div class="sp-val">8px</div></div>
+  <div class="sp-row"><div class="sp-label">--space-3</div><div class="sp-bar" style="width:12px"></div><div class="sp-val">12px</div></div>
+  <div class="sp-row"><div class="sp-label">--space-4</div><div class="sp-bar" style="width:16px"></div><div class="sp-val">16px</div></div>
+  <div class="sp-row"><div class="sp-label">--space-6</div><div class="sp-bar" style="width:24px"></div><div class="sp-val">24px</div></div>
+  <div class="sp-row"><div class="sp-label">--space-8</div><div class="sp-bar" style="width:32px"></div><div class="sp-val">32px</div></div>
+  <div class="sp-row"><div class="sp-label">--space-10</div><div class="sp-bar" style="width:40px"></div><div class="sp-val">40px</div></div>
+  <div class="sp-row"><div class="sp-label">--space-12</div><div class="sp-bar" style="width:48px"></div><div class="sp-val">48px</div></div>
+</div>
+</body></html>

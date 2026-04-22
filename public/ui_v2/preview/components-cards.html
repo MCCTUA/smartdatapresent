@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#f8fafc; padding:16px; color:#181d26; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.card { background:#fff; border:1px solid #e0e2e6; border-radius:16px; padding:16px; box-shadow:0px 1px 3px rgba(0,0,0,0.06); }
+.card-label { font-size:11px; font-weight:600; color:rgba(4,14,32,.45); letter-spacing:.3px; text-transform:uppercase; margin-bottom:4px; }
+.card-value { font-size:28px; font-weight:400; color:#181d26; line-height:1.1; }
+.card-sub { font-size:13px; color:rgba(4,14,32,.55); margin-top:4px; letter-spacing:.1px; }
+.card-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:4px; font-size:12px; font-weight:500; margin-top:8px; }
+.wide { grid-column:1/-1; }
+.list-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f0f0f2; }
+.list-row:last-child { border-bottom:none; }
+.list-name { font-size:14px; font-weight:500; color:#181d26; }
+.list-sub { font-size:12px; color:rgba(4,14,32,.55); margin-top:1px; }
+.list-amount { font-size:14px; font-weight:500; color:#181d26; text-align:right; }
+</style>
+</head><body>
+<div class="grid">
+  <div class="card">
+    <div class="card-label">รายรับเดือนนี้</div>
+    <div class="card-value">฿48,320</div>
+    <div class="card-sub">จาก 402 ครัวเรือน</div>
+    <div class="card-badge" style="background:#f0fdf4;color:#006400">▲ +12% จากเดือนที่แล้ว</div>
+  </div>
+  <div class="card">
+    <div class="card-label">ค้างชำระ</div>
+    <div class="card-value" style="color:#dc2626">฿12,180</div>
+    <div class="card-sub">จาก 38 ครัวเรือน</div>
+    <div class="card-badge" style="background:#fef2f2;color:#b91c1c">ต้องติดตาม</div>
+  </div>
+  <div class="card wide">
+    <div class="card-label" style="margin-bottom:10px">บิลล่าสุด</div>
+    <div class="list-row">
+      <div><div class="list-name">ครัวเรือน สมชาย จันทร์ดี</div><div class="list-sub">บ้านเลขที่ 45/2 · ค่าขยะ เม.ย. 2569</div></div>
+      <div style="text-align:right"><div class="list-amount">฿60</div><div class="card-badge" style="background:#f0fdf4;color:#006400;margin-top:3px">ชำระแล้ว</div></div>
+    </div>
+    <div class="list-row">
+      <div><div class="list-name">ครัวเรือน สุภาพร มีสุข</div><div class="list-sub">บ้านเลขที่ 12 · ค่าน้ำ เม.ย. 2569</div></div>
+      <div style="text-align:right"><div class="list-amount">฿240</div><div class="card-badge" style="background:#fffbeb;color:#b45309;margin-top:3px">ค้างชำระ</div></div>
+    </div>
+    <div class="list-row">
+      <div><div class="list-name">ครัวเรือน วิชัย ทองดี</div><div class="list-sub">บ้านเลขที่ 78/1 · ค่าขยะ มี.ค. 2569</div></div>
+      <div style="text-align:right"><div class="list-amount">฿30</div><div class="card-badge" style="background:#eff6ff;color:#1b61c9;margin-top:3px">ออกบิลแล้ว</div></div>
+    </div>
+  </div>
+</div>
+</body></html>

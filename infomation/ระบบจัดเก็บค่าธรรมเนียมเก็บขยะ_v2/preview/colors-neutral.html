@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#fff; padding:20px; }
+.swatches { display:flex; gap:10px; flex-wrap:wrap; }
+.swatch { display:flex; flex-direction:column; gap:6px; }
+.chip { width:72px; height:48px; border-radius:10px; }
+.label { font-size:11px; color:#181d26; font-weight:500; letter-spacing:.3px; }
+.hex { font-size:10px; color:rgba(4,14,32,.55); }
+.row { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
+.scale { display:flex; gap:4px; }
+.scale-chip { width:36px; height:36px; border-radius:6px; }
+.scale-label { font-size:10px; color:rgba(4,14,32,.45); text-align:center; margin-top:2px; }
+.section-title { font-size:11px; font-weight:600; letter-spacing:.5px; color:rgba(4,14,32,.45); text-transform:uppercase; margin-bottom:10px; margin-top:14px; }
+</style>
+</head><body>
+<div class="section-title">Gray Scale</div>
+<div class="scale" style="margin-bottom:12px">
+  <div><div class="scale-chip" style="background:#111827"></div><div class="scale-label">900</div></div>
+  <div><div class="scale-chip" style="background:#1f2937"></div><div class="scale-label">800</div></div>
+  <div><div class="scale-chip" style="background:#333333"></div><div class="scale-label">700</div></div>
+  <div><div class="scale-chip" style="background:#4b5563"></div><div class="scale-label">600</div></div>
+  <div><div class="scale-chip" style="background:#6b7280"></div><div class="scale-label">500</div></div>
+  <div><div class="scale-chip" style="background:#9ca3af"></div><div class="scale-label">400</div></div>
+  <div><div class="scale-chip" style="background:#d1d5db; border:1px solid #e5e7eb"></div><div class="scale-label">300</div></div>
+  <div><div class="scale-chip" style="background:#e0e2e6; border:1px solid #eaecf0"></div><div class="scale-label">200</div></div>
+  <div><div class="scale-chip" style="background:#f3f4f6; border:1px solid #e5e7eb"></div><div class="scale-label">100</div></div>
+  <div><div class="scale-chip" style="background:#f8fafc; border:1px solid #e5e7eb"></div><div class="scale-label">50</div></div>
+</div>
+<div class="section-title">Text Tokens</div>
+<div class="swatches">
+  <div class="swatch"><div class="chip" style="background:#181d26"></div><div class="label">text-primary</div><div class="hex">#181d26</div></div>
+  <div class="swatch"><div class="chip" style="background:#333333"></div><div class="label">text-secondary</div><div class="hex">#333333</div></div>
+  <div class="swatch"><div class="chip" style="background:rgba(4,14,32,0.69); border:1px solid #e0e2e6"></div><div class="label">text-weak</div><div class="hex">rgba(4,14,32,.69)</div></div>
+  <div class="swatch"><div class="chip" style="background:rgba(4,14,32,0.38); border:1px solid #e0e2e6"></div><div class="label">placeholder</div><div class="hex">rgba(4,14,32,.38)</div></div>
+  <div class="swatch"><div class="chip" style="background:#e0e2e6"></div><div class="label">border</div><div class="hex">#e0e2e6</div></div>
+  <div class="swatch"><div class="chip" style="background:#f8fafc; border:1px solid #e0e2e6"></div><div class="label">surface-subtle</div><div class="hex">#f8fafc</div></div>
+</div>
+</body></html>
