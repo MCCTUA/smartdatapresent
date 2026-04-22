@@ -109,9 +109,9 @@ export default function WasteCollectionFee() {
           <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=2070" alt="Waste" className="w-full h-full object-cover" />
         </div>
         <div className="relative z-20 text-center px-6 max-w-6xl">
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[#0071e3] text-[15px] font-bold tracking-[3px] uppercase mb-5">Gismo Local Authority Fee Platform</motion.p>
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[#ffffff] text-[15px] font-bold tracking-[3px] uppercase mb-5">Local Authority Fee Platform</motion.p>
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-4xl md:text-7xl font-bold text-white tracking-tight leading-[1.4] mb-8">
-            หน่วยงานท้องถิ่นยุคใหม่ <br /> <span className="text-[#0071e3]">ดิจิทัลทั้งองค์กร</span> เก็บรายได้ครบ งานมือลด 70%
+            หน่วยงานท้องถิ่นยุคใหม่ <br /> <span className="text-[#0071e3]">ดิจิทัลทั้งองค์กร</span> <br /> <span className='text-red-400'>เก็บรายได้ครบ งานมือลด 70%</span>
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="text-lg md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed">
             เปลี่ยนการจัดเก็บค่าธรรมเนียมแบบเดิม สู่ระบบดิจิทัลที่โปร่งใส ตรวจสอบได้ และเพิ่มรายได้จริงให้ท้องถิ่นอย่างยั่งยืน
@@ -270,8 +270,8 @@ export default function WasteCollectionFee() {
       <WideSection className="bg-white">
         <SectionHeader 
           eyebrow="Future Roadmap" 
-          title="ฟีเจอร์ที่จะช่วยยกระดับ <br/> หน่วยงานในอนาคต" 
-          body="เราไม่หยุดพัฒนา เพื่อให้ Gismo เป็นแพลตฟอร์มที่ครอบคลุมทุกมิติการบริหารจัดการท้องถิ่น"
+          title="ฟีเจอร์ที่จะช่วยยกระดับ หน่วยงานในอนาคต" 
+          body="เราไม่หยุดพัฒนา เพื่อให้ เป็นแพลตฟอร์มที่ครอบคลุมทุกมิติการบริหารจัดการท้องถิ่น"
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {[
@@ -318,9 +318,9 @@ export default function WasteCollectionFee() {
         </div>
         <div className="max-w-5xl mx-auto bg-[#1b61c9] rounded-[3.5rem] p-12 md:p-16 text-white text-center shadow-2xl relative overflow-hidden">
           <h3 className="text-3xl md:text-4xl font-bold mb-6 relative z-10">เริ่มการสำรวจความต้องการของคุณวันนี้</h3>
-          <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto relative z-10">ทีมงาน Gismo พร้อมลงพื้นที่สาธิตระบบและช่วยประเมินแผนงานติดตั้งภายใน 1 สัปดาห์</p>
+         
           <div className="flex flex-wrap justify-center gap-4 relative z-10">
-            <button className="px-10 py-4 bg-white text-[#1b61c9] rounded-full font-bold text-lg hover:shadow-xl transition-all">นัดหมายวันเข้าสาธิต</button>
+            
             <button className="px-10 py-4 bg-[#0071e3] text-white rounded-full font-bold text-lg border border-white/20 hover:bg-[#0077ed] transition-all">ดาวน์โหลดโบร์ชัวร์</button>
           </div>
         </div>
