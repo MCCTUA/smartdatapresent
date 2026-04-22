@@ -94,9 +94,9 @@ export default function WasteCollectionFee() {
           <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=2070" alt="Waste" className="w-full h-full object-cover" />
         </div>
         <div className="relative z-20 text-center px-6 max-w-6xl">
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[#0071e3] text-[15px] font-bold tracking-[3px] uppercase mb-5">Gismo Local Authority Fee Platform</motion.p>
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-4xl md:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-8">
-            หน่วยงานท้องถิ่นยุคใหม่ <br /> <span className="text-[#0071e3]">ดิจิทัลทั้งองค์กร</span> ใน 30 วัน
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[#0071e3] text-[15px] font-bold tracking-[3px] uppercase mb-5"> Local Authority Fee Platform</motion.p>
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-4xl md:text-7xl font-bold text-white tracking-tight leading-[1.4] mb-8">
+            หน่วยงานท้องถิ่นยุคใหม่ <br /> <span className="text-[#0071e3]">ดิจิทัลทั้งองค์กร</span> <br />เก็บรายได้ครบ งานมือลด 70%
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="text-lg md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed">
             เปลี่ยนการจัดเก็บค่าธรรมเนียมแบบเดิม สู่ระบบดิจิทัลที่โปร่งใส ตรวจสอบได้ และเพิ่มรายได้จริงให้ท้องถิ่นอย่างยั่งยืน
