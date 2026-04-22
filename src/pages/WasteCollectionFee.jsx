@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Animation variants
 const fadeUp = {
@@ -52,30 +52,45 @@ function SectionHeader({ eyebrow, title, body, dark = false, center = true }) {
   );
 }
 
-// --- Full Width Canvas Viewer ---
+// --- Interactive Full Width Canvas Viewer with Zoom ---
 
-const FullCanvasViewer = ({ src, title, height = "600px", scale = 1 }) => {
+const FullCanvasViewer = ({ src, title, defaultHeight = "600px", baseScale = 1.0 }) => {
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  const currentScale = isZoomed ? 1.5 : baseScale;
+  const currentHeight = isZoomed ? "950px" : defaultHeight;
+
   return (
-    <div className="w-full bg-white rounded-3xl shadow-[0_15px_45px_-10px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden">
-      <div className="bg-gray-50/50 px-6 py-2.5 border-b border-gray-100 flex items-center justify-between">
+    <div className="w-full bg-white rounded-3xl shadow-[0_15px_45px_-10px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden transition-all duration-500">
+      <div className="bg-gray-50/50 px-6 py-3 border-b border-gray-100 flex items-center justify-between">
         <div className="flex gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-red-400/30" />
           <div className="w-2.5 h-2.5 rounded-full bg-amber-400/30" />
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/30" />
         </div>
-        <span className="text-[9px] text-gray-300 font-mono tracking-widest uppercase">{title}</span>
+        
+        <div className="flex items-center gap-4">
+          <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">{title}</span>
+          <button 
+            onClick={() => setIsZoomed(!isZoomed)}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold transition-all ${isZoomed ? 'bg-[#0071e3] text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}
+          >
+            <span>{isZoomed ? '🔍 ZOOM 150%' : '🔍 CLICK TO ZOOM'}</span>
+          </button>
+        </div>
       </div>
-      <div className="w-full overflow-x-auto overflow-y-hidden custom-scrollbar">
-        <div style={{ height, minWidth: '1200px', position: 'relative' }}>
+
+      <div className="w-full overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-500" style={{ height: currentHeight }}>
+        <div style={{ minWidth: '1200px', height: '100%', position: 'relative' }}>
           <iframe 
             src={src} 
             title={title} 
-            className="w-full h-full border-none" 
+            className="w-full h-full border-none transition-transform duration-500" 
             style={{ 
-              transform: `scale(${scale})`, 
+              transform: `scale(${currentScale})`, 
               transformOrigin: 'top left',
-              width: `${100 / scale}%`,
-              height: `${100 / scale}%`
+              width: `${100 / currentScale}%`,
+              height: `${100 / currentScale}%`
             }}
           />
         </div>
@@ -86,7 +101,7 @@ const FullCanvasViewer = ({ src, title, height = "600px", scale = 1 }) => {
 
 export default function WasteCollectionFee() {
   return (
-    <div className="bg-white font-sans overflow-x-hidden">
+    <div className="bg-white font-sans overflow-x-hidden selection:bg-blue-100">
       {/* 1. Hero Section */}
       <section className="relative h-[85vh] flex items-center justify-center bg-black overflow-hidden pt-12">
         <div className="absolute inset-0 opacity-50">
@@ -94,9 +109,9 @@ export default function WasteCollectionFee() {
           <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=2070" alt="Waste" className="w-full h-full object-cover" />
         </div>
         <div className="relative z-20 text-center px-6 max-w-6xl">
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[#0071e3] text-[15px] font-bold tracking-[3px] uppercase mb-5"> Local Authority Fee Platform</motion.p>
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[#0071e3] text-[15px] font-bold tracking-[3px] uppercase mb-5">Gismo Local Authority Fee Platform</motion.p>
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-4xl md:text-7xl font-bold text-white tracking-tight leading-[1.4] mb-8">
-            หน่วยงานท้องถิ่นยุคใหม่ <br /> <span className="text-[#0071e3]">ดิจิทัลทั้งองค์กร</span> <br />เก็บรายได้ครบ งานมือลด 70%
+            หน่วยงานท้องถิ่นยุคใหม่ <br /> <span className="text-[#0071e3]">ดิจิทัลทั้งองค์กร</span> เก็บรายได้ครบ งานมือลด 70%
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="text-lg md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed">
             เปลี่ยนการจัดเก็บค่าธรรมเนียมแบบเดิม สู่ระบบดิจิทัลที่โปร่งใส ตรวจสอบได้ และเพิ่มรายได้จริงให้ท้องถิ่นอย่างยั่งยืน
@@ -134,8 +149,8 @@ export default function WasteCollectionFee() {
         <FullCanvasViewer 
           src="ui_v2/O-01 KPI Dashboard.html" 
           title="Executive Dashboard" 
-          height="750px" 
-          scale={0.95} 
+          defaultHeight="700px" 
+          baseScale={0.95} 
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 max-w-6xl mx-auto">
             {[
@@ -159,22 +174,22 @@ export default function WasteCollectionFee() {
           body="ประสบการณ์ดิจิทัลที่ออกแบบมาให้ใช้งานง่าย เห็นผลการทำงานต่อเนื่องสวยงาม" 
         />
         <div className="space-y-16">
-          <div className="max-w-[1200px] mx-auto">
+          <div className="max-w-[1300px] mx-auto">
             <h3 className="text-lg font-bold mb-6 text-center text-gray-400 uppercase tracking-widest">Resident Dashboard & Bills</h3>
             <FullCanvasViewer 
               src="ui_v2/R-02-ResidentDashboard.html" 
               title="Resident Flow" 
-              height="680px" 
-              scale={0.9} 
+              defaultHeight="650px" 
+              baseScale={0.9} 
             />
           </div>
-          <div className="max-w-[1200px] mx-auto">
+          <div className="max-w-[1300px] mx-auto">
             <h3 className="text-lg font-bold mb-6 text-center text-gray-400 uppercase tracking-widest">Payment & Receipt Flow</h3>
             <FullCanvasViewer 
               src="ui_v2/R-05-PaymentFlow.html" 
               title="Payment Flow" 
-              height="680px" 
-              scale={0.9} 
+              defaultHeight="650px" 
+              baseScale={0.9} 
             />
           </div>
         </div>
@@ -188,22 +203,22 @@ export default function WasteCollectionFee() {
           body="ช่วยให้ทีมขับรถและทีมสำรวจของหน่วยงานท้องถิ่นทำงานได้อย่างรวดเร็วและแม่นยำ" 
         />
         <div className="space-y-16">
-          <div className="max-w-[1200px] mx-auto">
+          <div className="max-w-[1300px] mx-auto">
             <h3 className="text-lg font-bold mb-6 text-center text-gray-400 uppercase tracking-widest">Collection Schedule & Route Map</h3>
             <FullCanvasViewer 
               src="ui_v2/R-09 Collection Schedule.html" 
               title="Driver App" 
-              height="680px" 
-              scale={0.9} 
+              defaultHeight="650px" 
+              baseScale={0.9} 
             />
           </div>
-          <div className="max-w-[1200px] mx-auto">
+          <div className="max-w-[1300px] mx-auto">
             <h3 className="text-lg font-bold mb-6 text-center text-gray-400 uppercase tracking-widest">Issue Tracking & Reporting</h3>
             <FullCanvasViewer 
               src="ui_v2/R-11 Issue Tracking.html" 
               title="Field Reports" 
-              height="680px" 
-              scale={0.9} 
+              defaultHeight="650px" 
+              baseScale={0.9} 
             />
           </div>
         </div>
@@ -213,7 +228,7 @@ export default function WasteCollectionFee() {
       <WideSection dark={true}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 max-w-6xl mx-auto">
           <div>
-            <h3 className="text-3xl md:text-5xl font-bold mb-12">ความเปลี่ยนแปลง <br /><br />ที่วัดผลได้จริง</h3>
+            <h2 className="text-3xl md:text-5xl font-bold mb-12">ความเปลี่ยนแปลง <br />ที่วัดผลได้จริง</h2>
             <div className="space-y-6">
               {[
                 { label: "กระบวนการออกบิล", after: "อัตโนมัติตามรอบ" },
@@ -251,12 +266,12 @@ export default function WasteCollectionFee() {
         </div>
       </WideSection>
 
-      {/* NEW: Next Features Section */}
+      {/* Future Roadmap */}
       <WideSection className="bg-white">
         <SectionHeader 
-          eyebrow="Futures Roadmap" 
-          title="ฟีเจอร์ที่จะช่วยยกระดับ หน่วยงานในอนาคต" 
-          body="เราไม่หยุดพัฒนา เพื่อให้เป็นแพลตฟอร์มที่ครอบคลุมทุกมิติการบริหารจัดการท้องถิ่น"
+          eyebrow="Future Roadmap" 
+          title="ฟีเจอร์ที่จะช่วยยกระดับ <br/> หน่วยงานในอนาคต" 
+          body="เราไม่หยุดพัฒนา เพื่อให้ Gismo เป็นแพลตฟอร์มที่ครอบคลุมทุกมิติการบริหารจัดการท้องถิ่น"
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {[
@@ -303,7 +318,7 @@ export default function WasteCollectionFee() {
         </div>
         <div className="max-w-5xl mx-auto bg-[#1b61c9] rounded-[3.5rem] p-12 md:p-16 text-white text-center shadow-2xl relative overflow-hidden">
           <h3 className="text-3xl md:text-4xl font-bold mb-6 relative z-10">เริ่มการสำรวจความต้องการของคุณวันนี้</h3>
-          <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto relative z-10">ทีมงาน Gismo พร้อมลงพื้นที่สาธิตระบบและช่วยประเมินแผนงานภายใน 1 สัปดาห์</p>
+          <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto relative z-10">ทีมงาน Gismo พร้อมลงพื้นที่สาธิตระบบและช่วยประเมินแผนงานติดตั้งภายใน 1 สัปดาห์</p>
           <div className="flex flex-wrap justify-center gap-4 relative z-10">
             <button className="px-10 py-4 bg-white text-[#1b61c9] rounded-full font-bold text-lg hover:shadow-xl transition-all">นัดหมายวันเข้าสาธิต</button>
             <button className="px-10 py-4 bg-[#0071e3] text-white rounded-full font-bold text-lg border border-white/20 hover:bg-[#0077ed] transition-all">ดาวน์โหลดโบร์ชัวร์</button>
