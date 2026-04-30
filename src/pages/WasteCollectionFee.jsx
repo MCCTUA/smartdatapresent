@@ -1627,6 +1627,137 @@ export default function WasteCollectionFee() {
         </div>
       </Section>
 
+      {/* ════════════════════ UI SHOWCASE ════════════════════ */}
+      <Section bg="white" id="ui-showcase">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center mb-12">
+            <Eyebrow>หน้าจอระบบจริง</Eyebrow>
+            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
+              UI ครบวงจร <span style={{ color: C.primary }}>Web & Mobile</span>
+            </h2>
+            <p className="max-w-[680px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
+              ออกแบบมาเพื่อหน่วยงานท้องถิ่นโดยเฉพาะ — ใช้งานง่าย รองรับทุก Platform ทั้งหน้าจอผู้ดูแลระบบและประชาชน
+            </p>
+          </div>
+
+          {/* ── Featured: Main Dashboard ─────────────────────────── */}
+          <div className="mb-6 rounded-2xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 8px 32px rgba(31, 42, 36, 0.06)' }}>
+            <div className="px-4 py-2.5 flex items-center gap-3 border-b" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold" style={{ background: C.primary, color: '#FFF' }}>อบต</div>
+              <div className="flex-1">
+                <div className="text-[12px] font-semibold" style={{ color: C.text }}>แผงควบคุมผู้ดูแลระบบ</div>
+                <div className="text-[10px]" style={{ color: C.textMuted }}>The Digital Ledger · Officer Portal</div>
+              </div>
+              <span className="text-[10px] flex items-center gap-1.5" style={{ color: C.success }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></span>
+                Live
+              </span>
+            </div>
+            <div style={{ height: 559, overflow: 'hidden', position: 'relative', background: '#FFF' }}>
+              <iframe
+                src="ui/main_screen.html"
+                title="Main Dashboard"
+                loading="lazy"
+                style={{ position: 'absolute', top: 0, left: 0, width: 1440, height: 860, transform: 'scale(0.65)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
+              />
+            </div>
+          </div>
+
+          {/* ── 3-col Desktop Screens ─────────────────────────── */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {[
+              { src: 'ui/bill_listing.html', label: 'จัดการรอบบิล', desc: 'สร้างและติดตามบิลทุกประเภท' },
+              { src: 'ui/Daily_Bank_Reconclliation.html', label: 'กระทบยอดธนาคาร', desc: 'Daily Auto-Reconciliation' },
+              { src: 'ui/phase_6_web.html', label: 'รายงานปฏิบัติงาน', desc: 'ติดตามรถเก็บขยะ GPS' },
+            ].map((s, i) => (
+              <div key={i} className="rounded-xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 2px 8px rgba(31, 42, 36, 0.04)' }}>
+                <div className="px-3 py-1.5 flex items-center gap-2 border-b" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></div>
+                  <span className="text-[11px] font-medium" style={{ color: C.text }}>{s.label}</span>
+                </div>
+                <div style={{ height: 258, overflow: 'hidden', position: 'relative', background: '#FFF' }}>
+                  <iframe
+                    src={s.src}
+                    title={s.label}
+                    loading="lazy"
+                    style={{ position: 'absolute', top: 0, left: 0, width: 1024, height: 860, transform: 'scale(0.30)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
+                  />
+                </div>
+                <div className="px-3 py-2 border-t" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+                  <p className="text-[11px] leading-tight" style={{ color: C.textMuted }}>{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── 4-col Mobile Phones (LIFF + Field) ─────────────────────────── */}
+          <div className="text-center mb-4">
+            <span className="text-[12px] font-medium uppercase tracking-wider" style={{ color: C.textMuted, letterSpacing: '2px' }}>
+              บนมือถือ — ประชาชน + เจ้าหน้าที่ภาคสนาม
+            </span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 justify-items-center">
+            {[
+              { src: 'ui/billing.html', label: 'ชำระค่าธรรมเนียม' },
+              { src: 'ui/collection_notification.html', label: 'แจ้งเตือนประชาชน' },
+              { src: 'ui/line_mini_app_notification_fee.html', label: 'LINE Mini App' },
+              { src: 'ui/phase_6_mobile.html', label: 'รถเก็บขยะ (GPS)' },
+            ].map((s, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <div className="rounded-[22px] overflow-hidden" style={{
+                  width: 214,
+                  height: 463,
+                  border: `3px solid ${C.text}`,
+                  boxShadow: '0 10px 30px rgba(31, 42, 36, 0.18)',
+                  background: '#FFF',
+                }}>
+                  <div style={{ height: 463, overflow: 'hidden', position: 'relative' }}>
+                    <iframe
+                      src={s.src}
+                      title={s.label}
+                      loading="lazy"
+                      style={{ position: 'absolute', top: 0, left: 0, width: 390, height: 844, transform: 'scale(0.549)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
+                    />
+                  </div>
+                </div>
+                <p className="text-[12px] mt-3 text-center font-medium" style={{ color: C.text }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── 2-col Registration Screens ─────────────────────────── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { src: 'ui/House_registration.html', label: 'ทะเบียนบ้านและประชาชน', desc: 'บันทึกและจัดการข้อมูลผู้เสียค่าธรรมเนียม' },
+              { src: 'ui/Officer_registration.html', label: 'จัดการเจ้าหน้าที่', desc: 'ลงทะเบียนและกำหนดสิทธิ์เจ้าหน้าที่' },
+            ].map((s, i) => (
+              <div key={i} className="rounded-xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 2px 8px rgba(31, 42, 36, 0.04)' }}>
+                <div className="px-3 py-1.5 flex items-center gap-2 border-b" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></div>
+                  <span className="text-[11px] font-medium" style={{ color: C.text }}>{s.label}</span>
+                </div>
+                <div style={{ height: 388, overflow: 'hidden', position: 'relative', background: '#FFF' }}>
+                  <iframe
+                    src={s.src}
+                    title={s.label}
+                    loading="lazy"
+                    style={{ position: 'absolute', top: 0, left: 0, width: 1024, height: 860, transform: 'scale(0.451)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
+                  />
+                </div>
+                <div className="px-3 py-2 border-t" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+                  <p className="text-[11px]" style={{ color: C.textMuted }}>{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Footnote */}
+          <div className="mt-6 text-center text-[11px]" style={{ color: C.textMuted }}>
+            หน้าจอจริงจากระบบ · iframe scale ลงเพื่อพรีวิว · ขอ Demo เต็มจอได้จากปุ่ม "ขอใบเสนอราคา"
+          </div>
+        </div>
+      </Section>
+
       {/* ════════════════════ CONCERNS / FAQ ════════════════════ */}
       <Section bg="white">
         <div className="max-w-[1100px] mx-auto">
