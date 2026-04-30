@@ -139,7 +139,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Card 3: Fee Management */}
+            {/* Card 3: Waste Fee */}
             <motion.div
               whileHover={{ y: -6 }}
               className="bg-white rounded-xl overflow-hidden shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]"
@@ -147,7 +147,7 @@ export default function Home() {
               <div style={{ height: 224, overflow: 'hidden', position: 'relative', background: '#f0f4fa' }}>
                 <iframe
                   src="ui/main_screen.html"
-                  title="Fee Management UI Preview"
+                  title="ระบบเก็บค่าธรรมเนียมขยะ — Preview"
                   style={{
                     position: 'absolute', top: 0, left: 0,
                     width: 1440, height: 860,
@@ -159,14 +159,14 @@ export default function Home() {
               <div className="p-7">
                 <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">GovTech</p>
                 <h3 className="text-[#1d1d1f] font-normal leading-snug mb-3" style={{ fontSize: '28px' }}>
-                  ระบบบริหาร<br />จัดการค่าธรรมเนียม
+                  ค่าธรรมเนียม<br />เก็บขยะ
                 </h3>
                 <p className="text-[14px] text-black/60 leading-relaxed mb-6">
-                  ระบบจัดเก็บค่าธรรมเนียมท้องถิ่นแบบ Cashless โปร่งใส ป้องกันทุจริต ลดการทุจริตจาก 50% เหลือ 0-2%
+                  ระบบจัดเก็บค่าธรรมเนียมขยะแบบ 3-Tier (60/20/10 ฿) ตามกฎกระทรวง 2567 — เก็บได้ครบ คัดแยกได้ ลดต้นทุนกำจัด
                 </p>
                 <div className="flex gap-4 items-center">
-                  <Link to="/fee-management" className="bg-[#0071e3] text-white text-[14px] px-4 py-2 rounded-lg no-underline">ดูรายละเอียด</Link>
-                  <Link to="/fee-management" className="text-[#0066cc] text-[14px] no-underline hover:underline">ดูขั้นตอน ›</Link>
+                  <Link to="/waste-fee" className="bg-[#0071e3] text-white text-[14px] px-4 py-2 rounded-lg no-underline">ดูรายละเอียด</Link>
+                  <Link to="/waste-fee" className="text-[#0066cc] text-[14px] no-underline hover:underline">ลอง Prototype ›</Link>
                 </div>
               </div>
             </motion.div>

@@ -14,7 +14,7 @@ export default function Footer() {
         <Link to="/" className="text-[12px] text-white/60 hover:text-white no-underline">หน้าหลัก</Link>
         <Link to="/smart-street-light" className="text-[12px] text-white/60 hover:text-white no-underline">Smart Street Light</Link>
         <Link to="/solar-street-light" className="text-[12px] text-white/60 hover:text-white no-underline">Solar Street Light</Link>
-        <Link to="/fee-management" className="text-[12px] text-white/60 hover:text-white no-underline">ระบบค่าธรรมเนียม</Link>
+        <Link to="/waste-fee" className="text-[12px] text-white/60 hover:text-white no-underline">ค่าธรรมเนียมขยะ</Link>
       </div>
       <p className="text-[12px] tracking-tight">© 2026 All rights reserved.</p>
     </footer>
