@@ -8,6 +8,7 @@ import FeeManagement from './pages/FeeManagement';
 import WasteCollectionFee from './pages/WasteCollectionFee';
 import CCTVAI from './pages/CCTVAI';
 import ElderlyCare from './pages/ElderlyCare';
+import IotFlood from './pages/IotFlood';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="/waste-fee" element={<WasteCollectionFee />} />
             <Route path="/cctv-ai" element={<CCTVAI />} />
             <Route path="/elderly-care" element={<ElderlyCare />} />
+            <Route path="/iot-flood" element={<IotFlood />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

@@ -80,6 +80,15 @@ const PRODUCTS = [
     icon: 'heart',
     bg: '#3D1418',
   },
+  {
+    to: '/iot-flood',
+    eyebrow: 'IoT + AI · ภัยพิบัติ',
+    title: 'เตือนน้ำท่วมล่วงหน้า',
+    body: 'IoT + AI วัดระดับน้ำเฉพาะจุดที่เทศบาลห่วง · ใช้ CCTV ที่มีอยู่ได้ · LINE เด้งหานายก/ปลัด/ผู้นำชุมชนโดยตรง — ก่อนน้ำมาถึงชุมชน',
+    accent: '#2E7BA8',
+    icon: 'wave',
+    bg: '#0E2D3D',
+  },
 ];
 
 function ProductIcon({ name, color = '#FFF' }) {
@@ -113,6 +122,12 @@ function ProductIcon({ name, color = '#FFF' }) {
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
       <path d="M24 40s-14-8-14-18a8 8 0 0114-5 8 8 0 0114 5c0 10-14 18-14 18z" stroke={color} strokeWidth="2.2" strokeLinejoin="round" />
       <path d="M16 24l4 4 4-6 4 4 4-2" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+  if (name === 'wave') return (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+      <path d="M6 26c4-4 8-4 12 0s8 4 12 0 8-4 12 0M6 34c4-4 8-4 12 0s8 4 12 0 8-4 12 0" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M22 14l4-4 4 4" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
   return null;
@@ -154,7 +169,7 @@ export default function Home() {
             variants={fadeUp}
             className="text-[18px] md:text-[20px] leading-relaxed max-w-[780px] mb-8 text-white/85"
           >
-            5 ผลิตภัณฑ์ที่<strong className="text-white"> ติดตั้งใช้จริง · พิสูจน์ด้วยมาตรฐานสากล · ออกแบบโดยทีมวิศวกรในประเทศ</strong>
+            6 ผลิตภัณฑ์ที่<strong className="text-white"> ติดตั้งใช้จริง · พิสูจน์ด้วยมาตรฐานสากล · ออกแบบโดยทีมวิศวกรในประเทศ</strong>
             <br />— ตั้งแต่ไฟถนน · พลังงานสะอาด · GovTech · AI · ดูแลผู้สูงอายุ
           </motion.p>
 
@@ -196,7 +211,7 @@ export default function Home() {
       <section className="px-6 md:px-10 py-12" style={{ background: '#FFF', borderBottom: `1px solid ${C.surfaceSoft}` }}>
         <div className="max-w-[1100px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { n: '5', l: 'ผลิตภัณฑ์ในกลุ่ม', sub: 'ครบทุกหน่วยงานต้องการ' },
+            { n: '6', l: 'ผลิตภัณฑ์ในกลุ่ม', sub: 'ครบทุกหน่วยงานต้องการ' },
             { n: '15+', l: 'ปีประสบการณ์', sub: 'ทีมพัฒนาในประเทศไทย' },
             { n: 'มอก.', l: 'มาตรฐานรับรอง', sub: '2954-2562, 1955-2551, IES' },
             { n: '24/7', l: 'การสนับสนุน', sub: 'ทีมงานพูดไทย ดูแลตลอด' },

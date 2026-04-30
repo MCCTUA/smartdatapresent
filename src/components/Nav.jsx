@@ -8,6 +8,7 @@ const links = [
   { to: '/waste-fee', label: 'ค่าธรรมเนียมขยะ' },
   { to: '/cctv-ai', label: 'CCTV + AI' },
   { to: '/elderly-care', label: 'ดูแลผู้สูงอายุ' },
+  { to: '/iot-flood', label: 'เตือนน้ำท่วม' },
 ];
 
 // Civic Trust palette (sync with index.css)
