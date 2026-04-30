@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // CCTVAI.jsx — Product 4: CCTV + AI · 2 หลักการที่ควรรู้ก่อนตัดสินใจ
 // Design: Civic Trust palette (Forest #0F6E56 + Cream #FAF7EE + Amber #BA7517)
 // Font: Sarabun
-// Pain-first storytelling: "กล้องเยอะแต่ไม่มีคนดู" → 2 หลักการ → LPR demo → ROI
+// Pain-first storytelling: "กล้องเยอะแต่ไม่มีคนดู" → 2 หลักการ → LPR demo → Coverage
 // Pricing: NOT in this page — sales discusses verbally
 // ---------------------------------------------------------------------------
 
@@ -193,7 +193,7 @@ const TABS = [
   { key: 'jetson', label: 'Jetson · เทคนิค', sub: 'ต่อยังไง · 1 ตัวกี่กล้อง' },
   { key: 'lpr', label: 'ตัวอย่าง use-case', sub: 'LPR · ค้นหาทะเบียน' },
   { key: 'compare', label: 'เปรียบเทียบ', sub: 'A vs B เคียงข้างกัน' },
-  { key: 'roi', label: 'ROI Estimator', sub: 'จุดติดตั้ง · พื้นที่ครอบคลุม' },
+  { key: 'coverage', label: 'Coverage Estimator', sub: 'จุดติดตั้ง · โหลด Server' },
 ];
 
 // ── Approach A panel — มี sub-toggle A1 (หลัง NVR) vs A2 (ก่อน NVR/dual) ──
@@ -321,7 +321,7 @@ function ApproachAPanel() {
                   ['Latency / ความไว', '1-2 วินาที', 'ทันที (real-time)'],
                   ['คุณภาพภาพ', 'ลดเล็กน้อย', 'ดีที่สุด'],
                   ['กระทบของเดิม', 'ไม่กระทบเลย', 'ต้อง config switch'],
-                  ['ค่าใช้จ่าย', 'ต่ำ', 'สูงกว่า · อาจเปลี่ยน switch'],
+                  ['ความซับซ้อนของอุปกรณ์', 'น้อย — ใช้ของเดิมทั้งหมด', 'มากขึ้น · อาจเปลี่ยน switch'],
                 ].map((r, i) => (
                   <tr key={i} style={{ borderBottom: `1px solid ${C.surfaceSoft}` }}>
                     <td className="py-2 pr-3 font-medium" style={{ color: C.text }}>{r[0]}</td>
@@ -355,19 +355,19 @@ function ApproachBPanel() {
             { icon: '📡', label: 'ส่งเฉพาะ Event', sub: 'ไม่ส่งวิดีโอทั้งวัน', light: true },
             { icon: '📊', label: 'Server เบา + Dashboard', sub: 'Cloud หรือ on-prem' },
           ]}
-          caption="กล้อง / กล่อง AI ที่ติดที่หน้างานคิดเองได้ → ถ้าไม่มีอะไรเกิด ไม่ต้องส่งอะไร → เกิดเหตุค่อยส่งเฉพาะ 'เหตุการณ์' เข้า Server → Server ทำงานเบา ค่าใช้จ่ายลดลงมาก"
+          caption="กล้อง / กล่อง AI ที่ติดที่หน้างานคิดเองได้ → ถ้าไม่มีอะไรเกิด ไม่ต้องส่งอะไร → เกิดเหตุค่อยส่งเฉพาะ 'เหตุการณ์' เข้า Server → Server ทำงานเบา ระบบไม่ต้องอัปเกรดบ่อย"
         />
 
         <div className="rounded-xl p-4 flex gap-3 items-start" style={{ background: C.successSoft, borderLeft: `4px solid ${C.success}` }}>
           <span className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[14px] shrink-0" style={{ background: C.success, color: '#FFF' }}>★</span>
           <div className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>
-            <strong style={{ color: '#3B6D11' }}>เหตุผลที่เราแนะนำในยุค AI boom:</strong> Edge AI shift cost จาก Server (ราคาพุ่ง 60–80%) → กล้อง / chip edge (ราคานิ่งกว่า) — ทำให้งบของท่านลงไปที่จุดติดตั้งจริงได้มากขึ้น
+            <strong style={{ color: '#3B6D11' }}>เหตุผลที่เราแนะนำ:</strong> Server กลางใช้สเปคต่ำ · ขยายทีละจุดได้โดยไม่ต้องอัปเกรด · ตอบสนอง Real-time ที่หน้างาน · เหมาะกับการเริ่ม pilot แล้วค่อยเพิ่มจุดตามผล
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <VerdictCard tone="good" title="สิ่งที่ทำได้ดี" items={[
-            'Server กลางใช้สเปคต่ำ — ประหยัดต้นทุนใหญ่',
+            'Server กลางใช้สเปคต่ำ — ระบบเบา',
             'ตอบสนองเร็ว (Real-time ที่หน้างาน)',
             'Bandwidth ต่ำมาก (ส่งเฉพาะ event)',
             'ขยายทีละจุด — เพิ่ม 1 กล้อง = เพิ่ม 1 ตัว',
@@ -511,9 +511,7 @@ function LPRPanel() {
 function ComparePanel() {
   const rows = [
     ['กล้องที่ใช้', 'กล้องเดิมของหน่วยงาน', 'กล้อง / กล่อง AI ใหม่'],
-    ['ที่เก็บภาระประมวลผล', 'Server กลาง 1 เครื่อง (แรง·แพง)', 'กระจายไปแต่ละกล้อง'],
-    ['ค่าใช้จ่ายหลัก', 'Server + GPU + ห้อง Server', 'กล้อง / กล่องที่หน้างาน'],
-    ['ผลกระทบจาก AI boom 2026', { text: 'สูง — GPU ราคาขึ้นมาก', tone: 'alert' }, { text: 'ต่ำ — chip edge ราคานิ่ง', tone: 'success' }],
+    ['ที่เก็บภาระประมวลผล', 'Server กลาง 1 เครื่อง', 'กระจายไปแต่ละกล้อง'],
     ['เวลา deploy', 'เร็วถ้ากล้องเดิมพร้อม', 'กลาง — ติดตั้งทีละจุด'],
     ['ขยายระบบ', 'ต้องอัปเกรด Server', 'เพิ่ม 1 กล้อง = เพิ่ม 1 ตัว'],
     ['เครือข่ายล่ม', { text: 'ระบบหยุด', tone: 'alert' }, { text: 'ยังทำงานได้', tone: 'success' }],
@@ -558,7 +556,7 @@ function ComparePanel() {
 
         <div className="mt-5 p-4 rounded-lg" style={{ background: C.accentSoft, borderLeft: `3px solid ${C.accent}` }}>
           <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-            <strong style={{ color: C.accent }}>คำแนะนำของเรา:</strong> ในความจริงส่วนใหญ่ใช้ <em>"ผสม"</em> — ใช้กล้องเดิมที่มีคุณภาพดีต่อ Server กลาง + เสริมจุดที่กล้องเดิมไม่ครอบคลุมด้วย Edge AI · เป้าหมายคือเลือกแบบที่ทำให้งบของท่านครอบคลุม pain ได้มากที่สุด
+            <strong style={{ color: C.accent }}>คำแนะนำของเรา:</strong> ในความจริงส่วนใหญ่ใช้ <em>"ผสม"</em> — ใช้กล้องเดิมที่มีคุณภาพดีต่อ Server กลาง + เสริมจุดที่กล้องเดิมไม่ครอบคลุมด้วย Edge AI · เป้าหมายคือเลือกแบบที่ตรงกับ pain ของท่านมากที่สุด
           </div>
         </div>
       </div>
@@ -566,39 +564,26 @@ function ComparePanel() {
   );
 }
 
-// ── ROI Estimator panel ─────────────────────────────────────────────────────
-function ROIPanel() {
+// ── Coverage Estimator panel — ไม่พูดเรื่องเงิน ─────────────────────────────
+function CoveragePanel() {
   const [cameras, setCameras] = useState(8);
   const [approach, setApproach] = useState('B'); // 'A' or 'B'
 
-  // Estimation logic — relative cost ratios (ไม่ใช่ตัวเงิน)
+  // Logic: A (Server กลาง) ขยายยาก · B (Edge) ขยายทีละจุด
   const result = useMemo(() => {
-    // ratio: ค่า server : ค่ากล้อง+ติดตั้ง : ค่า software
-    const A = { server: 0.5, cameraInstall: 0.35, software: 0.15 };
-    const B = { server: 0.15, cameraInstall: 0.65, software: 0.20 };
-    const r = approach === 'A' ? A : B;
-
-    // เพิ่มกล้องส่งผลต่อ server cost ของ A มากกว่า B
-    const serverScale = approach === 'A' ? Math.pow(cameras / 8, 0.85) : Math.pow(cameras / 8, 0.4);
-    const cameraScale = cameras / 8;
-    const swScale = Math.sqrt(cameras / 8);
-
-    const serverPct = r.server * serverScale * 100;
-    const cameraPct = r.cameraInstall * cameraScale * 100;
-    const swPct = r.software * swScale * 100;
-    const total = serverPct + cameraPct + swPct;
-
-    return {
-      serverPct: Math.round((serverPct / total) * 100),
-      cameraPct: Math.round((cameraPct / total) * 100),
-      swPct: Math.round((swPct / total) * 100),
-      coverage: approach === 'B' ? Math.round(cameras * 1.6) : Math.round(cameras * 1.0),
-      totalIndex: Math.round(total),
-    };
+    // จำนวนจุดที่ครอบคลุมได้
+    const coverage = approach === 'B'
+      ? Math.round(cameras * 1.0)         // Edge: 1 กล้อง = 1 จุด
+      : Math.round(cameras * 1.0);        // A: ก็ 1 ต่อ 1 เหมือนกัน
+    // server load — A จะหนัก, B จะเบา
+    const serverLoad = approach === 'A' ? Math.min(100, cameras * 8) : Math.min(35, cameras * 1.5);
+    // Jetson box ที่ต้องใช้ (B only)
+    const jetsonBoxes = approach === 'B' ? Math.ceil(cameras / 8) : 0;
+    return { coverage, serverLoad: Math.round(serverLoad), jetsonBoxes };
   }, [cameras, approach]);
 
   return (
-    <PanelChrome title="ROI Estimator · จุดติดตั้ง vs โครงสร้างต้นทุน" subtitle="คำนวณเชิงสัดส่วน — ตัวเลขจริง (บาท) คุยรอบ 2">
+    <PanelChrome title="Coverage Estimator · จุดติดตั้ง vs โหลด Server" subtitle="ลองปรับจำนวนกล้อง — ดูว่าแต่ละแนวทางต้องใช้ทรัพยากรเท่าไร">
       <div className="p-6 md:p-8 space-y-6">
         {/* Inputs */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -629,40 +614,49 @@ function ROIPanel() {
           </div>
         </div>
 
-        {/* Cost composition bar */}
+        {/* Server load bar */}
         <div>
-          <div className="text-[13px] font-medium mb-2" style={{ color: C.text }}>โครงสร้างต้นทุน (เชิงสัดส่วน)</div>
-          <div className="flex h-12 rounded-lg overflow-hidden border" style={{ borderColor: C.surfaceSoft }}>
-            <div className="flex items-center justify-center text-[12px] font-semibold text-white transition-all"
-              style={{ background: C.alert, flex: result.serverPct }}>
-              Server {result.serverPct}%
-            </div>
-            <div className="flex items-center justify-center text-[12px] font-semibold text-white transition-all"
-              style={{ background: C.primary, flex: result.cameraPct }}>
-              กล้อง+ติดตั้ง {result.cameraPct}%
-            </div>
-            <div className="flex items-center justify-center text-[12px] font-semibold transition-all"
-              style={{ background: C.accent, color: C.primaryDeep, flex: result.swPct }}>
-              Software {result.swPct}%
-            </div>
+          <div className="flex justify-between items-baseline mb-2">
+            <span className="text-[13px] font-medium" style={{ color: C.text }}>โหลดของ Server กลาง (ประมาณการ)</span>
+            <span className="text-[14px] font-semibold" style={{ color: result.serverLoad > 70 ? C.alert : result.serverLoad > 40 ? C.accent : C.success }}>
+              {result.serverLoad}%
+            </span>
           </div>
-          <div className="flex flex-wrap gap-3 mt-2 text-[11.5px]" style={{ color: C.textMuted }}>
-            <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm inline-block" style={{ background: C.alert }}></span>Server (ราคาผันผวน 2026)</span>
-            <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm inline-block" style={{ background: C.primary }}></span>กล้อง / อุปกรณ์ติดตั้ง</span>
-            <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm inline-block" style={{ background: C.accent }}></span>Software + License</span>
+          <div className="h-4 rounded-full overflow-hidden" style={{ background: C.surfaceSoft }}>
+            <div className="h-full transition-all" style={{
+              width: `${result.serverLoad}%`,
+              background: result.serverLoad > 70 ? C.alert : result.serverLoad > 40 ? C.accent : C.success,
+            }}/>
+          </div>
+          <div className="text-[11.5px] mt-1.5" style={{ color: C.textMuted }}>
+            {approach === 'A'
+              ? 'แนวทาง A: Server กลางต้องประมวลผลทุกกล้องพร้อมกัน — ยิ่งกล้องเยอะ Server ยิ่งหนัก'
+              : 'แนวทาง B: ภาระอยู่ที่ Edge AI box ที่หน้างาน — Server กลางทำหน้าที่แค่รวบรวม event'}
           </div>
         </div>
 
         {/* Outcome cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard label="พื้นที่ครอบคลุม" value={`${result.coverage} จุด`} sub={approach === 'B' ? 'Edge AI ครอบคลุมได้กว้างกว่าด้วยงบเท่ากัน (ประมาณการ)' : 'Server กลางจำกัดด้วยกำลัง GPU (ประมาณการ)'} accent={C.primary}/>
-          <StatCard label="ค่า Server (สัดส่วน)" value={`${result.serverPct}%`} sub={approach === 'A' ? 'ทุ่มไปที่ GPU server — ราคาผันผวน' : 'ใช้ Edge AI box แทน — ประหยัด'} accent={approach === 'A' ? C.alert : C.success}/>
-          <StatCard label="ความยืดหยุ่นเพิ่มจุด" value={approach === 'A' ? 'จำกัด' : 'ทีละจุด'} sub={approach === 'A' ? 'ต้องอัปเกรด Server ทุกครั้ง' : 'เพิ่ม 1 กล้อง = เพิ่ม 1 ตัว'} accent={approach === 'A' ? C.accent : C.success}/>
+          <StatCard
+            label="ครอบคลุม"
+            value={`${result.coverage} จุด`}
+            sub={`${cameras} กล้อง = ${result.coverage} จุดสังเกตการณ์`}
+            accent={C.primary}/>
+          <StatCard
+            label={approach === 'B' ? 'Edge AI Box ที่ต้องใช้' : 'Server กลาง'}
+            value={approach === 'B' ? `${result.jetsonBoxes} ตัว` : '1 เครื่อง'}
+            sub={approach === 'B' ? 'Jetson Orin Nano · 1 ตัวรองรับ 8 กล้อง' : 'รองรับทุกกล้องในระบบ'}
+            accent={C.primary}/>
+          <StatCard
+            label="ความยืดหยุ่นเพิ่มจุด"
+            value={approach === 'A' ? 'จำกัด' : 'ทีละจุด'}
+            sub={approach === 'A' ? 'ต้องอัปเกรด Server ทุกครั้ง' : 'เพิ่ม 1 Edge box = อีก 8 กล้อง'}
+            accent={approach === 'A' ? C.accent : C.success}/>
         </div>
 
         <div className="rounded-xl p-4" style={{ background: C.surface, borderLeft: `3px solid ${C.primary}` }}>
           <div className="text-[12.5px] leading-relaxed" style={{ color: C.text }}>
-            <strong style={{ color: C.primary }}>หมายเหตุ:</strong> ตัวเลขทั้งหมดเป็นการเปรียบเทียบ<em>เชิงสัดส่วน</em> (ประมาณการ) เพื่อให้เห็นภาพการกระจายงบ — ตัวเงินจริงต้องอ้างอิงตามจำนวนกล้อง · สเปก · ระยะทางเดินสายของแต่ละ site
+            <strong style={{ color: C.primary }}>วิธีอ่าน:</strong> ถ้า Server load &gt; 70% หมายความว่า Server กลางใกล้เต็ม — ต้องอัปเกรด หรือเปลี่ยนมาใช้แนวทาง B (Edge AI) ที่กระจายโหลดให้กล่อง AI ที่หน้างาน
           </div>
         </div>
       </div>
@@ -683,7 +677,7 @@ function JetsonPanel() {
       streams1080p: '4-8',
       streams4k: '1-2',
       power: '5-10W',
-      price: 'หาซื้อยาก',
+      useCase: 'ไม่แนะนำใช้ในโครงการใหม่',
       note: 'NVIDIA EOL ในปี 2024 — ปัจจุบัน stock จำกัด · ไม่แนะนำสำหรับโครงการใหม่',
       bad: true,
     },
@@ -693,7 +687,7 @@ function JetsonPanel() {
       streams1080p: '8-12',
       streams4k: '2-4',
       power: '7-15W',
-      price: '~22,000-28,000 ฿',
+      useCase: 'Pilot · 4-8 กล้อง',
       note: 'รุ่นที่นิยมใช้ปัจจุบัน · เหมาะกับ pilot 4-8 กล้อง',
     },
     'orin-nx': {
@@ -702,7 +696,7 @@ function JetsonPanel() {
       streams1080p: '16-24',
       streams4k: '4-6',
       power: '10-25W',
-      price: '~38,000-55,000 ฿',
+      useCase: 'โครงการขยาย · 10-20 กล้อง',
       note: 'แรงกว่า · เหมาะกับโครงการขยาย 10-20 กล้อง',
     },
   };
@@ -721,7 +715,7 @@ function JetsonPanel() {
               — เหมือน "สมอง AI ขนาดเท่า Wi-Fi router" ที่กินไฟน้อย ทำงานได้ตลอด 24 ชั่วโมง · ไม่ต้องส่งวิดีโอไป cloud
             </p>
             <p style={{ color: '#FFFFFFCC' }}>
-              <strong style={{ color: C.accent }}>เหตุที่เราเลือก Jetson:</strong> มีตั้งแต่ NVIDIA โดยตรง · มี SDK / สอนใช้เยอะ · ราคา<em>นิ่งกว่า</em> GPU server มาก · กินไฟ 7-25W เท่าหลอดไฟ LED 1 ดวง
+              <strong style={{ color: C.accent }}>เหตุที่เราเลือก Jetson:</strong> ผลิตโดย NVIDIA โดยตรง · มี SDK และ ecosystem พร้อมใช้ · ใช้กันแพร่หลายในงาน Edge AI ทั่วโลก · กินไฟ 7-25W เท่าหลอดไฟ LED 1 ดวง · ทำงานต่อเนื่อง 24 ชั่วโมงได้
           </p>
           </div>
         </div>
@@ -770,9 +764,8 @@ function JetsonPanel() {
               <div className="text-[10px]" style={{ color: C.textMuted }}>(เท่าหลอด LED)</div>
             </div>
             <div>
-              <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>ราคาตลาด</div>
-              <div className="text-[14px] font-semibold" style={{ color: m.bad ? C.alert : C.text }}>{m.price}</div>
-              <div className="text-[10px]" style={{ color: C.textMuted }}>(ประมาณการ Q2 2026)</div>
+              <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>เหมาะสำหรับ</div>
+              <div className="text-[13px] font-semibold leading-snug" style={{ color: m.bad ? C.alert : C.primaryDeep }}>{m.useCase}</div>
             </div>
           </div>
           <div className="mt-4 pt-4 text-[13px] leading-relaxed" style={{ borderTop: `1px solid ${C.surfaceSoft}`, color: m.bad ? C.alert : C.text }}>
@@ -968,7 +961,7 @@ function TabSwitcher() {
           {active === 'jetson' && <JetsonPanel/>}
           {active === 'lpr' && <LPRPanel/>}
           {active === 'compare' && <ComparePanel/>}
-          {active === 'roi' && <ROIPanel/>}
+          {active === 'coverage' && <CoveragePanel/>}
         </motion.div>
       </AnimatePresence>
     </div>
@@ -996,13 +989,13 @@ export default function CCTVAI() {
               <span className="block" style={{ color: C.accent }}>เลือกถูก ใช้งานได้จริง</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="text-[17px] md:text-[19px] leading-relaxed max-w-3xl" style={{ color: '#FFFFFFCC' }}>
-              ก่อนตัดสินใจซื้อ "ระบบเต็ม" ขอชวนเข้าใจหลักการ 2 แบบของการต่อกล้องกับ AI ที่มีในตลาด — เพื่อให้ท่านเลือกแบบที่เหมาะกับงาน · งบ · และกล้องที่หน่วยงานมีอยู่
+              ก่อนตัดสินใจซื้อ "ระบบเต็ม" ขอชวนเข้าใจหลักการ 2 แบบของการต่อกล้องกับ AI ที่มีในตลาด — เพื่อให้ท่านเลือกแบบที่เหมาะกับงาน · ความเร็วที่ต้องการ · และกล้องที่หน่วยงานมีอยู่
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-3 mt-8">
               <Pill variant="accent">หลักการ A · Server กลาง</Pill>
               <Pill variant="accent">หลักการ B · Edge AI</Pill>
               <Pill variant="muted">ตัวอย่าง · LPR + Route Map</Pill>
-              <Pill variant="muted">ROI Estimator</Pill>
+              <Pill variant="muted">Coverage Estimator</Pill>
             </motion.div>
             <motion.div variants={fadeUp} className="flex gap-3 mt-8">
               <CTAButton primary onClick={() => document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' })}>เริ่มสำรวจ</CTAButton>
@@ -1112,7 +1105,7 @@ export default function CCTVAI() {
                 คลิกแท็บเพื่อสลับมุมมอง
               </h2>
               <p className="text-[15px] leading-relaxed" style={{ color: C.textMuted }}>
-                แต่ละมุมเปิดให้ดูสถาปัตยกรรม · สิ่งที่ทำได้ · ข้อจำกัด · ข้อควรระวัง — มี ROI Estimator + วิดีโอ LPR ให้ลองคลิกจริง
+                แต่ละมุมเปิดให้ดูสถาปัตยกรรม · สิ่งที่ทำได้ · ข้อจำกัด · ข้อควรระวัง — มี Coverage Estimator + วิดีโอ LPR ให้ลองคลิกจริง
               </p>
             </motion.div>
 
@@ -1177,7 +1170,7 @@ export default function CCTVAI() {
             อยากปรึกษาก่อนตัดสินใจ?
           </h2>
           <p className="text-[16px] leading-relaxed mb-8" style={{ color: C.textMuted }}>
-            ทีมของเราเข้าไปคุยถึงหน่วยงานเพื่อประเมินกล้องเดิม · pain ที่อยากแก้ · และเสนอ scope ที่ตรงกับท่านโดยไม่มีค่าใช้จ่าย
+            ทีมของเราเข้าไปคุยถึงหน่วยงานเพื่อประเมินกล้องเดิม · pain ที่อยากแก้ · และเสนอ scope ที่ตรงกับท่านโดยไม่มีข้อผูกพัน
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <CTAButton primary>นัดทีมเข้าหน่วยงาน</CTAButton>
