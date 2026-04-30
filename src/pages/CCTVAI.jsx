@@ -188,8 +188,8 @@ function VerdictCard({ tone, title, items }) {
 
 // ── Tab definitions ─────────────────────────────────────────────────────────
 const TABS = [
-  { key: 'approachA', label: 'แนวทาง A', sub: 'กล้องเดิม + Server กลาง' },
-  { key: 'approachB', label: 'แนวทาง B', sub: 'Edge AI ที่หน้างาน' },
+  { key: 'approachA', label: 'แนวทาง A · แนะนำ', sub: 'กล้องเดิม + Server กลาง · stable', recommended: true },
+  { key: 'approachB', label: 'แนวทาง B', sub: 'กระจายที่หน้างาน · เคสเฉพาะ' },
   { key: 'lpr', label: 'ตัวอย่าง use-case', sub: 'LPR · ค้นหาทะเบียน' },
   { key: 'compare', label: 'เปรียบเทียบ', sub: 'A vs B เคียงข้างกัน' },
   { key: 'coverage', label: 'Coverage Estimator', sub: 'จุดติดตั้ง · โหลด Server' },
@@ -259,8 +259,36 @@ function ApproachAPanel() {
   const v = VARIANTS[variant];
 
   return (
-    <PanelChrome title="แนวทาง A · ใช้กล้องเดิม + Server AI กลาง" subtitle="ทำได้ 2 รูปแบบย่อย — เลือกตามความเร็วที่ต้องการ และความซับซ้อนของการติดตั้ง">
+    <PanelChrome title="แนวทาง A · ใช้กล้องเดิม + Server AI กลาง" subtitle="Solution หลักที่เราแนะนำ · stable · พร้อมใช้งานจริง">
       <div className="p-6 md:p-8 space-y-6">
+
+        {/* Stable / recommended banner */}
+        <div className="rounded-xl p-4 flex gap-3 items-start" style={{ background: C.successSoft, borderLeft: `4px solid ${C.success}` }}>
+          <span className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[14px] shrink-0" style={{ background: C.success, color: '#FFF' }}>★</span>
+          <div className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>
+            <strong style={{ color: '#3B6D11' }}>นี่คือ solution หลักที่เราแนะนำ:</strong> ใช้งานจริงในหลายโครงการ · stable · มีทีม support พร้อม · ครอบคลุม use-case 80% ที่หน่วยงาน อปท. ต้องการ — เริ่มต้นเร็ว · ใช้กล้องเดิมต่อได้
+          </div>
+        </div>
+
+        {/* Use-case pills — ทำได้จริง */}
+        <div>
+          <div className="text-[12px] font-semibold uppercase tracking-wider mb-2" style={{ color: C.textMuted, letterSpacing: '2px' }}>Application ที่ทำได้จริงในแนวทางนี้</div>
+          <div className="flex flex-wrap gap-2">
+            <Pill variant="primary">🔢 LPR · ค้นทะเบียนรถ</Pill>
+            <Pill variant="primary">📦 นับ / จำแนก object (รถ · คน · ขยะ)</Pill>
+            <Pill variant="primary">👤 Face Recognition</Pill>
+            <Pill variant="primary">🚦 วินัยจราจร · จอผิด · ย้อนศร · ฝ่าไฟแดง</Pill>
+            <Pill variant="alert">PDPA: Face ต้องอยู่ภายใต้นโยบาย</Pill>
+          </div>
+        </div>
+
+        {/* Real-time disclosure */}
+        <div className="rounded-xl p-4 flex gap-3 items-start" style={{ background: C.accentSoft, borderLeft: `4px solid ${C.accent}` }}>
+          <span className="text-[18px] shrink-0" style={{ color: C.accent }}>ℹ️</span>
+          <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
+            <strong style={{ color: C.accent }}>เกี่ยวกับความเร็ว:</strong> บาง application อาจ<em>ไม่ใช่ real-time แบบเดี๋ยวนั้น</em> (อาจหน่วง 1-2 วินาที) — แต่ระบบยังให้ข้อมูล / พฤติกรรมครบถ้วน หน่วยงาน<strong>เห็นข้อมูลย้อนหลังเอาไปบริหารต่อได้</strong> (forensic / รายงาน / วิเคราะห์ trend) · กรณีที่ต้องการ <strong>real-time จริง ๆ</strong> (เช่น แจ้งเตือนรถวิ่งย้อนศร<em>ขณะเกิดเหตุ</em>) → เราแนะนำ A2 (Dual stream) ที่ผมจะอธิบายด้านล่าง
+          </div>
+        </div>
 
         {/* Sub-variant toggle */}
         <div>
@@ -344,11 +372,20 @@ function ApproachAPanel() {
   );
 }
 
-// ── Approach B panel ────────────────────────────────────────────────────────
+// ── Approach B panel — สำหรับเคสเฉพาะ (network ไม่เสถียร / outdoor / กระจายไกล) ─
 function ApproachBPanel() {
   return (
-    <PanelChrome title="แนวทาง B · ใช้ AI IIoT — ประมวลผลที่หน้างาน (Edge AI)" subtitle="กล้อง / กล่อง AI คิดเองที่จุดติดตั้ง — ส่งเฉพาะ event เข้า Server เบา">
+    <PanelChrome title="แนวทาง B · กระจาย Edge AI ที่หน้างาน" subtitle="สำหรับเคสเฉพาะ — เครือข่ายไม่เสถียร · outdoor · พื้นที่กระจายไกล">
       <div className="p-6 md:p-8 space-y-6">
+
+        {/* Status banner — not the primary recommendation */}
+        <div className="rounded-xl p-4 flex gap-3 items-start" style={{ background: C.accentSoft, borderLeft: `4px solid ${C.accent}` }}>
+          <span className="text-[18px] shrink-0" style={{ color: C.accent }}>ℹ️</span>
+          <div className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>
+            <strong style={{ color: C.accent }}>หมายเหตุ:</strong> แนวทาง B ออกแบบมาสำหรับ<em>เคสเฉพาะ</em> ที่แนวทาง A ทำไม่ได้ดี — เช่น กล้องอยู่นอกอาคารและเครือข่ายไม่เสถียร · กระจายในพื้นที่กว้างมาก · จุดที่ต้องการ real-time ทันทีและขาด network ไม่ได้ · <strong>solution หลักที่เราแนะนำให้หน่วยงาน อปท. ส่วนใหญ่คือ "แนวทาง A"</strong>
+          </div>
+        </div>
+
         <ArchDiagram
           accent={C.accent}
           nodes={[
@@ -357,13 +394,14 @@ function ApproachBPanel() {
             { icon: '📡', label: 'ส่งเฉพาะ Event', sub: 'ไม่ส่งวิดีโอทั้งวัน', light: true },
             { icon: '📊', label: 'Server เบา + Dashboard', sub: 'Cloud หรือ on-prem' },
           ]}
-          caption="กล้อง / กล่อง AI ที่ติดที่หน้างานคิดเองได้ → ถ้าไม่มีอะไรเกิด ไม่ต้องส่งอะไร → เกิดเหตุค่อยส่งเฉพาะ 'เหตุการณ์' เข้า Server → Server ทำงานเบา ระบบไม่ต้องอัปเกรดบ่อย"
+          caption="Edge AI Computer หรือกล้อง AI ที่ติดตั้งใกล้กล้อง → คิดเองที่หน้างาน → เกิดเหตุค่อยส่งเฉพาะ 'เหตุการณ์' ขึ้น Server กลาง → เหมาะเมื่อ network ไม่เสถียร หรือต้องการให้ระบบทำงานต่อแม้เน็ตล่ม"
         />
 
-        <div className="rounded-xl p-4 flex gap-3 items-start" style={{ background: C.successSoft, borderLeft: `4px solid ${C.success}` }}>
-          <span className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[14px] shrink-0" style={{ background: C.success, color: '#FFF' }}>★</span>
+        {/* Best-for callout */}
+        <div className="rounded-xl p-4 flex gap-3 items-start" style={{ background: C.surface, borderLeft: `4px solid ${C.primary}` }}>
+          <span className="text-[18px] shrink-0">💡</span>
           <div className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>
-            <strong style={{ color: '#3B6D11' }}>เหตุผลที่เราแนะนำ:</strong> Server กลางใช้สเปคต่ำ · ขยายทีละจุดได้โดยไม่ต้องอัปเกรด · ตอบสนอง Real-time ที่หน้างาน · เหมาะกับการเริ่ม pilot แล้วค่อยเพิ่มจุดตามผล
+            <strong style={{ color: C.primary }}>เลือก B เมื่อ:</strong> กล้องอยู่นอกอาคาร · พื้นที่ที่ Wi-Fi/4G/5G ไม่เสถียร · ต้องการให้ระบบทำงานได้แม้เน็ตล่ม · จุดที่ต้องการ real-time ทันที (เช่น ป้อมยาม · จุดเก็บค่าจอดรถ · แยกจราจรที่ต้องประมวลผลขณะรถวิ่ง)
           </div>
         </div>
 
@@ -376,15 +414,16 @@ function ApproachBPanel() {
             'ถ้าเครือข่ายล่ม กล้องยังทำงานเองได้',
           ]}/>
           <VerdictCard tone="warn" title="ข้อจำกัด" items={[
-            'ต้องลงทุนกล้อง / กล่องใหม่ (ใช้ของเดิมไม่ได้)',
-            'AI model ฝังที่กล้อง → อัปเดตทีละตัว',
-            'ต้องเลือกรุ่นให้ตรง use-case ตั้งแต่ซื้อ',
-            'ความสามารถ AI ขึ้นกับ chip ที่เลือก',
+            'ติดตั้งซับซ้อนกว่า A — ต้องไปแต่ละจุด',
+            'ต้องลงทุนอุปกรณ์ใหม่ที่หน้างาน',
+            'AI model ฝังที่จุด → อัปเดตทีละตัว',
+            'ต้องเลือกสเปกให้ตรง use-case ตั้งแต่ซื้อ',
+            'Solution ยังพัฒนาอยู่ — ไม่ stable เท่า A',
           ]}/>
           <VerdictCard tone="bad" title="ต้องระวัง" items={[
-            'เลือกผิดรุ่น = ทำ use-case ใหม่ไม่ได้',
+            'เลือกผิดสเปก = ทำ use-case ใหม่ไม่ได้',
             'ต้องวางแผนการอัปเดต model ระยะยาว',
-            'กล้องถูกขโมย = ข้อมูลรั่ว → ต้องมี wipe',
+            'อุปกรณ์ถูกขโมย = ข้อมูลรั่ว → ต้องมี wipe',
             'ต้องมีไฟ + เครือข่ายที่จุดติดตั้งจริง',
           ]}/>
         </div>
@@ -512,14 +551,15 @@ function LPRPanel() {
 // ── Compare panel ───────────────────────────────────────────────────────────
 function ComparePanel() {
   const rows = [
+    ['Solution พร้อมใช้งาน', { text: '✓ stable · ใช้จริงในหลายโครงการ', tone: 'success' }, { text: 'สำหรับเคสเฉพาะ · พัฒนาอยู่', tone: 'alert' }],
     ['กล้องที่ใช้', 'กล้องเดิมของหน่วยงาน', 'กล้อง / กล่อง AI ใหม่'],
-    ['ที่เก็บภาระประมวลผล', 'Server กลาง 1 เครื่อง', 'กระจายไปแต่ละกล้อง'],
-    ['เวลา deploy', 'เร็วถ้ากล้องเดิมพร้อม', 'กลาง — ติดตั้งทีละจุด'],
-    ['ขยายระบบ', 'ต้องอัปเกรด Server', 'เพิ่ม 1 กล้อง = เพิ่ม 1 ตัว'],
+    ['ที่เก็บภาระประมวลผล', 'Server กลาง 1 เครื่อง', 'กระจายไปแต่ละจุด'],
+    ['เวลา deploy', { text: 'เร็ว · ภายใน 1 วัน', tone: 'success' }, 'ปานกลาง — ติดตั้งทีละจุด'],
+    ['ขยายระบบ', 'ต้องอัปเกรด Server', 'เพิ่ม 1 จุด = เพิ่ม 1 ตัว'],
     ['เครือข่ายล่ม', { text: 'ระบบหยุด', tone: 'alert' }, { text: 'ยังทำงานได้', tone: 'success' }],
     ['ความยืดหยุ่น AI', 'เปลี่ยน model ที่ server ทุกกล้องได้พร้อมกัน', 'fix ที่ chip — อัปเดตทีละตัว'],
     ['PDPA / Privacy', 'วิดีโอวิ่งทั้งวัน — ต้องเข้ารหัส', 'ส่งเฉพาะ event — ความเสี่ยงต่ำกว่า'],
-    ['เหมาะกับ pain แบบไหน', 'ดูภาพรวมจุดเดียว (control room)', 'ตรวจจับเหตุการณ์เฉพาะจุด · กระจาย'],
+    ['เหมาะกับ pain แบบไหน', 'ดูภาพรวม · forensic · LPR · จราจร · นับ object · Face (PDPA)', 'พื้นที่ outdoor · network ไม่เสถียร · กระจายไกล'],
   ];
 
   const renderCell = (cell) => {
@@ -558,7 +598,7 @@ function ComparePanel() {
 
         <div className="mt-5 p-4 rounded-lg" style={{ background: C.accentSoft, borderLeft: `3px solid ${C.accent}` }}>
           <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-            <strong style={{ color: C.accent }}>คำแนะนำของเรา:</strong> ในความจริงส่วนใหญ่ใช้ <em>"ผสม"</em> — ใช้กล้องเดิมที่มีคุณภาพดีต่อ Server กลาง + เสริมจุดที่กล้องเดิมไม่ครอบคลุมด้วย Edge AI · เป้าหมายคือเลือกแบบที่ตรงกับ pain ของท่านมากที่สุด
+            <strong style={{ color: C.accent }}>คำแนะนำของเรา:</strong> สำหรับหน่วยงาน อปท. ส่วนใหญ่ → เริ่มที่ <strong style={{ color: '#3B6D11' }}>แนวทาง A</strong> เพราะเป็น solution ที่ <strong>stable · พร้อมใช้งานจริง</strong> · ครอบคลุม 80% ของ use-case ที่ต้องการ · ใช้ <strong>แนวทาง B เฉพาะเคสพิเศษ</strong> (กล้อง outdoor · network ไม่เสถียร · ต้องการ real-time แบบขาด network ไม่ได้)
           </div>
         </div>
       </div>
@@ -569,7 +609,7 @@ function ComparePanel() {
 // ── Coverage Estimator panel — ไม่พูดเรื่องเงิน ─────────────────────────────
 function CoveragePanel() {
   const [cameras, setCameras] = useState(8);
-  const [approach, setApproach] = useState('B'); // 'A' or 'B'
+  const [approach, setApproach] = useState('A'); // default A (stable solution)
 
   // Logic: A (Server กลาง) ขยายยาก · B (Edge) ขยายทีละจุด
   const result = useMemo(() => {
@@ -609,7 +649,7 @@ function CoveragePanel() {
                   style={approach === k
                     ? { background: '#FFF', color: C.text, boxShadow: `0 1px 3px ${C.primary}22`, fontWeight: 600 }
                     : { background: 'transparent', color: C.textMuted, border: 'none' }}>
-                  แนวทาง {k} · {k === 'A' ? 'Server กลาง' : 'Edge AI'}
+                  แนวทาง {k} · {k === 'A' ? 'Server กลาง · แนะนำ' : 'Edge AI · เคสเฉพาะ'}
                 </button>
               ))}
             </div>
@@ -1052,8 +1092,8 @@ export default function CCTVAI() {
               ก่อนตัดสินใจซื้อ "ระบบเต็ม" ขอชวนเข้าใจหลักการ 2 แบบของการต่อกล้องกับ AI ที่มีในตลาด — เพื่อให้ท่านเลือกแบบที่เหมาะกับงาน · ความเร็วที่ต้องการ · และกล้องที่หน่วยงานมีอยู่
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-3 mt-8">
-              <Pill variant="accent">หลักการ A · Server กลาง</Pill>
-              <Pill variant="accent">หลักการ B · Edge AI</Pill>
+              <Pill variant="accent">★ หลักการ A · แนะนำ · stable</Pill>
+              <Pill variant="muted">หลักการ B · เคสเฉพาะ</Pill>
               <Pill variant="muted">ตัวอย่าง · LPR + Route Map</Pill>
               <Pill variant="muted">Coverage Estimator</Pill>
             </motion.div>
@@ -1210,11 +1250,11 @@ export default function CCTVAI() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <div className="text-[16px] font-semibold mb-2" style={{ color: '#FFF' }}>ขั้นที่ 1 · Pilot 2-3 จุด</div>
-                  <p className="text-[13.5px] leading-relaxed" style={{ color: '#FFFFFFCC' }}>เลือก pain ที่ชัดที่สุด 1 เรื่อง + ติด 2-3 จุด · ใช้แบบ B ก่อน เพราะลงทุน Server น้อย · ทดสอบ 60-90 วัน</p>
+                  <p className="text-[13.5px] leading-relaxed" style={{ color: '#FFFFFFCC' }}>เลือก pain ที่ชัดที่สุด 1 เรื่อง + ติด 2-3 จุด · ใช้ <strong style={{ color: '#FFF' }}>แนวทาง A</strong> ก่อน เพราะ stable · พร้อมใช้งานจริง · ทดสอบ 60-90 วัน</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <div className="text-[16px] font-semibold mb-2" style={{ color: '#FFF' }}>ขั้นที่ 2 · ขยายตามผล</div>
-                  <p className="text-[13.5px] leading-relaxed" style={{ color: '#FFFFFFCC' }}>ถ้า pilot ได้ผล → เพิ่มจุดทีละจุด · ค่อยพิจารณาเสริม Server กลางเมื่อจุดติดตั้งเกิน 30 จุด</p>
+                  <p className="text-[13.5px] leading-relaxed" style={{ color: '#FFFFFFCC' }}>ถ้า pilot ได้ผล → เพิ่มจุดทีละจุด · ค่อยพิจารณาเสริม <strong style={{ color: '#FFF' }}>แนวทาง B</strong> เฉพาะจุด outdoor หรือพื้นที่ network ไม่เสถียร</p>
                 </div>
               </div>
             </motion.div>
