@@ -188,10 +188,11 @@ function VerdictCard({ tone, title, items }) {
 
 // ── Tab definitions ─────────────────────────────────────────────────────────
 const TABS = [
-  { key: 'approachA', label: 'แนวทาง A · แนะนำ', sub: 'กล้องเดิม + Server กลาง · stable', recommended: true },
+  { key: 'approachA', label: 'แนวทาง A · แนะนำ', sub: 'On-Premise · stable', recommended: true },
   { key: 'approachB', label: 'แนวทาง B', sub: 'กระจายที่หน้างาน · เคสเฉพาะ' },
+  { key: 'cloud', label: 'Cloud Option', sub: 'บริหารจากที่ไหนก็ได้' },
   { key: 'lpr', label: 'ตัวอย่าง use-case', sub: 'LPR · ค้นหาทะเบียน' },
-  { key: 'compare', label: 'เปรียบเทียบ', sub: 'A vs B เคียงข้างกัน' },
+  { key: 'compare', label: 'เปรียบเทียบ', sub: 'A · B · Cloud' },
   { key: 'coverage', label: 'Coverage Estimator', sub: 'จุดติดตั้ง · โหลด Server' },
 ];
 
@@ -427,6 +428,154 @@ function ApproachBPanel() {
             'ต้องมีไฟ + เครือข่ายที่จุดติดตั้งจริง',
           ]}/>
         </div>
+      </div>
+    </PanelChrome>
+  );
+}
+
+// ── Cloud Option panel ──────────────────────────────────────────────────────
+function CloudPanel() {
+  return (
+    <PanelChrome title="Cloud Option · บริหารระบบจากที่ไหนก็ได้" subtitle="สำหรับโครงการที่ลูกค้าอยู่ไกล · ต้องการ remote support · ไม่อยากดูแล Server เอง">
+      <div className="p-6 md:p-8 space-y-6">
+
+        {/* Pain → Solution */}
+        <div className="rounded-xl p-5 md:p-6" style={{ background: C.primaryDeep, color: '#FFF' }}>
+          <Eyebrow color={C.accent}>เหมาะสำหรับเมื่อ</Eyebrow>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[13.5px] leading-relaxed">
+            <div className="rounded-lg p-4" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <div className="text-[20px] mb-2">🌏</div>
+              <strong style={{ color: '#FFF' }}>หน่วยงานอยู่ไกล</strong>
+              <p style={{ color: '#FFFFFFCC' }} className="mt-1">หลายจังหวัด · ทีมเรา/หน่วยงาน เข้าไป support ที่ site ลำบาก</p>
+            </div>
+            <div className="rounded-lg p-4" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <div className="text-[20px] mb-2">👨‍💻</div>
+              <strong style={{ color: '#FFF' }}>หน่วยงานไม่มีทีม IT</strong>
+              <p style={{ color: '#FFFFFFCC' }} className="mt-1">ไม่ต้องการดูแล Server เอง · อยากให้ทีมเรา monitor ระบบให้ remote</p>
+            </div>
+            <div className="rounded-lg p-4" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <div className="text-[20px] mb-2">📱</div>
+              <strong style={{ color: '#FFF' }}>ผู้บริหารต้องการดูจากมือถือ</strong>
+              <p style={{ color: '#FFFFFFCC' }} className="mt-1">ดู dashboard ผ่าน app ที่ไหนก็ได้ · ไม่ต้องเข้า office</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Architecture: Hybrid Cloud */}
+        <ArchDiagram
+          accent={C.primary}
+          nodes={[
+            { icon: '📹', label: 'กล้องเดิม', sub: 'ของหน่วยงาน' },
+            { icon: '🧠', label: 'Edge AI ที่หน่วยงาน', sub: 'ทำ AI · เก็บภาพ raw', light: true },
+            { icon: '☁️', label: 'Cloud (Thailand)', sub: 'AWS BKK · NIPA · GCP BKK' },
+            { icon: '📱', label: 'Dashboard / App', sub: 'เข้าจากที่ไหนก็ได้' },
+          ]}
+          caption="ภาพ raw ยังเก็บที่ห้อง Server หน่วยงาน (PDPA-safe) → ส่งเฉพาะ event + thumbnail + metadata ขึ้น Cloud ในไทย → ผู้บริหาร / ทีมเรา เข้า dashboard ผ่าน Cloud ได้ทันที · ไม่ต้องไป site"
+        />
+
+        {/* Cloud Provider — เก็บข้อมูลในไทย */}
+        <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
+          <div className="text-[14px] font-semibold mb-3" style={{ color: C.primaryDeep }}>Cloud Provider ที่ใช้ — เก็บข้อมูลในประเทศไทย (PDPA-safe)</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-lg p-4" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+              <div className="text-[15px] font-semibold mb-1" style={{ color: C.primaryDeep }}>AWS Bangkok</div>
+              <div className="text-[11px] mb-2" style={{ color: C.textMuted }}>ap-southeast-7 region</div>
+              <p className="text-[12px]" style={{ color: C.text }}>Data center ในกรุงเทพฯ · มาตรฐานสากล · มี PDPA compliance</p>
+            </div>
+            <div className="rounded-lg p-4" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+              <div className="text-[15px] font-semibold mb-1" style={{ color: C.primaryDeep }}>NIPA Cloud Thailand</div>
+              <div className="text-[11px] mb-2" style={{ color: C.textMuted }}>บริษัทไทย 100%</div>
+              <p className="text-[12px]" style={{ color: C.text }}>Data center ในกรุงเทพฯ + ภูเก็ต · ทีม support ไทย · ราคาเหมาะ</p>
+            </div>
+            <div className="rounded-lg p-4" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+              <div className="text-[15px] font-semibold mb-1" style={{ color: C.primaryDeep }}>Google Cloud Bangkok</div>
+              <div className="text-[11px] mb-2" style={{ color: C.textMuted }}>asia-southeast2 region</div>
+              <p className="text-[12px]" style={{ color: C.text }}>Data center ในกรุงเทพฯ · เครื่องมือ AI ครบครัน</p>
+            </div>
+          </div>
+          <div className="mt-3 text-[12px] leading-relaxed" style={{ color: C.textMuted }}>
+            <strong style={{ color: C.primary }}>หมายเหตุ:</strong> ทุก provider ที่กล่าวถึงเก็บ Data ในประเทศไทย — <em>ภาพประชาชนไม่ออกนอกประเทศ</em> · ตอบโจทย์ พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA) · ทีมเราเลือก provider ที่เหมาะกับโครงการแต่ละโครงการ
+          </div>
+        </div>
+
+        {/* Balance — งบ vs ความสะดวก */}
+        <div className="rounded-2xl p-5 md:p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+          <div className="text-[14px] font-semibold mb-1" style={{ color: C.primaryDeep }}>เปรียบเทียบ — งบลูกค้า vs ความสะดวกในการดูแล</div>
+          <div className="text-[12.5px] mb-4" style={{ color: C.textMuted }}>เลือกแบบที่ตรงกับลักษณะการใช้งานของหน่วยงาน</div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-[12.5px]">
+              <thead>
+                <tr style={{ background: C.surfaceSoft }}>
+                  <th className="text-left px-4 py-3 font-semibold uppercase tracking-wider text-[11px]" style={{ color: C.primaryDeep, width: '24%' }}>ประเด็น</th>
+                  <th className="text-left px-4 py-3 font-semibold uppercase tracking-wider text-[11px]" style={{ color: C.primaryDeep }}>A · On-Premise</th>
+                  <th className="text-left px-4 py-3 font-semibold uppercase tracking-wider text-[11px]" style={{ color: C.primaryDeep }}>Hybrid (แนะนำ)</th>
+                  <th className="text-left px-4 py-3 font-semibold uppercase tracking-wider text-[11px]" style={{ color: C.primaryDeep }}>Pure Cloud</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ['ที่เก็บภาพ raw', 'หน่วยงาน', 'หน่วยงาน', 'Cloud (ไทย)'],
+                  ['Compute (AI)', 'หน่วยงาน', 'หน่วยงาน', 'Cloud'],
+                  ['Dashboard', 'หน่วยงาน', 'Cloud', 'Cloud'],
+                  ['งบลูกค้า', { text: 'CapEx · จ่ายครั้งเดียว', tone: 'success' }, 'CapEx + รายปีน้อย', { text: 'OpEx · รายเดือนตลอด', tone: 'alert' }],
+                  ['ความสะดวกของเรา', { text: 'ต้องไป site', tone: 'alert' }, { text: 'remote support ได้', tone: 'success' }, { text: 'remote เต็มที่', tone: 'success' }],
+                  ['Bandwidth ที่ใช้', 'ต่ำ (LAN)', 'กลาง (event)', { text: 'สูง (HD ทั้งวัน)', tone: 'alert' }],
+                  ['เน็ตหน่วยงานล่ม', 'ระบบทำงานต่อ', 'AI ทำงานต่อ · dashboard ดับ', { text: 'ระบบหยุด', tone: 'alert' }],
+                  ['PDPA', { text: '✓ safest', tone: 'success' }, { text: '✓ ภาพอยู่ในไทย', tone: 'success' }, { text: '✓ Cloud ในไทย', tone: 'success' }],
+                  ['การ update AI model', 'ทีมเข้า site', { text: 'OTA · remote', tone: 'success' }, { text: 'OTA · remote', tone: 'success' }],
+                  ['เหมาะกับ', 'หน่วยงานมี IT · งบ CapEx', '⭐ ส่วนใหญ่', 'หน่วยงานเน็ตดี · มี budget OpEx'],
+                ].map((r, i) => {
+                  const renderCell = (cell) => {
+                    if (typeof cell === 'string') return <span style={{ color: C.text }}>{cell}</span>;
+                    const colorMap = { alert: C.alert, success: '#3B6D11' };
+                    return <span className="font-semibold" style={{ color: colorMap[cell.tone] || C.text }}>{cell.text}</span>;
+                  };
+                  return (
+                    <tr key={i} style={{ background: i % 2 === 0 ? '#FFF' : C.surface, borderTop: `1px solid ${C.surfaceSoft}` }}>
+                      <td className="px-4 py-2.5 font-semibold align-top" style={{ color: C.primaryDeep }}>{r[0]}</td>
+                      <td className="px-4 py-2.5 align-top">{renderCell(r[1])}</td>
+                      <td className="px-4 py-2.5 align-top" style={{ background: i % 2 === 0 ? C.successSoft : '#EAF3DE' }}>{renderCell(r[2])}</td>
+                      <td className="px-4 py-2.5 align-top">{renderCell(r[3])}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Verdict cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <VerdictCard tone="good" title="สิ่งที่ทำได้ดี" items={[
+            'Remote support — ไม่ต้องไป site',
+            'OTA update AI model · push patches ทุกหน่วยงานพร้อมกัน',
+            'Multi-site dashboard — เห็นทุกหน่วยงานในที่เดียว',
+            'ผู้บริหารดูจากมือถือได้ทุกที่',
+            'ลดภาระทีม IT ของหน่วยงาน',
+            'Cloud ในไทย → PDPA safe',
+          ]}/>
+          <VerdictCard tone="warn" title="ข้อจำกัด" items={[
+            'มีค่า cloud subscription รายเดือน',
+            'ต้องการเน็ตหน่วยงานเสถียรพอสมควร',
+            'การส่งภาพต้องใช้ bandwidth (เลือก plan ตรงตาม use)',
+            'ขึ้นกับ uptime ของ Cloud provider',
+          ]}/>
+          <VerdictCard tone="bad" title="ต้องระวัง" items={[
+            'Subscription งบ OpEx — อปท. บางที่ต้องตั้งงบรายปี',
+            'Cloud dashboard ดับ → ดูสด ๆ ไม่ได้ (AI ในหน่วยงานยังทำงาน)',
+            'ต้องตั้ง Data Processing Agreement กับ Cloud provider',
+            'การยกเลิกสัญญา — ต้อง export ข้อมูลกลับ',
+          ]}/>
+        </div>
+
+        {/* Recommendation */}
+        <div className="rounded-xl p-4 flex gap-3 items-start" style={{ background: C.accentSoft, borderLeft: `4px solid ${C.accent}` }}>
+          <span className="text-[18px] shrink-0" style={{ color: C.accent }}>💡</span>
+          <div className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>
+            <strong style={{ color: C.accent }}>คำแนะนำของเรา:</strong> สำหรับหน่วยงานที่ <em>ลูกค้าอยู่ไกล · ทีม IT จำกัด · ต้องการดูจากที่ไหนก็ได้</em> → เลือก <strong>Hybrid</strong> · ภาพ raw ยังอยู่ที่หน่วยงาน · เฉพาะ event + dashboard อยู่ที่ Cloud · เป็นจุดสมดุลของงบลูกค้า (Hybrid OpEx ต่ำกว่า Pure Cloud) และความสะดวกในการดูแล
+          </div>
+        </div>
+
       </div>
     </PanelChrome>
   );
@@ -1059,6 +1208,7 @@ function TabSwitcher() {
         >
           {active === 'approachA' && <ApproachAPanel/>}
           {active === 'approachB' && <ApproachBPanel/>}
+          {active === 'cloud' && <CloudPanel/>}
           {active === 'lpr' && <LPRPanel/>}
           {active === 'compare' && <ComparePanel/>}
           {active === 'coverage' && <CoveragePanel/>}
@@ -1092,9 +1242,10 @@ export default function CCTVAI() {
               ก่อนตัดสินใจซื้อ "ระบบเต็ม" ขอชวนเข้าใจหลักการ 2 แบบของการต่อกล้องกับ AI ที่มีในตลาด — เพื่อให้ท่านเลือกแบบที่เหมาะกับงาน · ความเร็วที่ต้องการ · และกล้องที่หน่วยงานมีอยู่
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-3 mt-8">
-              <Pill variant="accent">★ หลักการ A · แนะนำ · stable</Pill>
-              <Pill variant="muted">หลักการ B · เคสเฉพาะ</Pill>
-              <Pill variant="muted">ตัวอย่าง · LPR + Route Map</Pill>
+              <Pill variant="accent">★ A · On-Premise · stable</Pill>
+              <Pill variant="muted">B · กระจายที่หน้างาน</Pill>
+              <Pill variant="accent">☁ Cloud Option</Pill>
+              <Pill variant="muted">ตัวอย่าง LPR</Pill>
               <Pill variant="muted">Coverage Estimator</Pill>
             </motion.div>
             <motion.div variants={fadeUp} className="flex gap-3 mt-8">
