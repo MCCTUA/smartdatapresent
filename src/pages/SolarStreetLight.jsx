@@ -228,11 +228,10 @@ export default function SolarStreetLight() {
 
       {/* ════════════════════ STATS STRIP ════════════════════ */}
       <section className="px-6 md:px-10 py-12" style={{ background: '#FFF', borderBottom: `1px solid ${C.surfaceSoft}` }}>
-        <div className="max-w-[1100px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="max-w-[1000px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard label="ผ่านมาตรฐาน" value="C4" sub="มอก. 2954-2562 · ทุกรุ่นที่นำเสนอ" accent={C.success} />
           <StatCard label="ประสิทธิภาพ LED" value="180–200 lm/W" sub="Real Lumen · ตรวจสอบได้ด้วย DIALux" accent={C.primary} />
           <StatCard label="สำรองไฟ (ฝนตก)" value="5-7 วัน" sub="LiFePO4 เกรด A · MPPT อัจฉริยะ" accent={C.primary} />
-          <StatCard label="ผลงานติดตั้งจริง" value="2 โครงการ" sub="เทศบาลเมืองสระบุรี + TOA Factory" accent={C.accent} />
         </div>
       </section>
 

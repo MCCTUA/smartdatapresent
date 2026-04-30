@@ -113,7 +113,8 @@ function scrollTo(id) {
 // Diagrams (SVG inline)
 // ---------------------------------------------------------------------------
 
-// System architecture: Home + Public + Travel → COC → 1132/Traffy
+// System architecture: Home + Public + Travel → COC ของเรา → กู้ชีพ + ครอบครัว + Dashboard
+// Closed ecosystem — ทุกโมดูลเป็นของเรา ไม่เชื่อมระบบภายนอก ยกเว้นการโทรกู้ชีพ
 function ArchitectureDiagram() {
   return (
     <svg viewBox="0 0 900 480" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg" style={{ fontFamily: 'Sarabun, sans-serif' }}>
@@ -161,9 +162,9 @@ function ArchitectureDiagram() {
 
       {/* 3 Actions */}
       {[
-        { x: 130, label: '📞 1132 / กู้ชีพ', sub: 'ส่งเหตุฉุกเฉิน' },
-        { x: 380, label: '👨‍👩‍👧 แจ้งครอบครัว', sub: 'LINE / SMS' },
-        { x: 630, label: '📋 Traffy / 1132', sub: 'API เข้าระบบเดิม' },
+        { x: 130, label: '📞 โทรกู้ชีพ', sub: 'ระบบโทรแจ้งอัตโนมัติ' },
+        { x: 380, label: '👨‍👩‍👧 แจ้งครอบครัว', sub: 'แอปของเรา · LINE · SMS' },
+        { x: 630, label: '📊 Dashboard เทศบาล', sub: 'ศูนย์ COC ของเรา' },
       ].map((a, i) => (
         <g key={i}>
           <rect x={a.x} y="395" width="200" height="65" rx="12" fill={C.surfaceSoft} stroke={C.primary} strokeWidth="1" strokeDasharray="3,3" />
@@ -203,7 +204,7 @@ function TimelineDiagram() {
         { x: 80, t: '00:00', label: 'ผู้สูงอายุล้ม', color: C.primary },
         { x: 230, t: '+5 วินาที', label: 'เรดาร์ตรวจจับ', color: C.primary },
         { x: 400, t: '+10 วินาที', label: 'AI ยืนยันเหตุ', color: C.primary },
-        { x: 580, t: '+30 วินาที', label: 'COC แจ้ง 1132', color: C.primary },
+        { x: 580, t: '+30 วินาที', label: 'COC โทรกู้ชีพ', color: C.primary },
         { x: 740, t: '+1 นาที', label: 'รถกู้ชีพออก', color: C.primary },
       ].map((p, i) => (
         <g key={i}>
@@ -307,7 +308,7 @@ const reuseAdvantages = [
   { label: 'CCTV เดิมของเทศบาล', detail: 'อัปเกรดด้วย AI Edge — ไม่ต้องเปลี่ยนกล้อง' },
   { label: 'รถเก็บขยะที่วิ่งทุกวัน', detail: 'ติดกล้อง + AI สแกนเมืองอัตโนมัติ' },
   { label: 'ศูนย์ COC ที่มีอยู่', detail: 'ต่อ Dashboard เพิ่ม ไม่สร้างศูนย์ใหม่' },
-  { label: 'ระบบ 1132 / Traffy Fondue', detail: 'เชื่อม API ส่งเหตุเข้าระบบเดิม' },
+  { label: 'รถกู้ชีพ / 1669 / 1132 ในพื้นที่', detail: 'ระบบโทรแจ้งอัตโนมัติเมื่อยืนยันเหตุ — ใช้ช่องทางมาตรฐานที่กู้ชีพรู้จัก' },
 ];
 
 const benefits = [
@@ -726,7 +727,7 @@ export default function ElderlyCare() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { title: 'PDPA', desc: 'รองรับ พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล 2562 — มี consent + audit log', icon: '🔒' },
-              { title: 'Open API', desc: 'เชื่อมระบบ 1132 และ Traffy Fondue ของหน่วยงานท้องถิ่นได้', icon: '🔗' },
+              { title: 'All-in-One System', desc: 'ระบบเดียวจบ — Hardware + Software + แอปครอบครัว + Dashboard เทศบาล ทำงานร่วมกันโดยไม่ต้องพึ่งระบบภายนอก', icon: '🎯' },
               { title: 'Edge + Cloud', desc: 'ประมวลผลที่อุปกรณ์ก่อนส่ง Cloud — ลดข้อมูลส่วนบุคคลที่ออกนอกระบบ', icon: '⚙️' },
             ].map((c, i) => (
               <div key={i} className="text-left">
