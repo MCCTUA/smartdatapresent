@@ -1364,11 +1364,11 @@ export default function WasteCollectionFee() {
 
           <motion.h1
             variants={fadeUp}
-            className="font-semibold leading-[1.1] mb-6"
-            style={{ fontSize: 'clamp(34px, 5vw, 56px)', color: C.text }}
+            className="font-semibold mb-6"
+            style={{ fontSize: 'clamp(34px, 5vw, 56px)', color: C.text, lineHeight: 1.3 }}
           >
-            เก็บค่าธรรมเนียม <span style={{ color: C.primary }}>200,000 ฿/ปี</span><br />
-            แต่จ่ายค่าทิ้งขยะ <span style={{ color: C.alert }}>3,000,000 ฿/ปี</span>
+            <span className="block">เก็บค่าธรรมเนียม <span style={{ color: C.primary }}>200,000 ฿/ปี</span></span>
+            <span className="block">แต่จ่ายค่าทิ้งขยะ <span style={{ color: C.alert }}>3,000,000 ฿/ปี</span></span>
           </motion.h1>
 
           <motion.p variants={fadeUp} className="text-[18px] md:text-[20px] leading-relaxed max-w-[780px] mb-8" style={{ color: C.textMuted }}>

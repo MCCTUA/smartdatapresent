@@ -356,11 +356,11 @@ export default function SmartStreetLight() {
 
           <motion.h1
             variants={fadeUp}
-            className="font-semibold leading-[1.1] mb-6"
-            style={{ fontSize: 'clamp(34px, 5vw, 56px)', color: C.text }}
+            className="font-semibold mb-6"
+            style={{ fontSize: 'clamp(34px, 5vw, 56px)', color: C.text, lineHeight: 1.3 }}
           >
-            ไฟถนนดับ <span style={{ color: C.alert }}>ไม่มีใครรู้</span><br />
-            ค่าไฟแพง <span style={{ color: C.alert }}>เกินงบทุกปี</span>
+            <span className="block">ไฟถนนดับ <span style={{ color: C.alert }}>ไม่มีใครรู้</span></span>
+            <span className="block">ค่าไฟแพง <span style={{ color: C.alert }}>เกินงบทุกปี</span></span>
           </motion.h1>
 
           <motion.p variants={fadeUp} className="text-[18px] md:text-[20px] leading-relaxed max-w-[780px] mb-8" style={{ color: C.textMuted }}>
@@ -692,12 +692,13 @@ export default function SmartStreetLight() {
       <Section bg="white">
         <div className="max-w-[1100px] mx-auto">
           <div className="text-center mb-12">
-            <Eyebrow>ผลงานติดตั้งจริง</Eyebrow>
-            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
-              เขตห้วยขวาง <span style={{ color: C.primary }}>กรุงเทพมหานคร</span>
+            <Eyebrow>โคม LED รุ่นเดียวกัน — ติดตั้งจริง</Eyebrow>
+            <h2 className="font-semibold mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text, lineHeight: 1.3 }}>
+              <span className="block">เขตห้วยขวาง</span>
+              <span className="block" style={{ color: C.primary }}>กรุงเทพมหานคร</span>
             </h2>
             <p className="max-w-[680px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
-              โคม LED รุ่นเดียวกันที่ติดตั้งบนถนนสาธารณะ พร้อม Node LTE ควบคุมผ่านระบบ Real-time
+              ผลงานติดตั้ง<strong style={{ color: C.text }}>โคม LED รุ่นเดียวกับที่นำมาใช้กับ Node LTE</strong> — แสดงให้เห็นประสิทธิภาพและความสว่างจริงบนถนนสาธารณะ
             </p>
           </div>
 
@@ -718,14 +719,14 @@ export default function SmartStreetLight() {
               <Eyebrow color={C.primary}>โครงการ กรุงเทพมหานคร</Eyebrow>
               <h3 className="text-[20px] font-semibold mb-2" style={{ color: C.text }}>เขตห้วยขวาง</h3>
               <p className="text-[14px] leading-relaxed" style={{ color: C.textMuted }}>
-                ติดตั้งโคม LED 155 lm/W บนถนนสาธารณะในเขตห้วยขวาง พร้อม Node LTE ทุกดวง รองรับการควบคุมและติดตามสถานะแบบ Real-time
+                ติดตั้งโคม LED <strong style={{ color: C.text }}>155 lm/W</strong> บนถนนสาธารณะในเขตห้วยขวาง — เป็น<strong style={{ color: C.text }}>โคมรุ่นเดียวกับที่นำมาใช้กับระบบ Node LTE</strong> · พิสูจน์ความสว่างและคุณภาพจริงบนถนนเมือง
               </p>
             </div>
             <div className="flex gap-4 flex-shrink-0">
               {[
                 { n: '155 lm/W', l: 'ประสิทธิภาพ' },
-                { n: 'Node LTE', l: 'ทุกดวง' },
-                { n: '24/7', l: 'Monitoring' },
+                { n: 'IP66', l: 'กันน้ำ/ฝุ่น' },
+                { n: 'LM-79/80', l: 'รับรองสากล' },
               ].map((s, i) => (
                 <div key={i} className="text-center">
                   <div className="text-[18px] font-semibold" style={{ color: C.primary }}>{s.n}</div>

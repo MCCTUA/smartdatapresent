@@ -347,10 +347,10 @@ export default function ElderlyCare() {
             <motion.p variants={fadeUp} className="text-[12px] font-semibold uppercase mb-4" style={{ letterSpacing: '2.5px', color: C.surfaceSoft }}>
               ดูแลผู้สูงอายุ · Smart Living
             </motion.p>
-            <motion.h1 variants={fadeUp} className="font-bold leading-[1.1] mb-6" style={{ fontSize: 'clamp(34px, 5.5vw, 54px)', letterSpacing: '-0.5px' }}>
-              ลูกหลานดิจิทัล<br />
-              <span style={{ color: C.surfaceSoft }}>24 ชั่วโมง</span><br />
-              สำหรับผู้สูงอายุในตำบล
+            <motion.h1 variants={fadeUp} className="font-bold mb-6" style={{ fontSize: 'clamp(34px, 5.5vw, 54px)', letterSpacing: '-0.3px', lineHeight: 1.3 }}>
+              <span className="block">ลูกหลานดิจิทัล</span>
+              <span className="block" style={{ color: C.surfaceSoft }}>24 ชั่วโมง</span>
+              <span className="block">สำหรับผู้สูงอายุในตำบล</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="text-[17px] md:text-[19px] leading-relaxed mb-8" style={{ color: '#FFF', opacity: 0.92 }}>
               เมื่อผู้สูงอายุล้มในบ้านลำพัง — ระบบรู้ก่อนที่ใครจะเดินมาเจอ<br />
