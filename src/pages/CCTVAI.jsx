@@ -196,49 +196,147 @@ const TABS = [
   { key: 'roi', label: 'ROI Estimator', sub: 'จุดติดตั้ง · พื้นที่ครอบคลุม' },
 ];
 
-// ── Approach A panel ────────────────────────────────────────────────────────
+// ── Approach A panel — มี sub-toggle A1 (หลัง NVR) vs A2 (ก่อน NVR/dual) ──
 function ApproachAPanel() {
+  const [variant, setVariant] = useState('A1');
+
+  const VARIANTS = {
+    A1: {
+      label: 'A1 · หลัง NVR',
+      sub: 'อ่าน RTSP ผ่าน NVR ของหน่วยงาน',
+      nodes: [
+        { icon: '📹', label: 'กล้องเดิม', sub: 'ของหน่วยงาน' },
+        { icon: '📦', label: 'NVR ของหน่วยงาน', sub: 'บันทึกภาพ + ดูเดิม' },
+        { icon: '🖥️', label: 'Server AI', sub: 'อ่าน RTSP จาก NVR' },
+        { icon: '📊', label: 'Dashboard', sub: 'แจ้งเตือน · ค้นหา' },
+      ],
+      caption: 'NVR ของหน่วยงานทำงานเหมือนเดิม 100% — Server AI ของเราเข้าไปขอ access ดึง RTSP stream จาก NVR ออกมาวิเคราะห์ → ผลส่งกลับมาเป็น dashboard',
+      good: [
+        'ติดตั้งง่าย — ขอแค่ access NVR เท่านั้น',
+        'ไม่ต้องแตะ network เดิมของหน่วยงาน',
+        'NVR + กล้องยังทำงานปกติ ไม่กระทบของเดิม',
+        'เริ่มได้ใน 1 วัน · เหมาะกับ pilot',
+      ],
+      warn: [
+        'Latency 1-2 วินาที (ภาพผ่าน NVR ก่อน)',
+        'NVR เก่าบางรุ่นจำกัดจำนวน RTSP simultaneous',
+        'คุณภาพภาพอาจลดลงจากการ re-encode ของ NVR',
+      ],
+      bad: [
+        'ไม่เหมาะกับงาน real-time ที่ต้องไวมาก (เช่น แจ้งเตอนรถวิ่งย้อนศรทันที)',
+        'ถ้า NVR เปลี่ยน password ระบบเราต้องอัปเดตด้วย',
+      ],
+      bestFor: 'เหมาะกับ: ค้นย้อนหลัง · LPR forensic · ดูแลผู้สูงอายุ · นับ/จำแนก object',
+    },
+    A2: {
+      label: 'A2 · ก่อน NVR (Dual stream)',
+      sub: 'แยกภาพจากกล้องส่ง 2 ทาง — NVR + Server AI พร้อมกัน',
+      nodes: [
+        { icon: '📹', label: 'กล้องเดิม', sub: 'รุ่นที่ส่ง dual stream ได้' },
+        { icon: '🔀', label: 'Switch', sub: 'แยกภาพ 2 ทาง', heavy: true },
+        { icon: '📦🖥️', label: 'NVR + Server AI', sub: 'ทำงานคู่กัน · พร้อมกัน', light: true },
+        { icon: '📊', label: 'Dashboard', sub: 'Real-time alert' },
+      ],
+      caption: 'กล้องส่งภาพ 2 ชุดพร้อมกัน — ชุดหนึ่งไป NVR (บันทึกเหมือนเดิม) อีกชุดไป Server AI (วิเคราะห์ทันที) · Server AI เห็นภาพ raw จากกล้องก่อนถูก compress ที่ NVR',
+      good: [
+        'Latency ต่ำสุด · Real-time alert ได้ทันที',
+        'คุณภาพภาพดีที่สุด (raw จากกล้องตรง)',
+        'NVR ยังทำงานเหมือนเดิม · ไม่กดดัน NVR เก่า',
+        'เหมาะกับงานที่ต้องไว เช่น วินัยจราจร · เก็บค่าจอด',
+      ],
+      warn: [
+        'ต้อง config network ใหม่ — switch ต้อง support port mirroring / multicast',
+        'กล้องต้อง support dual stream (RTSP main + sub) — บางรุ่นเก่าไม่ได้',
+        'Bandwidth ใช้เพิ่มขึ้น (ภาพวิ่ง 2 ที่)',
+      ],
+      bad: [
+        'ติดตั้งซับซ้อนกว่า · ต้องคุยกับ IT ของหน่วยงาน',
+        'อาจต้องเปลี่ยน switch ถ้าของเดิมไม่รองรับ',
+      ],
+      bestFor: 'เหมาะกับ: วินัยจราจร · เก็บค่าจอดรถ · LPR live · พื้นที่หวงห้าม (real-time)',
+    },
+  };
+
+  const v = VARIANTS[variant];
+
   return (
-    <PanelChrome title="แนวทาง A · ใช้กล้องเดิม + Server AI กลาง" subtitle="อ่านสัญญาณผ่าน NVR / RTSP — ประมวลผลที่ Server แรง 1 เครื่อง">
+    <PanelChrome title="แนวทาง A · ใช้กล้องเดิม + Server AI กลาง" subtitle="ทำได้ 2 รูปแบบย่อย — เลือกตามความเร็วที่ต้องการ และความซับซ้อนของการติดตั้ง">
       <div className="p-6 md:p-8 space-y-6">
+
+        {/* Sub-variant toggle */}
+        <div>
+          <div className="text-[12px] font-semibold uppercase tracking-wider mb-2" style={{ color: C.textMuted }}>เลือกรูปแบบย่อย</div>
+          <div className="flex p-1 rounded-xl gap-1" style={{ background: C.surfaceSoft }}>
+            {Object.entries(VARIANTS).map(([k, val]) => (
+              <button
+                key={k}
+                onClick={() => setVariant(k)}
+                className="flex-1 text-left px-4 py-3 rounded-lg transition-all"
+                style={variant === k
+                  ? { background: '#FFF', boxShadow: `0 2px 8px ${C.primary}22` }
+                  : { background: 'transparent' }}
+              >
+                <div className="text-[13.5px] font-semibold" style={{ color: variant === k ? C.primaryDeep : C.textMuted }}>{val.label}</div>
+                <div className="text-[11.5px] mt-0.5" style={{ color: C.textMuted }}>{val.sub}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <ArchDiagram
           accent={C.primary}
-          nodes={[
-            { icon: '📹', label: 'กล้องเดิม', sub: 'ของหน่วยงาน' },
-            { icon: '📦', label: 'NVR / RTSP', sub: 'เครื่องบันทึกเดิม' },
-            { icon: '🖥️', label: 'Server AI กลาง', sub: 'ประมวลผลทุกกล้อง', heavy: true },
-            { icon: '📊', label: 'Dashboard', sub: 'แจ้งเตือน · รายงาน' },
-          ]}
-          caption="ภาพจากกล้องเดิม → วิ่งผ่าน NVR / RTSP ไปที่ Server กลางของเรา → AI วิเคราะห์ทุกกล้องบน Server เดียว → ผลส่งกลับมาเป็นแจ้งเตือน / รายงานให้เจ้าหน้าที่"
+          nodes={v.nodes}
+          caption={v.caption}
         />
 
-        <div className="rounded-xl p-4 flex gap-3 items-start" style={{ background: C.alertSoft, borderLeft: `4px solid ${C.alert}` }}>
-          <span className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[14px] shrink-0" style={{ background: C.alert, color: '#FFF' }}>!</span>
+        {/* Best for callout */}
+        <div className="rounded-xl p-4 flex gap-3 items-start" style={{ background: C.accentSoft, borderLeft: `4px solid ${C.accent}` }}>
+          <span className="text-[18px]" style={{ color: C.accent }}>💡</span>
           <div className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>
-            <strong style={{ color: C.alert }}>ข้อควรรู้ปี 2026:</strong> ราคา GPU / Server สำหรับ AI ปรับตัวสูงขึ้นมากจากความต้องการ AI ทั่วโลก — ยิ่งกล้องเยอะ Server ยิ่งต้องแรง ค่าใช้จ่ายส่วนนี้กลายเป็นต้นทุนหลักของแบบ A
+            <strong style={{ color: C.accent }}>เลือกแบบนี้เมื่อ:</strong> {v.bestFor}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <VerdictCard tone="good" title="สิ่งที่ทำได้ดี" items={[
-            'ใช้กล้องเดิมต่อได้ ไม่ต้องเปลี่ยนของ',
-            'ปรับ AI model ที่ Server ที่เดียว ทุกกล้องอัปเดตพร้อมกัน',
-            'เริ่มต้นเร็ว ถ้ากล้องเดิมพร้อม',
-            'เห็นภาพรวมจากศูนย์เดียว (control room)',
-          ]}/>
-          <VerdictCard tone="warn" title="ข้อจำกัด" items={[
-            'ขึ้นกับคุณภาพกล้องเดิม (มุม · ความชัด · แสง)',
-            'ใช้ bandwidth สูงตลอดเวลา (วิดีโอวิ่งทั้งวัน)',
-            'Server ต้องรองรับทุกกล้องพร้อมกัน → แรง · แพง',
-            'กล้องบางรุ่นเก่าไม่มี RTSP / ไม่ตรงสเปก',
-          ]}/>
-          <VerdictCard tone="bad" title="ต้องระวัง" items={[
-            'ถ้า Server ล่ม ระบบทั้งหมดดับ',
-            'ค่า server ขึ้นทุกครั้งที่เพิ่มกล้อง',
-            'ต้องมีห้อง Server + UPS + เครือข่ายเสถียร',
-            'PDPA: วิดีโอวิ่งผ่านเครือข่ายตลอด — ต้องเข้ารหัส',
-          ]}/>
+          <VerdictCard tone="good" title="สิ่งที่ทำได้ดี" items={v.good}/>
+          <VerdictCard tone="warn" title="ข้อจำกัด" items={v.warn}/>
+          <VerdictCard tone="bad" title="ต้องระวัง" items={v.bad}/>
         </div>
+
+        {/* Quick comparison A1 vs A2 */}
+        <div className="rounded-2xl p-5 md:p-6" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
+          <div className="text-[14px] font-semibold mb-3" style={{ color: C.primaryDeep }}>A1 vs A2 — ตารางสรุปสั้น</div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-[12.5px]">
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${C.surfaceSoft}` }}>
+                  <th className="text-left py-2 pr-3 font-semibold" style={{ color: C.textMuted }}>ประเด็น</th>
+                  <th className="text-left py-2 px-3 font-semibold" style={{ color: C.primaryDeep }}>A1 · หลัง NVR</th>
+                  <th className="text-left py-2 pl-3 font-semibold" style={{ color: C.primaryDeep }}>A2 · ก่อน NVR (dual)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ['ความยากในการติดตั้ง', 'ง่าย · 1 วัน', 'ปานกลาง · ต้องแก้ network'],
+                  ['Latency / ความไว', '1-2 วินาที', 'ทันที (real-time)'],
+                  ['คุณภาพภาพ', 'ลดเล็กน้อย', 'ดีที่สุด'],
+                  ['กระทบของเดิม', 'ไม่กระทบเลย', 'ต้อง config switch'],
+                  ['ค่าใช้จ่าย', 'ต่ำ', 'สูงกว่า · อาจเปลี่ยน switch'],
+                ].map((r, i) => (
+                  <tr key={i} style={{ borderBottom: `1px solid ${C.surfaceSoft}` }}>
+                    <td className="py-2 pr-3 font-medium" style={{ color: C.text }}>{r[0]}</td>
+                    <td className="py-2 px-3" style={{ color: C.text }}>{r[1]}</td>
+                    <td className="py-2 pl-3" style={{ color: C.text }}>{r[2]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-3 text-[12px] leading-relaxed" style={{ color: C.textMuted }}>
+            <strong style={{ color: C.primary }}>คำแนะนำของเรา:</strong> ส่วนใหญ่เริ่มที่ <strong>A1</strong> ก่อน เพราะติดตั้งใน 1 วัน · ครอบคลุม use-case 80% ที่ต้องการ · ใช้ <strong>A2</strong> เฉพาะเมื่อต้องการ real-time alert (เช่น วินัยจราจรที่ต้องไวมาก)
+          </div>
+        </div>
+
       </div>
     </PanelChrome>
   );
@@ -890,14 +988,15 @@ export default function CCTVAI() {
             </motion.div>
             <motion.h1
               variants={fadeUp}
-              className="font-semibold leading-[1.1] tracking-tight mb-5"
-              style={{ fontSize: 'clamp(32px, 5vw, 52px)', color: '#FFF' }}
+              className="font-semibold tracking-tight mb-5"
+              style={{ fontSize: 'clamp(32px, 5vw, 52px)', color: '#FFF', lineHeight: 1.25 }}
             >
-              กล้อง+AI ที่หน่วยงานต้องการ — มี 2 แนวทาง<br/>
-              <span style={{ color: C.accent }}>เลือกถูก ประหยัดได้ครึ่งหนึ่ง</span>
+              <span className="block">กล้อง + AI ที่หน่วยงานต้องการ</span>
+              <span className="block">มี 2 แนวทางหลัก</span>
+              <span className="block" style={{ color: C.accent }}>เลือกถูก ใช้งานได้จริง</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="text-[17px] md:text-[19px] leading-relaxed max-w-3xl" style={{ color: '#FFFFFFCC' }}>
-              ก่อนตัดสินใจซื้อ "ระบบเต็ม" ขอชวนเข้าใจหลักการ 2 แบบของการต่อกล้องกับ AI ที่มีในตลาด — ปี 2026 ราคา Server / GPU พุ่งหลายเท่าจาก AI boom · การเลือกหลักการที่ถูกจะช่วยให้งบลงไปที่จุดติดตั้งจริงได้มากขึ้น
+              ก่อนตัดสินใจซื้อ "ระบบเต็ม" ขอชวนเข้าใจหลักการ 2 แบบของการต่อกล้องกับ AI ที่มีในตลาด — เพื่อให้ท่านเลือกแบบที่เหมาะกับงาน · งบ · และกล้องที่หน่วยงานมีอยู่
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-3 mt-8">
               <Pill variant="accent">หลักการ A · Server กลาง</Pill>
@@ -913,24 +1012,91 @@ export default function CCTVAI() {
         </div>
       </Section>
 
-      {/* WHY THIS MATTERS */}
+      {/* WHY THIS MATTERS — ปัญหาจริงที่หน่วยงานเจอ */}
       <Section bg="cream">
         <div className="max-w-[1100px] mx-auto">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger}>
             <motion.div variants={fadeUp} className="max-w-2xl mb-10">
-              <Eyebrow>ทำไมต้องคุยเรื่องนี้ก่อน</Eyebrow>
+              <Eyebrow>ปัญหาจริงที่หน่วยงานเจอทุกวัน</Eyebrow>
               <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', color: C.primaryDeep }}>
-                หน่วยงานหลายแห่งเริ่มซื้อ "ระบบ" ก่อนเข้าใจหลักการ
+                "มีกล้องเยอะ — แต่ยังตอบคำถามไม่ได้"
               </h2>
               <p className="text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
-                ผลคือซื้อมาแล้ว Server ราคาแพงกว่าที่คิด · กล้องเดิมไม่รองรับ · ขยายเพิ่มไม่ได้ · งบหมดก่อนได้ครอบคลุมทุก pain — เราเลยแยก "หลักการ" ออกเป็นหัวข้อแรกของการคุย เพื่อให้ท่านเลือกถูกตั้งแต่ต้น
+                หน่วยงานลงทุนกล้องไปเยอะแล้ว · แต่เวลามีเหตุก็ยังต้องนั่ง replay ภาพย้อนหลังหลายชั่วโมง · กล้องคนละยี่ห้อต้องสลับ software คนละตัว · บางครั้งหาภาพไม่เจอเลย
+                เป้าหมายของเราคือเปลี่ยนกล้องที่มีอยู่ให้ "ฉลาดขึ้น" — ไม่ต้องเปลี่ยนทั้งระบบ
               </p>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <StatCard label="ราคา GPU Server" value="↑ 60–80%" sub="(ประมาณการ) ปรับขึ้นจาก 2024 เพราะ AI boom" accent={C.alert}/>
-              <StatCard label="กล้อง / Edge AI chip" value="ราคานิ่ง" sub="ผันผวนน้อยกว่า GPU มาก" accent={C.success}/>
-              <StatCard label="ทางออก" value="Edge-first" sub="Shift cost จาก Server แพง → กล้องที่ราคาคงตัว" accent={C.primary}/>
+            {/* Pain points (3 cards) */}
+            <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+              <div className="rounded-2xl p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderTop: `4px solid ${C.alert}` }}>
+                <div className="text-[28px] mb-3">👀</div>
+                <div className="text-[15px] font-semibold mb-2" style={{ color: C.alert }}>กล้องเยอะ ไม่มีคนดู</div>
+                <p className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>
+                  ติดกล้องไว้หลายสิบจุด — แต่ไม่มีเจ้าหน้าที่นั่งจ้องตลอด 24 ชั่วโมง · เห็นแต่ "หลังเหตุ" · ไม่เคยจับสังเกตได้ทันที
+                </p>
+              </div>
+              <div className="rounded-2xl p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderTop: `4px solid ${C.alert}` }}>
+                <div className="text-[28px] mb-3">⏱️</div>
+                <div className="text-[15px] font-semibold mb-2" style={{ color: C.alert }}>Replay หาภาพ — เสียเวลาทั้งวัน</div>
+                <p className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>
+                  เวลามีเหตุ ต้องไล่ดูทีละกล้อง ทีละช่วงเวลา · บางครั้งต้องใช้คน 2-3 คน นั่งดูครึ่งวัน — กว่าจะเจอภาพที่ต้องการ
+                </p>
+              </div>
+              <div className="rounded-2xl p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderTop: `4px solid ${C.alert}` }}>
+                <div className="text-[28px] mb-3">🧩</div>
+                <div className="text-[15px] font-semibold mb-2" style={{ color: C.alert }}>กล้องหลายยี่ห้อ · หลาย software</div>
+                <p className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>
+                  Hikvision · Dahua · Bosch · ของเก่าจากผู้รับเหมาคนเดิม — แต่ละยี่ห้อใช้ app คนละตัว · ดูร่วมกันไม่ได้ · ค้นหาข้ามกล้องไม่ได้
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Solution flow */}
+            <motion.div variants={fadeUp} className="rounded-2xl p-6 md:p-8 mb-6" style={{ background: C.primaryDeep, color: '#FFF' }}>
+              <Eyebrow color={C.accent}>ทางออกของเรา</Eyebrow>
+              <h3 className="text-[20px] md:text-[24px] font-semibold mb-4" style={{ color: '#FFF', lineHeight: 1.35 }}>
+                ใช้กล้องเดิมต่อ — เราเข้าถึง NVR / RTSP ได้ → AI ช่วยดู ช่วยค้น ช่วยแจ้งเตือน
+              </h3>
+              <p className="text-[14.5px] leading-relaxed" style={{ color: '#FFFFFFCC' }}>
+                ถ้ากล้องเดิมยินยอมให้เราเข้าถึง NVR / RTSP ได้ — เราอ่านภาพมาวิเคราะห์ด้วย AI ได้ทันที ไม่ต้องเปลี่ยนกล้อง · ไม่ต้องเปลี่ยน software ของหน่วยงาน
+                <br/><br/>
+                ระบบของเราเป็น <strong style={{ color: C.accent }}>"ชั้น AI"</strong> ที่วางทับของเดิม — รวมทุกยี่ห้อมาดูได้ในจอเดียว · ค้นได้ข้ามกล้อง · แจ้งเตือนเมื่อเจอเหตุการณ์ที่กำหนด
+              </p>
+            </motion.div>
+
+            {/* Application catalog */}
+            <motion.div variants={fadeUp}>
+              <div className="text-[14px] font-semibold mb-4 uppercase tracking-wider" style={{ color: C.primaryDeep, letterSpacing: '2px' }}>
+                ตัวอย่าง Application ที่ใช้งานได้
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {[
+                  { icon: '🚦', title: 'วินัยจราจร', desc: 'จดรถจอดผิดที่ · วิ่งย้อนศร · ฝ่าไฟแดง', tone: 'normal' },
+                  { icon: '🅿️', title: 'เก็บค่าที่จอดรถ', desc: 'นับเวลาเข้า-ออก · คิดค่าจอดอัตโนมัติ', tone: 'normal' },
+                  { icon: '🔢', title: 'LPR · ค้นทะเบียน', desc: 'พิมพ์ทะเบียน → ระบบบอกได้ว่ารถผ่านกล้องไหน', tone: 'normal' },
+                  { icon: '👤', title: 'Face Recognition', desc: 'จดจำใบหน้าบุคคล · ค้นหาบุคคลข้ามกล้อง', tone: 'pdpa' },
+                  { icon: '👴', title: 'ดูแลผู้สูงอายุ', desc: 'ตรวจจับการล้ม · ผู้สูงอายุออกนอกบริเวณ', tone: 'normal' },
+                  { icon: '🚷', title: 'พื้นที่หวงห้าม', desc: 'แจ้งเตือนคนเข้าจุดอันตราย · นอกเวลา', tone: 'normal' },
+                  { icon: '📦', title: 'นับ · จำแนก object', desc: 'นับคน · นับรถ · ตรวจขยะลักลอบทิ้ง', tone: 'normal' },
+                  { icon: '🚛', title: 'Overheight / Overspeed', desc: 'รถบรรทุกเกินสูง · ตรวจความเร็ว', tone: 'normal' },
+                ].map((a, i) => (
+                  <div key={i} className="rounded-xl p-4 relative" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+                    {a.tone === 'pdpa' && (
+                      <div className="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: C.alertSoft, color: C.alert, letterSpacing: '0.5px' }}>
+                        PDPA
+                      </div>
+                    )}
+                    <div className="text-[24px] mb-2">{a.icon}</div>
+                    <div className="text-[13px] font-semibold mb-1" style={{ color: C.primaryDeep }}>{a.title}</div>
+                    <div className="text-[11.5px] leading-relaxed" style={{ color: C.textMuted }}>{a.desc}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 text-[11.5px] flex items-center gap-2" style={{ color: C.textMuted }}>
+                <span className="inline-block px-1.5 py-0.5 rounded font-bold" style={{ background: C.alertSoft, color: C.alert, fontSize: '9px', letterSpacing: '0.5px' }}>PDPA</span>
+                <span>= ต้องดำเนินการภายใต้ พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล · ขอบเขต · นโยบาย · audit log ต้องชัดเจน</span>
+              </div>
             </motion.div>
           </motion.div>
         </div>
