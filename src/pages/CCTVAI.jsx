@@ -1324,6 +1324,7 @@ export default function CCTVAI() {
                   { icon: '🚷', title: 'พื้นที่หวงห้าม', desc: 'แจ้งเตือนคนเข้าจุดอันตราย · นอกเวลา', tone: 'normal' },
                   { icon: '📦', title: 'นับ · จำแนก object', desc: 'นับคน · นับรถ · ตรวจขยะลักลอบทิ้ง', tone: 'normal' },
                   { icon: '🚛', title: 'Overheight / Overspeed', desc: 'รถบรรทุกเกินสูง · ตรวจความเร็ว', tone: 'normal' },
+                  { icon: '🌊', title: 'เตือนน้ำท่วมล่วงหน้า', desc: 'ดูระดับน้ำในท่อ/คลอง/ใต้สะพานจาก CCTV · LINE เด้งก่อนน้ำถึงชุมชน', tone: 'normal' },
                 ].map((a, i) => (
                   <div key={i} className="rounded-xl p-4 relative" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
                     {a.tone === 'pdpa' && (
