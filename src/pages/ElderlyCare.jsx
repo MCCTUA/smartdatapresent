@@ -281,7 +281,7 @@ const pillars = [
     benefit: 'ตรวจจับการล้มและสัญญาณชีพ 24 ชม. โดย "ไม่เห็นภาพ"',
     detail: 'ติดตั้งในห้องน้ำและห้องนอน ใช้คลื่น mmWave Radar ตรวจจับการเคลื่อนไหว การล้ม การหายใจ และอัตราการเต้นของหัวใจ — โดยไม่บันทึกภาพ ผู้สูงอายุยอมรับได้เพราะรู้สึกปลอดภัยและมีศักดิ์ศรี',
     proofPoints: ['ไม่ใช่กล้อง ไม่มีภาพ', 'แจ้งเตือนทันทีเมื่อล้ม', 'ทำงานได้แม้ในที่มืด'],
-    image: `${IMG}/pillar-radar.jpg`,
+    image: `${IMG}/pillar-radar-home.jpg`,
   },
   {
     tag: 'Pillar 2 · พื้นที่สาธารณะ',
@@ -555,40 +555,71 @@ export default function ElderlyCare() {
           </div>
 
           <div className="rounded-3xl p-6 md:p-10" style={{ background: '#FFF', color: C.text }}>
-            <div className="text-center mb-4">
+            <div className="text-center mb-6">
               <Eyebrow color={C.accent}>เรดาร์ทำงานอย่างไร</Eyebrow>
-              <h3 className="font-bold text-[20px] md:text-[24px]" style={{ color: C.text }}>เห็นการเคลื่อนไหว ไม่เห็นภาพ</h3>
+              <h3 className="font-bold text-[20px] md:text-[24px]" style={{ color: C.text }}>3-Axis Detection · เห็นการเคลื่อนไหว ไม่เห็นภาพ</h3>
             </div>
-            <RadarDiagram />
+            <img
+              src={`${IMG}/radar-technical.png`}
+              alt="mmWave Radar 3-Axis Detection สำหรับตรวจจับการล้มของผู้สูงอายุ"
+              className="w-full h-auto rounded-xl"
+              loading="lazy"
+              onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling.style.display = 'block'; }}
+            />
+            {/* Fallback: SVG diagram */}
+            <div style={{ display: 'none' }}>
+              <RadarDiagram />
+            </div>
+            <p className="text-center text-[12px] mt-4 italic" style={{ color: C.textMuted }}>
+              เซนเซอร์ mmWave 60-64 GHz · ตรวจจับ 3 แกน (ซ้าย-ขวา · ไกล-ใกล้ · สูง-ต่ำ) · แยกท่ายืน/นั่ง/ล้มได้อัตโนมัติ
+            </p>
           </div>
         </div>
       </Section>
 
-      {/* ============================ DEMO VIDEO ============================ */}
+      {/* ============================ DATA INSIGHTS ============================ */}
       <Section bg="cream">
-        <div className="max-w-[1000px] mx-auto">
+        <div className="max-w-[1100px] mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-10">
-            <Eyebrow>Demo</Eyebrow>
+            <Eyebrow>ข้อมูลที่ระบบเก็บได้</Eyebrow>
             <h2 className="font-bold leading-tight" style={{ fontSize: 'clamp(28px, 4vw, 42px)', color: C.text }}>
-              ดูระบบทำงานจริง<br />ในสถานการณ์จำลอง
+              ไม่ใช่แค่แจ้งเหตุ<br />แต่เห็นพฤติกรรมระยะยาว
             </h2>
+            <p className="text-[16px] leading-relaxed mt-5" style={{ color: C.textMuted }}>
+              เซนเซอร์เก็บข้อมูลการใช้พื้นที่ในบ้าน เวลาตื่น-นอน ระยะทางที่เดินในแต่ละวัน
+              <br />ช่วยให้ครอบครัวและเทศบาลเห็นการเปลี่ยนแปลงของผู้สูงอายุก่อนเกิดเหตุ
+            </p>
           </div>
 
-          <div className="rounded-3xl overflow-hidden" style={{ background: '#000', boxShadow: `0 20px 50px ${C.primary}22` }}>
-            <video
-              src={`${IMG}/demo-radar.mp4`}
-              poster={`${IMG}/demo-poster.jpg`}
-              controls
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              className="w-full h-auto"
-              onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.style.minHeight = '200px'; e.currentTarget.parentElement.style.display='flex'; e.currentTarget.parentElement.style.alignItems='center'; e.currentTarget.parentElement.style.justifyContent='center'; e.currentTarget.parentElement.innerHTML = '<div style=\"color:#FFF;padding:40px;text-align:center;\">📹 วิดีโอ demo จะใส่หลังจาก Tua โหลดไฟล์ลง public/' + 'images/elderly-care/demo-radar.mp4</div>'; }}
+          <div className="rounded-3xl overflow-hidden p-4 md:p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: `0 20px 50px ${C.primary}11` }}>
+            <img
+              src={`${IMG}/data-insights.png`}
+              alt="ตัวอย่างข้อมูลพฤติกรรมและ heatmap จาก mmWave Radar — การใช้พื้นที่ในบ้านของผู้สูงอายุ"
+              className="w-full h-auto rounded-xl"
+              loading="lazy"
             />
           </div>
-          <p className="text-center text-[12px] mt-4 italic" style={{ color: C.textMuted }}>
-            * วิดีโอเป็นการจำลอง use case — สถานการณ์จริงและตัวเลขขึ้นกับการติดตั้งและทดสอบในพื้นที่
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+            <div className="rounded-2xl p-5" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+              <div className="text-[28px] mb-2">📅</div>
+              <h4 className="font-bold text-[15px] mb-1" style={{ color: C.text }}>รู้พฤติกรรมประจำวัน</h4>
+              <p className="text-[13px] leading-relaxed" style={{ color: C.textMuted }}>เวลาตื่น เวลานอน เวลาที่ใช้ในแต่ละห้อง — ตรวจจับความผิดปกติได้ก่อนเกิดเหตุ</p>
+            </div>
+            <div className="rounded-2xl p-5" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+              <div className="text-[28px] mb-2">📊</div>
+              <h4 className="font-bold text-[15px] mb-1" style={{ color: C.text }}>เปรียบเทียบรายเดือน</h4>
+              <p className="text-[13px] leading-relaxed" style={{ color: C.textMuted }}>เห็นแนวโน้มระยะทางการเดิน — ถ้าลดลงผิดปกติ อาจเป็นสัญญาณสุขภาพถดถอย</p>
+            </div>
+            <div className="rounded-2xl p-5" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+              <div className="text-[28px] mb-2">🗺️</div>
+              <h4 className="font-bold text-[15px] mb-1" style={{ color: C.text }}>Heatmap การใช้พื้นที่</h4>
+              <p className="text-[13px] leading-relaxed" style={{ color: C.textMuted }}>เห็นจุดที่ผู้สูงอายุอยู่บ่อย — ช่วยปรับการจัดบ้านให้ปลอดภัยมากขึ้น</p>
+            </div>
+          </div>
+
+          <p className="text-center text-[12px] mt-6 italic" style={{ color: C.textMuted }}>
+            * ตัวอย่างข้อมูลจากเซนเซอร์เรดาร์ — ทุกข้อมูลเก็บตามมาตรฐาน PDPA และผู้สูงอายุ/ครอบครัวควบคุมการเข้าถึงเอง
           </p>
         </div>
       </Section>

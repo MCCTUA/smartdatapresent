@@ -24,14 +24,6 @@ const groups = [
       'TIS · IEC 62386',
     ],
   },
-  {
-    title: 'ติดต่อ',
-    items: [
-      { label: 'mcctua2@gmail.com', href: 'mailto:mcctua2@gmail.com' },
-      { label: 'ขอออกแบบ DIALux ฟรี', href: 'mailto:mcctua2@gmail.com?subject=ขอออกแบบ%20DIALux%20ฟรี' },
-      { label: 'ขอใบเสนอราคา', href: 'mailto:mcctua2@gmail.com?subject=ขอใบเสนอราคา' },
-    ],
-  },
 ];
 
 export default function Footer() {
@@ -45,7 +37,7 @@ export default function Footer() {
       }}
     >
       <div className="max-w-[1100px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -53,7 +45,7 @@ export default function Footer() {
                 <rect width="28" height="28" rx="6" fill={PRIMARY} />
                 <path d="M8 14h12M14 8v12" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
-              <span className="text-white text-[15px] font-semibold tracking-wide">Smart B2G</span>
+              <span className="text-white text-[15px] font-semibold tracking-wide">Smart Solutions</span>
             </div>
             <p className="text-[12px] leading-relaxed text-white/60">
               เทคโนโลยีไทย — เพื่อหน่วยงานท้องถิ่นไทย ทั้ง อบต. เทศบาลตำบล เทศบาลเมือง เทศบาลนคร และโครงการเอกชน
@@ -89,31 +81,13 @@ export default function Footer() {
               ))}
             </div>
           </div>
-
-          {/* Contact */}
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider mb-3 text-white/85" style={{ letterSpacing: '1.5px' }}>
-              {groups[2].title}
-            </div>
-            <div className="flex flex-col gap-2">
-              {groups[2].items.map((item, i) => (
-                <a
-                  key={i}
-                  href={item.href}
-                  className="text-[12px] no-underline text-white/65 hover:text-white transition-colors"
-                >
-                  {item.label}
-                </a>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div
           className="pt-6 flex flex-col md:flex-row justify-between items-center gap-3"
           style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}
         >
-          <p className="text-[11px] text-white/50">© 2026 Smart B2G · All rights reserved.</p>
+          <p className="text-[11px] text-white/50">© 2026 · All rights reserved.</p>
           <p className="text-[11px] text-white/50">เทคโนโลยีไทย · ทีมพัฒนาในประเทศ · พร้อมสนับสนุนหลังการขาย</p>
         </div>
       </div>
