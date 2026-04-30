@@ -7,6 +7,7 @@ const links = [
   { to: '/solar-street-light', label: 'Solar Street Light' },
   { to: '/waste-fee', label: 'ค่าธรรมเนียมขยะ' },
   { to: '/cctv-ai', label: 'CCTV + AI' },
+  { to: '/elderly-care', label: 'ดูแลผู้สูงอายุ' },
 ];
 
 export default function Nav() {

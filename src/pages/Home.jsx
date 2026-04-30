@@ -84,7 +84,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Card 1: Smart Street Light */}
             <motion.div
               whileHover={{ y: -6 }}
@@ -200,6 +200,35 @@ export default function Home() {
                 <div className="flex gap-4 items-center">
                   <Link to="/cctv-ai" className="bg-[#0071e3] text-white text-[14px] px-4 py-2 rounded-lg no-underline">ดูรายละเอียด</Link>
                   <Link to="/cctv-ai" className="text-[#0066cc] text-[14px] no-underline hover:underline">ดู Demo LPR ›</Link>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Card 5: Elderly Care */}
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="bg-white rounded-xl overflow-hidden shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]"
+            >
+              <div className="h-56 overflow-hidden relative bg-black flex items-center justify-center">
+                {/* radar pulse visualization */}
+                <div className="absolute w-40 h-40 rounded-full border border-[#0071e3]/40 animate-ping" style={{ animationDuration: '3s' }} />
+                <div className="absolute w-28 h-28 rounded-full border border-[#0071e3]/60 animate-ping" style={{ animationDuration: '2.2s' }} />
+                <div className="relative z-10 text-center">
+                  <div className="text-5xl mb-2">👴</div>
+                  <div className="text-[#2997ff] text-[12px] font-semibold tracking-[2px] uppercase">24/7 Care</div>
+                </div>
+              </div>
+              <div className="p-7">
+                <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">Smart Living</p>
+                <h3 className="text-[#1d1d1f] font-normal leading-snug mb-3" style={{ fontSize: '28px' }}>
+                  ดูแล<br />ผู้สูงอายุ
+                </h3>
+                <p className="text-[14px] text-black/60 leading-relaxed mb-6">
+                  ลูกหลานดิจิทัล 24 ชั่วโมง — เรดาร์ตรวจจับการล้มในบ้านโดยไม่ต้องติดกล้อง + AI ต่อยอด CCTV เดิม + ปุ่ม SOS เมื่อออกนอกบ้าน
+                </p>
+                <div className="flex gap-4 items-center">
+                  <Link to="/elderly-care" className="bg-[#0071e3] text-white text-[14px] px-4 py-2 rounded-lg no-underline">ดูรายละเอียด</Link>
+                  <Link to="/elderly-care" className="text-[#0066cc] text-[14px] no-underline hover:underline">ระบบ 3 ส่วน ›</Link>
                 </div>
               </div>
             </motion.div>
