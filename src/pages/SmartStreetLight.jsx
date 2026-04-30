@@ -396,6 +396,127 @@ export default function SmartStreetLight() {
         </div>
       </section>
 
+      {/* ════════════════════ HARDWARE SHOWCASE ════════════════════ */}
+      <Section bg="white">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center mb-12">
+            <Eyebrow>สินค้าพร้อมใช้งานจริง</Eyebrow>
+            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
+              ฮาร์ดแวร์ที่ <span style={{ color: C.primary }}>พัฒนาเสร็จแล้ว · ติดตั้งใช้งานในไทย</span>
+            </h2>
+            <p className="max-w-[680px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
+              ไม่ใช่ prototype — ผลิตจริง ติดตั้งจริง พร้อมส่งมอบและสนับสนุนหลังการขาย
+            </p>
+          </div>
+
+          {/* Lamp + Node LTE — featured */}
+          <div className="rounded-2xl overflow-hidden mb-6 grid grid-cols-1 md:grid-cols-2"
+            style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
+            <div className="flex items-center justify-center p-8" style={{ background: C.primaryDeep }}>
+              <img
+                src="images/smartlight/Gemini_Generated_Image_ykong3ykong3ykon-removebg-preview.png"
+                alt="Smart Street Light + Node LTE"
+                className="w-full max-w-[360px] drop-shadow-2xl"
+                loading="lazy"
+              />
+            </div>
+            <div className="p-7 md:p-8 flex flex-col justify-center">
+              <Eyebrow color={C.primary}>โคม LED + Node LTE</Eyebrow>
+              <h3 className="text-[22px] md:text-[26px] font-semibold leading-snug mb-4" style={{ color: C.text }}>
+                ออกแบบมาเพื่อใช้งานในไทย<br />ทุกสภาพอากาศ
+              </h3>
+              <ul className="space-y-2.5 text-[14px]" style={{ color: C.text }}>
+                <li className="flex gap-2.5">
+                  <span style={{ color: C.success }}>✓</span>
+                  <span>ประสิทธิภาพ <strong>155 lm/W</strong> — สูงกว่ามาตรฐาน 24%</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span style={{ color: C.success }}>✓</span>
+                  <span>ขาโคมปรับ <strong>90°</strong> — ครอบคลุมพื้นที่ส่องสว่าง</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span style={{ color: C.success }}>✓</span>
+                  <span>ผ่าน <strong>IES LM-79 / LM-80</strong> + มอก. 1955-2551</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span style={{ color: C.success }}>✓</span>
+                  <span>กันน้ำ/ฝุ่น <strong>IP66</strong> · ทดสอบเขตร้อน</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span style={{ color: C.success }}>✓</span>
+                  <span>Node LTE <strong>RT-7A81</strong> · Socket NEMA มาตรฐาน</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span style={{ color: C.success }}>✓</span>
+                  <span>รับประกัน <strong>5+ ปี</strong> · ทำงาน 24/7</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* 90° adjustable + bullets */}
+          <div className="rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2"
+            style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+            <div className="p-7 md:p-8 flex flex-col justify-center order-2 md:order-1">
+              <Eyebrow color={C.accent}>โครงสร้างที่ปรับได้</Eyebrow>
+              <h3 className="text-[22px] md:text-[26px] font-semibold leading-snug mb-4" style={{ color: C.text }}>
+                ติดตั้งง่าย · ปรับมุมได้<br />เข้ากับโคมที่มีอยู่
+              </h3>
+              <p className="text-[14px] leading-relaxed mb-4" style={{ color: C.textMuted }}>
+                ออกแบบให้ติดตั้งบนเสาเดิมได้ทันที — ไม่ต้องเปลี่ยนเสาหรือเดินสายใหม่ Node LTE ใส่ใน Socket NEMA มาตรฐาน เข้ากันได้กับโคมไฟส่วนใหญ่ที่มีอยู่
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg p-3" style={{ background: C.surface }}>
+                  <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted, letterSpacing: '1.5px' }}>ติดตั้ง/ดวง</div>
+                  <div className="text-[16px] font-semibold" style={{ color: C.primary }}>~ 30 นาที</div>
+                </div>
+                <div className="rounded-lg p-3" style={{ background: C.surface }}>
+                  <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted, letterSpacing: '1.5px' }}>เริ่ม Monitor</div>
+                  <div className="text-[16px] font-semibold" style={{ color: C.primary }}>ทันที</div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-center p-8 order-1 md:order-2" style={{ background: C.surface }}>
+              <img
+                src="images/smartlight/Gemini_Generated_Image_am4oo4am4oo4am4o.png"
+                alt="โคมไฟ ปรับองศา 90°"
+                className="w-full max-w-[420px]"
+                loading="lazy"
+              />
+            </div>
+          </div>
+
+          {/* Datasheet download */}
+          <div className="mt-6 rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center gap-4"
+            style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
+            <div className="w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: '#FFF' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke={C.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <polyline points="14 2 14 8 20 8" stroke={C.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <div className="text-[14px] font-semibold" style={{ color: C.text }}>RT-7A81 Datasheet · Node LTE Spec</div>
+              <div className="text-[12px]" style={{ color: C.textMuted }}>ข้อมูลเทคนิค Node LTE V.11 · 117 KB</div>
+            </div>
+            <a
+              href="downloads/RT-7A81_V11.pdf"
+              download
+              className="text-[13px] font-semibold px-4 py-2 rounded-lg no-underline flex items-center gap-2"
+              style={{ background: C.primary, color: '#FFF' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <polyline points="7 10 12 15 17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              ดาวน์โหลด PDF
+            </a>
+          </div>
+        </div>
+      </Section>
+
       {/* ════════════════════ PERSONA PAINS ════════════════════ */}
       <Section bg="cream">
         <div className="max-w-[1100px] mx-auto">
@@ -505,6 +626,68 @@ export default function SmartStreetLight() {
         </div>
       </Section>
 
+      {/* ════════════════════ WEB DASHBOARD SCREENSHOTS ════════════════════ */}
+      <Section bg="white">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center mb-10">
+            <Eyebrow>หน้าจอระบบจริง</Eyebrow>
+            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
+              Web Dashboard ที่ <span style={{ color: C.primary }}>ใช้งานจริง</span> วันนี้
+            </h2>
+            <p className="max-w-[680px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
+              ออกแบบสำหรับช่างไฟและหัวหน้ากองช่าง — ใช้งานบน Browser ได้ทันที ไม่ต้อง install
+            </p>
+          </div>
+
+          {/* Featured: SmartPole device management */}
+          <div className="rounded-2xl overflow-hidden mb-5" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 8px 32px rgba(31, 42, 36, 0.06)' }}>
+            <div className="px-4 py-2.5 flex items-center gap-3 border-b" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold" style={{ background: C.primary, color: '#FFF' }}>อบต</div>
+              <div className="flex-1">
+                <div className="text-[12px] font-semibold" style={{ color: C.text }}>SmartPole — Lamps / Devices</div>
+                <div className="text-[10px]" style={{ color: C.textMuted }}>จัดการอุปกรณ์ทุกต้น · ตั้งค่า Tag · ดูสถานะ</div>
+              </div>
+              <span className="text-[10px] flex items-center gap-1.5" style={{ color: C.success }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></span>
+                Live
+              </span>
+            </div>
+            <img src="images/smartlight/Screen1.webp" alt="SmartPole device management dashboard" className="w-full block" loading="lazy" />
+          </div>
+
+          {/* 2-col: Map + Alerts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-2xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 4px 16px rgba(31, 42, 36, 0.04)' }}>
+              <div className="px-4 py-2 flex items-center gap-2 border-b" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></div>
+                <span className="text-[11px] font-medium" style={{ color: C.text }}>Device Map</span>
+                <span className="ml-auto text-[10px]" style={{ color: C.textMuted }}>Real-time GPS</span>
+              </div>
+              <img src="images/smartlight/location.webp" alt="Device Map — แผนที่สถานะไฟ Real-time" className="w-full block" loading="lazy" />
+              <div className="px-4 py-2.5 border-t" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+                <p className="text-[12px]" style={{ color: C.textMuted }}>ดูตำแหน่งและสถานะของไฟทุกต้นบนแผนที่ — เขียว/แดง/เหลือง · ไม่ต้องขับรถตระเวน</p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 4px 16px rgba(31, 42, 36, 0.04)' }}>
+              <div className="px-4 py-2 flex items-center gap-2 border-b" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: C.alert }}></div>
+                <span className="text-[11px] font-medium" style={{ color: C.text }}>Alerts Dashboard</span>
+                <span className="ml-auto text-[10px]" style={{ color: C.textMuted }}>3 alerts pending</span>
+              </div>
+              <img src="images/smartlight/Alerts.webp" alt="Alerts dashboard — แจ้งเตือนทันทีเมื่อไฟดับ" className="w-full block" loading="lazy" />
+              <div className="px-4 py-2.5 border-t" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
+                <p className="text-[12px]" style={{ color: C.textMuted }}>แจ้งเตือนทันทีเมื่อโคมเสีย — Telegram / Email / LINE OA · Work Order auto-create</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 text-center text-[11px]" style={{ color: C.textMuted }}>
+            หน้าจอจริงจากระบบ — ขอ Demo เต็มจอได้จากปุ่ม "ขอใบเสนอราคา" ด้านล่าง
+          </div>
+        </div>
+      </Section>
+
       {/* ════════════════════ REFERENCE PROJECT ════════════════════ */}
       <Section bg="white">
         <div className="max-w-[1100px] mx-auto">
@@ -597,6 +780,92 @@ export default function SmartStreetLight() {
                 <div className="text-[12px] leading-relaxed" style={{ color: C.text }}>{s.body}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ════════════════════ SMART POLE ROADMAP ════════════════════ */}
+      <Section bg="cream">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center mb-12">
+            <Eyebrow>วิสัยทัศน์ระยะยาว</Eyebrow>
+            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
+              จากไฟถนน <span style={{ color: C.primary }}>สู่ Smart City</span> ใน 3 ระยะ
+            </h2>
+            <p className="max-w-[680px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
+              เริ่มจากปัญหาประจำวัน — ไฟดับ ค่าไฟแพง · ขยายไป Smart Pole + Sensor · ปิดท้ายด้วย Super App สำหรับการบริหารเมือง
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                phase: 'ระยะที่ 1',
+                title: 'รากฐาน',
+                sub: 'Foundation · 0–6 เดือน',
+                badge: 'เริ่มที่นี่',
+                badgeColor: C.primary,
+                items: [
+                  'ระบบไฟถนนอัจฉริยะ Real-time',
+                  'ลดค่าไฟ 30–60% เห็นผลภายใน 1-3 เดือน',
+                  'ยื่นรายงาน TEA / depa Smart Energy ได้',
+                  'แก้ pain point ของกองช่างก่อน',
+                ],
+              },
+              {
+                phase: 'ระยะที่ 2',
+                title: 'ขยาย',
+                sub: 'Expand · 6–18 เดือน',
+                badge: 'Smart Pole',
+                badgeColor: C.accent,
+                items: [
+                  'Smart Pole บูรณาการอุปกรณ์หลายชนิด',
+                  'เชื่อมต่อกล้อง CCTV ที่มีอยู่',
+                  'Sensor PM2.5 / Microwave / Ambient Light',
+                  'Adaptive AI Dimming ตามบริบทจริง',
+                ],
+              },
+              {
+                phase: 'ระยะที่ 3',
+                title: 'Super App',
+                sub: 'Smart City · 18+ เดือน',
+                badge: 'Vision',
+                badgeColor: C.success,
+                items: [
+                  'แอปเดียวสำหรับทุกกอง — ไฟ น้ำ ขยะ ภาษี',
+                  'ดึงข้อมูลเข้า Database กลางของหน่วยงาน',
+                  'AI Analytics เพื่อการบริหารเมือง',
+                  'ใช้ยื่น Smart City Awards เต็ม 7 มิติ',
+                ],
+              },
+            ].map((p, i) => (
+              <div key={i} className="rounded-2xl p-6 relative"
+                style={{ background: '#FFF', border: i === 0 ? `2px solid ${C.primary}` : `1px solid ${C.surfaceSoft}` }}>
+                <div className="absolute top-3 right-3">
+                  <span className="text-[10px] font-bold uppercase px-2.5 py-1 rounded"
+                    style={{ background: p.badgeColor, color: '#FFF', letterSpacing: '0.5px' }}>
+                    {p.badge}
+                  </span>
+                </div>
+                <Eyebrow color={p.badgeColor}>{p.phase}</Eyebrow>
+                <h3 className="text-[24px] font-semibold leading-tight mb-1" style={{ color: C.text }}>{p.title}</h3>
+                <div className="text-[12px] mb-4" style={{ color: C.textMuted }}>{p.sub}</div>
+                <ul className="space-y-2">
+                  {p.items.map((item, j) => (
+                    <li key={j} className="flex gap-2 text-[13px] leading-relaxed" style={{ color: C.text }}>
+                      <span style={{ color: p.badgeColor }}>•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <p className="text-[14px] italic" style={{ color: C.textMuted }}>
+              "ไม่ต้องลงทุนใหญ่ในวันแรก — เริ่มจากระยะที่ 1 แล้วเติบโตตามขนาดของหน่วยงาน"
+            </p>
           </div>
         </div>
       </Section>
