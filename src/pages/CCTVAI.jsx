@@ -190,7 +190,6 @@ function VerdictCard({ tone, title, items }) {
 const TABS = [
   { key: 'approachA', label: 'แนวทาง A', sub: 'กล้องเดิม + Server กลาง' },
   { key: 'approachB', label: 'แนวทาง B', sub: 'Edge AI ที่หน้างาน' },
-  { key: 'jetson', label: 'Jetson · เทคนิค', sub: 'ต่อยังไง · 1 ตัวกี่กล้อง' },
   { key: 'lpr', label: 'ตัวอย่าง use-case', sub: 'LPR · ค้นหาทะเบียน' },
   { key: 'compare', label: 'เปรียบเทียบ', sub: 'A vs B เคียงข้างกัน' },
   { key: 'coverage', label: 'Coverage Estimator', sub: 'จุดติดตั้ง · โหลด Server' },
@@ -336,6 +335,9 @@ function ApproachAPanel() {
             <strong style={{ color: C.primary }}>คำแนะนำของเรา:</strong> ส่วนใหญ่เริ่มที่ <strong>A1</strong> ก่อน เพราะติดตั้งใน 1 วัน · ครอบคลุม use-case 80% ที่ต้องการ · ใช้ <strong>A2</strong> เฉพาะเมื่อต้องการ real-time alert (เช่น วินัยจราจรที่ต้องไวมาก)
           </div>
         </div>
+
+        {/* Tech details — collapsible */}
+        <EdgeAITechDetails/>
 
       </div>
     </PanelChrome>
@@ -577,9 +579,9 @@ function CoveragePanel() {
       : Math.round(cameras * 1.0);        // A: ก็ 1 ต่อ 1 เหมือนกัน
     // server load — A จะหนัก, B จะเบา
     const serverLoad = approach === 'A' ? Math.min(100, cameras * 8) : Math.min(35, cameras * 1.5);
-    // Jetson box ที่ต้องใช้ (B only)
-    const jetsonBoxes = approach === 'B' ? Math.ceil(cameras / 8) : 0;
-    return { coverage, serverLoad: Math.round(serverLoad), jetsonBoxes };
+    // Edge AI Computer ที่ต้องใช้ (B only)
+    const edgeBoxes = approach === 'B' ? Math.ceil(cameras / 8) : 0;
+    return { coverage, serverLoad: Math.round(serverLoad), edgeBoxes };
   }, [cameras, approach]);
 
   return (
@@ -644,8 +646,8 @@ function CoveragePanel() {
             accent={C.primary}/>
           <StatCard
             label={approach === 'B' ? 'Edge AI Box ที่ต้องใช้' : 'Server กลาง'}
-            value={approach === 'B' ? `${result.jetsonBoxes} ตัว` : '1 เครื่อง'}
-            sub={approach === 'B' ? 'Jetson Orin Nano · 1 ตัวรองรับ 8 กล้อง' : 'รองรับทุกกล้องในระบบ'}
+            value={approach === 'B' ? `${result.edgeBoxes} ตัว` : '1 เครื่อง'}
+            sub={approach === 'B' ? 'Edge AI Computer · 1 ตัวรองรับ 8 กล้อง' : 'รองรับทุกกล้องในระบบ'}
             accent={C.primary}/>
           <StatCard
             label="ความยืดหยุ่นเพิ่มจุด"
@@ -664,264 +666,323 @@ function CoveragePanel() {
   );
 }
 
-// ── Jetson Panel — เทคนิคให้ Tua ตอบลูกค้าได้ ──────────────────────────────
-function JetsonPanel() {
-  const [model, setModel] = useState('orin-nano');
+// ── Edge AI Tech Details — collapsible sub-section (used inside Tab A) ──────
+// เนื้อหาเทคนิคของ Edge AI Computer · ไม่อ้างถึงยี่ห้อ
+function EdgeAITechDetails() {
+  const [open, setOpen] = useState(false);
+  const [tier, setTier] = useState('mid');
 
-  // Jetson family — ข้อมูลสาธารณะจาก NVIDIA developer docs + community benchmarks
-  // ตัวเลขทั้งหมดเป็น "ประมาณการ" ที่ใช้สำหรับอธิบายลูกค้า
-  const MODELS = {
-    'nano-legacy': {
-      name: 'Jetson Nano (4GB) · รุ่นเก่า',
-      tops: '0.5 TOPS',
+  // Edge AI Computer tiers — ไม่อ้างถึงยี่ห้อ
+  const TIERS = {
+    entry: {
+      name: 'รุ่น Entry · งาน pilot',
+      perf: 'ต่ำ',
       streams1080p: '4-8',
       streams4k: '1-2',
       power: '5-10W',
-      useCase: 'ไม่แนะนำใช้ในโครงการใหม่',
-      note: 'NVIDIA EOL ในปี 2024 — ปัจจุบัน stock จำกัด · ไม่แนะนำสำหรับโครงการใหม่',
-      bad: true,
+      useCase: 'งาน demo / proof-of-concept',
+      note: 'รุ่นเริ่มต้น — เหมาะกับการทดลองก่อนตัดสินใจ scale',
     },
-    'orin-nano': {
-      name: 'Jetson Orin Nano (8GB)',
-      tops: '20-40 TOPS',
+    mid: {
+      name: 'รุ่น Standard · งานทั่วไป',
+      perf: 'กลาง',
       streams1080p: '8-12',
       streams4k: '2-4',
       power: '7-15W',
       useCase: 'Pilot · 4-8 กล้อง',
-      note: 'รุ่นที่นิยมใช้ปัจจุบัน · เหมาะกับ pilot 4-8 กล้อง',
+      note: 'รุ่นที่นิยมใช้ปัจจุบัน · เหมาะกับ pilot และโครงการเริ่มต้น',
+      recommended: true,
     },
-    'orin-nx': {
-      name: 'Jetson Orin NX (16GB)',
-      tops: '70-100 TOPS',
+    pro: {
+      name: 'รุ่น Pro · โครงการขยาย',
+      perf: 'สูง',
       streams1080p: '16-24',
       streams4k: '4-6',
       power: '10-25W',
       useCase: 'โครงการขยาย · 10-20 กล้อง',
-      note: 'แรงกว่า · เหมาะกับโครงการขยาย 10-20 กล้อง',
+      note: 'แรงกว่า · เหมาะกับโครงการที่มีกล้องเยอะหรือต้องทำ AI หนัก',
     },
   };
-  const m = MODELS[model];
+  const t = TIERS[tier];
 
   return (
-    <PanelChrome title="Jetson Orin · ใช้งานยังไง · ต่อกี่กล้อง" subtitle="คู่มือเทคนิคสำหรับเตรียมตัวก่อนลูกค้าถาม">
-      <div className="p-6 md:p-8 space-y-6">
-
-        {/* Why Jetson */}
-        <div className="rounded-xl p-5 md:p-6" style={{ background: C.primaryDeep, color: '#FFF' }}>
-          <Eyebrow color={C.accent}>Jetson คืออะไร · ทำไมถึงเลือก</Eyebrow>
-          <div className="text-[14px] leading-relaxed">
-            <p className="mb-3">
-              <strong style={{ color: '#FFF' }}>Jetson</strong> คือคอมพิวเตอร์ขนาดเล็กของ NVIDIA ที่ออกแบบมาเฉพาะสำหรับงาน AI ที่หน้างาน (Edge AI)
-              — เหมือน "สมอง AI ขนาดเท่า Wi-Fi router" ที่กินไฟน้อย ทำงานได้ตลอด 24 ชั่วโมง · ไม่ต้องส่งวิดีโอไป cloud
-            </p>
-            <p style={{ color: '#FFFFFFCC' }}>
-              <strong style={{ color: C.accent }}>เหตุที่เราเลือก Jetson:</strong> ผลิตโดย NVIDIA โดยตรง · มี SDK และ ecosystem พร้อมใช้ · ใช้กันแพร่หลายในงาน Edge AI ทั่วโลก · กินไฟ 7-25W เท่าหลอดไฟ LED 1 ดวง · ทำงานต่อเนื่อง 24 ชั่วโมงได้
-          </p>
+    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.surfaceSoft}`, background: C.surface }}>
+      {/* Toggle header */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left transition-colors"
+        style={{ background: open ? C.surfaceSoft : 'transparent' }}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-[20px]">⚙️</span>
+          <div>
+            <div className="text-[14px] font-semibold" style={{ color: C.primaryDeep }}>เทคนิคเพิ่มเติม · ชุดอุปกรณ์ Edge AI Computer</div>
+            <div className="text-[12px]" style={{ color: C.textMuted }}>คลิกเพื่อดูสเปก · diagram การต่อ · ใช้งานกับ Server เก่าได้ไหม · FAQ</div>
           </div>
         </div>
+        <span className="text-[20px] transition-transform" style={{ color: C.primary, transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>⌄</span>
+      </button>
 
-        {/* Model selector */}
-        <div>
-          <div className="text-[13px] font-medium mb-2" style={{ color: C.text }}>เลือกรุ่น Jetson เพื่อดูสเปก</div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {Object.entries(MODELS).map(([k, v]) => (
-              <button
-                key={k}
-                onClick={() => setModel(k)}
-                className="text-left p-4 rounded-xl transition-all"
-                style={model === k
-                  ? { background: v.bad ? C.alertSoft : '#FFF', border: `2px solid ${v.bad ? C.alert : C.primary}`, boxShadow: `0 2px 12px ${(v.bad ? C.alert : C.primary)}22` }
-                  : { background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}
-              >
-                <div className="text-[13px] font-semibold mb-1" style={{ color: v.bad ? C.alert : C.primaryDeep }}>{v.name}</div>
-                <div className="text-[11px]" style={{ color: C.textMuted }}>{v.tops} · {v.streams1080p} กล้อง 1080p</div>
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* Body */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div className="p-5 md:p-6 space-y-5" style={{ borderTop: `1px solid ${C.surfaceSoft}` }}>
 
-        {/* Selected model spec */}
-        <div className="rounded-2xl p-5 md:p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div>
-              <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>AI Performance</div>
-              <div className="text-[18px] font-semibold" style={{ color: C.primary }}>{m.tops}</div>
-              <div className="text-[10px]" style={{ color: C.textMuted }}>(ความสามารถ AI)</div>
+              {/* What is Edge AI Computer */}
+              <div className="rounded-xl p-5" style={{ background: C.primaryDeep, color: '#FFF' }}>
+                <Eyebrow color={C.accent}>Edge AI Computer คืออะไร</Eyebrow>
+                <p className="text-[13.5px] leading-relaxed mb-2">
+                  <strong style={{ color: '#FFF' }}>Edge AI Computer</strong> = คอมพิวเตอร์ขนาดเล็ก (เท่าฝ่ามือ – กล่องนม) ที่มี AI chip ในตัว · ทำงานอิสระ · เสียบปลั๊กหรือ PoE++ แล้วทำงานได้เลย · ไม่ใช่การ์ดที่เสียบในเครื่อง server
+                </p>
+                <p className="text-[13.5px] leading-relaxed" style={{ color: '#FFFFFFCC' }}>
+                  <strong style={{ color: C.accent }}>เหตุที่เลือกใช้:</strong> กินไฟ 7-25W เท่าหลอด LED · ทำงานได้ 24 ชั่วโมง · <strong style={{ color: '#FFF' }}>วางในห้อง Server ของหน่วยงานได้เลย</strong> · ขยายโดยเพิ่ม box เพิ่มได้
+                </p>
+              </div>
+
+              {/* Tier selector */}
+              <div>
+                <div className="text-[13px] font-medium mb-2" style={{ color: C.text }}>เลือกระดับสเปกเพื่อดูข้อมูล</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  {Object.entries(TIERS).map(([k, v]) => (
+                    <button
+                      key={k}
+                      onClick={() => setTier(k)}
+                      className="text-left p-3 rounded-xl transition-all relative"
+                      style={tier === k
+                        ? { background: '#FFF', border: `2px solid ${C.primary}`, boxShadow: `0 2px 12px ${C.primary}22` }
+                        : { background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}
+                    >
+                      {v.recommended && (
+                        <span className="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: C.accentSoft, color: C.accent, letterSpacing: '0.5px' }}>
+                          แนะนำ
+                        </span>
+                      )}
+                      <div className="text-[13px] font-semibold mb-1" style={{ color: C.primaryDeep }}>{v.name}</div>
+                      <div className="text-[11px]" style={{ color: C.textMuted }}>ทำงานเท่ากับ {v.streams1080p} กล้อง 1080p</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tier spec */}
+              <div className="rounded-xl p-5" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>กำลัง AI</div>
+                    <div className="text-[16px] font-semibold" style={{ color: C.primary }}>{t.perf}</div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>กล้อง 1080p</div>
+                    <div className="text-[16px] font-semibold" style={{ color: C.primary }}>{t.streams1080p}</div>
+                    <div className="text-[10px]" style={{ color: C.textMuted }}>สตรีมพร้อมกัน</div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>กินไฟ</div>
+                    <div className="text-[16px] font-semibold" style={{ color: C.success }}>{t.power}</div>
+                    <div className="text-[10px]" style={{ color: C.textMuted }}>(เท่าหลอด LED)</div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>เหมาะสำหรับ</div>
+                    <div className="text-[12.5px] font-semibold leading-snug" style={{ color: C.primaryDeep }}>{t.useCase}</div>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 text-[12.5px] leading-relaxed" style={{ borderTop: `1px solid ${C.surfaceSoft}`, color: C.text }}>
+                  <strong>💡</strong> {t.note}
+                </div>
+              </div>
+
+              {/* Connection diagram */}
+              <div className="rounded-xl p-5" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+                <div className="text-[14px] font-semibold mb-1" style={{ color: C.primaryDeep }}>การต่อ — 1 ตัวใช้กับกล้องหลายตัวยังไง?</div>
+                <div className="text-[12px] mb-4" style={{ color: C.textMuted }}>กล้อง IP CCTV ส่งภาพผ่านสาย LAN เข้า PoE switch → Edge AI Computer อ่าน RTSP stream จากแต่ละกล้องผ่าน LAN เดียวกัน</div>
+
+                <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" className="w-full" style={{ background: C.surface, borderRadius: 8, border: `1px solid ${C.surfaceSoft}` }}>
+                  <defs>
+                    <marker id="eaArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                      <polygon points="0 0, 8 3, 0 6" fill={C.primary}/>
+                    </marker>
+                  </defs>
+
+                  {/* Cameras */}
+                  {[40, 110, 180, 250].map((y, i) => (
+                    <g key={i}>
+                      <rect x="20" y={y} width="80" height="50" rx="6" fill="#FFF" stroke={C.primary} strokeWidth="1.5"/>
+                      <text x="60" y={y + 22} textAnchor="middle" fontFamily="Sarabun, sans-serif" fontSize="14">📹</text>
+                      <text x="60" y={y + 40} textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="10" fontWeight="600">CAM {i+1}</text>
+                      <line x1="100" y1={y + 25} x2="270" y2="170" stroke={C.primary} strokeWidth="1.5" markerEnd="url(#eaArrow)"/>
+                    </g>
+                  ))}
+
+                  <text x="60" y="332" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="11">⋮</text>
+                  <text x="60" y="355" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="10">+ อีก {tier === 'pro' ? '12-20' : tier === 'mid' ? '4-8' : '0-4'} กล้อง</text>
+
+                  {/* PoE Switch */}
+                  <rect x="270" y="140" width="140" height="60" rx="6" fill={C.accentSoft} stroke={C.accent} strokeWidth="2"/>
+                  <text x="340" y="165" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="12" fontWeight="700">PoE Switch</text>
+                  <text x="340" y="183" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="10">รวมสาย LAN + จ่ายไฟ</text>
+                  <text x="340" y="195" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="9">(8/16/24 พอร์ต)</text>
+
+                  <line x1="410" y1="170" x2="490" y2="170" stroke={C.primary} strokeWidth="2.5" markerEnd="url(#eaArrow)"/>
+                  <text x="450" y="160" textAnchor="middle" fill={C.primary} fontFamily="Sarabun, sans-serif" fontSize="9" fontWeight="600">RTSP/LAN</text>
+
+                  {/* Edge AI Computer */}
+                  <rect x="490" y="120" width="160" height="100" rx="8" fill={C.primary} stroke={C.primaryDeep} strokeWidth="2"/>
+                  <text x="570" y="148" textAnchor="middle" fill="#FFF" fontFamily="Sarabun, sans-serif" fontSize="13" fontWeight="700">🧠 Edge AI Computer</text>
+                  <text x="570" y="168" textAnchor="middle" fill="#FFFFFFDD" fontFamily="Sarabun, sans-serif" fontSize="11">AI inference engine</text>
+                  <text x="570" y="186" textAnchor="middle" fill={C.accent} fontFamily="Sarabun, sans-serif" fontSize="10" fontWeight="600">วิเคราะห์ภาพแบบ real-time</text>
+                  <text x="570" y="204" textAnchor="middle" fill="#FFFFFFAA" fontFamily="Sarabun, sans-serif" fontSize="9">ทุกกล้องพร้อมกัน</text>
+
+                  <line x1="650" y1="170" x2="730" y2="170" stroke={C.accent} strokeWidth="2.5" markerEnd="url(#eaArrow)"/>
+                  <text x="690" y="160" textAnchor="middle" fill={C.accent} fontFamily="Sarabun, sans-serif" fontSize="9" fontWeight="600">เฉพาะ event</text>
+
+                  <rect x="730" y="140" width="60" height="60" rx="6" fill="#FFF" stroke={C.primary} strokeWidth="1.5"/>
+                  <text x="760" y="170" textAnchor="middle" fontSize="20">☁️</text>
+                  <text x="760" y="195" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="10" fontWeight="600">Dashboard</text>
+
+                  {/* Power */}
+                  <rect x="490" y="260" width="160" height="40" rx="6" fill={C.successSoft} stroke={C.success} strokeWidth="1.5"/>
+                  <text x="570" y="278" textAnchor="middle" fill="#3B6D11" fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">⚡ Adapter หรือ POE++</text>
+                  <text x="570" y="293" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="9">12V/5A · กินไฟน้อย</text>
+                  <line x1="570" y1="220" x2="570" y2="260" stroke={C.success} strokeWidth="1.5"/>
+
+                  {/* Labels */}
+                  <text x="60" y="20" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">กล้อง IP (RTSP)</text>
+                  <text x="340" y="125" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">เครือข่าย LAN</text>
+                  <text x="570" y="105" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">Edge AI Computer</text>
+                  <text x="760" y="125" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">ผลลัพธ์</text>
+                </svg>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 text-[12px]">
+                  <div className="rounded-lg p-3" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
+                    <strong style={{ color: C.primary }}>1. กล้อง</strong> — ใช้กล้อง IP รุ่นไหนก็ได้ที่มี RTSP (Hikvision/Dahua/Uniview/อื่นๆ)
+                  </div>
+                  <div className="rounded-lg p-3" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
+                    <strong style={{ color: C.primary }}>2. PoE Switch</strong> — สายเดียวจ่ายทั้งไฟและข้อมูล · ใช้ Cat6 ยาวได้ 100 ม.
+                  </div>
+                  <div className="rounded-lg p-3" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
+                    <strong style={{ color: C.primary }}>3. Edge AI Computer</strong> — รับ stream ทุกกล้อง · ทำ AI · ส่งผลขึ้น dashboard
+                  </div>
+                </div>
+              </div>
+
+              {/* Use with existing server */}
+              <div className="rounded-xl p-5" style={{ background: C.accentSoft, border: `1px solid ${C.accent}55` }}>
+                <div className="text-[14px] font-semibold mb-3" style={{ color: C.accent }}>
+                  💬 Q: ถ้าหน่วยงานมี Server เดิมอยู่แล้ว ใช้ร่วมกันได้ไหม?
+                </div>
+                <div className="text-[13px] leading-relaxed mb-3" style={{ color: C.text }}>
+                  <strong>ได้ครับ — มี 3 ทางเลือก:</strong>
+                </div>
+                <div className="space-y-3 text-[12.5px] leading-relaxed">
+                  <div className="rounded-lg p-3" style={{ background: '#FFF', border: `1px solid ${C.accent}33` }}>
+                    <div className="font-semibold mb-1" style={{ color: C.primaryDeep }}>① ต่อ Edge AI Computer เป็น node แยก (แนะนำ)</div>
+                    <div style={{ color: C.text }}>Edge AI Computer ตั้งใน rack เดียวกับ Server เดิม · ต่อ LAN เข้ากัน · Server เดิมรับผลจาก Edge มาแสดงบน dashboard ของหน่วยงาน</div>
+                    <div className="mt-1 text-[11px]" style={{ color: C.textMuted }}>✓ ติดตั้งง่าย · ไม่ต้องเปิดเครื่อง Server เดิม · ไม่กระทบ workload เดิม</div>
+                  </div>
+                  <div className="rounded-lg p-3" style={{ background: '#FFF', border: `1px solid ${C.accent}33` }}>
+                    <div className="font-semibold mb-1" style={{ color: C.primaryDeep }}>② เพิ่มการ์ด AI accelerator ลงใน Server เดิม (เงื่อนไขเยอะ)</div>
+                    <div style={{ color: C.text }}>ถ้า Server เดิมมี <strong>PCIe x16 slot ว่าง + power 8/16-pin + PSU พอ</strong> — เพิ่มการ์ด GPU/accelerator ได้ · แต่ต้องตรวจสอบสเปก motherboard, BIOS, การระบายความร้อน</div>
+                    <div className="mt-1 text-[11px]" style={{ color: C.textMuted }}>⚠️ Server enterprise (Dell/HPE/Lenovo) มักมี slot · Server office ทั่วไปมักไม่มี · ต้องให้ทีมเราตรวจสเปก</div>
+                  </div>
+                  <div className="rounded-lg p-3" style={{ background: '#FFF', border: `1px solid ${C.accent}33` }}>
+                    <div className="font-semibold mb-1" style={{ color: C.primaryDeep }}>③ ใช้การ์ด accelerator ขนาดเล็ก (M.2 / mini-PCIe)</div>
+                    <div style={{ color: C.text }}>Server เดิมไม่มี slot ใหญ่ — ใช้การ์ด AI ขนาด M.2 (เช่น 13 TOPS) ที่เสียบช่อง M.2 ของ motherboard ได้ · ขนาดเล็ก กินไฟน้อย</div>
+                    <div className="mt-1 text-[11px]" style={{ color: C.textMuted }}>✓ ใช้กับ Server office ได้ · กำลัง AI น้อยกว่า Edge AI Computer แต่ราคาประหยัด</div>
+                  </div>
+                </div>
+                <div className="mt-3 text-[12px] italic" style={{ color: C.textMuted }}>
+                  💡 <strong>คำแนะนำ:</strong> ทางที่ ① เป็นทางที่ติดตั้งง่ายและเร็วที่สุด · ทีมเราเข้าไปตรวจ Server เดิมก่อนเสนอ scope
+                </div>
+              </div>
+
+              {/* How it reads camera */}
+              <div className="rounded-xl p-5" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+                <div className="text-[14px] font-semibold mb-3" style={{ color: C.primaryDeep }}>Edge AI Computer "อ่าน" ภาพจากกล้องยังไง? (อธิบายให้ลูกค้าฟัง)</div>
+                <ol className="space-y-3 text-[13px] leading-relaxed">
+                  <li className="flex gap-3">
+                    <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-[12px] font-bold shrink-0" style={{ background: C.primary, color: '#FFF' }}>1</span>
+                    <div><strong style={{ color: C.primaryDeep }}>กล้อง IP เปิด RTSP server ในตัว</strong> — ทุกกล้องมี URL เช่น <code style={{ background: C.surface, padding: '1px 6px', borderRadius: 3, fontSize: 12 }}>rtsp://admin:pass@192.168.1.10/stream1</code></div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-[12px] font-bold shrink-0" style={{ background: C.primary, color: '#FFF' }}>2</span>
+                    <div><strong style={{ color: C.primaryDeep }}>Edge AI Computer เปิด video pipeline</strong> — software ของเราอ่าน RTSP หลาย stream พร้อมกัน · ถอดรหัสวิดีโอด้วย hardware decoder (ไม่กิน CPU)</div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-[12px] font-bold shrink-0" style={{ background: C.primary, color: '#FFF' }}>3</span>
+                    <div><strong style={{ color: C.primaryDeep }}>AI Model ทำงานบน chip AI</strong> — รัน object detection / LPR / face / overhead ที่ต้องการ · ทุกกล้องแชร์ chip ตัวเดียว</div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-[12px] font-bold shrink-0" style={{ background: C.primary, color: '#FFF' }}>4</span>
+                    <div><strong style={{ color: C.primaryDeep }}>เกิด event → ส่งขึ้น dashboard</strong> — เช่น "พบทะเบียน คส 7290 ที่ CAM2 เวลา 19:30" · ส่งเฉพาะ JSON + thumbnail (ไม่ส่งวิดีโอเต็ม → bandwidth ต่ำ)</div>
+                  </li>
+                </ol>
+              </div>
+
+              {/* Caveats */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <VerdictCard tone="good" title="เหมาะกับงานแบบไหน" items={[
+                  'pilot 4-12 กล้อง — รุ่น Standard พอ',
+                  'พื้นที่ที่ network ไม่เสถียร (ทำงานเองได้)',
+                  'งาน real-time (LPR / face / overhead detection)',
+                  'ขยายทีละจุด — เพิ่ม 1 ตัว = อีก 8 กล้อง',
+                  'งานที่ต้องการกินไฟน้อย · ทำงาน 24 ชั่วโมง',
+                ]}/>
+                <VerdictCard tone="warn" title="ข้อจำกัด · ต้องระวัง" items={[
+                  'อย่าเกิน spec — ลด fps ก่อนเพิ่มกล้อง',
+                  'ต้องมี cooling ในไทย (อากาศร้อน) — กล่องของเรามี fan ในตัว',
+                  'storage ในตัวจำกัด — ต่อ SSD ภายนอก หรือบันทึกที่ NVR เดิม',
+                  'AI model ต้อง optimize ก่อนใช้ — ทีมเราจัดการให้',
+                  'เลือกรุ่นต้องดูจำนวนกล้อง + ความซับซ้อนของงาน AI',
+                ]}/>
+              </div>
+
+              {/* FAQ */}
+              <div className="rounded-xl p-5" style={{ background: C.primaryDeep, color: '#FFF' }}>
+                <Eyebrow color={C.accent}>FAQ — คำถามที่ลูกค้ามักถาม</Eyebrow>
+                <div className="space-y-3 text-[12.5px] leading-relaxed">
+                  <div>
+                    <div style={{ color: C.accent, fontWeight: 600 }}>Q: 1 ตัวรองรับกี่กล้อง?</div>
+                    <div style={{ color: '#FFFFFFCC' }}>A: ขึ้นกับรุ่นและงาน AI — รุ่น Standard รัน <strong>8-12 กล้อง 1080p</strong> สำหรับ object detection ทั่วไป · ถ้าทำ LPR ที่ต้องการความแม่นยำสูง จะลดเหลือ 4-6 กล้อง</div>
+                  </div>
+                  <div>
+                    <div style={{ color: C.accent, fontWeight: 600 }}>Q: ถ้ากล้องเยอะกว่านั้น?</div>
+                    <div style={{ color: '#FFFFFFCC' }}>A: เพิ่ม Edge AI Computer หลายตัว — เช่น 16 กล้อง = 2 ตัว · กระจายโหลด · ขยายทีละจุดได้</div>
+                  </div>
+                  <div>
+                    <div style={{ color: C.accent, fontWeight: 600 }}>Q: ต้องเปลี่ยนกล้องเดิมหรือไม่?</div>
+                    <div style={{ color: '#FFFFFFCC' }}>A: ไม่ต้อง — ถ้ากล้องเดิมเป็น IP camera ที่มี RTSP (รุ่นปกติ Hikvision/Dahua/อื่นๆ) ใช้ต่อได้เลย</div>
+                  </div>
+                  <div>
+                    <div style={{ color: C.accent, fontWeight: 600 }}>Q: เน็ตล่ม กล้องยังทำงานไหม?</div>
+                    <div style={{ color: '#FFFFFFCC' }}>A: ทำงานได้ — Edge AI Computer + กล้อง + switch อยู่ใน LAN เดียวกัน · เก็บ event ในตัว · ส่งขึ้น cloud เมื่อเน็ตกลับมา</div>
+                  </div>
+                  <div>
+                    <div style={{ color: C.accent, fontWeight: 600 }}>Q: เปลี่ยน AI model ได้ไหม?</div>
+                    <div style={{ color: '#FFFFFFCC' }}>A: ได้ — push update ผ่าน OTA (over-the-air) · ทีมเราดูแลให้</div>
+                  </div>
+                  <div>
+                    <div style={{ color: C.accent, fontWeight: 600 }}>Q: ต้องวางใกล้กล้องไหม?</div>
+                    <div style={{ color: '#FFFFFFCC' }}>A: <strong style={{ color: '#FFF' }}>ไม่ต้อง</strong> — Edge AI Computer อ่านภาพผ่าน LAN ได้ ตราบใดที่อยู่ในเครือข่ายเดียวกัน · <strong style={{ color: '#FFF' }}>วางในห้อง Server ของหน่วยงานได้เลย</strong> · ที่เรียก "Edge" หมายถึงประมวลผลในเครือข่ายของท่าน (ไม่ใช่ Cloud) · ไม่ได้แปลว่าต้องอยู่ติดกล้อง</div>
+                  </div>
+                  <div>
+                    <div style={{ color: C.accent, fontWeight: 600 }}>Q: ติดตั้งที่ไหน · ตู้กันน้ำได้ไหม?</div>
+                    <div style={{ color: '#FFFFFFCC' }}>A: ส่วนใหญ่ตั้งใน rack ห้อง Server ของหน่วยงาน (อากาศเย็น · UPS พร้อม) · กรณีพิเศษ (กล้องอยู่ฟาร์ม/ป่า · network outdoor ไม่เสถียร) ใส่ตู้ IP65 outdoor ติดเสาได้</div>
+                  </div>
+                </div>
+              </div>
+
             </div>
-            <div>
-              <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>กล้อง 1080p</div>
-              <div className="text-[18px] font-semibold" style={{ color: C.primary }}>{m.streams1080p}</div>
-              <div className="text-[10px]" style={{ color: C.textMuted }}>สตรีมพร้อมกัน (ประมาณการ)</div>
-            </div>
-            <div>
-              <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>กล้อง 4K</div>
-              <div className="text-[18px] font-semibold" style={{ color: C.primary }}>{m.streams4k}</div>
-              <div className="text-[10px]" style={{ color: C.textMuted }}>สตรีมพร้อมกัน (ประมาณการ)</div>
-            </div>
-            <div>
-              <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>กินไฟ</div>
-              <div className="text-[18px] font-semibold" style={{ color: C.success }}>{m.power}</div>
-              <div className="text-[10px]" style={{ color: C.textMuted }}>(เท่าหลอด LED)</div>
-            </div>
-            <div>
-              <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>เหมาะสำหรับ</div>
-              <div className="text-[13px] font-semibold leading-snug" style={{ color: m.bad ? C.alert : C.primaryDeep }}>{m.useCase}</div>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 text-[13px] leading-relaxed" style={{ borderTop: `1px solid ${C.surfaceSoft}`, color: m.bad ? C.alert : C.text }}>
-            <strong>{m.bad ? '⚠ คำเตือน:' : '💡 ข้อแนะนำ:'}</strong> {m.note}
-          </div>
-        </div>
-
-        {/* Connection diagram */}
-        <div className="rounded-2xl p-5 md:p-6" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
-          <div className="text-[14px] font-semibold mb-1" style={{ color: C.primaryDeep }}>การต่อ — Jetson 1 ตัว ใช้กับกล้องหลายตัวยังไง?</div>
-          <div className="text-[12.5px] mb-4" style={{ color: C.textMuted }}>กล้อง IP CCTV ส่งภาพผ่านสาย LAN เข้า PoE switch → Jetson อ่าน RTSP stream จากแต่ละกล้องผ่าน LAN เดียวกัน</div>
-
-          <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" className="w-full" style={{ background: '#FFF', borderRadius: 8, border: `1px solid ${C.surfaceSoft}` }}>
-            <defs>
-              <marker id="jArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill={C.primary}/>
-              </marker>
-            </defs>
-
-            {/* Cameras (4 ตัว ฝั่งซ้าย) */}
-            {[40, 110, 180, 250].map((y, i) => (
-              <g key={i}>
-                <rect x="20" y={y} width="80" height="50" rx="6" fill={C.surface} stroke={C.primary} strokeWidth="1.5"/>
-                <text x="60" y={y + 22} textAnchor="middle" fontFamily="Sarabun, sans-serif" fontSize="14">📹</text>
-                <text x="60" y={y + 40} textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="10" fontWeight="600">CAM {i+1}</text>
-                {/* connection line */}
-                <line x1="100" y1={y + 25} x2="270" y2="170" stroke={C.primary} strokeWidth="1.5" markerEnd="url(#jArrow)"/>
-              </g>
-            ))}
-
-            {/* "+ more cameras" text */}
-            <text x="60" y="332" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="11">⋮</text>
-            <text x="60" y="355" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="10">+ อีก {model === 'orin-nx' ? '12-20' : model === 'orin-nano' ? '4-8' : '0-4'} กล้อง</text>
-
-            {/* PoE Switch */}
-            <rect x="270" y="140" width="140" height="60" rx="6" fill={C.accentSoft} stroke={C.accent} strokeWidth="2"/>
-            <text x="340" y="165" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="12" fontWeight="700">PoE Switch</text>
-            <text x="340" y="183" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="10">รวมสาย LAN + จ่ายไฟ</text>
-            <text x="340" y="195" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="9">(8/16/24 พอร์ต)</text>
-
-            {/* Arrow Switch → Jetson */}
-            <line x1="410" y1="170" x2="490" y2="170" stroke={C.primary} strokeWidth="2.5" markerEnd="url(#jArrow)"/>
-            <text x="450" y="160" textAnchor="middle" fill={C.primary} fontFamily="Sarabun, sans-serif" fontSize="9" fontWeight="600">RTSP/LAN</text>
-
-            {/* Jetson */}
-            <rect x="490" y="120" width="160" height="100" rx="8" fill={C.primary} stroke={C.primaryDeep} strokeWidth="2"/>
-            <text x="570" y="148" textAnchor="middle" fill="#FFF" fontFamily="Sarabun, sans-serif" fontSize="13" fontWeight="700">🧠 Jetson Orin Nano</text>
-            <text x="570" y="168" textAnchor="middle" fill="#FFFFFFDD" fontFamily="Sarabun, sans-serif" fontSize="11">AI inference engine</text>
-            <text x="570" y="186" textAnchor="middle" fill={C.accent} fontFamily="Sarabun, sans-serif" fontSize="10" fontWeight="600">DeepStream / TensorRT</text>
-            <text x="570" y="204" textAnchor="middle" fill="#FFFFFFAA" fontFamily="Sarabun, sans-serif" fontSize="9">วิเคราะห์ทุกกล้องพร้อมกัน</text>
-
-            {/* Arrow Jetson → Cloud/Dashboard */}
-            <line x1="650" y1="170" x2="730" y2="170" stroke={C.accent} strokeWidth="2.5" markerEnd="url(#jArrow)"/>
-            <text x="690" y="160" textAnchor="middle" fill={C.accent} fontFamily="Sarabun, sans-serif" fontSize="9" fontWeight="600">เฉพาะ event</text>
-
-            {/* Dashboard */}
-            <rect x="730" y="140" width="60" height="60" rx="6" fill={C.surface} stroke={C.primary} strokeWidth="1.5"/>
-            <text x="760" y="170" textAnchor="middle" fontSize="20">☁️</text>
-            <text x="760" y="195" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="10" fontWeight="600">Dashboard</text>
-
-            {/* Bottom: Power */}
-            <rect x="490" y="260" width="160" height="40" rx="6" fill={C.successSoft} stroke={C.success} strokeWidth="1.5"/>
-            <text x="570" y="278" textAnchor="middle" fill="#3B6D11" fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">⚡ Adapter 12V/5A</text>
-            <text x="570" y="293" textAnchor="middle" fill={C.textMuted} fontFamily="Sarabun, sans-serif" fontSize="9">หรือ POE++ ถ้ารองรับ</text>
-            <line x1="570" y1="220" x2="570" y2="260" stroke={C.success} strokeWidth="1.5"/>
-
-            {/* Labels for left side */}
-            <text x="60" y="20" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">กล้อง IP (RTSP)</text>
-            <text x="340" y="125" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">เครือข่าย LAN</text>
-            <text x="570" y="105" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">Edge AI Computer</text>
-            <text x="760" y="125" textAnchor="middle" fill={C.primaryDeep} fontFamily="Sarabun, sans-serif" fontSize="11" fontWeight="700">ผลลัพธ์</text>
-          </svg>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 text-[12px]">
-            <div className="rounded-lg p-3" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-              <strong style={{ color: C.primary }}>1. กล้อง</strong> — ใช้กล้อง IP รุ่นไหนก็ได้ที่มี RTSP (Hikvision/Dahua/Uniview)
-            </div>
-            <div className="rounded-lg p-3" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-              <strong style={{ color: C.primary }}>2. PoE Switch</strong> — สายเดียวจ่ายทั้งไฟและข้อมูล · ใช้ Cat6 ยาวได้ 100 ม.
-            </div>
-            <div className="rounded-lg p-3" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-              <strong style={{ color: C.primary }}>3. Jetson</strong> — รับ stream ทุกกล้อง · ทำ AI inference · ส่งผลขึ้น cloud / dashboard
-            </div>
-          </div>
-        </div>
-
-        {/* How Jetson reads camera */}
-        <div className="rounded-2xl p-5 md:p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-          <div className="text-[14px] font-semibold mb-3" style={{ color: C.primaryDeep }}>Jetson "อ่าน" ภาพจากกล้องยังไง? (อธิบายให้ลูกค้าฟัง)</div>
-          <ol className="space-y-3 text-[13.5px] leading-relaxed">
-            <li className="flex gap-3">
-              <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-[12px] font-bold shrink-0" style={{ background: C.primary, color: '#FFF' }}>1</span>
-              <div><strong style={{ color: C.primaryDeep }}>กล้อง IP เปิด RTSP server ในตัว</strong> — ทุกกล้องมี URL เช่น <code style={{ background: C.surface, padding: '1px 6px', borderRadius: 3, fontSize: 12 }}>rtsp://admin:pass@192.168.1.10/stream1</code></div>
-            </li>
-            <li className="flex gap-3">
-              <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-[12px] font-bold shrink-0" style={{ background: C.primary, color: '#FFF' }}>2</span>
-              <div><strong style={{ color: C.primaryDeep }}>Jetson เปิด pipeline DeepStream</strong> — software ของ NVIDIA ที่อ่าน RTSP หลาย stream พร้อมกัน · ถอดรหัสวิดีโอด้วย hardware (ไม่กิน CPU)</div>
-            </li>
-            <li className="flex gap-3">
-              <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-[12px] font-bold shrink-0" style={{ background: C.primary, color: '#FFF' }}>3</span>
-              <div><strong style={{ color: C.primaryDeep }}>AI Model ทำงานบน GPU ของ Jetson</strong> — รัน object detection / LPR / face / overhead ที่ต้องการ · ทุกกล้องแชร์ GPU ตัวเดียว</div>
-            </li>
-            <li className="flex gap-3">
-              <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-[12px] font-bold shrink-0" style={{ background: C.primary, color: '#FFF' }}>4</span>
-              <div><strong style={{ color: C.primaryDeep }}>เกิด event → ส่งขึ้น cloud / dashboard</strong> — เช่น "พบทะเบียน คส 7290 ที่ CAM2 เวลา 19:30" · ส่งเฉพาะ JSON + thumbnail (ไม่ส่งวิดีโอเต็ม → bandwidth ต่ำ)</div>
-            </li>
-          </ol>
-        </div>
-
-        {/* Caveats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <VerdictCard tone="good" title="Jetson เหมาะกับงานแบบไหน" items={[
-            'pilot 4-12 กล้อง — Orin Nano พอ',
-            'งานที่ Server กลางแพงเกิน budget',
-            'พื้นที่ที่ network ไม่เสถียร (ทำงานเองได้)',
-            'งาน real-time (face / LPR / overhead detection)',
-            'ขยายทีละจุดได้ — เพิ่ม Jetson 1 ตัว = เพิ่มอีก 8 กล้อง',
-          ]}/>
-          <VerdictCard tone="warn" title="ข้อจำกัด · ต้องระวัง" items={[
-            'อย่าเกิน spec — ลด fps ก่อนเพิ่มกล้อง',
-            'ต้องมี cooling fan ในไทย (อากาศร้อน)',
-            'storage ในตัวจำกัด — ต้องต่อ SSD ภายนอก หรือบันทึกที่ NVR',
-            'AI model ต้อง convert เป็น TensorRT format ก่อน · ทีมเราจัดการให้',
-            'รุ่น Nano เก่า (4GB) NVIDIA EOL แล้ว — ใช้ Orin Nano แทน',
-          ]}/>
-        </div>
-
-        {/* FAQ — Tua sales script */}
-        <div className="rounded-2xl p-5 md:p-6" style={{ background: C.primaryDeep, color: '#FFF' }}>
-          <Eyebrow color={C.accent}>FAQ — คำถามที่ลูกค้ามักถาม</Eyebrow>
-          <div className="space-y-3 text-[13px] leading-relaxed">
-            <div>
-              <div style={{ color: C.accent, fontWeight: 600 }}>Q: 1 ตัวรองรับกี่กล้อง?</div>
-              <div style={{ color: '#FFFFFFCC' }}>A: ขึ้นกับรุ่น Jetson + งาน AI ที่รัน — Orin Nano รัน <strong>8-12 กล้อง 1080p</strong> สำหรับ object detection ทั่วไป · ถ้าทำ LPR ที่ต้องการความแม่นยำสูง จะลดเหลือ 4-6 กล้อง</div>
-            </div>
-            <div>
-              <div style={{ color: C.accent, fontWeight: 600 }}>Q: ถ้ากล้องเยอะกว่านั้น?</div>
-              <div style={{ color: '#FFFFFFCC' }}>A: ใช้ Jetson หลายตัว — เช่น 16 กล้อง = 2 Jetson Orin Nano · กระจายโหลด ขยายทีละจุดได้</div>
-            </div>
-            <div>
-              <div style={{ color: C.accent, fontWeight: 600 }}>Q: ต้องเปลี่ยนกล้องเดิมหรือไม่?</div>
-              <div style={{ color: '#FFFFFFCC' }}>A: ไม่ต้อง — ถ้ากล้องเดิมเป็น IP camera ที่มี RTSP (รุ่นปกติ Hikvision/Dahua) ใช้ต่อได้เลย</div>
-            </div>
-            <div>
-              <div style={{ color: C.accent, fontWeight: 600 }}>Q: เน็ตล่ม กล้องยังทำงานไหม?</div>
-              <div style={{ color: '#FFFFFFCC' }}>A: ทำงานได้ — Jetson + กล้อง + switch อยู่ใน LAN เดียวกัน · เก็บ event ในตัว · ส่งขึ้น cloud เมื่อเน็ตกลับมา</div>
-            </div>
-            <div>
-              <div style={{ color: C.accent, fontWeight: 600 }}>Q: เปลี่ยน AI model ได้ไหม?</div>
-              <div style={{ color: '#FFFFFFCC' }}>A: ได้ — push update ผ่าน OTA (over-the-air) · ทีมเราดูแลให้</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </PanelChrome>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -958,7 +1019,6 @@ function TabSwitcher() {
         >
           {active === 'approachA' && <ApproachAPanel/>}
           {active === 'approachB' && <ApproachBPanel/>}
-          {active === 'jetson' && <JetsonPanel/>}
           {active === 'lpr' && <LPRPanel/>}
           {active === 'compare' && <ComparePanel/>}
           {active === 'coverage' && <CoveragePanel/>}
