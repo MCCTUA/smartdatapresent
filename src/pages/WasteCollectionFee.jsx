@@ -1471,26 +1471,26 @@ export default function WasteCollectionFee() {
           </div>
 
           <div className="space-y-6">
-            {/* Thailand precedent — นางแล */}
+            {/* Thailand precedent — อบต.ดอนแก้ว เชียงใหม่ (verified via Thai PBS) */}
             <div className="rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6" style={{ background: C.successSoft, border: `1px solid ${C.success}33` }}>
               <div>
-                <Pill variant="success">ไทย · ทำได้แล้ว</Pill>
-                <div className="text-[20px] font-semibold mt-3" style={{ color: C.text }}>เทศบาลตำบลนางแล</div>
-                <div className="text-[13px] mt-1" style={{ color: C.textMuted }}>เชียงราย · ~2,400 ครัวเรือน</div>
+                <Pill variant="success">ไทย · ทำได้แล้ว 25+ ปี</Pill>
+                <div className="text-[20px] font-semibold mt-3" style={{ color: C.text }}>อบต.ดอนแก้ว</div>
+                <div className="text-[13px] mt-1" style={{ color: C.textMuted }}>อ.แม่ริม จ.เชียงใหม่</div>
               </div>
               <div className="md:col-span-2">
                 <div className="grid grid-cols-2 gap-4 mb-3">
                   <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>ปี 2553</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.alert }}>12 ตัน/วัน</div>
+                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>เริ่ม 7 ม.ค. 2543</div>
+                    <div className="text-[28px] font-semibold" style={{ color: C.success }}>0 ถังขยะ</div>
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>ปี 2564</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.success }}>&lt;1 ตัน/วัน</div>
+                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>ค่าจัดเก็บ</div>
+                    <div className="text-[28px] font-semibold" style={{ color: C.primary }}>70 ฿/เดือน</div>
                   </div>
                 </div>
                 <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-                  ใช้ระบบ "ธงเขียว" — ครัวเรือนคัดแยกได้ติดธงเขียว จ่าย ≤10 ฿/เดือน · ลดขยะส่งกำจัดสุทธิ <strong>−92%</strong> ภายใน 11 ปี · ขนาดใกล้เคียงกับ อบต. / เทศบาลตำบลทั่วไป
+                  ชุมชน <strong>"ไร้ถังขยะ-ไร้รถเก็บขยะ"</strong> — คัดแยก 4 ประเภทที่ต้นทาง · อาสาสมัครหมู่บ้านเก็บไปจัดการ · พิสูจน์ว่า อบต.ขนาดเล็ก-กลาง ทำได้จริงต่อเนื่องกว่า 25 ปี (อ้างอิง Thai PBS)
                 </div>
               </div>
             </div>
@@ -1571,6 +1571,214 @@ export default function WasteCollectionFee() {
                   คัดแยก 45 ประเภท · ไม่มีรถเก็บขยะ — ประชาชนเอามาเองที่ Zero Waste Center · พิสูจน์ upper bound ของระบบคัดแยก
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ════════════════════ 6 กลยุทธ์ลดขยะที่ต้นทาง ════════════════════ */}
+      {/* Inserted 2026-04-30: Tua wants to collect feedback from นายก อปท.
+          on which waste-reduction strategy interests them most.
+          All 6 cards cite verified Thai cases (web-verified 2026-04-30).
+          Sources: matichon, ThaiPBS, dmcr, dla.go.th, thairath.
+          TODO: replace href="#feedback-form" with Tua's Google Form URL. */}
+      <Section bg="white" id="reduction">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center mb-12">
+            <Eyebrow color={C.accent}>ลดขยะ = ลดต้นทุนกำจัด</Eyebrow>
+            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
+              6 กลยุทธ์ที่ <span style={{ color: C.primary }}>อปท.ไทยทำแล้ว</span> — ตำบลของท่านก็ทำได้
+            </h2>
+            <p className="max-w-[780px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
+              การคัดแยกอย่างเดียวลดขยะได้ส่วนหนึ่ง — แต่เมื่อรวมกลยุทธ์อื่นๆ (ปุ๋ยหมัก · ธนาคารขยะ · RDF · ฯลฯ) อปท. หลายแห่งลดปริมาณขยะที่ต้องนำไปทิ้งได้อย่างมีนัยสำคัญ ระบบ <strong style={{ color: C.text }}>ค่าธรรมเนียม 3-Tier</strong> ของเรารองรับทุกกลยุทธ์
+            </p>
+          </div>
+
+          {/* National hero banner */}
+          <div className="rounded-2xl p-6 md:p-8 mb-10" style={{ background: C.primaryDeep, color: '#FFF' }}>
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+              <div>
+                <div className="text-[12px] font-semibold uppercase mb-2" style={{ color: '#9FE1CB', letterSpacing: '2px' }}>
+                  ระดับชาติ · ม.ค. 2567
+                </div>
+                <div className="text-[22px] md:text-[26px] font-semibold leading-tight">
+                  ธนาคารขยะ อปท. ครอบคลุม <span style={{ color: '#9FE1CB' }}>100%</span> ทั่วประเทศ
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4 md:ml-auto md:flex-shrink-0">
+                <div className="text-center">
+                  <div className="text-[24px] md:text-[28px] font-semibold" style={{ color: '#9FE1CB' }}>7,773</div>
+                  <div className="text-[11px] text-white/70">อปท.</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-[24px] md:text-[28px] font-semibold" style={{ color: '#9FE1CB' }}>14,655</div>
+                  <div className="text-[11px] text-white/70">ธนาคารขยะ</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-[24px] md:text-[28px] font-semibold" style={{ color: '#9FE1CB' }}>897.5 ลบ.</div>
+                  <div className="text-[11px] text-white/70">รายได้สะสม</div>
+                </div>
+              </div>
+            </div>
+            <div className="text-[12px] mt-4 text-white/60">
+              ปลัดกระทรวงมหาดไทย ประกาศสำเร็จ ม.ค. 2567 (อ้างอิงมติชนสุดสัปดาห์ + กรมส่งเสริมการปกครองท้องถิ่น)
+            </div>
+          </div>
+
+          {/* 6 strategy cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {[
+              {
+                num: '01',
+                tier: C.success,
+                title: 'ปุ๋ยหมัก / ย่อยสลายเศษอาหาร',
+                concept: 'ขยะเปียกประมาณ 40-60% ของทั้งหมด → เปลี่ยนเป็นปุ๋ยอินทรีย์ ลดน้ำหนักที่ต้องขนทิ้ง',
+                refName: 'เทศบาลนครรังสิต',
+                refLoc: 'ปทุมธานี',
+                refMetric: '20 ตัน/วัน',
+                refContext: 'โรงงานแปรรูปเศษอาหาร + ผักตบชวา ภายใน 24 ชม. (ร่วมกับไบโอแอ็กซ์เซล + ม.สงขลานครินทร์) เริ่มปี 2565',
+                refSource: 'มติชน · สยามรัฐ',
+              },
+              {
+                num: '02',
+                tier: C.primary,
+                title: 'ธนาคารขยะรีไซเคิล',
+                concept: 'ฝากขยะรีไซเคิลแลกแต้ม/เงินสะสม → คะแนนใช้หักค่าธรรมเนียมหรือถอนเป็นเงิน',
+                refName: 'ระดับชาติ — ทุก อปท.',
+                refLoc: '7,773 อปท. ครอบคลุม 100%',
+                refMetric: '897.5 ลบ.',
+                refContext: 'รายได้สะสมจาก 1,077 อปท. (2560-2567) · มท. ประกาศสำเร็จ ม.ค. 2567 · อปท.ส่วนใหญ่มีระบบนี้แล้ว — ขยายฐานสมาชิกได้',
+                refSource: 'กระทรวงมหาดไทย · สถ. (dla.go.th)',
+              },
+              {
+                num: '03',
+                tier: C.accent,
+                title: 'ชุมชนไร้ถังขยะ (คัดแยกที่ต้นทาง)',
+                concept: 'ไม่มีถังขยะ-ไม่มีรถเก็บขยะ — คัดแยก 4 ประเภทที่บ้าน · อาสาสมัครเก็บนำไปจัดการ',
+                refName: 'อบต.ดอนแก้ว',
+                refLoc: 'อ.แม่ริม เชียงใหม่',
+                refMetric: '25+ ปี',
+                refContext: 'เริ่ม 7 ม.ค. 2543 · ค่าจัดเก็บ 70 ฿/เดือน · ทำต่อเนื่องถึงปัจจุบัน — พิสูจน์ว่า อบต.ขนาดกลางทำได้',
+                refSource: 'Thai PBS',
+              },
+              {
+                num: '04',
+                tier: C.success,
+                title: 'Zero Waste Community',
+                concept: 'หลัก 3R (Reduce-Reuse-Recycle) + ธนาคารขยะ + วินัยชุมชน — ระดับครัวเรือนถึงระดับชุมชน',
+                refName: 'บ้านดอนกลอย',
+                refLoc: 'อ.ด่านขุนทด นครราชสีมา',
+                refMetric: 'ถ้วยพระราชทาน',
+                refContext: 'ชุมชนปลอดขยะระดับประเทศ ปี 2562 · ยกระดับเป็นศูนย์เรียนรู้ขยะเหลือศูนย์ที่ 19 ของประเทศ ปี 2563',
+                refSource: 'กรมทรัพยากรทางทะเลและชายฝั่ง · ไทยโพสต์',
+              },
+              {
+                num: '05',
+                tier: C.alert,
+                title: 'RDF — ขยะเชื้อเพลิง',
+                concept: 'ขยะแห้งติดไฟได้ (พลาสติก/ยาง/ผ้า) → คัด → อัดแท่ง → ส่งโรงปูน/โรงไฟฟ้าเป็นเชื้อเพลิง',
+                refName: 'เทศบาลนครนครราชสีมา',
+                refLoc: 'นครราชสีมา',
+                refMetric: '230 ตัน/วัน',
+                refContext: 'ศูนย์กำจัดขยะ + โรงผลิต RDF ส่งโรงปูน · เปิด 2554 · ดำเนินการต่อเนื่อง · เหมาะกับเทศบาลขนาดใหญ่หรือ cluster ของ อปท.',
+                refSource: 'ไทยรัฐ',
+              },
+              {
+                num: '06',
+                tier: C.primary,
+                title: 'บูรณาการระดับจังหวัด',
+                concept: 'จับกลุ่ม อปท. ในจังหวัดเดียวกัน ทำกลยุทธ์ลดขยะร่วมกัน → economy of scale + ใช้งบจังหวัด',
+                refName: 'จังหวัดอุบลราชธานี',
+                refLoc: 'อุบลราชธานี',
+                refMetric: 'ชนะเลิศประเทศ',
+                refContext: 'รางวัลจังหวัดสะอาด ระดับประเทศ ปี 2567 · บริหารจัดการขยะมูลฝอยชุมชนยั่งยืน หลัก 3 ช (ใช้น้อย-ใช้ซ้ำ-นำกลับมาใช้ใหม่)',
+                refSource: 'มติชน · LINE TODAY · JS100',
+              },
+            ].map((s, i) => (
+              <motion.div
+                key={s.num}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                className="rounded-2xl p-6 flex flex-col"
+                style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}
+              >
+                <div className="flex items-baseline justify-between mb-3">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: s.tier, letterSpacing: '2px' }}>
+                    กลยุทธ์ {s.num}
+                  </span>
+                  <span className="w-2 h-2 rounded-full" style={{ background: s.tier }}></span>
+                </div>
+                <h3 className="text-[20px] font-semibold mb-2 leading-tight" style={{ color: C.text }}>
+                  {s.title}
+                </h3>
+                <p className="text-[13.5px] leading-relaxed mb-5" style={{ color: C.textMuted }}>
+                  {s.concept}
+                </p>
+
+                {/* Reference card */}
+                <div className="mt-auto rounded-xl p-4" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+                  <div className="flex items-baseline gap-2 mb-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: s.tier, letterSpacing: '1.5px' }}>อ้างอิง</span>
+                    <span className="text-[11px]" style={{ color: C.textMuted }}>{s.refLoc}</span>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3 mb-2">
+                    <div className="text-[15px] font-semibold" style={{ color: C.text }}>{s.refName}</div>
+                    <div className="text-[16px] font-semibold flex-shrink-0" style={{ color: s.tier }}>{s.refMetric}</div>
+                  </div>
+                  <p className="text-[12px] leading-relaxed mb-2" style={{ color: C.textMuted }}>
+                    {s.refContext}
+                  </p>
+                  <div className="text-[10.5px] pt-2 border-t" style={{ color: C.textMuted, borderColor: C.surfaceSoft }}>
+                    Source: {s.refSource}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Tie-in to WASTE-FEE */}
+          <div className="mt-10 rounded-2xl p-6 md:p-7" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+              <div>
+                <div className="text-[12px] font-semibold uppercase mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>
+                  เชื่อมต่อกับระบบของเรา
+                </div>
+                <div className="text-[16px] md:text-[17px] font-semibold leading-snug" style={{ color: C.text }}>
+                  ระบบ WASTE-FEE รองรับทั้ง 6 กลยุทธ์ — Tier 10 ฿ ขายรีไซเคิล · ส่วนลดให้คนคัดแยก · Dashboard ติดตามกลยุทธ์ที่ท่านเลือก
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feedback CTA */}
+          <div className="mt-8 rounded-2xl p-6 md:p-8 text-center" style={{ background: C.primary, color: '#FFF' }}>
+            <div className="text-[12px] font-semibold uppercase mb-3" style={{ color: '#9FE1CB', letterSpacing: '2.5px' }}>
+              นายก / ปลัด — ขอความเห็นจากท่าน
+            </div>
+            <h3 className="text-[22px] md:text-[26px] font-semibold mb-3 leading-tight">
+              กลยุทธ์ไหน <span style={{ color: '#9FE1CB' }}>เหมาะกับหน่วยงานของท่าน</span> ที่สุด?
+            </h3>
+            <p className="text-[15px] leading-relaxed text-white/85 mb-6 max-w-[680px] mx-auto">
+              ใช้เวลาประมาณ 2 นาที — ตอบแบบสอบถามสั้นๆ เกี่ยวกับ 6 กลยุทธ์ข้างบน · เราใช้ feedback ของท่านปรับ roadmap ระบบ และจะส่ง playbook ฟรีของกลยุทธ์ที่ท่านเลือกให้
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <a
+                href="#feedback-form"
+                onClick={(e) => { e.preventDefault(); alert('แบบสอบถามจะเปิดให้ใช้งานเร็วๆ นี้ — ระหว่างรอ ท่านส่งความเห็นทาง email ได้เลย'); }}
+                className="inline-block text-[15px] font-semibold px-6 py-3 rounded-lg no-underline cursor-pointer"
+                style={{ background: '#FFF', color: C.primary }}
+              >
+                ตอบแบบสอบถาม (2 นาที)
+              </a>
+              <a
+                href="mailto:mcctua2@gmail.com?subject=ความเห็นเรื่อง%206%20กลยุทธ์ลดขยะ&body=กลยุทธ์ที่หน่วยงานของผม/ดิฉันสนใจที่สุด:%20%0A%0Aชื่อหน่วยงาน:%20%0Aขนาดประมาณ%20(ครัวเรือน):%20%0Aผู้ติดต่อ:%20"
+                className="inline-block text-[15px] font-medium px-6 py-3 rounded-lg no-underline"
+                style={{ background: 'transparent', color: '#FFF', border: '1px solid rgba(255,255,255,0.4)' }}
+              >
+                ส่งความเห็นทาง email
+              </a>
             </div>
           </div>
         </div>
@@ -1840,7 +2048,7 @@ export default function WasteCollectionFee() {
           </div>
 
           <div className="mt-8 text-[12px] text-white/40 leading-relaxed">
-            ตัวเลขประมาณการในหน้านี้อ้างจาก: กฎกระทรวง 2567 · BKK WASTE PAY (ก.พ. 2569) · เทศบาลตำบลนางแล (2553-2564) · NEA Singapore (ก.ค. 2024) · Yokohama G30 (2003-2013) · Kamikatsu Frontiers Review (2023) — ดูรายละเอียด source ใน Research Brief
+            ตัวเลขประมาณการในหน้านี้อ้างจาก: กฎกระทรวง 2567 · BKK WASTE PAY (ก.พ. 2569) · อบต.ดอนแก้ว เชียงใหม่ (Thai PBS) · เทศบาลนครรังสิต (มติชน/สยามรัฐ 2565) · บ้านดอนกลอย ด่านขุนทด (กรมทรัพยากรทางทะเลและชายฝั่ง 2562-2563) · เทศบาลนครนครราชสีมา (ไทยรัฐ) · กระทรวงมหาดไทย ธนาคารขยะ (มติชนสุดสัปดาห์/dla.go.th ม.ค. 2567) · จังหวัดอุบลราชธานี ชนะจังหวัดสะอาด (มติชน 2567) · NEA Singapore (ก.ค. 2024) · Yokohama G30 (2003-2013) · Kamikatsu Frontiers Review (2023) — ดูรายละเอียด source ใน Research Brief
           </div>
         </div>
       </Section>

@@ -55,9 +55,9 @@ const PRODUCTS = [
   },
   {
     to: '/waste-fee',
-    eyebrow: 'GovTech · ตามกฎหมายใหม่',
+    eyebrow: 'GovTech · ใหม่ · 6 กลยุทธ์ลดขยะ',
     title: 'ค่าธรรมเนียมเก็บขยะ',
-    body: '3-Tier (60/20/10 ฿) ตามกฎกระทรวง 2567 + กทม. precedent · เก็บได้ครบ ลดต้นทุนกำจัด · LIFF + Driver App',
+    body: '3-Tier (60/20/10 ฿) ตามกฎกระทรวง 2567 + กทม. precedent · เก็บได้ครบ ลดต้นทุนกำจัด · LIFF + Driver App · พร้อม 6 กลยุทธ์ลดขยะที่ต้นทาง (ปุ๋ยหมัก · ธนาคารขยะ · RDF · ฯลฯ) อ้างอิง อปท.ไทยที่ทำสำเร็จแล้ว',
     accent: C.accent,
     icon: 'recycle',
     bg: '#3D2B0F',
