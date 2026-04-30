@@ -1,8 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+
+  /* Civic Trust palette — used by /waste-fee (Product 1) and forward */
+  --civic-primary: #0F6E56;
+  --civic-primary-hover: #1D9E75;
+  --civic-primary-deep: #0B5544;
+  --civic-surface: #FAF7EE;
+  --civic-surface-soft: #F5F1E4;
+  --civic-text: #1F2A24;
+  --civic-text-muted: #5F6B65;
+  --civic-accent: #BA7517;
+  --civic-accent-soft: #FAEEDA;
+  --civic-alert: #A32D2D;
+  --civic-alert-soft: #FCEBEB;
+  --civic-success: #639922;
+  --civic-success-soft: #EAF3DE;
+  --civic-border: rgba(15, 110, 86, 0.12);
 }
 
 * {
@@ -15,6 +32,12 @@ body {
   background-color: #000;
 }
 
+/* Civic Trust scope — applied to /waste-fee root only */
+.civic-scope {
+  font-family: 'Sarabun', system-ui, sans-serif;
+  color: var(--civic-text);
+}
+
 /* Smooth anchor scrolling */
 html {
   scroll-behavior: smooth;
@@ -23,4 +46,13 @@ html {
 /* Remove default link styles used inside nav/footer */
 a {
   text-decoration: none;
+}
+
+/* Hide scrollbar utility for horizontal scroll containers */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
