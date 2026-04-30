@@ -108,7 +108,7 @@ function StatCard({ label, value, sub, accent = C.primary }) {
 const products = [
   {
     model: 'SA-2A01',
-    series: 'RSK Series · All-in-One',
+    series: 'All-in-One',
     tagline: 'ติดตั้งง่าย ถนนหลัก/ทางหลวง',
     img: `${imgBase}product_sa2a01.webp`,
     specs: [
@@ -126,7 +126,7 @@ const products = [
   },
   {
     model: 'SA-2A02',
-    series: 'RSA Series · Modular',
+    series: 'Modular',
     tagline: 'ความยืดหยุ่นสูง ถนนกว้าง/อุตสาหกรรม',
     img: `${imgBase}product_sa2a02.webp`,
     specs: [
@@ -144,7 +144,7 @@ const products = [
   },
   {
     model: 'SK-7A13',
-    series: 'YY Series · Split Type',
+    series: 'Split Type',
     tagline: 'ปรับแผงโซลาร์อิสระ 360°',
     img: `${imgBase}product_sk7a13.webp`,
     specs: [
@@ -160,7 +160,7 @@ const products = [
   },
   {
     model: 'SK-7A14',
-    series: 'Sailing Light · Premium',
+    series: 'Premium',
     tagline: 'ดีไซน์หรูหรา สวนสาธารณะ/รีสอร์ท',
     img: `${imgBase}product_sk7a14.webp`,
     specs: [
@@ -421,37 +421,6 @@ export default function SolarStreetLight() {
             </div>
           </div>
 
-          {/* DIFFERENT use case — ลานจอดรถ + TOA proof */}
-          <div className="rounded-2xl p-6" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
-            <Eyebrow color={C.accent}>กรณีงานนอกถนน — ลานจอดรถ · ทางเดิน · ป้อมยาม</Eyebrow>
-            <p className="text-[14px] leading-relaxed mb-3" style={{ color: C.text }}>
-              ทีมของเราออกแบบให้สอดคล้องกับ<strong>ลักษณะการใช้งานของแต่ละพื้นที่</strong> — สำหรับงานที่ไม่ใช่ถนน เช่น ลานจอดรถหรือทางเดิน
-              ใช้มาตรฐานตาม<strong> ประกาศกรมสวัสดิการและคุ้มครองแรงงาน</strong> ซึ่งกำหนดเกณฑ์<strong>ความสว่างเฉลี่ยขั้นต่ำ 50 ลักซ์</strong>เพื่อความปลอดภัย
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-              {[
-                { area: 'ลานจอดรถทั่วไป', lux: '≥ 50 Lux', sub: 'เกณฑ์มาตรฐาน' },
-                { area: 'ทางเดิน / บันได', lux: '50–100 Lux', sub: 'ใกล้ทางเข้าควรสว่างกว่า' },
-                { area: 'ป้อมยาม', lux: '≥ 50 Lux', sub: 'เพื่อการมองเห็นชัด' },
-              ].map((a, i) => (
-                <div key={i} className="rounded-lg p-3 text-center" style={{ background: '#FFF' }}>
-                  <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>{a.area}</div>
-                  <div className="text-[18px] font-semibold" style={{ color: C.accent }}>{a.lux}</div>
-                  <div className="text-[10px] mt-0.5" style={{ color: C.textMuted }}>{a.sub}</div>
-                </div>
-              ))}
-            </div>
-            <div className="rounded-lg p-4" style={{ background: '#FFF' }}>
-              <div className="flex items-baseline gap-2 mb-2">
-                <Pill variant="success">✓ ผลงานติดตั้งจริง</Pill>
-                <span className="text-[13px] font-semibold" style={{ color: C.text }}>โรงงาน TOA — ลานจอดรถ</span>
-              </div>
-              <p className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-                โครงการลานจอดรถโรงงาน TOA ที่ทีมเราติดตั้ง <strong style={{ color: C.success }}>ผ่านเกณฑ์ ≥ 50 Lux</strong> ตามประกาศกรมสวัสดิการฯ —
-                ครอบคลุมพื้นที่กว้าง สว่างสม่ำเสมอตลอดคืน · ระบบสำรองไฟ 5-7 วันในวันฝนตก ทำให้พนักงานและรถใช้พื้นที่ได้อย่างปลอดภัย
-              </p>
-            </div>
-          </div>
         </div>
       </Section>
 
@@ -496,7 +465,7 @@ export default function SolarStreetLight() {
                   {[
                     { model: 'SA-2A01', desc: 'All-in-One', spacing: '29 ม.', Eav: '10.31', Uo: '0.40', star: true },
                     { model: 'SA-2A02', desc: 'Modular', spacing: '23 ม.', Eav: '15.10', Uo: '0.40' },
-                    { model: 'SK-7A14', desc: 'Premium Sailing', spacing: '26 ม.', Eav: '10.18', Uo: '0.43' },
+                    { model: 'SK-7A14', desc: 'Premium', spacing: '26 ม.', Eav: '10.18', Uo: '0.43' },
                   ].map((row, i) => (
                     <tr key={i} className="border-t" style={{ borderColor: C.surfaceSoft, background: row.star ? C.surface : '#FFF' }}>
                       <td className="py-4 px-5">
@@ -569,6 +538,38 @@ export default function SolarStreetLight() {
                 <div className="text-[10px] leading-relaxed" style={{ color: C.textMuted }}>{s.sub}</div>
               </div>
             ))}
+          </div>
+
+          {/* Use case — ลานจอดรถ · ทางเดิน · ป้อมยาม (มาตรฐาน 50 lux) */}
+          <div className="rounded-2xl p-6 mb-10" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
+            <Eyebrow color={C.accent}>กรณีงานนอกถนน — ลานจอดรถ · ทางเดิน · ป้อมยาม</Eyebrow>
+            <p className="text-[14px] leading-relaxed mb-3" style={{ color: C.text }}>
+              ทีมของเราออกแบบให้สอดคล้องกับ<strong>ลักษณะการใช้งานของแต่ละพื้นที่</strong> — สำหรับงานที่ไม่ใช่ถนน เช่น ลานจอดรถหรือทางเดิน
+              ใช้มาตรฐานตาม<strong> ประกาศกรมสวัสดิการและคุ้มครองแรงงาน</strong> ซึ่งกำหนดเกณฑ์<strong>ความสว่างเฉลี่ยขั้นต่ำ 50 ลักซ์</strong>เพื่อความปลอดภัย
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              {[
+                { area: 'ลานจอดรถทั่วไป', lux: '≥ 50 Lux', sub: 'เกณฑ์มาตรฐาน' },
+                { area: 'ทางเดิน / บันได', lux: '50–100 Lux', sub: 'ใกล้ทางเข้าควรสว่างกว่า' },
+                { area: 'ป้อมยาม', lux: '≥ 50 Lux', sub: 'เพื่อการมองเห็นชัด' },
+              ].map((a, i) => (
+                <div key={i} className="rounded-lg p-3 text-center" style={{ background: '#FFF' }}>
+                  <div className="text-[11px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>{a.area}</div>
+                  <div className="text-[18px] font-semibold" style={{ color: C.accent }}>{a.lux}</div>
+                  <div className="text-[10px] mt-0.5" style={{ color: C.textMuted }}>{a.sub}</div>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-lg p-4" style={{ background: '#FFF' }}>
+              <div className="flex items-baseline gap-2 mb-2">
+                <Pill variant="success">✓ ผลงานติดตั้งจริง</Pill>
+                <span className="text-[13px] font-semibold" style={{ color: C.text }}>โรงงาน TOA — ลานจอดรถ</span>
+              </div>
+              <p className="text-[13px] leading-relaxed" style={{ color: C.text }}>
+                โครงการลานจอดรถโรงงาน TOA ที่ทีมเราติดตั้ง <strong style={{ color: C.success }}>ผ่านเกณฑ์ ≥ 50 Lux</strong> ตามประกาศกรมสวัสดิการฯ —
+                ครอบคลุมพื้นที่กว้าง สว่างสม่ำเสมอตลอดคืน · ระบบสำรองไฟ 5-7 วันในวันฝนตก ทำให้พนักงานและรถใช้พื้นที่ได้อย่างปลอดภัย
+              </p>
+            </div>
           </div>
 
           {/* Real install — TOA Factory 4 photos grid */}
@@ -730,7 +731,7 @@ export default function SolarStreetLight() {
               </thead>
               <tbody>
                 {[
-                  { label: 'Series', vals: ['RSK All-in-One', 'RSA Modular', 'YY Split Type', 'Sailing Premium'] },
+                  { label: 'Series', vals: ['All-in-One', 'Modular', 'Split Type', 'Premium'] },
                   { label: 'กำลังไฟ', vals: ['60-120W', '40-160W', '60-85W', '60-100W'] },
                   { label: 'Lumen', vals: ['6,000-15,000', '5,100-18,000', '3,400-4,800', '4,100-9,000'] },
                   { label: 'Efficacy', vals: ['199.5 lm/W', '184.6 lm/W', '—', '193.6 lm/W'] },
