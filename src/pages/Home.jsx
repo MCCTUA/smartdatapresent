@@ -84,7 +84,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Card 1: Smart Street Light */}
             <motion.div
               whileHover={{ y: -6 }}
@@ -167,6 +167,39 @@ export default function Home() {
                 <div className="flex gap-4 items-center">
                   <Link to="/waste-fee" className="bg-[#0071e3] text-white text-[14px] px-4 py-2 rounded-lg no-underline">ดูรายละเอียด</Link>
                   <Link to="/waste-fee" className="text-[#0066cc] text-[14px] no-underline hover:underline">ลอง Prototype ›</Link>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Card 4: CCTV + AI */}
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="bg-white rounded-xl overflow-hidden shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]"
+            >
+              <div className="h-56 overflow-hidden relative" style={{ background: '#0B5544' }}>
+                <video
+                  src="videos/lpr-demo.mp4"
+                  poster="videos/lpr-poster.jpg"
+                  muted
+                  loop
+                  autoPlay
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(180deg, transparent 60%, rgba(11,85,68,0.55))' }}/>
+              </div>
+              <div className="p-7">
+                <p className="text-[12px] font-semibold tracking-[2px] uppercase text-[#0071e3] mb-2">AI Vision</p>
+                <h3 className="text-[#1d1d1f] font-normal leading-snug mb-3" style={{ fontSize: '28px' }}>
+                  CCTV<br />+ AI
+                </h3>
+                <p className="text-[14px] text-black/60 leading-relaxed mb-6">
+                  2 หลักการของกล้อง+AI ที่ควรรู้ก่อนตัดสินใจ — Server กลาง vs Edge AI · พร้อมตัวอย่าง LPR (ค้นหาทะเบียน) ที่ใช้จริง
+                </p>
+                <div className="flex gap-4 items-center">
+                  <Link to="/cctv-ai" className="bg-[#0071e3] text-white text-[14px] px-4 py-2 rounded-lg no-underline">ดูรายละเอียด</Link>
+                  <Link to="/cctv-ai" className="text-[#0066cc] text-[14px] no-underline hover:underline">ดู Demo LPR ›</Link>
                 </div>
               </div>
             </motion.div>

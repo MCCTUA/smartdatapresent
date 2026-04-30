@@ -6,6 +6,7 @@ import SmartStreetLight from './pages/SmartStreetLight';
 import SolarStreetLight from './pages/SolarStreetLight';
 import FeeManagement from './pages/FeeManagement';
 import WasteCollectionFee from './pages/WasteCollectionFee';
+import CCTVAI from './pages/CCTVAI';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
             <Route path="/solar-street-light" element={<SolarStreetLight />} />
             <Route path="/fee-management" element={<FeeManagement />} />
             <Route path="/waste-fee" element={<WasteCollectionFee />} />
+            <Route path="/cctv-ai" element={<CCTVAI />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

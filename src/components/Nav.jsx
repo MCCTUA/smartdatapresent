@@ -6,6 +6,7 @@ const links = [
   { to: '/smart-street-light', label: 'Smart Street Light' },
   { to: '/solar-street-light', label: 'Solar Street Light' },
   { to: '/waste-fee', label: 'ค่าธรรมเนียมขยะ' },
+  { to: '/cctv-ai', label: 'CCTV + AI' },
 ];
 
 export default function Nav() {
@@ -22,7 +23,7 @@ export default function Nav() {
               <path d="M8 14h12M14 8v12" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
             </svg>
           </Link>
-          <div className="hidden md:flex items-center gap-7">
+          <div className="hidden md:flex items-center gap-5">
             {links.map(link => (
               <Link
                 key={link.to}
