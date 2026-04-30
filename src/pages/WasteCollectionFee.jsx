@@ -547,18 +547,50 @@ function ResidentPanel() {
 // Panel 3 · Driver — adapted from D-01 My Routes + D-02 Route Map
 // ───────────────────────────────────────────────────────────────────────────
 
+// ── Reusable: Phone frame (mobile screens used by field staff) ───────────────
+function PhoneFrame({ caption, children, accent = C.primary }) {
+  return (
+    <div className="flex flex-col items-center" style={{ width: 220 }}>
+      <div className="rounded-[28px] p-1.5 shadow-lg" style={{ background: '#1F2A24' }}>
+        <div className="rounded-[22px] overflow-hidden relative" style={{ background: '#FFF', width: 200, height: 400 }}>
+          {/* Status bar */}
+          <div className="px-3 py-1 flex justify-between items-center text-[8px] font-medium" style={{ background: accent, color: '#FFF' }}>
+            <span>{new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</span>
+            <span className="flex gap-1 items-center">
+              <span>📶</span><span>4G</span><span>🔋 86%</span>
+            </span>
+          </div>
+          {children}
+        </div>
+      </div>
+      <div className="text-[11px] font-medium mt-2 text-center" style={{ color: C.text }}>{caption}</div>
+    </div>
+  );
+}
+
 function DriverPanel() {
-  // Numbers from D-01 reference: totalHouses=48 collected=29 skipped=4 → remaining 15
+  // Numbers from D-01 reference
   const totalHouses = 48;
   const collectedHouses = 29;
   const skippedHouses = 4;
   const remaining = totalHouses - collectedHouses - skippedHouses;
   const pct = Math.round((collectedHouses / totalHouses) * 100);
+  const [activeScreen, setActiveScreen] = useState('today');
+
+  // Mock queue for "Today" screen
+  const queue = [
+    { id: 1, addr: '89/1 ม.3', name: 'นายมานพ', tier: 'success', label: '10฿', state: 'เก็บแล้ว 13:45', done: true },
+    { id: 2, addr: '89/3 ม.3', name: 'น.ส.สมศรี', tier: 'accent', label: '20฿', state: 'สุ่มถ่ายรูปแล้ว', done: true, sampled: true },
+    { id: 3, addr: '90/2 ม.3', name: 'นายประสิทธิ์', tier: 'alert', label: '60฿', state: 'ค้างชำระ · ข้าม', skipped: true },
+    { id: 4, addr: '92/4 ม.3', name: 'น.ส.วิภา', tier: 'success', label: '10฿', state: 'ครั้งถัดไป', current: true },
+    { id: 5, addr: '94/1 ม.3', name: 'นายชาลี', tier: 'accent', label: '20฿', state: 'รอเก็บ' },
+    { id: 6, addr: '94/3 ม.3', name: 'น.ส.อุไร', tier: 'success', label: '10฿', state: 'รอเก็บ' },
+  ];
 
   return (
-    <PanelChrome title="Driver App" subtitle="นายประยุทธ์ · รถ ขข-09 · เส้นทาง 1" status="GPS Active">
+    <PanelChrome title="Driver App · Mobile" subtitle="นายประยุทธ์ · รถ ขข-09 · เส้นทาง 1" status="GPS Active">
       <div className="p-5 md:p-7">
-        {/* D-01 style — progress hero */}
+        {/* Progress hero (above phones) */}
         <div className="rounded-xl p-5 mb-5" style={{ background: C.primary, color: '#FFF' }}>
           <div className="flex items-baseline justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wider opacity-80">รอบเช้า · 06:00 น.</div>
@@ -569,7 +601,6 @@ function DriverPanel() {
             <span className="text-[16px] font-medium opacity-90">/ {totalHouses} หลัง</span>
             <span className="text-[14px] ml-auto opacity-90">{pct}%</span>
           </div>
-          {/* Progress bar */}
           <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(255,255,255,0.2)' }}>
             <div className="h-full" style={{ width: `${pct}%`, background: '#FFF' }}></div>
           </div>
@@ -581,7 +612,366 @@ function DriverPanel() {
           </div>
         </div>
 
-        {/* D-01 style — Two-sided route badges */}
+        {/* === 3 phone screens — mobile-first showcase === */}
+        <div className="text-[12px] font-medium mb-3" style={{ color: C.text }}>
+          มือถือของเจ้าหน้าที่ในรถเก็บขยะ — 3 หน้าจอที่ใช้จริง
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-5 md:gap-7 mb-6">
+
+          {/* ════════ Phone 1 — Today's Route List ════════ */}
+          <PhoneFrame caption="หน้าหลัก · รายการบ้านวันนี้">
+            {/* Header */}
+            <div className="px-3 py-2 border-b" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
+              <div className="flex items-center gap-2">
+                <button className="text-[14px]" style={{ color: C.textMuted }}>☰</button>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] font-semibold" style={{ color: C.text }}>เส้นทาง 1 · ฝั่งซ้าย</div>
+                  <div className="text-[8px]" style={{ color: C.textMuted }}>หมู่ 3 · 26 หลัง</div>
+                </div>
+                <span className="text-[8px] flex items-center gap-1" style={{ color: C.success }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></span>GPS
+                </span>
+              </div>
+              {/* Mini progress */}
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-[18px] font-bold leading-none" style={{ color: C.primary }}>{collectedHouses}</span>
+                <span className="text-[10px]" style={{ color: C.textMuted }}>/ {totalHouses} หลัง</span>
+                <span className="ml-auto text-[10px] font-medium" style={{ color: C.primary }}>{pct}%</span>
+              </div>
+              <div className="h-1 mt-1 rounded-full overflow-hidden" style={{ background: C.surfaceSoft }}>
+                <div className="h-full" style={{ width: `${pct}%`, background: C.primary }}></div>
+              </div>
+            </div>
+
+            {/* List */}
+            <div className="overflow-y-auto" style={{ height: 280, background: '#FFF' }}>
+              {queue.map((row) => (
+                <div
+                  key={row.id}
+                  className="flex items-center gap-2 px-3 py-2 border-b"
+                  style={{
+                    borderColor: C.surfaceSoft,
+                    background: row.current ? C.successSoft : row.skipped ? '#FAFAFA' : '#FFF',
+                    opacity: row.done ? 0.65 : 1,
+                  }}
+                >
+                  <div
+                    className="w-7 h-7 rounded-md flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0"
+                    style={{ background: row.tier === 'success' ? C.success : row.tier === 'accent' ? C.accent : C.alert }}
+                  >
+                    {row.label}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] font-medium truncate" style={{ color: C.text }}>{row.addr}</div>
+                    <div className="text-[8px] truncate" style={{ color: C.textMuted }}>
+                      {row.name} · {row.state}
+                    </div>
+                  </div>
+                  {row.done && row.sampled && <span className="text-[10px]">📷</span>}
+                  {row.done && !row.sampled && <span className="text-[10px]" style={{ color: C.success }}>✓</span>}
+                  {row.skipped && <span className="text-[10px]" style={{ color: C.alert }}>✕</span>}
+                  {row.current && <span className="text-[8px] font-bold" style={{ color: C.success }}>NOW</span>}
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom tab bar */}
+            <div className="absolute bottom-0 left-0 right-0 flex border-t" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
+              {[
+                { k: 'list', label: 'รายการ', icon: '☰', active: true },
+                { k: 'map', label: 'แผนที่', icon: '🗺' },
+                { k: 'me', label: 'ฉัน', icon: '👤' },
+              ].map((t, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center py-1.5"
+                  style={{ color: t.active ? C.primary : C.textMuted, borderTop: t.active ? `2px solid ${C.primary}` : 'none', marginTop: t.active ? -1 : 0 }}>
+                  <span className="text-[12px]">{t.icon}</span>
+                  <span className="text-[8px] mt-0.5">{t.label}</span>
+                </div>
+              ))}
+            </div>
+          </PhoneFrame>
+
+          {/* ════════ Phone 2 — Map View ════════ */}
+          <PhoneFrame caption="แผนที่เส้นทาง · GPS Real-time">
+            {/* Search bar */}
+            <div className="absolute top-6 left-2 right-2 z-10">
+              <div className="rounded-full px-2.5 py-1.5 flex items-center gap-1.5 shadow-md" style={{ background: '#FFF' }}>
+                <span className="text-[10px]">🔍</span>
+                <span className="text-[9px] flex-1" style={{ color: C.textMuted }}>หมู่ 3 · เส้นทาง 1</span>
+                <span className="text-[10px]">⚙</span>
+              </div>
+            </div>
+
+            {/* Google-style map */}
+            <div className="relative" style={{ height: 340, background: '#EDE9DD', overflow: 'hidden' }}>
+              <svg width="100%" height="100%" viewBox="0 0 200 340" preserveAspectRatio="xMidYMid slice" style={{ display: 'block' }}>
+                <rect x="0" y="0" width="200" height="340" fill="#EDE9DD" />
+                {/* Park areas */}
+                <ellipse cx="30" cy="40" rx="40" ry="30" fill="#C8DEC0" />
+                <path d="M 150 280 L 200 270 L 200 340 L 140 340 Z" fill="#C8DEC0" />
+                {/* River */}
+                <path d="M 200 60 Q 175 110 185 160 T 200 250 L 200 280 Q 165 250 175 200 T 200 80 Z" fill="#A6CFE8" />
+                <rect x="178" y="170" width="22" height="5" fill="#EDE9DD" />
+
+                {/* Building blocks */}
+                <g fill="#DDD7C8" stroke="#CFC9BA" strokeWidth="0.4">
+                  <rect x="20" y="100" width="32" height="20" rx="1.5" />
+                  <rect x="20" y="125" width="32" height="20" rx="1.5" />
+                  <rect x="20" y="150" width="32" height="20" rx="1.5" />
+                  <rect x="20" y="175" width="32" height="20" rx="1.5" />
+                  <rect x="62" y="100" width="32" height="20" rx="1.5" />
+                  <rect x="62" y="125" width="32" height="20" rx="1.5" />
+                  <rect x="62" y="150" width="32" height="20" rx="1.5" />
+                  <rect x="62" y="175" width="32" height="20" rx="1.5" />
+                  <rect x="62" y="200" width="32" height="20" rx="1.5" />
+                  <rect x="105" y="100" width="32" height="20" rx="1.5" />
+                  <rect x="105" y="125" width="32" height="20" rx="1.5" />
+                  <rect x="105" y="150" width="32" height="20" rx="1.5" />
+                  <rect x="105" y="175" width="32" height="20" rx="1.5" />
+                  <rect x="105" y="200" width="32" height="20" rx="1.5" />
+                  <rect x="148" y="125" width="28" height="20" rx="1.5" />
+                  <rect x="148" y="150" width="28" height="20" rx="1.5" />
+                  <rect x="148" y="175" width="28" height="20" rx="1.5" />
+                  <rect x="148" y="200" width="28" height="20" rx="1.5" />
+                </g>
+
+                {/* Roads — borders */}
+                <g stroke="#C8B89A" strokeLinecap="round" fill="none">
+                  <path d="M 0 95 L 200 95" strokeWidth="9" />
+                  <path d="M 0 220 L 200 220" strokeWidth="9" />
+                  <path d="M 56 0 L 56 340" strokeWidth="9" />
+                  <path d="M 142 0 L 142 340" strokeWidth="9" />
+                </g>
+                {/* Roads — fill */}
+                <g strokeLinecap="round" fill="none">
+                  <path d="M 0 95 L 200 95" stroke="#FFF7DA" strokeWidth="7" />
+                  <path d="M 0 220 L 200 220" stroke="#FFF7DA" strokeWidth="7" />
+                  <path d="M 56 0 L 56 340" stroke="#FFF7DA" strokeWidth="7" />
+                  <path d="M 142 0 L 142 340" stroke="#FFF7DA" strokeWidth="7" />
+                </g>
+                {/* Road label */}
+                <text x="100" y="97" textAnchor="middle" fontSize="6" fill="#7A6A4A" fontStyle="italic" fontFamily="Sarabun">ถ.หลัก</text>
+
+                {/* Completed route line — Google blue */}
+                <path d="M 30 95 L 56 95 L 56 130 L 100 130 L 100 220" stroke="#1B61C9" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" />
+
+                {/* House pins */}
+                {[
+                  { x: 36, y: 110, c: C.success, done: true },
+                  { x: 36, y: 135, c: C.accent, done: true },
+                  { x: 36, y: 160, c: C.success, done: true },
+                  { x: 36, y: 185, c: C.alert, done: false },
+                  { x: 78, y: 110, c: C.accent, done: true },
+                  { x: 78, y: 135, c: C.success, done: true },
+                  { x: 78, y: 160, c: C.success, done: true },
+                  { x: 78, y: 185, c: C.accent, done: false },
+                  { x: 78, y: 210, c: C.alert, done: false },
+                  { x: 121, y: 110, c: C.success, done: false },
+                  { x: 121, y: 135, c: C.success, done: false },
+                  { x: 121, y: 160, c: C.accent, done: false },
+                  { x: 121, y: 185, c: C.alert, done: false },
+                  { x: 121, y: 210, c: C.success, done: false },
+                  { x: 162, y: 135, c: C.accent, done: false },
+                  { x: 162, y: 160, c: C.success, done: false },
+                  { x: 162, y: 185, c: C.success, done: false },
+                ].map((h, i) => (
+                  <g key={i} style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25))' }}>
+                    <path
+                      d={`M ${h.x} ${h.y - 6} C ${h.x - 3.5} ${h.y - 6}, ${h.x - 3.5} ${h.y - 1}, ${h.x} ${h.y + 3} C ${h.x + 3.5} ${h.y - 1}, ${h.x + 3.5} ${h.y - 6}, ${h.x} ${h.y - 6} Z`}
+                      fill={h.done ? '#9CA3AF' : h.c}
+                      stroke="#FFF"
+                      strokeWidth="0.9"
+                    />
+                    <circle cx={h.x} cy={h.y - 4} r="1.1" fill="#FFF" />
+                  </g>
+                ))}
+
+                {/* Truck position */}
+                <g style={{ filter: 'drop-shadow(0 1.5px 2px rgba(0,0,0,0.35))' }}>
+                  <ellipse cx="100" cy="222" rx="9" ry="2" fill="rgba(0,0,0,0.18)" />
+                  <circle cx="100" cy="220" r="11" fill={C.primary} stroke="#FFF" strokeWidth="2" />
+                  <text x="100" y="223" textAnchor="middle" fontSize="9" fill="#FFF" fontWeight="700">🚛</text>
+                  {/* Pulse ring */}
+                  <circle cx="100" cy="220" r="11" fill="none" stroke={C.primary} strokeWidth="1.5">
+                    <animate attributeName="r" values="11;18;11" dur="2.4s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.6;0;0.6" dur="2.4s" repeatCount="indefinite" />
+                  </circle>
+                </g>
+
+                {/* Sample badge */}
+                <g>
+                  <rect x="125" y="155" width="58" height="13" rx="6.5" fill={C.accent} />
+                  <text x="154" y="164" textAnchor="middle" fontSize="7" fill="#FFF" fontWeight="600" fontFamily="Sarabun">📷 สุ่ม</text>
+                </g>
+
+                {/* Map controls */}
+                <g>
+                  <rect x="178" y="50" width="18" height="36" rx="3" fill="#FFF" stroke="#D8D2C2" strokeWidth="0.4" />
+                  <line x1="178" y1="68" x2="196" y2="68" stroke="#D8D2C2" strokeWidth="0.4" />
+                  <text x="187" y="64" textAnchor="middle" fontSize="11" fill="#5F6B65" fontWeight="600">+</text>
+                  <text x="187" y="82" textAnchor="middle" fontSize="11" fill="#5F6B65" fontWeight="600">−</text>
+                  <circle cx="187" cy="100" r="8.5" fill="#FFF" stroke="#D8D2C2" strokeWidth="0.4" />
+                  <polygon points="187,94 189,100 187,98 185,100" fill={C.alert} />
+                  <polygon points="187,106 189,100 187,102 185,100" fill="#5F6B65" />
+                  <text x="187" y="108" textAnchor="middle" fontSize="3.5" fill="#5F6B65" fontWeight="600">N</text>
+                </g>
+
+                {/* Scale */}
+                <g transform="translate(8 320)">
+                  <rect x="0" y="-4" width="46" height="8" fill="#FFF" stroke="#D8D2C2" strokeWidth="0.4" rx="1.5" />
+                  <line x1="4" y1="0" x2="42" y2="0" stroke="#1F2A24" strokeWidth="0.7" />
+                  <line x1="4" y1="-2" x2="4" y2="2" stroke="#1F2A24" strokeWidth="0.7" />
+                  <line x1="42" y1="-2" x2="42" y2="2" stroke="#1F2A24" strokeWidth="0.7" />
+                  <text x="46" y="2" fontSize="5" fill="#5F6B65" fontFamily="Sarabun" dx="2">200 ม.</text>
+                </g>
+              </svg>
+
+              {/* Bottom info card overlay */}
+              <div className="absolute bottom-12 left-2 right-2 rounded-lg p-2 shadow-md" style={{ background: '#FFF' }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded flex items-center justify-center text-[8px] font-bold text-white" style={{ background: C.success }}>10฿</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[9px] font-semibold truncate" style={{ color: C.text }}>92/4 ม.3 · น.ส.วิภา</div>
+                    <div className="text-[7px]" style={{ color: C.textMuted }}>หลังถัดไป · 12 ม. ข้างหน้า</div>
+                  </div>
+                  <button className="text-[8px] font-semibold px-2 py-1 rounded" style={{ background: C.primary, color: '#FFF' }}>เริ่ม</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom tab bar */}
+            <div className="absolute bottom-0 left-0 right-0 flex border-t" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
+              {[
+                { k: 'list', label: 'รายการ', icon: '☰' },
+                { k: 'map', label: 'แผนที่', icon: '🗺', active: true },
+                { k: 'me', label: 'ฉัน', icon: '👤' },
+              ].map((t, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center py-1.5"
+                  style={{ color: t.active ? C.primary : C.textMuted, borderTop: t.active ? `2px solid ${C.primary}` : 'none', marginTop: t.active ? -1 : 0 }}>
+                  <span className="text-[12px]">{t.icon}</span>
+                  <span className="text-[8px] mt-0.5">{t.label}</span>
+                </div>
+              ))}
+            </div>
+          </PhoneFrame>
+
+          {/* ════════ Phone 3 — House Detail / Photo Capture ════════ */}
+          <PhoneFrame caption="ถ่ายรูปหลักฐาน · บ้านที่ถูกสุ่ม">
+            {/* Top header */}
+            <div className="px-3 py-2 border-b flex items-center gap-2" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
+              <button className="text-[12px]" style={{ color: C.textMuted }}>‹</button>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-semibold" style={{ color: C.text }}>89/3 ม.3</div>
+                <div className="text-[8px]" style={{ color: C.textMuted }}>น.ส.สมศรี รักดี</div>
+              </div>
+              <Pill variant="accent">สุ่มรอบนี้</Pill>
+            </div>
+
+            {/* Tier info */}
+            <div className="px-3 py-2.5" style={{ background: C.accentSoft, borderBottom: `1px solid ${C.surfaceSoft}` }}>
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-bold text-white" style={{ background: C.accent }}>20฿</div>
+                <div className="flex-1">
+                  <div className="text-[10px] font-semibold" style={{ color: C.text }}>คัดแยก verified · 20 ฿/เดือน</div>
+                  <div className="text-[8px]" style={{ color: C.textMuted }}>ลงทะเบียนเมื่อ 12 ก.พ. 69</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Camera viewfinder */}
+            <div className="relative" style={{ height: 180, background: '#1F2A24' }}>
+              {/* Mock camera view — gradient */}
+              <div className="absolute inset-0" style={{
+                background: 'linear-gradient(135deg, #4A5568 0%, #2D3748 50%, #1F2A24 100%)',
+              }}></div>
+
+              {/* Trash bag illustration */}
+              <svg width="100%" height="100%" viewBox="0 0 200 180" style={{ position: 'absolute', inset: 0 }}>
+                {/* Ground */}
+                <rect x="0" y="130" width="200" height="50" fill="rgba(0,0,0,0.3)" />
+                {/* Green bag (sorted) */}
+                <ellipse cx="60" cy="135" rx="22" ry="6" fill="rgba(0,0,0,0.4)" />
+                <path d="M 42 130 Q 42 105 50 95 L 70 95 Q 78 105 78 130 Q 78 138 60 138 Q 42 138 42 130 Z" fill={C.success} />
+                <path d="M 50 95 L 50 88 L 70 88 L 70 95" stroke="#FFF" strokeWidth="1.5" fill="none" />
+                {/* Yellow bag (recyclable) */}
+                <ellipse cx="120" cy="138" rx="20" ry="5" fill="rgba(0,0,0,0.4)" />
+                <path d="M 105 134 Q 105 112 112 103 L 128 103 Q 135 112 135 134 Q 135 141 120 141 Q 105 141 105 134 Z" fill={C.accent} />
+                <path d="M 112 103 L 112 96 L 128 96 L 128 103" stroke="#FFF" strokeWidth="1.5" fill="none" />
+              </svg>
+
+              {/* Corner brackets (camera frame) */}
+              <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }} viewBox="0 0 200 180">
+                <g stroke="#FFF" strokeWidth="2" fill="none" opacity="0.85">
+                  <path d="M 12 12 L 12 28 M 12 12 L 28 12" />
+                  <path d="M 188 12 L 188 28 M 188 12 L 172 12" />
+                  <path d="M 12 168 L 12 152 M 12 168 L 28 168" />
+                  <path d="M 188 168 L 188 152 M 188 168 L 172 168" />
+                </g>
+              </svg>
+
+              {/* GPS overlay top-left */}
+              <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[8px] font-medium flex items-center gap-1" style={{ background: 'rgba(0,0,0,0.6)', color: '#FFF' }}>
+                <span style={{ color: C.success }}>●</span> 13.7521°N 100.5018°E
+              </div>
+              {/* Live badge */}
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded text-[8px] font-bold flex items-center gap-1" style={{ background: C.alert, color: '#FFF' }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#FFF' }}></span> REC
+              </div>
+              {/* Timestamp */}
+              <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[8px]" style={{ background: 'rgba(0,0,0,0.6)', color: '#FFF', fontFamily: 'monospace' }}>
+                30 เม.ย. 69 · 14:32:11
+              </div>
+            </div>
+
+            {/* Sorting checklist */}
+            <div className="px-3 py-2 text-[9px]">
+              <div className="font-semibold mb-1.5" style={{ color: C.text }}>คัดแยกถูกต้อง?</div>
+              <div className="space-y-1">
+                {[
+                  { label: 'ขยะอินทรีย์', ok: true, color: C.success },
+                  { label: 'ขยะรีไซเคิล', ok: true, color: C.accent },
+                  { label: 'ขยะอันตราย', ok: false, color: '#9CA3AF' },
+                  { label: 'ขยะทั่วไป', ok: true, color: '#5F6B65' },
+                ].map((c, i) => (
+                  <div key={i} className="flex items-center gap-2 text-[8px]">
+                    <span className="w-3 h-3 rounded-sm flex items-center justify-center" style={{ background: c.ok ? c.color : 'transparent', border: `1px solid ${c.ok ? c.color : C.textMuted}`, color: '#FFF' }}>
+                      {c.ok && '✓'}
+                    </span>
+                    <span style={{ color: C.text }}>{c.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Capture buttons */}
+            <div className="absolute bottom-12 left-0 right-0 px-3 flex items-center justify-center gap-2">
+              <button className="w-7 h-7 rounded-full flex items-center justify-center text-[10px]" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>↺</button>
+              <button className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: C.primary, border: '3px solid #FFF', boxShadow: '0 2px 6px rgba(0,0,0,0.25)' }}>
+                <span className="text-[14px]">📷</span>
+              </button>
+              <button className="w-7 h-7 rounded-full flex items-center justify-center text-[10px]" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>⚡</button>
+            </div>
+
+            {/* Bottom tab bar */}
+            <div className="absolute bottom-0 left-0 right-0 flex border-t" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
+              {[
+                { k: 'list', label: 'รายการ', icon: '☰' },
+                { k: 'map', label: 'แผนที่', icon: '🗺' },
+                { k: 'me', label: 'ฉัน', icon: '👤' },
+              ].map((t, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center py-1.5"
+                  style={{ color: t.active ? C.primary : C.textMuted }}>
+                  <span className="text-[12px]">{t.icon}</span>
+                  <span className="text-[8px] mt-0.5">{t.label}</span>
+                </div>
+              ))}
+            </div>
+          </PhoneFrame>
+
+        </div>
+
+        {/* Two-sided route badges (compact, below phones) */}
         <div className="grid grid-cols-2 gap-3 mb-5">
           <div className="rounded-lg p-3 text-center" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
             <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>ฝั่งซ้าย</div>
@@ -595,109 +985,19 @@ function DriverPanel() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* D-02 — Route Map */}
+        {/* Callout: why this is faster */}
+        <div className="rounded-xl p-4 mb-2 grid grid-cols-1 md:grid-cols-3 gap-4" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
           <div>
-            <div className="flex items-baseline justify-between mb-2">
-              <span className="text-[12px] font-medium" style={{ color: C.text }}>แผนที่เส้นทาง</span>
-              <span className="text-[10px]" style={{ color: C.textMuted }}>Real-time GPS</span>
-            </div>
-            <div className="rounded-xl relative overflow-hidden" style={{ background: '#F0F4F0', height: 290, border: `1px solid ${C.surfaceSoft}` }}>
-              <svg width="100%" height="100%" viewBox="0 0 320 290" style={{ display: 'block' }}>
-                {/* Road network */}
-                <path d="M 30 40 Q 80 70 30 150 T 30 260" stroke={C.textMuted} strokeWidth="2" fill="none" strokeOpacity="0.25" />
-                <path d="M 30 90 L 180 90 L 180 190 L 290 190" stroke={C.textMuted} strokeWidth="2" fill="none" strokeOpacity="0.25" />
-                <path d="M 30 190 L 180 190" stroke={C.textMuted} strokeWidth="2" fill="none" strokeOpacity="0.25" />
-                <path d="M 100 40 L 100 260" stroke={C.textMuted} strokeWidth="2" fill="none" strokeOpacity="0.25" />
-                <path d="M 220 30 L 220 270" stroke={C.textMuted} strokeWidth="2" fill="none" strokeOpacity="0.25" />
-
-                {/* Completed route — solid green line */}
-                <path d="M 30 90 L 100 90 L 100 150 L 180 150" stroke={C.success} strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" />
-
-                {/* House dots — color = sticker tier */}
-                {[
-                  { x: 60, y: 90, c: C.success, done: true },
-                  { x: 60, y: 120, c: C.accent, done: true },
-                  { x: 60, y: 150, c: C.success, done: true },
-                  { x: 60, y: 180, c: C.alert, done: false },
-                  { x: 130, y: 90, c: C.accent, done: true },
-                  { x: 130, y: 120, c: C.success, done: true },
-                  { x: 130, y: 150, c: C.success, done: true },
-                  { x: 130, y: 180, c: C.accent, done: false },
-                  { x: 130, y: 210, c: C.alert, done: false },
-                  { x: 200, y: 90, c: C.success, done: false },
-                  { x: 200, y: 120, c: C.success, done: false },
-                  { x: 200, y: 150, c: C.accent, done: false },
-                  { x: 200, y: 180, c: C.alert, done: false },
-                  { x: 200, y: 210, c: C.success, done: false },
-                  { x: 250, y: 120, c: C.accent, done: false },
-                  { x: 250, y: 150, c: C.success, done: false },
-                  { x: 250, y: 180, c: C.success, done: false },
-                  { x: 250, y: 210, c: C.accent, done: false },
-                ].map((h, i) => (
-                  <g key={i}>
-                    <circle cx={h.x} cy={h.y} r="6" fill={h.c} stroke="#FFF" strokeWidth="1.5" opacity={h.done ? 0.5 : 1} />
-                    {h.done && <circle cx={h.x} cy={h.y} r="2" fill="#FFF" />}
-                  </g>
-                ))}
-
-                {/* Truck position */}
-                <circle cx="180" cy="150" r="14" fill={C.primary} stroke="#FFF" strokeWidth="2.5" />
-                <text x="180" y="155" textAnchor="middle" fontSize="11" fill="#FFF" fontWeight="700">รถ</text>
-
-                {/* Sample badge */}
-                <g>
-                  <rect x="200" y="160" width="84" height="22" rx="11" fill={C.accent} />
-                  <text x="242" y="175" textAnchor="middle" fontSize="10" fill="#FFF" fontWeight="600">สุ่มถ่ายรูป</text>
-                </g>
-              </svg>
-
-              {/* Legend overlay */}
-              <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-2 text-[10px] px-2.5 py-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(4px)' }}>
-                <span className="flex items-center gap-1" style={{ color: C.text }}><span className="w-2 h-2 rounded-full" style={{ background: C.success }}></span>10฿</span>
-                <span className="flex items-center gap-1" style={{ color: C.text }}><span className="w-2 h-2 rounded-full" style={{ background: C.accent }}></span>20฿</span>
-                <span className="flex items-center gap-1" style={{ color: C.text }}><span className="w-2 h-2 rounded-full" style={{ background: C.alert }}></span>60฿</span>
-                <span className="ml-auto text-[9px]" style={{ color: C.textMuted }}>{totalHouses} บ้าน · 3 สุ่ม</span>
-              </div>
-            </div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>เหตุผลที่ทำงานเร็วขึ้น</div>
+            <div className="text-[12px] leading-relaxed" style={{ color: C.text }}>ถ่ายรูปแค่บ้านที่สุ่ม <strong>(33%)</strong> ไม่ใช่ทุกบ้าน → ลดเวลาถ่ายรูป<strong>ประมาณการ −67%</strong></div>
           </div>
-
-          {/* Today's queue */}
           <div>
-            <div className="flex items-baseline justify-between mb-2">
-              <span className="text-[12px] font-medium" style={{ color: C.text }}>คิวงานล่าสุด</span>
-              <span className="text-[10px]" style={{ color: C.textMuted }}>4 หลังถัดไป</span>
-            </div>
-            <div className="space-y-1.5">
-              {[
-                { addr: '89/1 ม.3', tier: 'success', label: '10฿', state: 'เก็บแล้ว · 13:45', icon: '✓' },
-                { addr: '89/3 ม.3', tier: 'accent', label: '20฿', state: 'สุ่ม · ถ่ายรูปแล้ว', icon: '📷' },
-                { addr: '90/2 ม.3', tier: 'alert', label: '60฿', state: 'ค้างชำระ · ข้าม', icon: '✕' },
-                { addr: '92/4 ม.3', tier: 'success', label: '10฿', state: 'รอเก็บ · ครั้งถัดไป', icon: '→' },
-              ].map((row, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 p-2.5 rounded-lg"
-                  style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}
-                >
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-bold text-white"
-                    style={{ background: row.tier === 'success' ? C.success : row.tier === 'accent' ? C.accent : C.alert }}
-                  >
-                    {row.label}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-medium truncate" style={{ color: C.text }}>{row.addr}</div>
-                    <div className="text-[10px] truncate" style={{ color: C.textMuted }}>{row.state}</div>
-                  </div>
-                  <span style={{ color: row.icon === '✓' ? C.success : row.icon === '✕' ? C.alert : C.textMuted, fontSize: 14 }}>{row.icon}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-3 rounded-lg p-3" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
-              <div className="text-[11px] font-semibold uppercase mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>เหตุผลที่ทำงานเร็วขึ้น</div>
-              <div className="text-[12px]" style={{ color: C.text }}>ถ่ายรูปแค่บ้านที่สุ่ม (33%) ไม่ใช่ทุกบ้าน → ลดเวลาถ่ายรูปประมาณการ −67%</div>
-            </div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>ใช้บนมือถือธรรมดา</div>
+            <div className="text-[12px] leading-relaxed" style={{ color: C.text }}>ไม่ต้องซื้อ tablet ราคาแพง · ใช้ Android ปกติได้ · GPS + กล้องในตัว</div>
+          </div>
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>ออฟไลน์ก็ทำงานได้</div>
+            <div className="text-[12px] leading-relaxed" style={{ color: C.text }}>เก็บข้อมูลในเครื่องระหว่างไม่มี signal · sync อัตโนมัติเมื่อ online กลับมา</div>
           </div>
         </div>
       </div>
