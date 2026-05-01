@@ -1314,7 +1314,7 @@ export default function CCTVAI() {
               <div className="text-[14px] font-semibold mb-4 uppercase tracking-wider" style={{ color: C.primaryDeep, letterSpacing: '2px' }}>
                 ตัวอย่าง Application ที่ใช้งานได้
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   { icon: '🚦', title: 'วินัยจราจร', desc: 'จดรถจอดผิดที่ · วิ่งย้อนศร · ฝ่าไฟแดง', tone: 'normal' },
                   { icon: '🅿️', title: 'เก็บค่าที่จอดรถ', desc: 'นับเวลาเข้า-ออก · คิดค่าจอดอัตโนมัติ', tone: 'normal' },
@@ -1326,15 +1326,15 @@ export default function CCTVAI() {
                   { icon: '🚛', title: 'Overheight / Overspeed', desc: 'รถบรรทุกเกินสูง · ตรวจความเร็ว', tone: 'normal' },
                   { icon: '🌊', title: 'เตือนน้ำท่วมล่วงหน้า', desc: 'ดูระดับน้ำในท่อ/คลอง/ใต้สะพานจาก CCTV · LINE เด้งก่อนน้ำถึงชุมชน', tone: 'normal' },
                 ].map((a, i) => (
-                  <div key={i} className="rounded-xl p-4 relative" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
+                  <div key={i} className="rounded-xl p-5 relative" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
                     {a.tone === 'pdpa' && (
-                      <div className="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: C.alertSoft, color: C.alert, letterSpacing: '0.5px' }}>
+                      <div className="absolute top-2.5 right-2.5 text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: C.alertSoft, color: C.alert, letterSpacing: '0.5px' }}>
                         PDPA
                       </div>
                     )}
-                    <div className="text-[24px] mb-2">{a.icon}</div>
-                    <div className="text-[13px] font-semibold mb-1" style={{ color: C.primaryDeep }}>{a.title}</div>
-                    <div className="text-[11.5px] leading-relaxed" style={{ color: C.textMuted }}>{a.desc}</div>
+                    <div className="text-[30px] mb-2.5">{a.icon}</div>
+                    <div className="text-[18px] font-semibold mb-2 leading-tight" style={{ color: C.primaryDeep }}>{a.title}</div>
+                    <div className="text-[12.5px] leading-relaxed" style={{ color: C.textMuted }}>{a.desc}</div>
                   </div>
                 ))}
               </div>
