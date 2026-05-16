@@ -56,3 +56,97 @@ a {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* =========================================================================
+ * CCTV + AI · Presenter mode + Print stylesheet
+ * Used by cool meeting pitch (15-20 นาที) — toggle with 'P' key or 🎤 button
+ * ========================================================================= */
+
+/* Presenter mode — scale typography + hide chrome for live presentation */
+body.presenter-mode nav,
+body.presenter-mode footer,
+body.presenter-mode .cctv-presenter-toggle {
+  display: none !important;
+}
+
+body.presenter-mode .cctv-breadcrumb {
+  display: none !important;
+}
+
+body.presenter-mode {
+  font-size: 115%;
+}
+
+body.presenter-mode main {
+  padding-top: 0 !important;
+}
+
+body.presenter-mode .cctv-app-section {
+  padding-top: 4.5rem !important;
+  padding-bottom: 4.5rem !important;
+}
+
+body.presenter-mode .cctv-sticky-bar {
+  transform-origin: bottom center;
+  transform: scale(1.08) translateY(0) !important;
+}
+
+/* =========================================================================
+ * Print stylesheet — landscape A4 · single section per page · no chrome
+ * ========================================================================= */
+@media print {
+  /* Hide all interactive chrome */
+  nav,
+  footer,
+  .cctv-breadcrumb,
+  .cctv-sticky-bar,
+  .cctv-presenter-toggle {
+    display: none !important;
+  }
+
+  body {
+    background: #FFF !important;
+    color: #000 !important;
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+  }
+
+  main {
+    padding-top: 0 !important;
+  }
+
+  /* Each section starts on a new page where it makes sense */
+  .cctv-app-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+    box-shadow: none !important;
+  }
+
+  .cctv-app-hero {
+    page-break-after: auto;
+  }
+
+  /* Keep hero image with its heading */
+  .cctv-app-hero img,
+  .cctv-app-section img {
+    max-width: 100% !important;
+    break-inside: avoid;
+  }
+
+  /* Disable backgrounds that don't print well — keep brand colors only on key sections */
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+
+  button {
+    display: none !important;
+  }
+
+  /* Hide email/mailto CTA buttons on print */
+  a[href^="mailto:"] {
+    display: none !important;
+  }
+}

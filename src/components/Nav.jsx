@@ -42,7 +42,11 @@ export default function Nav() {
 
           <div className="hidden md:flex items-center gap-5">
             {links.map((link) => {
-              const active = pathname === link.to;
+              // Section-aware active: sub-routes like /cctv-ai/public-area-watch
+              // should highlight the parent /cctv-ai link
+              const active = link.to === '/'
+                ? pathname === '/'
+                : pathname === link.to || pathname.startsWith(link.to + '/');
               return (
                 <Link
                   key={link.to}
@@ -88,7 +92,9 @@ export default function Nav() {
             ✕
           </button>
           {links.map((link) => {
-            const active = pathname === link.to;
+            const active = link.to === '/'
+              ? pathname === '/'
+              : pathname === link.to || pathname.startsWith(link.to + '/');
             return (
               <Link
                 key={link.to}
