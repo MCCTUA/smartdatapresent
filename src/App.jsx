@@ -8,6 +8,7 @@ import FeeManagement from './pages/FeeManagement';
 import WasteCollectionFee from './pages/WasteCollectionFee';
 import CCTVAI from './pages/CCTVAI';
 import ElderlyCare from './pages/ElderlyCare';
+import SmartTraffic from './pages/SmartTraffic';
 
 // CCTV-AI sub-pages (catalog + 6 apps + technical overview)
 import TechnicalOverview from './pages/cctv-ai/TechnicalOverview';
@@ -17,6 +18,7 @@ import CrowdDensity from './pages/cctv-ai/CrowdDensity';
 import RoadSafety from './pages/cctv-ai/RoadSafety';
 import VehicleCheck from './pages/cctv-ai/VehicleCheck';
 import ParkingManagement from './pages/cctv-ai/ParkingManagement';
+import BridgeTunnelWatch from './pages/cctv-ai/BridgeTunnelWatch';
 
 export default function App() {
   return (
@@ -33,6 +35,7 @@ export default function App() {
             <Route path="/elderly-care" element={<ElderlyCare />} />
 
             {/* CCTV + AI catalog + 6 detail apps + technical overview */}
+            <Route path="/smart-traffic" element={<SmartTraffic />} />
             <Route path="/cctv-ai" element={<CCTVAI />} />
             <Route path="/cctv-ai/technical-overview" element={<TechnicalOverview />} />
             <Route path="/cctv-ai/public-area-watch" element={<PublicAreaWatch />} />
@@ -41,6 +44,7 @@ export default function App() {
             <Route path="/cctv-ai/road-safety" element={<RoadSafety />} />
             <Route path="/cctv-ai/vehicle-check" element={<VehicleCheck />} />
             <Route path="/cctv-ai/parking-management" element={<ParkingManagement />} />
+            <Route path="/cctv-ai/bridge-tunnel-watch" element={<BridgeTunnelWatch />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
