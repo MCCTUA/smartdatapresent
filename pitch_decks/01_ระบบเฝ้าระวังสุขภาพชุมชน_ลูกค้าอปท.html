@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบดูแลสุขภาพชุมชนเชิงรุก — เอกสารนำเสนอผู้บริหาร</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#1F4D3F; --forest-deep:#143228; --sage:#4A7C59; --sage-soft:#E5F0EA;
+    --cream:#F5EFE0; --cream-dark:#EAE1CC; --ink:#1C2422; --ink60:#555E5B;
+    --white:#FFFFFF; --accent:#BA7517; --accent-soft:#FAEEDA; --alert:#A32D2D; --alert-soft:#FCEBEB;
+    --success:#5B8C2A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Sarabun',sans-serif;background:#6b6b6b;color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .toolbar{position:fixed;top:0;left:0;right:0;height:44px;background:var(--forest-deep);color:#fff;
+    display:flex;align-items:center;gap:16px;padding:0 18px;z-index:1000;font-size:13px;}
+  .toolbar b{font-weight:700;} .toolbar .spacer{flex:1;}
+  .toolbar button{font-family:inherit;background:rgba(255,255,255,.14);color:#fff;border:none;
+    padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;}
+  .toolbar button:hover{background:rgba(255,255,255,.26);}
+  .toolbar .note{opacity:.7;font-size:12px;}
+  .deck{margin-top:60px;}
+  .slide{position:relative;width:1280px;height:720px;margin:0 auto 24px;background:var(--cream);
+    overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.35);}
+  .slide-pad{position:absolute;inset:0;padding:52px 60px;display:flex;flex-direction:column;}
+  .topbar{position:absolute;top:0;left:0;right:0;height:10px;background:var(--forest);}
+  .eyebrow{display:inline-block;font-size:14px;font-weight:700;letter-spacing:2px;
+    text-transform:uppercase;color:var(--sage);margin-bottom:12px;}
+  .eyebrow.alert{color:var(--alert);} .eyebrow.accent{color:var(--accent);}
+  h1.title{font-size:54px;font-weight:800;line-height:1.12;color:var(--forest);letter-spacing:-.5px;}
+  h2.title{font-size:40px;font-weight:800;line-height:1.15;color:var(--forest);letter-spacing:-.3px;}
+  .lead{font-size:21px;font-weight:400;line-height:1.55;color:var(--ink60);}
+  .pagenum{position:absolute;bottom:22px;right:38px;font-size:13px;color:var(--ink60);font-weight:500;}
+  .footmark{position:absolute;bottom:20px;left:60px;font-size:12px;color:var(--ink60);opacity:.8;font-weight:500;letter-spacing:.5px;}
+  .card{background:var(--white);border:1px solid var(--cream-dark);border-radius:18px;padding:24px 26px;}
+  .card .ic{font-size:36px;line-height:1;margin-bottom:12px;display:block;}
+  .card h3{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:7px;line-height:1.3;}
+  .card p{font-size:15px;color:var(--ink60);line-height:1.55;}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;
+    padding:6px 14px;border-radius:100px;background:var(--sage-soft);color:var(--forest);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .slide.dark{background:linear-gradient(135deg,var(--forest-deep),var(--forest));}
+  .slide.dark h1.title,.slide.dark h2.title{color:#fff;}
+  .slide.dark .lead{color:rgba(255,255,255,.9);}
+  .slide.dark .eyebrow{color:var(--cream-dark);}
+  .slide.dark .pagenum,.slide.dark .footmark{color:rgba(255,255,255,.7);}
+  .numbadge{width:44px;height:44px;border-radius:50%;background:var(--forest);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;flex-shrink:0;}
+  /* ปิงปอง 7 สี */
+  .pp{display:flex;gap:8px;flex-wrap:wrap;}
+  .pp span{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#fff;
+    padding:8px 16px;border-radius:100px;}
+  .dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.6);}
+  @media print{
+    body{background:#fff;} .toolbar{display:none;} .deck{margin-top:0;}
+    .slide{margin:0;box-shadow:none;page-break-after:always;width:100%;height:100vh;}
+    @page{size:1280px 720px;margin:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <b>เอกสารนำเสนอ — เวอร์ชันลูกค้า (ผู้บริหาร อปท.)</b>
+  <span class="note">16 สไลด์ · pain-first · ไม่มีชื่อแบรนด์/ราคา</span>
+  <span class="spacer"></span>
+  <span class="note">กด “พิมพ์/บันทึก PDF” แล้วเลือก Landscape</span>
+  <button onclick="window.print()">พิมพ์ / บันทึก PDF</button>
+</div>
+
+<div class="deck">
+
+  <!-- 1 — PAIN HERO -->
+  <section class="slide dark">
+    <div class="slide-pad" style="justify-content:center;">
+      <div style="max-width:1000px;">
+        <span class="eyebrow">เทศบาลของท่าน · สุขภาพประชาชน</span>
+        <h1 class="title" style="font-size:58px;">
+          ผู้สูงอายุและผู้ป่วยเรื้อรังในพื้นที่<br>
+          มักรู้ตัวว่าป่วยหนัก<br>
+          <span style="color:var(--cream-dark);">เมื่อสายเกินไปแล้ว</span>
+        </h1>
+        <p class="lead" style="margin-top:26px;max-width:900px;">
+          โรคหัวใจ เบาหวาน ความดัน และโรคปอด ไม่แสดงอาการล่วงหน้า
+          บางครั้งวูบ หมดสติ หรือล้มที่บ้านลำพัง โดยไม่มีใครรู้ทัน
+        </p>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ · มิใช่ข้อผูกพัน</div>
+    <div class="pagenum">1</div>
+  </section>
+
+  <!-- 2 — CONTEXT (Silver economy, qualitative) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow alert">สถานการณ์ที่เทศบาลกำลังเผชิญ</span>
+      <h2 class="title">ประเทศไทยเข้าสู่สังคมผู้สูงอายุเต็มตัวแล้ว</h2>
+      <p class="lead" style="margin-top:14px;max-width:1020px;">
+        ผู้สูงอายุกลายเป็นกลุ่มประชากรหลัก และเป็นกลุ่มที่ใช้บริการสุขภาพมากที่สุด
+        ภาระการดูแลจึงตกอยู่ที่ท้องถิ่นโดยตรง
+      </p>
+      <div class="grid4" style="margin-top:26px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">👴</span><h3>ผู้สูงอายุเป็น 1 ใน 5 ของประชากร</h3>
+          <p>ไทยเป็นสังคมผู้สูงอายุโดยสมบูรณ์ และกำลังเข้าสู่ระดับสุดยอดในไม่กี่ปีข้างหน้า</p></div>
+        <div class="card"><span class="ic">🏥</span><h3>ใช้บริการสุขภาพถี่ที่สุด</h3>
+          <p>ผู้สูงอายุใช้สิทธิรักษาพยาบาลบ่อยกว่าวัยอื่นเกือบเท่าตัว ส่วนใหญ่เป็นโรคเรื้อรัง (NCDs)</p></div>
+        <div class="card"><span class="ic">🏠</span><h3>อยู่บ้านลำพังมากขึ้น</h3>
+          <p>ผู้สูงอายุที่อยู่คนเดียวหรืออยู่กันสองคนกับคู่สมรสมีแนวโน้มเพิ่มขึ้นทุกปี</p></div>
+        <div class="card"><span class="ic">💸</span><h3>ยิ่งอายุมาก ค่าใช้จ่ายยิ่งพุ่ง</h3>
+          <p>ค่ารักษาเพิ่มขึ้นอย่างรวดเร็วเมื่ออายุมากขึ้น การป้องกันเชิงรุกคุ้มกว่าการรักษาปลายทาง</p></div>
+      </div>
+      <p style="font-size:12px;color:var(--ink60);font-style:italic;margin-top:6px;">
+        ที่มา: บทวิเคราะห์ Silver Economy, วิจัยกรุงศรี (2567) · ข้อมูลเชิงคุณภาพเพื่อประกอบการพิจารณา
+      </p>
+    </div>
+    <div class="pagenum">2</div>
+  </section>
+
+  <!-- 3 — 4 PAINS -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow alert">ปัญหาที่ระบบเดิมตามไม่ทัน</span>
+      <h2 class="title">4 เหตุการณ์ที่เกิดขึ้นจริงในพื้นที่</h2>
+      <div class="grid4" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">🚨</span><h3>ล้ม/วูบที่บ้าน ไม่มีคนรู้</h3>
+          <p>ผู้สูงอายุที่อยู่ลำพังตอนกลางวัน เมื่อล้มหรือหมดสติ กว่าจะมีคนมาเจอ บางครั้งสายเกินไป</p></div>
+        <div class="card"><span class="ic">🩺</span><h3>โรคเรื้อรังไม่มีอาการเตือน</h3>
+          <p>หัวใจเต้นผิดจังหวะ น้ำตาล/ความดันสูง มักไม่มีอาการ จนกระทั่งเข้าโรงพยาบาลด้วยภาวะรุนแรง</p></div>
+        <div class="card"><span class="ic">👥</span><h3>อสม. 1 คน ดูแลหลายสิบหลัง</h3>
+          <p>เจ้าหน้าที่และอาสาสมัครมีจำกัด ออกเยี่ยมบ้านได้เป็นรอบ เฝ้าระวังทุกวันไม่ไหว</p></div>
+        <div class="card"><span class="ic">📋</span><h3>ข้อมูลกระจัดกระจาย ตอบยาก</h3>
+          <p>ผลตรวจอยู่คนละแฟ้ม คนละกระดาษ ทำให้วางแผนสวัสดิการและตอบสภาฯ ได้ยาก</p></div>
+      </div>
+    </div>
+    <div class="pagenum">3</div>
+  </section>
+
+  <!-- 4 — THE QUESTION -->
+  <section class="slide dark">
+    <div class="slide-pad" style="justify-content:center;align-items:center;text-align:center;">
+      <span class="eyebrow">คำถามสำคัญ</span>
+      <h2 class="title" style="font-size:44px;max-width:1000px;">
+        ถ้าเรา “รู้ก่อน” ว่าใครกำลังเสี่ยง<br>
+        เราจะช่วยเขาได้ทัน ก่อนจะป่วยหนักหรือไม่?
+      </h2>
+      <p class="lead" style="margin-top:24px;max-width:840px;">
+        เปลี่ยนจากการดูแลแบบ <strong style="color:#fff;">“ตั้งรับ”</strong> (รอป่วยแล้วรักษา)
+        ไปสู่ <strong style="color:var(--cream-dark);">“เชิงรุก”</strong> (เฝ้าระวังและเตือนล่วงหน้า)
+      </p>
+    </div>
+    <div class="pagenum">4</div>
+  </section>
+
+  <!-- 5 — SOLUTION OVERVIEW (รวมระบบ) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">แนวทางที่เสนอ</span>
+      <h2 class="title">ระบบดูแลสุขภาพชุมชนเชิงรุก ครบทั้งวงจร</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        ตั้งแต่การคัดกรองถึงบ้าน เฝ้าระวังต่อเนื่อง ไปจนถึงศูนย์ข้อมูลกลางที่เทศบาลเห็นภาพรวมทั้งตำบล
+      </p>
+      <div class="grid3" style="margin-top:28px;flex:1;align-content:center;">
+        <div class="card" style="border-top:6px solid var(--forest);"><span class="ic">🩺</span>
+          <h3>คัดกรองถึงบ้าน</h3>
+          <p>ทีม อสม. ลงชุมชนพร้อมกระเป๋าสุขภาพ วัดความดัน น้ำตาล ออกซิเจน อุณหภูมิ น้ำหนัก — ค่าเข้าระบบทันที ไม่ต้องจดมือ</p></div>
+        <div class="card" style="border-top:6px solid var(--sage);"><span class="ic">⌚</span>
+          <h3>เฝ้าระวังต่อเนื่อง</h3>
+          <p>กลุ่มเสี่ยงสูงสวมอุปกรณ์ติดตามหัวใจและสัญญาณชีพ 24 ชม. เมื่อพบผิดปกติ ระบบแจ้งเตือนทันที</p></div>
+        <div class="card" style="border-top:6px solid var(--accent);"><span class="ic">🗺️</span>
+          <h3>ศูนย์ข้อมูลกลางของเทศบาล</h3>
+          <p>เห็นภาพสุขภาพประชาชนทั้งตำบลบนแผนที่ รู้ว่าใครเสี่ยง ใครต้องเยี่ยมก่อน</p></div>
+      </div>
+    </div>
+    <div class="pagenum">5</div>
+  </section>
+
+  <!-- NEW — วันธรรมดาของ อสม. (ระบบช่วยลดงาน) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">ระบบนี้ “ช่วย” อสม. ไม่ใช่ “เพิ่มงาน”</span>
+      <h2 class="title">วันธรรมดาของ อสม. หลังมีระบบ</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        เราเข้าใจว่า อสม. และเจ้าหน้าที่มีงานล้นมืออยู่แล้ว ระบบจึงออกแบบมาเพื่อ
+        <strong style="color:var(--forest);">ลดงานซ้ำซ้อนและงานเอกสาร</strong> ให้เวลาไปอยู่กับการดูแลคนจริงๆ
+      </p>
+      <div class="grid2" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card" style="border-left:6px solid var(--alert);">
+          <h3 style="color:var(--alert);">แบบเดิม (เหนื่อยและซ้ำ)</h3>
+          <p style="line-height:1.8;margin-top:6px;">
+            • เดินเยี่ยมบ้านแบบสุ่ม ไม่รู้ใครควรไปก่อน<br>
+            • จดค่าความดัน/น้ำตาลใส่กระดาษ<br>
+            • กลับมาคีย์ข้อมูลซ้ำอีกรอบที่สำนักงาน<br>
+            • ไม่รู้ว่าคนที่เยี่ยมไปแล้วอาการเปลี่ยนไหม
+          </p>
+        </div>
+        <div class="card" style="border-left:6px solid var(--success);">
+          <h3 style="color:var(--success);">แบบใหม่ (เบาและตรงจุด)</h3>
+          <p style="line-height:1.8;margin-top:6px;">
+            • ระบบบอกตั้งแต่เช้าว่า “วันนี้ควรเยี่ยมใคร 5 บ้าน”<br>
+            • วัดค่าแล้วเข้าระบบทันที ไม่ต้องจดมือ<br>
+            • ไม่ต้องคีย์ซ้ำ — ข้อมูลถึงสำนักงานเอง<br>
+            • ระบบเตือนเองถ้าคนในความดูแลมีค่าผิดปกติ
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">6</div>
+  </section>
+
+  <!-- 6 — FLOW -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow">ระบบทำงานอย่างไร</span>
+      <h2 class="title">จากการวัดค่า สู่การช่วยเหลือที่ทันเวลา</h2>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+        <div style="display:flex;align-items:stretch;gap:0;width:100%;max-width:1140px;">
+          <div class="card" style="flex:1;text-align:center;"><span class="ic">🩺</span><h3>1. วัด/เฝ้าระวัง</h3><p>คัดกรองถึงบ้าน + อุปกรณ์ติดตามกลุ่มเสี่ยงตลอดวัน</p></div>
+          <div style="display:flex;align-items:center;font-size:32px;color:var(--sage);padding:0 4px;">→</div>
+          <div class="card" style="flex:1;text-align:center;"><span class="ic">🧠</span><h3>2. ระบบคัดกรอง</h3><p>ค่าผิดปกติหรือจังหวะหัวใจผิดจังหวะ ระบบจับได้ทันที</p></div>
+          <div style="display:flex;align-items:center;font-size:32px;color:var(--sage);padding:0 4px;">→</div>
+          <div class="card" style="flex:1;text-align:center;"><span class="ic">🔔</span><h3>3. แจ้งเตือน</h3><p>ส่งถึงศูนย์เทศบาล อสม. และครอบครัว พร้อมกัน</p></div>
+          <div style="display:flex;align-items:center;font-size:32px;color:var(--sage);padding:0 4px;">→</div>
+          <div class="card" style="flex:1;text-align:center;border:2px solid var(--forest);"><span class="ic">🚑</span><h3>4. ช่วยทันเวลา</h3><p>เจ้าหน้าที่ติดตามและช่วยได้ก่อนเหตุรุนแรง</p></div>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:14px;color:var(--ink60);font-style:italic;">
+        แพทย์/พยาบาลดูผลและให้คำแนะนำทางไกลได้ ประชาชนไม่ต้องเดินทางมาที่ศูนย์ทุกครั้ง
+      </p>
+    </div>
+    <div class="pagenum">6</div>
+  </section>
+
+  <!-- NEW — เมื่อระบบเตือนแล้ว ใครรับ (escalation) -->
+  <section class="slide dark">
+    <div class="slide-pad">
+      <span class="eyebrow">คำถามที่ผู้บริหารถามเสมอ</span>
+      <h2 class="title">เมื่อระบบเตือน… แล้วใครเป็นคนรับ?</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        ระบบเฝ้าระวังที่ดี ต้องมีเส้นทางการส่งต่อที่ชัดเจน ไม่ใช่แค่ “เด้งแจ้งเตือน” แล้วจบ
+        เราออกแบบให้ทุกการแจ้งเตือนมีคนรับผิดชอบเสมอ
+      </p>
+      <div class="grid3" style="margin-top:26px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">🕘</span><h3>ในเวลาราชการ</h3><p style="color:var(--ink60);">เจ้าหน้าที่/พยาบาลที่ศูนย์บริการเห็นการแจ้งเตือน และมอบหมาย อสม. ในพื้นที่เข้าดูแล</p></div>
+        <div class="card"><span class="ic">🌙</span><h3>นอกเวลา / กลางคืน</h3><p style="color:var(--ink60);">กรณีฉุกเฉินจริง ระบบนำทางให้ครอบครัวและผู้ดูแลโทรสายด่วน 1669 ได้ทันที — ไม่ต้องรอเทศบาลเปิดทำการ</p></div>
+        <div class="card"><span class="ic">📋</span><h3>ทุกเหตุถูกบันทึก</h3><p style="color:var(--ink60);">ระบบเก็บประวัติว่าเตือนเมื่อไหร่ ใครรับ ทำอะไรต่อ — ตรวจสอบย้อนหลังและรายงานได้</p></div>
+      </div>
+      <p style="font-size:14px;color:rgba(255,255,255,.75);font-style:italic;margin-top:20px;max-width:1040px;">
+        ระดับการส่งต่อ (เวลาราชการ / นอกเวลา / ฉุกเฉิน) ออกแบบร่วมกับเทศบาลให้เข้ากับกำลังคนจริงในพื้นที่ — ไม่เพิ่มภาระความรับผิดที่เกินกำลัง
+      </p>
+    </div>
+    <div class="pagenum">7</div>
+  </section>
+
+  <!-- 7 — WHAT IT WATCHES -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow">สิ่งที่ระบบเฝ้าดูให้</span>
+      <h2 class="title">ดูแลหลายเรื่องสุขภาพ ในระบบเดียว</h2>
+      <div class="grid3" style="margin-top:26px;flex:1;align-content:center;gap:16px;">
+        <div class="card"><span class="ic">🫀</span><h3>จังหวะการเต้นของหัวใจ</h3><p>เฝ้าดูภาวะหัวใจเต้นผิดจังหวะต่อเนื่อง สัญญาณเตือนของโรคหัวใจและหลอดเลือดสมอง</p></div>
+        <div class="card"><span class="ic">🩸</span><h3>ความดันและน้ำตาล</h3><p>วัดและบันทึกค่าความดันและน้ำตาลในเลือด ติดตามแนวโน้มผู้ป่วยเบาหวาน/ความดัน</p></div>
+        <div class="card"><span class="ic">🫁</span><h3>ออกซิเจนและการหายใจ</h3><p>เฝ้าระวังออกซิเจนในเลือดต่ำและการหายใจผิดปกติ สำคัญกับกลุ่มเสี่ยงโรคปอด</p></div>
+        <div class="card"><span class="ic">🌡️</span><h3>อุณหภูมิและน้ำหนัก</h3><p>ติดตามอุณหภูมิร่างกายและน้ำหนัก เห็นการเปลี่ยนแปลงของสุขภาพแต่ละคน</p></div>
+        <div class="card"><span class="ic">😴</span><h3>การพักผ่อนและกิจวัตร</h3><p>ติดตามการนอนและกิจวัตรประจำวัน ตรวจจับความผิดปกติได้ก่อนเกิดเหตุ</p></div>
+        <div class="card"><span class="ic">📈</span><h3>แนวโน้มระยะยาว</h3><p>เก็บข้อมูลต่อเนื่อง เห็น “ความเปลี่ยนแปลง” ของแต่ละคนก่อนกลายเป็นโรค</p></div>
+      </div>
+    </div>
+    <div class="pagenum">7</div>
+  </section>
+
+  <!-- 8 — PINGPONG 7 สี + แผนที่ -->
+  <section class="slide dark">
+    <div class="slide-pad">
+      <span class="eyebrow">เห็นภาพรวมทั้งตำบล</span>
+      <h2 class="title">รู้ทันที ใครเสี่ยง อยู่ตรงไหน</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        ระบบแสดงระดับความเสี่ยงของแต่ละพื้นที่บนแผนที่ของเทศบาล — ดูสีก็รู้ทันทีว่าหมู่ไหนต้องดูแลก่อน
+        (ใช้การจัดระดับสีตามมาตรฐานสาธารณสุขที่ อสม. คุ้นเคยอยู่แล้ว)
+      </p>
+      <div style="margin-top:26px;">
+        <div class="pp">
+          <span style="background:#E0322E;"><i class="dot"></i>เสี่ยงสูงมาก</span>
+          <span style="background:#E8772E;"><i class="dot"></i>เสี่ยงสูง</span>
+          <span style="background:#E0B12E;color:#3a2f00;"><i class="dot" style="border-color:rgba(0,0,0,.3);"></i>เริ่มเสี่ยง</span>
+          <span style="background:#E8D63A;color:#3a2f00;"><i class="dot" style="border-color:rgba(0,0,0,.3);"></i>เฝ้าระวัง</span>
+          <span style="background:#7CC24A;color:#1a2e00;"><i class="dot" style="border-color:rgba(0,0,0,.3);"></i>ดีพอใช้</span>
+          <span style="background:#3FA66B;"><i class="dot"></i>ดี</span>
+          <span style="background:#2E8FB5;"><i class="dot"></i>ดีมาก</span>
+        </div>
+      </div>
+      <div class="grid3" style="margin-top:30px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">🗺️</span><h3>แผนที่ระดับชุมชน</h3><p style="color:var(--ink60);">เปิด-ปิดชั้นข้อมูลได้ เห็นว่ากลุ่มเสี่ยงกระจุกอยู่ชุมชนไหน</p></div>
+        <div class="card"><span class="ic">🎯</span><h3>จัดลำดับการลงพื้นที่</h3><p style="color:var(--ink60);">อสม. รู้ว่าต้องเยี่ยมใครก่อน ใช้กำลังคนที่มีจำกัดให้คุ้มที่สุด</p></div>
+        <div class="card"><span class="ic">📊</span><h3>รายงานพร้อมใช้</h3><p style="color:var(--ink60);">สรุปรายบุคคล รายวัน รายเดือน รายปี ใช้รายงานต่อผู้บริหารและสภาฯ</p></div>
+      </div>
+    </div>
+    <div class="pagenum">8</div>
+  </section>
+
+  <!-- 9 — เชื่อมระบบ รพ.สต. -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">ทำงานร่วมกับระบบสุขภาพที่มีอยู่</span>
+      <h2 class="title">ข้อมูลไม่ตกหล่น เชื่อมถึง รพ.สต.</h2>
+      <p class="lead" style="margin-top:14px;max-width:1020px;">
+        ค่าสุขภาพที่เก็บได้ ส่งต่อเข้าระบบของโรงพยาบาลส่งเสริมสุขภาพตำบลและหน่วยบริการปฐมภูมิได้
+        ทำให้การดูแลต่อเนื่อง ไม่ต้องกรอกซ้ำหลายที่
+      </p>
+      <div class="grid3" style="margin-top:28px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">🔗</span><h3>เชื่อมระบบ รพ.สต.</h3><p>ส่งข้อมูลเข้าระบบบริการสุขภาพปฐมภูมิที่หน่วยบริการใช้อยู่ ไม่สร้างไซโลข้อมูลใหม่</p></div>
+        <div class="card"><span class="ic">👩‍⚕️</span><h3>พยาบาลใส่คำแนะนำได้</h3><p>ทีมพยาบาลบันทึกคำแนะนำลงในระบบให้ผู้ป่วยและ อสม. เห็นพร้อมกัน</p></div>
+        <div class="card"><span class="ic">🪪</span><h3>ผูกกับบัตรประชาชน</h3><p>ระบุตัวบุคคลด้วยบัตรประชาชน ข้อมูลถูกคน ลดความสับสน</p></div>
+      </div>
+    </div>
+    <div class="pagenum">9</div>
+  </section>
+
+  <!-- NEW — RACI + ขอบเขตความรับผิด -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">ใครทำอะไร · ชัดเจนตั้งแต่ต้น</span>
+      <h2 class="title">บทบาทหน้าที่ และขอบเขตความรับผิด</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        เพื่อไม่ให้เกิดความสับสนว่า “ใครรับผิดชอบส่วนไหน” เราแบ่งบทบาทชัดเจน
+        และระบุขอบเขตของระบบให้ตรงกันตั้งแต่แรก
+      </p>
+      <div class="grid2" style="margin-top:22px;flex:1;align-content:center;">
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">📡</div><div><h3>ผู้ให้บริการระบบ</h3><p>ดูแลอุปกรณ์ ระบบ การอบรม และการซ่อมบำรุงให้ใช้งานได้ต่อเนื่อง</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">🏛️</div><div><h3>เทศบาล</h3><p>กำหนดนโยบาย จัดทีม อสม./เจ้าหน้าที่ และเป็นเจ้าของข้อมูลในพื้นที่</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">👩‍⚕️</div><div><h3>บุคลากรการแพทย์</h3><p>เป็นผู้วินิจฉัยและตัดสินใจทางการแพทย์ — ระบบเป็นเพียงเครื่องมือช่วย ไม่ใช่ผู้วินิจฉัยแทน</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">👨‍👩‍👧</div><div><h3>ครอบครัว/ผู้ดูแล</h3><p>รับการแจ้งเตือน ดูแลเบื้องต้น และตัดสินใจร่วมเมื่อเกิดเหตุ</p></div></div>
+      </div>
+      <div style="background:var(--accent-soft);border-left:5px solid var(--accent);border-radius:8px;padding:14px 18px;margin-top:18px;font-size:15px;line-height:1.5;">
+        <strong>ขอบเขตสำคัญ:</strong> ระบบนี้เป็น “เครื่องมือเฝ้าระวังและคัดกรองเบื้องต้น” เพื่อให้ช่วยเหลือได้ทันเวลา
+        <strong>ไม่ใช่การวินิจฉัยทางการแพทย์</strong> การวินิจฉัยและการรักษายังเป็นหน้าที่ของบุคลากรการแพทย์เสมอ
+      </div>
+    </div>
+    <div class="pagenum">10</div>
+  </section>
+
+  <!-- 10 — PRIVACY / LAW -->
+  <section class="slide dark">
+    <div class="slide-pad">
+      <span class="eyebrow">ความปลอดภัยและความเป็นส่วนตัว</span>
+      <h2 class="title">ออกแบบให้ถูกต้องตามกฎหมายไทย</h2>
+      <p class="lead" style="margin-top:14px;max-width:1000px;">
+        ข้อมูลสุขภาพเป็นข้อมูลส่วนบุคคลที่อ่อนไหว เราออกแบบให้เทศบาลและประชาชนเป็นเจ้าของข้อมูล
+      </p>
+      <div class="grid3" style="margin-top:32px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">🔒</span><h3>คุ้มครองข้อมูลส่วนบุคคล</h3><p>ออกแบบตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA) มีการยืนยันตัวตน 2 ชั้น และบันทึกการเข้าถึง</p></div>
+        <div class="card"><span class="ic">👨‍⚕️</span><h3>ได้มาตรฐานทางการแพทย์</h3><p>อุปกรณ์เป็นเครื่องมือแพทย์ที่ผ่านการรับรองมาตรฐานจากหน่วยงานกำกับของไทย</p></div>
+        <div class="card"><span class="ic">🏛️</span><h3>ข้อมูลเป็นของเทศบาล</h3><p>เมื่อจบโครงการ ข้อมูลและอุปกรณ์เป็นกรรมสิทธิ์ของเทศบาล ไม่ผูกขาดกับผู้ให้บริการ</p></div>
+      </div>
+    </div>
+    <div class="pagenum">10</div>
+  </section>
+
+  <!-- NEW — ทำได้ถูกระเบียบ -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">สบายใจเรื่องระเบียบ</span>
+      <h2 class="title">อยู่ในกรอบภารกิจและระเบียบของท้องถิ่น</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        การดูแลสุขภาพผู้สูงอายุและผู้มีภาวะพึ่งพิงเป็นภารกิจโดยตรงของ อปท. และมีกลไกงบประมาณรองรับ
+        เราออกแบบให้สอดคล้องกับแนวทางที่ฝ่ายพัสดุและนิติกรของเทศบาลตรวจสอบได้
+      </p>
+      <div class="grid3" style="margin-top:26px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">📜</span><h3>ตามภารกิจ อปท.</h3><p>การส่งเสริมและดูแลสุขภาพประชาชนในพื้นที่เป็นอำนาจหน้าที่ของเทศบาลตามกฎหมายจัดตั้ง</p></div>
+        <div class="card"><span class="ic">💰</span><h3>มีกลไกงบรองรับ</h3><p>ใช้ได้กับกองทุนสุขภาพท้องถิ่น (กปท.) และกองทุนดูแลระยะยาว (LTC) ตามแนวทางที่ สปสช. กำหนด</p></div>
+        <div class="card"><span class="ic">🔍</span><h3>ตรวจสอบได้</h3><p>มีรายงานและบันทึกการใช้งานครบ พร้อมให้ฝ่ายตรวจสอบภายในและหน่วยงานกำกับตรวจสอบ</p></div>
+      </div>
+      <p style="font-size:13px;color:var(--ink60);font-style:italic;margin-top:16px;">
+        * ทีมงานจะจัดเตรียมเอกสารอ้างอิงระเบียบและหนังสือสั่งการที่เกี่ยวข้องให้ฝ่ายพัสดุ/นิติกรของเทศบาลพิจารณาในขั้นจัดทำโครงการ
+      </p>
+    </div>
+    <div class="pagenum">11</div>
+  </section>
+
+  <!-- 11 — BENEFIT: ประชาชน -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">ประโยชน์ · สำหรับประชาชนและครอบครัว</span>
+      <h2 class="title">อุ่นใจ แม้อยู่บ้านลำพัง</h2>
+      <div class="grid2" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">✓</div><div><h3>รู้ก่อน ป้องกันได้</h3><p>เห็นสัญญาณผิดปกติตั้งแต่เนิ่นๆ มีโอกาสพบแพทย์ก่อนอาการรุนแรง</p></div></div>
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">✓</div><div><h3>ลูกหลานสบายใจ</h3><p>ลูกหลานที่ทำงานต่างถิ่นรู้ว่าพ่อแม่ได้รับการเฝ้าดูแล แม้ไม่ได้อยู่ด้วย</p></div></div>
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">✓</div><div><h3>ไม่ต้องเดินทางบ่อย</h3><p>วัดค่าและรับคำแนะนำได้ถึงบ้าน ลดภาระการเดินทางของผู้สูงอายุ</p></div></div>
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">✓</div><div><h3>ใช้ชีวิตได้ตามปกติ</h3><p>อุปกรณ์ใช้ง่าย สวมใส่สบาย ทำกิจวัตรประจำวันได้เหมือนเดิม</p></div></div>
+      </div>
+    </div>
+    <div class="pagenum">11</div>
+  </section>
+
+  <!-- 12 — BENEFIT: เทศบาล -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">ประโยชน์ · สำหรับเทศบาลและเจ้าหน้าที่</span>
+      <h2 class="title">ทำงานตรงจุด ตอบสภาฯ ได้ด้วยข้อมูล</h2>
+      <div class="grid2" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">★</div><div><h3>อสม. รู้ว่าต้องเยี่ยมใครก่อน</h3><p>ระบบจัดลำดับว่าใครเสี่ยงสุด แทนการเยี่ยมแบบสุ่ม</p></div></div>
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">★</div><div><h3>เห็นสุขภาพชุมชนทั้งตำบล</h3><p>วางแผนสวัสดิการและงบประมาณได้ตรงกลุ่มเป้าหมาย</p></div></div>
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">★</div><div><h3>มีหลักฐานเชิงประจักษ์</h3><p>รายงานสรุปอัตโนมัติ ใช้รายงานต่อผู้บริหารและสภาฯ ได้</p></div></div>
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">★</div><div><h3>ยกระดับภาพลักษณ์เทศบาล</h3><p>เป็นเทศบาลที่นำเทคโนโลยีดูแลสุขภาพประชาชนเชิงรุก</p></div></div>
+      </div>
+    </div>
+    <div class="pagenum">12</div>
+  </section>
+
+  <!-- NEW — เครดิต/ผลงานที่เทศบาลได้ -->
+  <section class="slide dark">
+    <div class="slide-pad">
+      <span class="eyebrow">ผลงานที่ผู้บริหารนำไปใช้ได้</span>
+      <h2 class="title">เทศบาลได้อะไรกลับมา นอกจากการดูแลคน</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        นอกจากผลด้านสุขภาพ โครงการนี้ยังสร้าง “ผลงานเชิงประจักษ์” ที่ผู้บริหารนำไปรายงานและต่อยอดได้
+      </p>
+      <div class="grid3" style="margin-top:28px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">🏆</span><h3>ต่อยอดสู่รางวัล อปท.</h3><p style="color:var(--ink60);">มีข้อมูลและกรณีศึกษาเพื่อสมัครรางวัลท้องถิ่นด้านสุขภาพ/นวัตกรรม และเวทีระดับประเทศ</p></div>
+        <div class="card"><span class="ic">📣</span><h3>สื่อสารกับประชาชนได้</h3><p style="color:var(--ink60);">แสดงให้เห็นว่าเทศบาลลงมือดูแลสุขภาพประชาชนจริง ด้วยผลลัพธ์ที่จับต้องได้</p></div>
+        <div class="card"><span class="ic">📈</span><h3>เป็นต้นแบบให้พื้นที่อื่น</h3><p style="color:var(--ink60);">เทศบาลที่เริ่มก่อน กลายเป็นต้นแบบที่ อปท. อื่นมาเรียนรู้ดูงาน</p></div>
+      </div>
+    </div>
+    <div class="pagenum">13</div>
+  </section>
+
+  <!-- 13 — แหล่งงบ (LTC/กปท.) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">เริ่มได้โดยไม่ต้องรองบก้อนใหม่</span>
+      <h2 class="title">มีแหล่งงบประมาณรองรับอยู่แล้ว</h2>
+      <p class="lead" style="margin-top:14px;max-width:1020px;">
+        ระบบนี้ออกแบบให้ใช้ได้กับแหล่งงบที่ท้องถิ่นเข้าถึงได้ตามภารกิจดูแลผู้สูงอายุและผู้มีภาวะพึ่งพิง
+      </p>
+      <div class="grid2" style="margin-top:26px;flex:1;align-content:center;">
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">1</div><div>
+          <h3>กองทุนหลักประกันสุขภาพท้องถิ่น (กปท.)</h3>
+          <p>งบที่ สปสช. สนับสนุนท้องถิ่นเพื่อจัดบริการสุขภาพในพื้นที่ — แบ่งเบาภาระงบของเทศบาลเอง</p></div></div>
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">2</div><div>
+          <h3>กองทุนดูแลระยะยาว (LTC)</h3>
+          <p>งบเฉพาะสำหรับดูแลผู้สูงอายุและผู้มีภาวะพึ่งพิง ครอบคลุมการเยี่ยมบ้านและฟื้นฟู</p></div></div>
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">3</div><div>
+          <h3>งบประมาณประจำปีของเทศบาล</h3>
+          <p>เริ่มจากกลุ่มเสี่ยงที่จำเป็นที่สุดก่อน เป็นโครงการที่เริ่มได้ในงบประจำปี</p></div></div>
+        <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="numbadge">4</div><div>
+          <h3>งบสนับสนุนจากภาคเอกชนในพื้นที่</h3>
+          <p>ในพื้นที่ที่มีสถานประกอบการ/อุตสาหกรรม สามารถดึงการมีส่วนร่วมดูแลสุขภาพชุมชนได้</p></div></div>
+      </div>
+    </div>
+    <div class="pagenum">13</div>
+  </section>
+
+  <!-- NEW — โครงสร้างค่าใช้จ่าย (ครั้งเดียว vs รายปี) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">วางงบได้จริง</span>
+      <h2 class="title">เข้าใจโครงสร้างค่าใช้จ่ายก่อนตั้งงบ</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        เพื่อให้ฝ่ายงบประมาณวางแผนได้ เราแยกชัดว่าอะไรคือค่าใช้จ่าย “ครั้งเดียว” และอะไรคือ “รายปี”
+        ขนาดงบขึ้นอยู่กับจำนวนชุมชน/กลุ่มเป้าหมายที่เลือก
+      </p>
+      <div class="grid2" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card" style="border-top:6px solid var(--forest);">
+          <h3>💼 ค่าใช้จ่ายครั้งเดียว (ลงทุนเริ่มต้น)</h3>
+          <p style="line-height:1.8;margin-top:8px;">
+            • ชุดอุปกรณ์คัดกรอง/เฝ้าระวัง ตามจำนวนกลุ่มเป้าหมาย<br>
+            • การติดตั้งและตั้งค่าระบบ<br>
+            • การอบรม อสม. และเจ้าหน้าที่
+          </p>
+        </div>
+        <div class="card" style="border-top:6px solid var(--accent);">
+          <h3>🔄 ค่าใช้จ่ายรายปี (ดำเนินงานต่อเนื่อง)</h3>
+          <p style="line-height:1.8;margin-top:8px;">
+            • ค่าบริการระบบ/คลาวด์ และสัญญาณอินเทอร์เน็ต<br>
+            • วัสดุสิ้นเปลือง (เช่น แถบตรวจน้ำตาล เข็มเจาะ)<br>
+            • การดูแลบำรุงรักษาและซัพพอร์ต
+          </p>
+        </div>
+      </div>
+      <div style="background:var(--sage-soft);border-radius:10px;padding:14px 18px;margin-top:18px;font-size:15px;color:var(--forest);font-weight:600;">
+        เริ่มต้นได้ในระดับงบประมาณที่กองทุน กปท./LTC และงบประจำปีของท้องถิ่นทั่วไปเข้าถึงได้ — ทีมงานจะประเมินกรอบงบที่เหมาะกับขนาดพื้นที่ของท่านให้ในขั้นถัดไป
+      </div>
+    </div>
+    <div class="pagenum">14</div>
+  </section>
+
+  <!-- NEW — ความยั่งยืน 3 ปี -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">ตอบโจทย์ความยั่งยืน</span>
+      <h2 class="title">แล้วปีที่ 2 และ 3 จะเป็นอย่างไร?</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        เราออกแบบให้โครงการเดินต่อได้เอง ไม่กลายเป็นภาระผูกพันที่ไร้ทางออก
+        และไม่ทิ้งอุปกรณ์ให้กลายเป็นขยะงบประมาณ
+      </p>
+      <div class="grid3" style="margin-top:28px;flex:1;align-content:center;">
+        <div class="card" style="border-top:6px solid var(--success);"><span class="pill" style="margin-bottom:10px;">ปีที่ 1</span><h3>พิสูจน์ผล</h3><p>เริ่มนำร่อง วัดผลจริง และวางระบบให้เจ้าหน้าที่ใช้เป็น</p></div>
+        <div class="card" style="border-top:6px solid var(--sage);"><span class="pill" style="margin-bottom:10px;">ปีที่ 2</span><h3>ขยายแบบมีแผนงบ</h3><p>วางค่าดำเนินงานรายปีไว้ในกองทุน กปท./LTC และงบประจำ ให้เป็นรายการที่คาดการณ์ได้</p></div>
+        <div class="card" style="border-top:6px solid var(--forest);"><span class="pill" style="margin-bottom:10px;">ปีที่ 3</span><h3>ถ่ายโอนให้ดูแลเอง</h3><p>เจ้าหน้าที่เทศบาลดูแลระบบได้เอง ลดการพึ่งพาผู้ให้บริการ ข้อมูลและอุปกรณ์เป็นของเทศบาล</p></div>
+      </div>
+    </div>
+    <div class="pagenum">15</div>
+  </section>
+
+  <!-- NEW — อบรม + ซัพพอร์ต -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">ไม่ปล่อยให้สู้ลำพัง</span>
+      <h2 class="title">อบรม ดูแล และซัพพอร์ตตลอดโครงการ</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        เราเข้าใจว่าเจ้าหน้าที่ส่วนใหญ่ไม่ใช่สาย IT ระบบจึงต้องใช้ง่าย และมีทีมดูแลจริงเมื่อเกิดปัญหา
+      </p>
+      <div class="grid2" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">🎓</div><div><h3>อบรมให้ใช้เป็นจริง</h3><p>อบรม อสม. และเจ้าหน้าที่ถึงพื้นที่ พร้อมคู่มือภาษาไทยที่เข้าใจง่าย</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">📞</div><div><h3>มีทีมให้โทรถามได้</h3><p>มีช่องทางติดต่อเมื่อใช้งานติดขัด ไม่ต้องแก้ปัญหาเทคนิคกันเอง</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">🔧</div><div><h3>ดูแล/ซ่อม/เปลี่ยนเครื่อง</h3><p>มีการรับประกันและบริการเปลี่ยนเครื่องเมื่อชำรุด ไม่ปล่อยให้อุปกรณ์กลายเป็นของเสีย</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">🔁</div><div><h3>ติดตามการใช้งานจริง</h3><p>ช่วยติดตามว่าประชาชนยังใช้อุปกรณ์อยู่หรือไม่ กันปัญหา “แจกแล้วทิ้งลิ้นชัก”</p></div></div>
+      </div>
+    </div>
+    <div class="pagenum">16</div>
+  </section>
+
+  <!-- PILOT (เริ่มเล็ก เสี่ยงต่ำ) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow">เริ่มเล็ก · ความเสี่ยงต่ำ</span>
+      <h2 class="title">ไม่ต้องลงทุนทั้งตำบลในครั้งเดียว</h2>
+      <p class="lead" style="margin-top:14px;max-width:1040px;">
+        แนะนำให้เริ่มนำร่องแค่ <strong style="color:var(--forest);">1 ชุมชน กลุ่มเสี่ยงสูงราว 30-50 คน ระยะ 3 เดือน</strong>
+        ถ้าผลไม่เป็นไปตามคาด ก็หยุดได้ ไม่เป็นภาระผูกพันระยะยาว
+      </p>
+      <div class="grid3" style="margin-top:30px;flex:1;align-content:center;">
+        <div class="card" style="border-top:6px solid var(--success);"><span class="ic">🌱</span><span class="pill" style="margin-bottom:10px;">ระยะที่ 1</span><h3>นำร่อง 1 ชุมชน</h3><p>กลุ่มเสี่ยงสูง 30-50 คน 3 เดือน — ลงทุนน้อย เห็นผลเร็ว หยุดได้ถ้าไม่เวิร์ก</p></div>
+        <div class="card" style="border-top:6px solid var(--sage);"><span class="ic">🌿</span><span class="pill" style="margin-bottom:10px;">ระยะที่ 2</span><h3>ขยายตามผลที่ได้</h3><p>เมื่อเห็นผลจริง ขยายไปชุมชนอื่นตามลำดับความเสี่ยง</p></div>
+        <div class="card" style="border-top:6px solid var(--forest);"><span class="ic">🌳</span><span class="pill" style="margin-bottom:10px;">ระยะที่ 3</span><h3>บริการประจำของเทศบาล</h3><p>ต่อยอดเป็นระบบดูแลสุขภาพเชิงรุกถาวรที่ประชาชนพึ่งพาได้</p></div>
+      </div>
+    </div>
+    <div class="pagenum">17</div>
+  </section>
+
+  <!-- NEW — KPI วัดผล -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">ตอบสภาฯ และ สตง. ได้</span>
+      <h2 class="title">วัดความสำเร็จได้จริง ด้วยตัวชี้วัดที่ชัดเจน</h2>
+      <p class="lead" style="margin-top:12px;max-width:1040px;">
+        ทุกโครงการต้องตอบได้ว่า “คุ้มหรือไม่” เราจึงกำหนดตัวชี้วัดที่เก็บข้อมูลได้จริงตั้งแต่วันแรก
+      </p>
+      <div class="grid3" style="margin-top:26px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">👥</span><h3>ความครอบคลุม</h3><p style="color:var(--ink60);">จำนวนประชาชนกลุ่มเสี่ยงที่ได้รับการคัดกรองและเฝ้าระวัง</p></div>
+        <div class="card"><span class="ic">⏱️</span><h3>พบเร็วขึ้น</h3><p style="color:var(--ink60);">สัดส่วนกลุ่มเสี่ยงที่ถูกพบความผิดปกติและส่งต่อได้เร็วกว่าเดิม</p></div>
+        <div class="card"><span class="ic">🏥</span><h3>ลดเหตุฉุกเฉิน</h3><p style="color:var(--ink60);">แนวโน้มการเข้ารักษาฉุกเฉิน/นอนโรงพยาบาลของกลุ่มที่ดูแล</p></div>
+        <div class="card"><span class="ic">😊</span><h3>ความพึงพอใจ</h3><p style="color:var(--ink60);">ความพึงพอใจของประชาชน ครอบครัว และ อสม. ต่อระบบ</p></div>
+        <div class="card"><span class="ic">📂</span><h3>คุณภาพข้อมูล</h3><p style="color:var(--ink60);">ความครบถ้วนของฐานข้อมูลสุขภาพที่ใช้วางแผนต่อได้</p></div>
+        <div class="card"><span class="ic">📑</span><h3>รายงานพร้อมตรวจ</h3><p style="color:var(--ink60);">รายงานสรุปอัตโนมัติ ใช้ตอบสภาฯ และหน่วยตรวจสอบได้ทันที</p></div>
+      </div>
+    </div>
+    <div class="pagenum">18</div>
+  </section>
+
+  <!-- 15 — NEXT STEP -->
+  <section class="slide dark">
+    <div class="slide-pad" style="justify-content:center;">
+      <div style="max-width:980px;">
+        <span class="eyebrow">ขั้นต่อไป</span>
+        <h2 class="title" style="font-size:44px;">
+          ขอเวลาท่านสักครู่ เพื่อรับฟังว่า<br>
+          ประชาชนในพื้นที่ของท่าน เจอปัญหาสุขภาพอะไรมากที่สุด
+        </h2>
+        <p class="lead" style="margin-top:24px;max-width:840px;">
+          เราไม่ได้มาขายแพ็กเกจสำเร็จรูป — เราอยากเข้าใจปัญหาจริงของท่านก่อน
+          แล้วจึงเสนอแนวทางที่เหมาะกับชุมชนของท่าน
+        </p>
+      </div>
+    </div>
+    <div class="pagenum">15</div>
+  </section>
+
+  <!-- 16 — THANK YOU + 3 Q -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad" style="justify-content:center;">
+      <span class="eyebrow accent" style="text-align:center;width:100%;">ขอบคุณครับ/ค่ะ</span>
+      <h2 class="title" style="text-align:center;">เราอยากฟังความเห็นของท่าน</h2>
+      <div style="max-width:980px;margin:34px auto 0;display:flex;flex-direction:column;gap:16px;">
+        <div class="card" style="display:flex;gap:20px;align-items:center;"><div class="numbadge">1</div><p style="font-size:20px;color:var(--ink);font-weight:500;">แนวทางที่เรานำเสนอ ตรงกับปัญหาสุขภาพที่ท่านเจอจริงมากน้อยแค่ไหน?</p></div>
+        <div class="card" style="display:flex;gap:20px;align-items:center;"><div class="numbadge">2</div><p style="font-size:20px;color:var(--ink);font-weight:500;">สิ่งที่ท่านกังวลที่สุด หากจะเริ่มทำเรื่องนี้ คืออะไร?</p></div>
+        <div class="card" style="display:flex;gap:20px;align-items:center;"><div class="numbadge">3</div><p style="font-size:20px;color:var(--ink);font-weight:500;">หากจะเริ่มโครงการนำร่อง เงื่อนไขที่สำคัญที่สุดสำหรับท่านคืออะไร?</p></div>
+      </div>
+    </div>
+    <div class="pagenum">16</div>
+  </section>
+
+</div>
+</body>
+</html>

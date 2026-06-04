@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตัวอย่างหน้าจอแอป — ฝั่ง อสม. และ ฝั่งประชาชน/ครอบครัว</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#1F4D3F; --forest-deep:#143228; --sage:#4A7C59; --sage-soft:#E5F0EA;
+    --cream:#F5EFE0; --cream-dark:#EAE1CC; --ink:#1C2422; --ink60:#555E5B;
+    --white:#FFFFFF; --accent:#BA7517; --accent-soft:#FAEEDA; --alert:#A32D2D; --alert-soft:#FCEBEB;
+    --success:#3B6D11; --success-soft:#EAF3DE;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Sarabun',sans-serif;background:#dcdcdc;color:var(--ink);padding:24px;-webkit-font-smoothing:antialiased;}
+  .note{max-width:900px;margin:0 auto 14px;font-size:13px;color:#444;display:flex;gap:14px;align-items:center;}
+  .note button{font-family:inherit;background:var(--forest);color:#fff;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;}
+  .wrap{max-width:900px;margin:0 auto;background:var(--cream);border-radius:18px;padding:26px;box-shadow:0 14px 50px rgba(0,0,0,.25);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  .phone{border-radius:26px;padding:12px;}
+  .phone.osm{background:var(--forest);} .phone.cit{background:var(--accent);}
+  .screen{background:#fff;border-radius:18px;overflow:hidden;}
+  .shead{color:#fff;padding:14px 16px;} .shead.osm{background:var(--forest);} .shead.cit{background:var(--accent);}
+  .shead .s1{font-size:12px;opacity:.85;} .shead .s2{font-size:16px;font-weight:600;margin-top:2px;}
+  .sbody{padding:14px 16px;}
+  .stat3{display:flex;gap:8px;margin-bottom:14px;}
+  .st{flex:1;border-radius:11px;padding:9px 8px;text-align:center;} .st .l{font-size:11px;} .st .v{font-size:21px;font-weight:800;margin-top:1px;}
+  .st.ok{background:var(--sage-soft);} .st.ok .l{color:var(--forest);} .st.ok .v{color:var(--forest-deep);}
+  .st.al{background:var(--alert-soft);} .st.al .l,.st.al .v{color:var(--alert);}
+  .st.wa{background:var(--accent-soft);} .st.wa .l,.st.wa .v{color:#854F0B;}
+  .lbl{font-size:12px;font-weight:600;color:var(--ink60);margin-bottom:8px;}
+  .visit{border-radius:13px;padding:12px;margin-bottom:9px;}
+  .visit.urgent{background:var(--alert-soft);} .visit.normal{background:#F1EFE8;}
+  .vtop{display:flex;align-items:center;gap:10px;}
+  .av{width:36px;height:36px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .av.al{background:var(--alert);} .av.gr{background:var(--ink60);}
+  .vtop .nm{font-size:13px;font-weight:600;} .vtop .ds{font-size:11px;}
+  .visit.urgent .ds{color:var(--alert);} .visit.normal .ds{color:var(--ink60);}
+  .vbtn{display:flex;gap:7px;margin-top:10px;}
+  .vbtn button{flex:1;border-radius:9px;padding:9px;font-size:12px;font-family:inherit;cursor:pointer;border:none;}
+  .bp{background:var(--alert);color:#fff;} .bs{background:#fff;color:var(--alert);border:1px solid var(--alert)!important;}
+  .tipbox{border-radius:12px;padding:11px;display:flex;align-items:center;gap:9px;font-size:12px;margin-bottom:9px;}
+  .tip-green{background:var(--sage-soft);color:var(--forest);} .tip-amber{background:var(--accent-soft);color:#854F0B;}
+  /* citizen */
+  .reassure{background:var(--sage-soft);border-radius:13px;padding:14px;text-align:center;margin-bottom:12px;}
+  .reassure .ic{font-size:30px;} .reassure .t1{font-size:15px;font-weight:600;color:var(--forest-deep);margin-top:6px;} .reassure .t2{font-size:12px;color:var(--forest);margin-top:2px;}
+  .sos{width:100%;background:var(--alert);color:#fff;border:none;border-radius:13px;padding:15px;font-size:16px;font-weight:600;font-family:inherit;margin-bottom:12px;cursor:pointer;}
+  .pair{display:flex;gap:9px;margin-bottom:12px;} .pc{flex:1;background:#F1EFE8;border-radius:11px;padding:10px;text-align:center;} .pc .l{font-size:11px;color:var(--ink60);} .pc .v{font-size:14px;font-weight:600;margin-top:1px;}
+  .msg{background:#fff;border:1px solid var(--cream-dark);border-radius:12px;padding:12px;} .msg .l{font-size:12px;font-weight:600;color:var(--ink60);margin-bottom:5px;} .msg p{font-size:13px;line-height:1.55;}
+  .foot{margin-top:16px;font-size:12px;color:var(--ink60);text-align:center;}
+  @media print{body{background:#fff;padding:0;} .note{display:none;} .wrap{box-shadow:none;max-width:100%;}}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <span>ตัวอย่างหน้าจอแอป 2 ฝั่ง (ข้อมูลสมมติ · โทนเทศบาล) — แคปไปวางสไลด์ได้</span>
+  <button onclick="window.print()">บันทึก PDF / พิมพ์</button>
+</div>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- ===== ฝั่ง อสม. ===== -->
+    <div class="phone osm">
+      <div class="screen">
+        <div class="shead osm">
+          <div class="s1">แอปสำหรับ อสม. · เทศบาลตำบลสาธิต</div>
+          <div class="s2">สวัสดีค่ะ พี่สมศรี 👋</div>
+        </div>
+        <div class="sbody">
+          <div class="stat3">
+            <div class="st ok"><div class="l">วันนี้ต้องไป</div><div class="v">5</div></div>
+            <div class="st al"><div class="l">ด่วน</div><div class="v">1</div></div>
+            <div class="st wa"><div class="l">เยี่ยมแล้ว</div><div class="v">3</div></div>
+          </div>
+          <div class="lbl">ไปบ้านนี้ก่อน — ระบบแจ้งเตือน</div>
+          <div class="visit urgent">
+            <div class="vtop"><div class="av al">ยาย</div><div><div class="nm">ยายบุญมา · บ้านเลขที่ 42</div><div class="ds">หัวใจเต้นผิดปกติเมื่อเช้า</div></div></div>
+            <div class="vbtn"><button class="bp">นำทางไปบ้าน</button><button class="bs">โทรหา</button></div>
+          </div>
+          <div class="visit normal">
+            <div class="vtop"><div class="av gr">ตา</div><div><div class="nm">ตาวิรัช · บ้านเลขที่ 17</div><div class="ds">ถึงรอบวัดความดันประจำเดือน</div></div></div>
+          </div>
+          <div class="tipbox tip-green"><span style="font-size:16px;">✅</span> วัดเสร็จกดปุ่มเดียว — ระบบบันทึกให้ ไม่ต้องจดสมุด</div>
+          <div class="tipbox tip-amber"><span style="font-size:16px;">🏅</span> เดือนนี้พี่ดูแลครบ 48 บ้านแล้ว · เก่งมากค่ะ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ฝั่งประชาชน/ครอบครัว ===== -->
+    <div class="phone cit">
+      <div class="screen">
+        <div class="shead cit">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">🏛️</span>
+            <div><div class="s1">ดูแลโดย เทศบาลตำบลสาธิต</div><div class="s2">สุขภาพของคุณยาย</div></div>
+          </div>
+        </div>
+        <div class="sbody">
+          <div class="reassure">
+            <div class="ic">💚</div>
+            <div class="t1">วันนี้คุณยายสบายดี</div>
+            <div class="t2">ระบบดูแลอยู่ตลอด 24 ชั่วโมง</div>
+          </div>
+          <button class="sos">📞 กดขอความช่วยเหลือ</button>
+          <div class="pair">
+            <div class="pc"><div class="l">อสม. ที่ดูแล</div><div class="v">พี่สมศรี</div></div>
+            <div class="pc"><div class="l">เยี่ยมล่าสุด</div><div class="v">เมื่อวาน</div></div>
+          </div>
+          <div class="msg">
+            <div class="l">ข้อความจากเทศบาล</div>
+            <p>วันที่ 10 มีหน่วยแพทย์เคลื่อนที่มาตรวจสุขภาพที่ศาลาหมู่บ้านนะคะ 💚</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="foot">ภาพจำลองหน้าจอ · ข้อมูลสมมติ · ออกแบบโทนเทศบาล — ทุกการดูแลแสดงชัดว่าเป็นบริการของเทศบาล</div>
+</div>
+
+</body>
+</html>

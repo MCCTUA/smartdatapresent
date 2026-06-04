@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบสุขภาพชุมชน — Internal / Dealer Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16263F; --navy-deep:#0E1A2C; --blue:#2D6CB5; --blue-soft:#E3EDF8;
+    --bg:#F4F6F9; --bg-card:#FFFFFF; --line:#DCE3EC; --ink:#15202B; --ink60:#5A6776;
+    --accent:#BA7517; --accent-soft:#FBEFD9; --alert:#A32D2D; --alert-soft:#FBE9E9;
+    --ok:#2E7D46; --ok-soft:#E4F2E8; --internal:#7A2E8C; --internal-soft:#F3E7F6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Sarabun',sans-serif;background:#5a5a5a;color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .toolbar{position:fixed;top:0;left:0;right:0;height:44px;background:var(--internal);color:#fff;
+    display:flex;align-items:center;gap:16px;padding:0 18px;z-index:1000;font-size:13px;}
+  .toolbar b{font-weight:700;} .toolbar .spacer{flex:1;}
+  .toolbar button{font-family:inherit;background:rgba(255,255,255,.16);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;}
+  .toolbar button:hover{background:rgba(255,255,255,.3);}
+  .toolbar .note{opacity:.8;font-size:12px;}
+  .deck{margin-top:60px;}
+  .slide{position:relative;width:1280px;height:720px;margin:0 auto 24px;background:var(--bg);overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.35);}
+  .slide-pad{position:absolute;inset:0;padding:46px 56px;display:flex;flex-direction:column;}
+  .topbar{position:absolute;top:0;left:0;right:0;height:10px;background:var(--navy);}
+  .ribbon{position:absolute;top:18px;right:0;background:var(--internal);color:#fff;font-size:12px;font-weight:700;letter-spacing:1px;padding:6px 18px 6px 22px;border-radius:100px 0 0 100px;z-index:5;}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px;}
+  .eyebrow.alert{color:var(--alert);} .eyebrow.accent{color:var(--accent);} .eyebrow.ok{color:var(--ok);}
+  h1.title{font-size:48px;font-weight:800;line-height:1.12;color:var(--navy);letter-spacing:-.5px;}
+  h2.title{font-size:36px;font-weight:800;line-height:1.15;color:var(--navy);letter-spacing:-.3px;}
+  .lead{font-size:19px;font-weight:400;line-height:1.5;color:var(--ink60);}
+  .pagenum{position:absolute;bottom:18px;right:34px;font-size:13px;color:var(--ink60);font-weight:500;}
+  .footmark{position:absolute;bottom:16px;left:56px;font-size:11px;color:var(--internal);font-weight:700;letter-spacing:.5px;}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;}
+  .card .ic{font-size:30px;line-height:1;margin-bottom:9px;display:block;}
+  .card h3{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.3;}
+  .card p{font-size:13.5px;color:var(--ink60);line-height:1.5;}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:100px;background:var(--blue-soft);color:var(--blue);}
+  .pill.ok{background:var(--ok-soft);color:var(--ok);} .pill.alert{background:var(--alert-soft);color:var(--alert);}
+  .pill.accent{background:var(--accent-soft);color:var(--accent);} .pill.int{background:var(--internal-soft);color:var(--internal);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .slide.dark{background:linear-gradient(135deg,var(--navy-deep),var(--navy));}
+  .slide.dark h1.title,.slide.dark h2.title{color:#fff;}
+  .slide.dark .lead{color:rgba(255,255,255,.88);}
+  .slide.dark .eyebrow{color:#9DC2EC;} .slide.dark .pagenum,.slide.dark .footmark{color:rgba(255,255,255,.7);}
+  .numbadge{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;}
+  .bigstat{font-size:54px;font-weight:800;color:var(--blue);line-height:1;}
+  table.spec{width:100%;border-collapse:collapse;font-size:13px;}
+  table.spec th{background:var(--navy);color:#fff;text-align:left;padding:9px 11px;font-weight:600;font-size:12.5px;}
+  table.spec td{padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink);}
+  table.spec tr:nth-child(even) td{background:#fff;} table.spec tr:nth-child(odd) td{background:var(--bg);}
+  .tag-have{color:var(--ok);font-weight:700;} .tag-build{color:var(--internal);font-weight:700;} .tag-ask{color:var(--accent);font-weight:700;}
+  .warnbox{background:var(--alert-soft);border-left:5px solid var(--alert);border-radius:8px;padding:14px 18px;font-size:14px;color:var(--ink);line-height:1.5;}
+  @media print{
+    body{background:#fff;} .toolbar{display:none;} .deck{margin-top:0;}
+    .slide{margin:0;box-shadow:none;page-break-after:always;width:100%;height:100vh;}
+    @page{size:1280px 720px;margin:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <b>🔒 INTERNAL / DEALER — ห้ามส่งให้ลูกค้า อปท.</b>
+  <span class="note">มีแบรนด์ + ราคา + 2 TOR + gap analysis</span>
+  <span class="spacer"></span>
+  <span class="note">เวอร์ชันลูกค้า = ไฟล์ 01</span>
+  <button onclick="window.print()">พิมพ์ / บันทึก PDF</button>
+</div>
+
+<div class="deck">
+
+  <!-- 1 COVER -->
+  <section class="slide dark">
+    <div class="slide-pad" style="justify-content:center;">
+      <span class="ribbon">INTERNAL ONLY</span>
+      <span class="eyebrow">Smart City Portfolio · Health Vertical · Internal Briefing</span>
+      <h1 class="title" style="font-size:52px;">ระบบสุขภาพชุมชน<br>CardiacSense × ElderlyCare × City Data</h1>
+      <p class="lead" style="margin-top:18px;max-width:960px;">
+        สรุปดีลอุปกรณ์ <strong style="color:#fff;">CardiacSense</strong> (Doolae Healthcare), เปรียบเทียบ 2 TOR จริง (ทับกวาง + ขอนแก่น),
+        ช่องว่างที่เราต้องสร้าง App/Platform, แหล่งงบ, คู่แข่ง และคำถามที่ต้องถาม supplier
+      </p>
+      <div style="display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;">
+        <span class="pill int">เอกสารภายใน + dealer</span>
+        <span class="pill accent">2 TOR: 20M ซื้อขาด · 1.6M จ้างบริการ</span>
+        <span class="pill ok">API ฟรี เมื่อซื้อ ≥ 10 เครื่อง</span>
+      </div>
+    </div>
+    <div class="footmark">CONFIDENTIAL · ห้ามใช้เป็นเอกสารแจกลูกค้า อปท.</div>
+    <div class="pagenum">1</div>
+  </section>
+
+  <!-- 2 TWO TORS COMPARISON (core strategic slide) -->
+  <section class="slide">
+    <div class="topbar"></div><span class="ribbon">INTERNAL</span>
+    <div class="slide-pad">
+      <span class="eyebrow accent">2 ทางเข้าตลาด — ต่างโมเดลกัน</span>
+      <h2 class="title">ทับกวาง vs ขอนแก่น: TOR คนละสายพันธุ์</h2>
+      <table class="spec" style="margin-top:18px;">
+        <tr><th style="width:150px;">มิติ</th><th>เทศบาลเมืองทับกวาง (สระบุรี)</th><th>เทศบาลนครขอนแก่น</th></tr>
+        <tr><td><strong>โมเดล</strong></td><td>จัดซื้อ (ซื้อขาด)</td><td><span class="tag-build">จ้างเหมาบริการ 1 ปี (service)</span></td></tr>
+        <tr><td><strong>งบ / ขนาด</strong></td><td>20,000,000 บาท / 400 เครื่อง</td><td>1,600,000 บาท / 40 ชุมชน</td></tr>
+        <tr><td><strong>เกณฑ์ตัดสิน</strong></td><td>ราคารวมต่ำสุด</td><td><span class="tag-build">Price-Performance (คุณภาพ ≥70%)</span></td></tr>
+        <tr><td><strong>พระเอก</strong></td><td>อุปกรณ์ (นาฬิกาเฝ้าระวังหัวใจ)</td><td>แพลตฟอร์ม + GIS + บริการ</td></tr>
+        <tr><td><strong>อุปกรณ์</strong></td><td>นาฬิกา CardiacSense + วัดความดัน/น้ำตาล</td><td>ชุดวัด 5 ตัว BLE + Tablet + เครื่องอ่านบัตร ปชช.</td></tr>
+        <tr><td><strong>งบมาจาก</strong></td><td>เงินผลประโยชน์เหมืองแร่</td><td>ต่อยอดโครงการ LTC/NCD (แก่นเก๋าฯ)</td></tr>
+        <tr><td><strong>จุดแข็งของเรา</strong></td><td>CardiacSense มี อย.ไทย → คู่แข่งตกสเปก</td><td><span class="tag-have">เราเก่ง software/GIS → ได้คะแนนคุณภาพ</span></td></tr>
+      </table>
+      <div class="warnbox" style="margin-top:16px;background:var(--ok-soft);border-left-color:var(--ok);">
+        <strong>Insight:</strong> 2 TOR = 2 โมเดลธุรกิจ · ขอนแก่นเป็นเกม “แพลตฟอร์ม+บริการ” ที่เราถนัด (GIS = smartdatapresent อยู่แล้ว) และเกณฑ์ price-performance ดีกับเรากว่าราคาต่ำสุด · deck ลูกค้า (ไฟล์ 01) จึงขาย “ระบบ” ที่ครอบทั้ง 2 โมเดล ไม่ผูกกับ TOR ใด TOR หนึ่ง
+      </div>
+    </div>
+    <div class="pagenum">2</div>
+  </section>
+
+  <!-- 3 OPPORTUNITY / MARKET -->
+  <section class="slide">
+    <div class="topbar"></div><span class="ribbon">INTERNAL</span>
+    <div class="slide-pad">
+      <span class="eyebrow accent">โอกาสทางธุรกิจ + ภาพตลาด</span>
+      <h2 class="title">ทำไมตลาดสุขภาพชุมชนน่าลุย</h2>
+      <div class="grid3" style="margin-top:20px;">
+        <div class="card" style="border-top:5px solid var(--blue);"><div class="bigstat">2 TOR</div><h3 style="margin-top:8px;">พิมพ์เขียวพร้อมใช้</h3><p>มี TOR จริง 2 แบบเป็น template เสนอ อปท. อื่นได้ทันที — ครอบทั้งโมเดลซื้อขาดและจ้างบริการ</p></div>
+        <div class="card" style="border-top:5px solid var(--ok);"><div class="bigstat">LTC + กปท.</div><h3 style="margin-top:8px;">แหล่งงบมีอยู่จริง</h3><p>สปสช. สนับสนุน อปท. ดูแลผู้สูงอายุ/ผู้มีภาวะพึ่งพิง — ตอบ pain “งบไม่พอ” ของ อปท.</p></div>
+        <div class="card" style="border-top:5px solid var(--internal);"><div class="bigstat">Super-aged</div><h3 style="margin-top:8px;">ตลาดโตต่อเนื่อง</h3><p>ไทยเข้าสังคมสูงอายุสมบูรณ์แล้ว → ระดับสุดยอดปี 2572 · ผู้สูงอายุใช้บริการสุขภาพถี่สุด (NCDs)</p></div>
+      </div>
+      <div class="warnbox" style="margin-top:18px;background:var(--accent-soft);border-left-color:var(--accent);">
+        <strong>มุมงบเหมือง (ทับกวาง):</strong> งบ “เงินผลประโยชน์พิเศษแก่รัฐ” จากเหมืองแร่ → angle “คัดกรอง NCDs/COPD/หัวใจ ในชุมชนกึ่งอุตสาหกรรม” ตรงกับ อปท. ที่มีเหมือง/โรงงานในเขต (เป็นงบนอกเหนือ LTC/กปท.)
+      </div>
+    </div>
+    <div class="pagenum">3</div>
+  </section>
+
+  <!-- 4 PRODUCT CardiacSense -->
+  <section class="slide">
+    <div class="topbar"></div><span class="ribbon">INTERNAL</span>
+    <div class="slide-pad">
+      <span class="eyebrow">อุปกรณ์ · CardiacSense (Doolae Healthcare)</span>
+      <h2 class="title">นาฬิกาทางการแพทย์ระดับคลินิก</h2>
+      <div class="grid2" style="margin-top:18px;flex:1;">
+        <div>
+          <table class="spec">
+            <tr><td><strong>หัวใจ / ECG</strong></td><td>A-Fib + arrhythmia beat-by-beat 24ชม. · ECG Lead I &gt;30วิ · 27 ชนิด</td></tr>
+            <tr><td><strong>สัญญาณชีพ</strong></td><td>SpO₂ · RR/RRV · ชีพจร · อุณหภูมิ · Sleep Apnea</td></tr>
+            <tr><td><strong>เซนเซอร์</strong></td><td>ECG · SpO₂ · PPG · Accel/Gyro · Artifact</td></tr>
+            <tr><td><strong>หลังบ้าน</strong></td><td>Central Monitoring · Telemedicine · Web Portal · รายงานอีเมลอัตโนมัติ</td></tr>
+            <tr><td><strong>กายภาพ</strong></td><td>IP65 · แบต ≥24ชม. · ชาร์จได้</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="grid2" style="gap:12px;">
+            <div class="card"><h3>🇹🇭 อย. ไทย</h3><p>65-2-2-0013419 · ขึ้นทะเบียนเครื่องมือแพทย์</p></div>
+            <div class="card"><h3>🇪🇺 CE (MDR)</h3><p>Medical Device Regulation</p></div>
+            <div class="card"><h3>ISO</h3><p>มาตรฐานระบบคุณภาพ</p></div>
+            <div class="card"><h3>🇦🇺 TGA</h3><p>Certified</p></div>
+          </div>
+          <div class="warnbox" style="margin-top:14px;font-size:12.5px;">
+            <strong>ข้อได้เปรียบ TOR:</strong> มี อย.ไทยแล้ว → ตรงข้อบังคับทั้ง 2 TOR (ทับกวาง ๑.๑.๑๓ / ขอนแก่น “ได้รับอนุญาตจาก อย.”) · คู่แข่งที่ยังไม่ขึ้นทะเบียน อย.ไทย ตกสเปกทันที
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">4</div>
+  </section>
+
+  <!-- 5 GAP ANALYSIS (updated with KK platform) -->
+  <section class="slide">
+    <div class="topbar"></div><span class="ribbon">INTERNAL</span>
+    <div class="slide-pad">
+      <span class="eyebrow accent">หัวใจของเอกสาร</span>
+      <h2 class="title">“เราต้องทำ App/Platform อะไร?” — Gap Analysis</h2>
+      <div class="grid3" style="margin-top:14px;flex:1;align-content:start;">
+        <div class="card" style="border-top:5px solid var(--ok);">
+          <span class="pill ok">A · มีให้แล้ว</span><h3 style="margin-top:9px;">supplier ครอบคลุม</h3>
+          <p style="margin-top:5px;">ระบบรวมศูนย์, Telemedicine, Web Portal, รายงานอีเมล, วิเคราะห์ arrhythmia 27 ชนิด, กราฟ ECG/PPG, ECG params <span class="tag-have">(ตรงทับกวาง ๑.๒.๓–๒๐)</span></p>
+        </div>
+        <div class="card" style="border-top:5px solid var(--internal);">
+          <span class="pill int">B · เราต้องสร้าง</span><h3 style="margin-top:9px;">งานของเรา (มูลค่าหลัก)</h3>
+          <p style="margin-top:5px;">
+            1. รวมค่าอุปกรณ์ BLE หลายตัว (ความดัน/น้ำตาล/SpO₂/ชั่ง) เข้า dashboard เดียว<br>
+            2. <span class="tag-build">City Data Platform = GIS + ปิงปอง 7 สี</span> (ขอนแก่น ๒.๑๔)<br>
+            3. <span class="tag-build">เชื่อม JHCIS / รพ.สต.</span> (ขอนแก่น ๒.๑๗)<br>
+            4. มุมมอง อสม./CM/CG/ครอบครัว + ผูกบัตร ปชช.
+          </p>
+        </div>
+        <div class="card" style="border-top:5px solid var(--accent);">
+          <span class="pill accent">C · ต้องถาม supplier</span><h3 style="margin-top:9px;">กำหนด scope งาน B</h3>
+          <p style="margin-top:5px;">1. API ครอบคลุมแค่นาฬิกา หรือรวมอุปกรณ์อื่น?<br>2. อุปกรณ์ในชุด มี SDK/BLE ไหม?<br>3. API = cloud REST หรือ on-device SDK?<br>4. ดึง ECG/PPG ดิบได้ไหม?</p>
+        </div>
+      </div>
+      <div class="warnbox" style="margin-top:14px;background:var(--ok-soft);border-left-color:var(--ok);">
+        <strong>ข่าวดี:</strong> งานกลุ่ม B (GIS + ปิงปอง 7 สี + เชื่อม รพ.สต.) ส่วนใหญ่เรามีฐานจาก smartdatapresent อยู่แล้ว — ขอนแก่นให้คะแนนแพลตฟอร์ม 30 + กระบวนการ 20 = 50% ของคุณภาพ ตรงจุดแข็งเราพอดี
+      </div>
+    </div>
+    <div class="pagenum">5</div>
+  </section>
+
+  <!-- 6 KK TOR detail -->
+  <section class="slide">
+    <div class="topbar"></div><span class="ribbon">INTERNAL</span>
+    <div class="slide-pad">
+      <span class="eyebrow">รายละเอียด · TOR ขอนแก่น (จ้างบริการ)</span>
+      <h2 class="title">เกณฑ์คะแนนคุณภาพ 100 คะแนน</h2>
+      <div class="grid2" style="margin-top:18px;flex:1;">
+        <div>
+          <table class="spec">
+            <tr><th>เกณฑ์คุณภาพ</th><th style="width:70px;">คะแนน</th></tr>
+            <tr><td>แพลตฟอร์ม/ประมวลผล/รายงานข้อมูลสุขภาพ</td><td><strong style="color:var(--ok);">30</strong></td></tr>
+            <tr><td>อุปกรณ์จัดเก็บข้อมูลสุขภาพ</td><td>20</td></tr>
+            <tr><td>วิธีปฏิบัติ/กระบวนการทำงาน</td><td><strong style="color:var(--ok);">20</strong></td></tr>
+            <tr><td>ผลงานของผู้ให้บริการ</td><td>10</td></tr>
+            <tr><td>ข้อเสนออื่นที่เป็นประโยชน์</td><td>10</td></tr>
+          </table>
+          <p style="font-size:12.5px;color:var(--ink60);margin-top:8px;">ต้องได้คุณภาพ ≥70% จึงผ่าน · 4 งวด ละ 25% · รวม 180 วัน</p>
+          <div class="warnbox" style="margin-top:12px;font-size:12.5px;">
+            <strong>คุณสมบัติบังคับ:</strong> ผลงานประเภทเดียวกัน ≥640K + ทุนจดทะเบียน ≥1M — <span class="tag-ask">เช็คว่าเรา/ตัวแทนผ่านเกณฑ์นี้ไหม</span>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:12px;"><h3>📊 Smart Health Platform</h3><p>บันทึก/แสดงค่าสุขภาพ · แจ้งเตือนผิดปกติ · รายงานราย บุคคล/วัน/เดือน/ปี · พยาบาลใส่คำแนะนำ</p></div>
+          <div class="card"><h3>🗺️ City Data Platform (GIS)</h3><p>cloud · 2FA · role/logs · base map 3 แบบ · ซ้อนภาพโดรน · <strong>แสดงผู้ป่วยพึ่งพิง/NCD + ปิงปอง 7 สีบนแผนที่</strong> · เชื่อม JHCIS/รพ.สต.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">6</div>
+  </section>
+
+  <!-- 7 QUESTIONS FOR SUPPLIER -->
+  <section class="slide">
+    <div class="topbar"></div><span class="ribbon">INTERNAL</span>
+    <div class="slide-pad">
+      <span class="eyebrow alert">Action · ก่อนเริ่ม dev</span>
+      <h2 class="title">คำถามที่ต้องถาม supplier (Doolae)</h2>
+      <div style="margin-top:18px;flex:1;display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;border-left:5px solid var(--accent);"><div class="numbadge">1</div><div><h3>API ฟรี ครอบคลุมอะไรบ้าง?</h3><p>แค่นาฬิกา CardiacSense หรือรวมเครื่องวัดความดัน/น้ำตาล/SpO₂/ชั่งน้ำหนัก? <strong>(สำคัญสุด — กำหนดว่าต้องทำ BLE integration เองไหม)</strong></p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;border-left:5px solid var(--accent);"><div class="numbadge">2</div><div><h3>อุปกรณ์ในชุด รุ่น/ยี่ห้ออะไร มี SDK/BLE API ไหม?</h3><p>ถ้าไม่มี API เปิด → ดึงค่าอัตโนมัติไม่ได้ ต้องกรอกมือ (TOR ทั้ง 2 รับ “ค่าที่กรอกเพิ่ม” ได้)</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;border-left:5px solid var(--accent);"><div class="numbadge">3</div><div><h3>API = Cloud REST/Webhook หรือ on-device SDK?</h3><p>กำหนดสถาปัตยกรรม App: ดึงจาก portal เขา หรืออ่านจากอุปกรณ์ตรงผ่าน BLE</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;border-left:5px solid var(--accent);"><div class="numbadge">4</div><div><h3>ดึงข้อมูลดิบ ECG/PPG ได้ไหม หรือแค่ผลวิเคราะห์?</h3><p>กำหนดว่าเราสร้าง analytic เองเพิ่มได้ไหม หรือพึ่งผลจากเขา</p></div></div>
+      </div>
+    </div>
+    <div class="pagenum">7</div>
+  </section>
+
+  <!-- 8 COMPETITOR / KRC Care -->
+  <section class="slide">
+    <div class="topbar"></div><span class="ribbon">INTERNAL</span>
+    <div class="slide-pad">
+      <span class="eyebrow accent">เทียบคู่แข่ง / ตัวอย่างใกล้เคียง</span>
+      <h2 class="title">เคสจริง: แอป KRC Care (เทศบาลเมืองเขารูปช้าง)</h2>
+      <div class="grid2" style="margin-top:18px;flex:1;align-content:center;">
+        <div class="card" style="border-top:5px solid var(--ink60);">
+          <h3>สิ่งที่ KRC Care ทำ (เขารูปช้าง สงขลา)</h3>
+          <p style="margin-top:8px;line-height:1.7;">
+            • พัฒนาแอปเอง · ใช้งบ <strong>กปท. + LTC</strong><br>
+            • เรียกรถรับ-ส่ง ผู้ป่วยติดเตียง/พึ่งพิง ไป รพ.<br>
+            • ธนาคารกายอุปกรณ์ (ยืม-คืน เตียง/รถเข็น/ออกซิเจน)<br>
+            • นัดกายภาพบำบัด · เยี่ยมบ้าน<br>
+            • proof ว่า อปท. ลงทุนแอปสุขภาพได้จริง
+          </p>
+        </div>
+        <div class="card" style="border-top:5px solid var(--ok);">
+          <h3>ช่องที่เราเหนือกว่า</h3>
+          <p style="margin-top:8px;line-height:1.7;">
+            <span class="tag-have">✓</span> KRC Care = โลจิสติกส์/นัดหมาย · <strong>ยังไม่มีการเฝ้าระวังหัวใจ/สัญญาณชีพ real-time</strong><br>
+            <span class="tag-have">✓</span> เราเพิ่ม CardiacSense + คัดกรองถึงบ้าน + GIS ปิงปอง 7 สี<br>
+            <span class="tag-have">✓</span> เชื่อม JHCIS/รพ.สต. (ข้อบังคับขอนแก่น)<br>
+            <span class="tag-have">✓</span> = ยกระดับจาก “จัดการบริการ” → “เฝ้าระวังเชิงคลินิก”
+          </p>
+        </div>
+      </div>
+      <div class="warnbox" style="margin-top:16px;">
+        <strong>บทเรียน:</strong> เคสเขารูปช้างพิสูจน์ทั้ง demand + แหล่งงบ (LTC/กปท.) + ความพร้อมของ อปท. — เราใช้เป็น reference เปิดบทสนทนาได้ แต่ในเอกสารลูกค้า อย่าชี้ชื่อ อปท. อื่นแบบ name-drop (กฎ verify-before-claim)
+      </div>
+    </div>
+    <div class="pagenum">8</div>
+  </section>
+
+  <!-- 9 INTEGRATION ElderlyCare -->
+  <section class="slide dark">
+    <div class="slide-pad"><span class="ribbon">INTERNAL</span>
+      <span class="eyebrow">การผนวกระบบ</span>
+      <h2 class="title">ระบบรวม: 3 ชั้นที่ขายเป็นก้อนเดียว</h2>
+      <div class="grid3" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">🩺</span><h3>ชั้นอุปกรณ์</h3><p style="color:var(--ink60);">CardiacSense (watch) + ชุดวัด BLE + กระเป๋าสุขภาพ + เครื่องอ่านบัตร — ครอบทั้ง 2 TOR</p></div>
+        <div class="card" style="border:2px solid var(--internal);"><span class="ic">🧩</span><h3>ชั้น App (เราสร้าง)</h3><p style="color:var(--ink60);">รวมค่าอุปกรณ์ + แจ้งเตือน + มุมมอง อสม./ครอบครัว + เชื่อม รพ.สต. = งานกลุ่ม B</p></div>
+        <div class="card"><span class="ic">🗺️</span><h3>ชั้น City Data (GIS)</h3><p style="color:var(--ink60);">ปิงปอง 7 สีบนแผนที่ + dashboard เทศบาล — ต่อยอดจาก smartdatapresent</p></div>
+      </div>
+      <p class="lead" style="font-size:16px;margin-top:22px;max-width:1080px;">
+        ElderlyCare 360° เดิม (เรดาร์ในบ้าน + AI CCTV) ยังเป็น add-on ขายต่อยอดได้ในเฟสถัดไป — แต่ core ที่ตรง 2 TOR ตอนนี้คือ 3 ชั้นข้างบน
+      </p>
+    </div>
+    <div class="pagenum">9</div>
+  </section>
+
+  <!-- 10 BUDGET SOURCES -->
+  <section class="slide">
+    <div class="topbar"></div><span class="ribbon">INTERNAL</span>
+    <div class="slide-pad">
+      <span class="eyebrow accent">แหล่งงบที่ปิดดีลได้</span>
+      <h2 class="title">เงินมาจากไหน — 4 ช่องทาง</h2>
+      <div class="grid2" style="margin-top:18px;flex:1;align-content:center;">
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">1</div><div><h3>LTC (Long Term Care)</h3><p>งบ สปสช. ดูแลผู้สูงอายุ/ผู้มีภาวะพึ่งพิง — ตรงกับ angle ขอนแก่น (NCD/พึ่งพิง)</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">2</div><div><h3>กปท. (กองทุนสุขภาพท้องถิ่น)</h3><p>สปสช. สนับสนุนท้องถิ่นจัดบริการสุขภาพ — ใช้คู่กับ LTC ได้แบบครบวงจร (เคสเขารูปช้าง)</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">3</div><div><h3>เงินผลประโยชน์เหมืองแร่</h3><p>angle ทับกวาง — อปท. ที่มีเหมือง/โรงงานในเขต (งบจัดซื้อก้อนใหญ่)</p></div></div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div class="numbadge">4</div><div><h3>งบประจำปี อปท. / e-bidding</h3><p>โครงการนวัตกรรมสุขภาพ (เช่น “แก่นเก๋าฯ” ขอนแก่น) ตั้งงบ e-bidding price-performance</p></div></div>
+      </div>
+    </div>
+    <div class="pagenum">10</div>
+  </section>
+
+  <!-- 11 COMPLIANCE -->
+  <section class="slide">
+    <div class="topbar"></div><span class="ribbon">INTERNAL</span>
+    <div class="slide-pad">
+      <span class="eyebrow alert">ข้อควรระวัง · ก่อนทำเอกสารลูกค้า</span>
+      <h2 class="title">กฎ compliance สำหรับดีลนี้</h2>
+      <div class="grid2" style="margin-top:18px;flex:1;align-content:start;">
+        <div class="card" style="border-top:5px solid var(--alert);">
+          <h3 style="color:var(--alert);">❌ ห้ามในเอกสารลูกค้า</h3>
+          <p style="margin-top:8px;line-height:1.7;">• ชื่อแบรนด์ CardiacSense / Doolae<br>• ราคา / 20 ล้าน / 1.6 ล้าน / ต่อชุด<br>• ROI %, ตัวเลขลด/เพิ่ม<br>• spec เทคนิคเป็นพระเอก (IP65, 27 ชนิด, Lead I)<br>• name-drop อปท. อื่น (เขารูปช้าง ฯลฯ)<br>• อ้าง “อุปกรณ์ตรวจวัด/วินิจฉัย” → ใช้ “เฝ้าระวัง·บันทึก·แจ้งเตือน”</p>
+        </div>
+        <div class="card" style="border-top:5px solid var(--ok);">
+          <h3 style="color:var(--ok);">✓ ทำได้ในเอกสารลูกค้า</h3>
+          <p style="margin-top:8px;line-height:1.7;">• เปิดด้วย pain สุขภาพในพื้นที่<br>• ภาษาชาวบ้าน “เฝ้าระวังหัวใจ” “ปิงปอง 7 สี”<br>• อ้าง PDPA + “เครื่องมือแพทย์รับรองของไทย”<br>• กรอบงบ = “มี กปท./LTC รองรับ”<br>• สถิติ Silver Economy เชิงคุณภาพ (ไม่ใส่ %)<br>• 3 คำถาม feedback ปิดท้าย</p>
+        </div>
+      </div>
+      <div class="warnbox" style="margin-top:16px;">
+        <strong>เวอร์ชันลูกค้า = ไฟล์ 01</strong> (16 สไลด์ · no brand/price · ผ่านกฎ §7 + present-smart-city-app) — ใช้แจกลูกค้า · ไฟล์นี้ (02) เก็บภายใน/คุย dealer เท่านั้น
+      </div>
+    </div>
+    <div class="pagenum">11</div>
+  </section>
+
+  <!-- 12 NEXT STEPS -->
+  <section class="slide dark">
+    <div class="slide-pad" style="justify-content:center;"><span class="ribbon">INTERNAL</span>
+      <span class="eyebrow">ขั้นต่อไป · Internal</span>
+      <h2 class="title" style="font-size:38px;">สิ่งที่ต้องทำต่อ</h2>
+      <div style="max-width:1020px;margin-top:24px;display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="display:flex;gap:16px;align-items:center;"><div class="numbadge">1</div><p style="font-size:17px;color:var(--ink);">ถาม supplier 4 ข้อ (สไลด์ 7) → lock scope งาน App กลุ่ม B</p></div>
+        <div class="card" style="display:flex;gap:16px;align-items:center;"><div class="numbadge">2</div><p style="font-size:17px;color:var(--ink);">ขอหนังสือแต่งตั้งตัวแทนจาก Doolae + เช็คคุณสมบัติ e-bidding (ผลงาน ≥640K, ทุน ≥1M)</p></div>
+        <div class="card" style="display:flex;gap:16px;align-items:center;"><div class="numbadge">3</div><p style="font-size:17px;color:var(--ink);">ทำ App/Platform scope doc — map ทั้ง 2 TOR ทีละข้อ (เน้น GIS + ปิงปอง 7 สี + JHCIS) ส่ง dev</p></div>
+        <div class="card" style="display:flex;gap:16px;align-items:center;"><div class="numbadge">4</div><p style="font-size:17px;color:var(--ink);">ใช้ไฟล์ 01 นัด cool meeting — เลือก อปท. ตาม angle (เหมือง→ทับกวาง · LTC→ขอนแก่น)</p></div>
+      </div>
+    </div>
+    <div class="footmark">CONFIDENTIAL</div>
+    <div class="pagenum">12</div>
+  </section>
+
+</div>
+</body>
+</html>

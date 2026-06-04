@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตัวอย่างหน้าจอ — ภาพรวมสุขภาพชุมชน (GIS · PDPA-safe)</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#1F4D3F; --forest-deep:#143228; --sage:#4A7C59; --sage-soft:#E5F0EA;
+    --cream:#F5EFE0; --cream-dark:#EAE1CC; --ink:#1C2422; --ink60:#555E5B;
+    --white:#FFFFFF; --accent:#BA7517; --accent-soft:#FAEEDA; --alert:#A32D2D; --alert-soft:#FCEBEB;
+    --success:#3B6D11; --success-soft:#EAF3DE; --teal:#1D9E75;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Sarabun',sans-serif;background:#dcdcdc;color:var(--ink);padding:24px;-webkit-font-smoothing:antialiased;}
+  .note{max-width:1100px;margin:0 auto 14px;font-size:13px;color:#444;display:flex;gap:14px;align-items:center;}
+  .note button{font-family:inherit;background:var(--forest);color:#fff;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;}
+  .app{max-width:1100px;margin:0 auto;background:var(--cream);border-radius:16px;overflow:hidden;box-shadow:0 14px 50px rgba(0,0,0,.28);}
+  .topbar{background:var(--forest-deep);color:#fff;display:flex;align-items:center;gap:12px;padding:14px 22px;}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .topbar .t1{font-size:17px;font-weight:700;} .topbar .t2{font-size:12px;opacity:.75;}
+  .topbar .spacer{flex:1;}
+  .badge{font-size:12px;background:rgba(255,255,255,.14);padding:6px 14px;border-radius:100px;display:flex;align-items:center;gap:7px;}
+  .body{padding:22px;}
+  .cols{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;}
+  .panel{background:#fff;border-radius:14px;padding:16px 18px;border:1px solid var(--cream-dark);}
+  .panel h3{font-size:14px;font-weight:700;color:var(--forest);margin-bottom:10px;}
+  .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .mhead .sub{font-size:12px;color:var(--ink60);}
+  .legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
+  .legend span{font-size:12px;color:var(--ink60);display:flex;align-items:center;gap:5px;}
+  .sw{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .stat{background:#fff;border-radius:10px;padding:11px 13px;border:1px solid var(--cream-dark);}
+  .stat .l{font-size:12px;color:var(--ink60);} .stat .v{font-size:22px;font-weight:800;margin-top:2px;}
+  .bar{height:6px;background:var(--sage-soft);border-radius:4px;margin-top:3px;} .bar>div{height:6px;border-radius:4px;}
+  .disrow{margin-bottom:9px;} .disrow .top{display:flex;justify-content:space-between;font-size:13px;} .disrow .nm{color:var(--ink60);} .disrow .ct{font-weight:700;}
+  .zones{display:flex;gap:9px;flex-wrap:wrap;}
+  .zone{font-size:13px;padding:6px 13px;border-radius:100px;}
+  .z-alert{background:var(--alert-soft);color:var(--alert);} .z-watch{background:var(--accent-soft);color:#854F0B;} .z-ok{background:var(--success-soft);color:#27500A;}
+  .locked{background:var(--sage-soft);border:1px dashed var(--sage);border-radius:14px;padding:14px 16px;}
+  .locked .h{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--forest);}
+  .locked p{font-size:13px;color:var(--ink60);line-height:1.55;margin-top:7px;}
+  .grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:16px;}
+  @media print{body{background:#fff;padding:0;} .note{display:none;} .app{box-shadow:none;max-width:100%;}}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <span>ตัวอย่างหน้าจอภาพรวม (GIS · สถิติรวม ไม่ระบุตัวตน · PDPA-safe) — แคปไปวางในสไลด์ได้</span>
+  <button onclick="window.print()">บันทึก PDF / พิมพ์</button>
+</div>
+
+<div class="app">
+  <div class="topbar">
+    <div class="logo">🗺️</div>
+    <div>
+      <div class="t1">ภาพรวมสุขภาพชุมชน · เทศบาลตำบลสาธิต</div>
+      <div class="t2">ภาพรวมระดับพื้นที่ · ไม่แสดงข้อมูลรายบุคคล</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="badge">🛡️ ข้อมูลสรุป ไม่ระบุตัวตน</div>
+  </div>
+
+  <div class="body">
+    <div class="cols">
+      <!-- MAP -->
+      <div class="panel">
+        <div class="mhead"><h3 style="margin:0;">ระดับความเสี่ยงรายพื้นที่ (7 หมู่)</h3><span class="sub">ดูสีรู้ทันทีว่าหมู่ไหนต้องดูแลก่อน</span></div>
+        <svg viewBox="0 0 520 280" style="width:100%;height:auto;border-radius:10px;background:#EFece1;">
+          <rect x="14" y="16" width="150" height="78" rx="8" fill="#C0DD97"/>
+          <rect x="178" y="16" width="150" height="78" rx="8" fill="#FAC775"/>
+          <rect x="342" y="16" width="164" height="78" rx="8" fill="#C0DD97"/>
+          <rect x="14" y="106" width="150" height="74" rx="8" fill="#F09595"/>
+          <rect x="178" y="106" width="150" height="74" rx="8" fill="#C0DD97"/>
+          <rect x="342" y="106" width="164" height="74" rx="8" fill="#FAC775"/>
+          <rect x="14" y="192" width="234" height="72" rx="8" fill="#C0DD97"/>
+          <rect x="262" y="192" width="244" height="72" rx="8" fill="#9FE1CB"/>
+          <text x="89" y="60" font-size="16" font-weight="700" fill="#27500A" text-anchor="middle">ม.1</text>
+          <text x="253" y="60" font-size="16" font-weight="700" fill="#633806" text-anchor="middle">ม.2</text>
+          <text x="424" y="60" font-size="16" font-weight="700" fill="#27500A" text-anchor="middle">ม.3</text>
+          <text x="89" y="150" font-size="16" font-weight="700" fill="#791F1F" text-anchor="middle">ม.4</text>
+          <text x="253" y="150" font-size="16" font-weight="700" fill="#27500A" text-anchor="middle">ม.5</text>
+          <text x="424" y="150" font-size="16" font-weight="700" fill="#633806" text-anchor="middle">ม.6</text>
+          <text x="131" y="234" font-size="16" font-weight="700" fill="#27500A" text-anchor="middle">ม.7</text>
+          <circle cx="360" cy="230" r="6" fill="#0F6E56"/>
+          <text x="375" y="235" font-size="14" font-weight="700" fill="#085041">รพ.สต. / ศูนย์ดูแล</text>
+        </svg>
+        <div class="legend">
+          <span><i class="sw" style="background:#E24B4A"></i> เสี่ยงสูง</span>
+          <span><i class="sw" style="background:#EF9F27"></i> เฝ้าระวัง</span>
+          <span><i class="sw" style="background:#97C459"></i> ปกติ</span>
+          <span><i class="sw" style="background:#5DCAA5"></i> ครอบคลุมดี</span>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="stats">
+          <div class="stat"><div class="l">ผู้สูงอายุในเขต</div><div class="v" style="color:var(--forest)">1,284</div></div>
+          <div class="stat"><div class="l">ผู้พึ่งพิง (LTC)</div><div class="v" style="color:var(--accent)">96</div></div>
+          <div class="stat"><div class="l">ครอบคลุมการดูแล</div><div class="v" style="color:var(--success)">87%</div></div>
+          <div class="stat"><div class="l">อสม.ในพื้นที่</div><div class="v" style="color:var(--forest)">62</div></div>
+        </div>
+        <div class="panel">
+          <h3>สถิติรวมรายโรค (ไม่ระบุตัว)</h3>
+          <div class="disrow"><div class="top"><span class="nm">ความดันโลหิตสูง</span><span class="ct">418</span></div><div class="bar"><div style="width:78%;background:var(--forest)"></div></div></div>
+          <div class="disrow"><div class="top"><span class="nm">เบาหวาน</span><span class="ct">301</span></div><div class="bar"><div style="width:56%;background:var(--teal)"></div></div></div>
+          <div class="disrow"><div class="top"><span class="nm">โรคหัวใจ</span><span class="ct">147</span></div><div class="bar"><div style="width:28%;background:var(--accent)"></div></div></div>
+          <div class="disrow"><div class="top"><span class="nm">โรคปอด/ทางเดินหายใจ</span><span class="ct">89</span></div><div class="bar"><div style="width:17%;background:#5DCAA5"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h3>จุดเสี่ยง / เหตุตามพื้นที่ (สัปดาห์นี้)</h3>
+        <div class="zones">
+          <span class="zone z-alert">ม.4 · เหตุฉุกเฉิน 5 ครั้ง</span>
+          <span class="zone z-watch">ม.2 · จุดน้ำท่วมซ้ำ</span>
+          <span class="zone z-watch">ม.6 · ครอบคลุม อสม. ต่ำ</span>
+          <span class="zone z-ok">ม.1, 5, 7 · ปกติ</span>
+        </div>
+        <p style="font-size:12px;color:var(--ink60);margin-top:12px;line-height:1.5;">
+          ใช้วางแผนสวัสดิการและจัดสรรกำลัง อสม. ตามความเสี่ยงจริงของแต่ละพื้นที่ — ทุกตัวเลขเป็นภาพรวม ไม่ชี้ตัวบุคคล
+        </p>
+      </div>
+      <div class="locked">
+        <div class="h">🔒 ข้อมูลรายบุคคล</div>
+        <p>สรุปสุขภาพรายคน (เช่น แนวโน้มความดัน/สัญญาณหัวใจ) ดูได้เฉพาะเจ้าหน้าที่ที่มีสิทธิ์ — ต้องเข้าระบบ + มีการบันทึกการเข้าถึง (audit log) ตามมาตรฐาน PDPA</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

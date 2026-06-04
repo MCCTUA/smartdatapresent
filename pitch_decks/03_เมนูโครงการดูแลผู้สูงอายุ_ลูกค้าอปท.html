@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โครงการดูแลผู้สูงอายุและสุขภาพชุมชน — เอกสารนำเสนอผู้บริหาร อปท.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#1F4D3F; --forest-deep:#143228; --sage:#4A7C59; --sage-soft:#E5F0EA;
+    --cream:#F5EFE0; --cream-dark:#EAE1CC; --ink:#1C2422; --ink60:#555E5B;
+    --white:#FFFFFF; --accent:#BA7517; --accent-soft:#FAEEDA; --alert:#A32D2D; --alert-soft:#FCEBEB;
+    --success:#5B8C2A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Sarabun',sans-serif;background:#6b6b6b;color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .toolbar{position:fixed;top:0;left:0;right:0;height:44px;background:var(--forest-deep);color:#fff;
+    display:flex;align-items:center;gap:16px;padding:0 18px;z-index:1000;font-size:13px;}
+  .toolbar b{font-weight:700;} .toolbar .spacer{flex:1;}
+  .toolbar button{font-family:inherit;background:rgba(255,255,255,.14);color:#fff;border:none;
+    padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;}
+  .toolbar button:hover{background:rgba(255,255,255,.26);}
+  .toolbar .note{opacity:.7;font-size:12px;}
+  .deck{margin-top:60px;}
+  .slide{position:relative;width:1280px;height:720px;margin:0 auto 24px;background:var(--cream);
+    overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.35);}
+  .slide-pad{position:absolute;inset:0;padding:52px 60px;display:flex;flex-direction:column;}
+  .topbar{position:absolute;top:0;left:0;right:0;height:10px;background:var(--forest);}
+  .eyebrow{display:inline-block;font-size:14px;font-weight:700;letter-spacing:2px;
+    text-transform:uppercase;color:var(--sage);margin-bottom:12px;}
+  .eyebrow.alert{color:var(--alert);} .eyebrow.accent{color:var(--accent);}
+  h1.title{font-size:54px;font-weight:800;line-height:1.12;color:var(--forest);letter-spacing:-.5px;}
+  h2.title{font-size:40px;font-weight:800;line-height:1.15;color:var(--forest);letter-spacing:-.3px;}
+  .lead{font-size:21px;font-weight:400;line-height:1.55;color:var(--ink60);}
+  .pagenum{position:absolute;bottom:22px;right:38px;font-size:13px;color:var(--ink60);font-weight:500;}
+  .footmark{position:absolute;bottom:20px;left:60px;font-size:12px;color:var(--ink60);opacity:.8;font-weight:500;letter-spacing:.5px;}
+  .card{background:var(--white);border:1px solid var(--cream-dark);border-radius:18px;padding:24px 26px;}
+  .card .ic{font-size:36px;line-height:1;margin-bottom:12px;display:block;}
+  .card h3{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:7px;line-height:1.3;}
+  .card p{font-size:15px;color:var(--ink60);line-height:1.55;}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;
+    padding:6px 14px;border-radius:100px;background:var(--sage-soft);color:var(--forest);}
+  .pill.accent{background:var(--accent-soft);color:var(--accent);}
+  .pill.alert{background:var(--alert-soft);color:var(--alert);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .slide.dark{background:linear-gradient(135deg,var(--forest-deep),var(--forest));}
+  .slide.dark h1.title,.slide.dark h2.title{color:#fff;}
+  .slide.dark .lead{color:rgba(255,255,255,.9);}
+  .slide.dark .eyebrow{color:var(--cream-dark);}
+  .slide.dark .pagenum,.slide.dark .footmark{color:rgba(255,255,255,.7);}
+  .numbadge{width:44px;height:44px;border-radius:50%;background:var(--forest);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;flex-shrink:0;}
+  /* เมนูโครงการ */
+  .menu-card{background:var(--white);border:1px solid var(--cream-dark);border-radius:20px;
+    padding:28px 26px;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+  .menu-card .tier-tag{position:absolute;top:0;right:0;background:var(--forest);color:#fff;
+    font-size:13px;font-weight:700;padding:6px 16px;border-bottom-left-radius:14px;}
+  .menu-card.mid .tier-tag{background:var(--sage);}
+  .menu-card.big .tier-tag{background:var(--accent);}
+  .menu-card h3{font-size:23px;font-weight:800;color:var(--forest);margin-bottom:4px;line-height:1.2;}
+  .menu-card .who{font-size:14px;font-weight:600;color:var(--ink60);margin-bottom:14px;}
+  .menu-card ul{list-style:none;margin-top:6px;}
+  .menu-card li{font-size:15px;color:var(--ink);line-height:1.5;padding:5px 0 5px 24px;position:relative;}
+  .menu-card li::before{content:'✓';position:absolute;left:0;color:var(--success);font-weight:800;}
+  .menu-card .budget{margin-top:auto;padding-top:14px;font-size:14px;font-weight:600;color:var(--forest);
+    border-top:1px dashed var(--cream-dark);}
+  /* flow */
+  .flowbox{background:var(--white);border:2px solid var(--forest);border-radius:14px;
+    padding:16px 20px;text-align:center;}
+  .flowbox.alert{border-color:var(--alert);}
+  .flowbox h4{font-size:17px;font-weight:700;color:var(--forest);margin-bottom:4px;}
+  .flowbox p{font-size:14px;color:var(--ink60);line-height:1.4;}
+  .flowarrow{font-size:28px;color:var(--sage);text-align:center;font-weight:800;}
+  .raci-row{display:grid;grid-template-columns:1.4fr 2.6fr;gap:0;border-bottom:1px solid var(--cream-dark);}
+  .raci-row:last-child{border-bottom:none;}
+  .raci-row .who{padding:14px 18px;font-weight:700;color:var(--forest);font-size:16px;background:var(--sage-soft);}
+  .raci-row .do{padding:14px 18px;font-size:15px;color:var(--ink);line-height:1.45;}
+  /* device cards */
+  .dev-card{background:var(--white);border:1px solid var(--cream-dark);border-radius:16px;
+    padding:18px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .dev-card .ic{font-size:34px;line-height:1;flex-shrink:0;}
+  .dev-card h4{font-size:18px;font-weight:700;color:var(--forest);margin-bottom:4px;line-height:1.25;}
+  .dev-card p{font-size:14px;color:var(--ink60);line-height:1.5;}
+  .dev-card .watch{display:inline-block;margin-top:6px;font-size:13px;font-weight:600;
+    color:var(--accent);background:var(--accent-soft);padding:3px 10px;border-radius:100px;}
+  /* signal table */
+  .sig-row{display:grid;grid-template-columns:1.5fr 1.6fr 1.9fr;border-bottom:1px solid var(--cream-dark);}
+  .sig-row:last-child{border-bottom:none;}
+  .sig-row.head{background:var(--forest);}
+  .sig-row.head div{color:#fff;font-weight:700;font-size:15px;padding:12px 16px;}
+  .sig-row div{padding:12px 16px;font-size:14.5px;color:var(--ink);line-height:1.4;}
+  .sig-row .sg{font-weight:600;color:var(--forest);}
+  /* image placeholder + real image holder */
+  .imgbox{position:relative;border-radius:18px;overflow:hidden;background:var(--sage-soft);
+    border:2px dashed var(--sage);display:flex;align-items:center;justify-content:center;}
+  .imgbox img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .imgbox .ph{position:relative;z-index:0;text-align:center;padding:18px;color:var(--forest);}
+  .imgbox .ph .pic{font-size:46px;display:block;margin-bottom:10px;}
+  .imgbox .ph .lbl{font-size:14px;font-weight:700;}
+  .imgbox .ph .sub{font-size:12px;color:var(--ink60);margin-top:4px;line-height:1.4;}
+  .slide.dark .imgbox{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.3);}
+  .slide.dark .imgbox .ph{color:#fff;}
+  .slide.dark .imgbox .ph .sub{color:rgba(255,255,255,.7);}
+  .imgcap{font-size:12px;color:var(--ink60);margin-top:8px;text-align:center;font-style:italic;}
+  .slide.dark .imgcap{color:rgba(255,255,255,.75);}
+  @media print{
+    body{background:#fff;} .toolbar{display:none;} .deck{margin-top:0;}
+    .slide{margin:0;box-shadow:none;page-break-after:always;width:100%;height:100vh;}
+    @page{size:1280px 720px;margin:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <b>เอกสารนำเสนอ — เวอร์ชันลูกค้า (ผู้บริหาร อปท.)</b>
+  <span class="note">17 สไลด์ · pain-first · ไม่มีชื่อแบรนด์/ราคา</span>
+  <span class="spacer"></span>
+  <span class="note">กด "พิมพ์/บันทึก PDF" แล้วเลือก Landscape</span>
+  <button onclick="window.print()">พิมพ์ / บันทึก PDF</button>
+</div>
+
+<div class="deck">
+
+  <!-- 1 — PAIN HERO -->
+  <section class="slide dark">
+    <div class="slide-pad" style="display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;">
+      <div>
+        <span class="eyebrow">เทศบาลของท่าน · ดูแลผู้สูงอายุในตำบล</span>
+        <h1 class="title" style="font-size:52px;">
+          ผู้สูงอายุล้มในบ้านลำพัง<br>
+          กว่าจะมีคนเดินไปเจอ<br>
+          <span style="color:var(--cream-dark);">บางครั้งก็สายเกินไป</span>
+        </h1>
+        <p class="lead" style="margin-top:24px;">
+          ทุกวันนี้คนวัยทำงานออกไปทำงานนอกบ้าน เหลือผู้สูงอายุอยู่บ้านคนเดียวตอนกลางวัน
+          เมื่อล้ม วูบ หรือหมดสติ — ไม่มีใครรู้ทัน และเทศบาลก็ไม่มีเครื่องมือที่จะรู้ก่อน
+        </p>
+      </div>
+      <div>
+        <div class="imgbox" style="aspect-ratio:4/5;">
+          <img src="images/elderly-care/hero-elderly.jpg" alt="ผู้สูงอายุไทยที่บ้าน"
+               onerror="this.style.display='none'">
+          <div class="ph"><span class="pic">🧓🏠</span>
+            <div class="lbl">[ รูป HERO ]</div>
+            <div class="sub">ผู้สูงอายุไทยอยู่บ้านลำพัง<br>โทนอบอุ่น เห็นใจ</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ · มิใช่ข้อผูกพัน</div>
+    <div class="pagenum">1</div>
+  </section>
+
+  <!-- 2 — 4 ปัญหาที่ระบบเดิมตามไม่ทัน -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow alert">ปัญหาที่เทศบาลเจอจริง</span>
+      <h2 class="title">4 เรื่องที่วิธีดูแลแบบเดิม ตามไม่ทัน</h2>
+      <p class="lead" style="margin-top:12px;max-width:1020px;">
+        วิธีดูแลผู้สูงอายุที่ใช้กันอยู่ส่วนใหญ่ ต้องรอให้ "คนเห็น" ก่อน แล้วจึงช่วย
+        คำถามคือ — ระหว่างที่ยังไม่มีใครเห็น เกิดอะไรขึ้น?
+      </p>
+      <div class="grid4" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">🚨</span><h3>ล้มในห้องน้ำ ไม่มีคนรู้</h3>
+          <p>ผู้สูงอายุอยู่บ้านลำพังตอนกลางวัน เมื่อล้มหรือหมดสติ กว่าจะมีคนเดินมาเจอ บางครั้งก็สายไปแล้ว</p></div>
+        <div class="card"><span class="ic">👁️</span><h3>ติดกล้องในห้อง = ผู้เฒ่าอึดอัด</h3>
+          <p>ผู้สูงอายุส่วนใหญ่ไม่ยอมให้ติดกล้องในห้องนอนหรือห้องน้ำ เพราะรู้สึกถูกจ้องและเสียศักดิ์ศรี</p></div>
+        <div class="card"><span class="ic">👥</span><h3>อสม. หนึ่งคน ดูแลหลายสิบหลัง</h3>
+          <p>อาสาสมัครและเจ้าหน้าที่มีจำกัด เฝ้าผู้สูงอายุได้ไม่ตลอด 24 ชั่วโมง โดยเฉพาะกลางคืนและวันหยุด</p></div>
+        <div class="card"><span class="ic">📞</span><h3>กว่าจะรู้ ก็โทรหากันวุ่นไปหมด</h3>
+          <p>เมื่อเกิดเหตุ ต้องโทรตามลูกหลาน ตามเจ้าหน้าที่ กว่าจะถึงมือคนช่วยจริง เสียเวลาไปมาก</p></div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">2</div>
+  </section>
+
+  <!-- 3 — แนวทางใหม่: รู้ก่อนที่ใครจะเดินไปเจอ -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad" style="justify-content:center;">
+      <span class="eyebrow">แนวทางใหม่</span>
+      <h2 class="title" style="font-size:46px;">
+        ระบบ "รู้ก่อน"<br>ที่ใครจะเดินไปเจอ
+      </h2>
+      <p class="lead" style="margin-top:18px;max-width:940px;">
+        แทนที่จะรอให้คนเห็นแล้วค่อยช่วย — เราติดตั้งระบบเฝ้าระวังที่คอยดูแลผู้สูงอายุตลอด 24 ชั่วโมง
+        เมื่อเกิดเหตุ ระบบ <strong style="color:var(--forest);">แจ้งเตือนทันที</strong> และ
+        <strong style="color:var(--forest);">ส่งต่อให้คนที่รับผิดชอบจริง</strong> โดยไม่ต้องรอให้ใครบังเอิญเดินไปเจอ
+      </p>
+      <div class="grid3" style="margin-top:32px;">
+        <div class="card" style="border-color:var(--forest);border-width:2px;">
+          <span class="ic">🏠</span><h3>ในบ้าน</h3>
+          <p>เฝ้าระวังการล้มและสัญญาณผิดปกติ ในห้องส่วนตัว โดยไม่ต้องติดกล้อง</p></div>
+        <div class="card" style="border-color:var(--forest);border-width:2px;">
+          <span class="ic">⌚</span><h3>นอกบ้าน</h3>
+          <p>อุปกรณ์พกติดตัว มีปุ่มขอความช่วยเหลือ เรียกได้ทุกที่ในตำบล</p></div>
+        <div class="card" style="border-color:var(--forest);border-width:2px;">
+          <span class="ic">📊</span><h3>ที่ศูนย์เทศบาล</h3>
+          <p>เจ้าหน้าที่เห็นภาพรวมสุขภาพผู้สูงอายุทั้งตำบล วางแผนดูแลได้ตรงจุด</p></div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">3</div>
+  </section>
+
+  <!-- 4 — ผู้สูงอายุได้รับอะไรบ้าง (อุปกรณ์) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">สิ่งที่ผู้สูงอายุได้รับ</span>
+      <h2 class="title">ผู้สูงอายุแต่ละคนได้อะไรบ้าง?</h2>
+      <p class="lead" style="margin-top:10px;max-width:1040px;">
+        ไม่ใช่แค่แอปในมือถือ — ผู้สูงอายุที่เข้าร่วมโครงการได้รับ "ชุดดูแลสุขภาพ" ที่คอยจับสัญญาณร่างกายให้
+        และแต่ละชิ้นดูแลคนละเรื่อง
+      </p>
+      <div class="grid2" style="margin-top:22px;flex:1;align-content:center;gap:16px;">
+        <div class="dev-card"><span class="ic">⌚</span><div>
+          <h4>นาฬิกาเฝ้าระวังหัวใจ</h4>
+          <p>สวมข้อมือตลอดวัน คอยจับจังหวะการเต้นของหัวใจ ระดับออกซิเจน และการหายใจ</p>
+          <span class="watch">จับสัญญาณ: หัวใจเต้นผิดจังหวะ · ภาวะหยุดหายใจขณะนอน</span></div></div>
+        <div class="dev-card"><span class="ic">🩸</span><div>
+          <h4>เครื่องวัดความดัน</h4>
+          <p>วัดความดันที่บ้านได้เอง ส่งค่าเข้าระบบอัตโนมัติ ไม่ต้องจดใส่กระดาษ</p>
+          <span class="watch">จับสัญญาณ: ความดันสูง/ต่ำผิดปกติ</span></div></div>
+        <div class="dev-card"><span class="ic">💉</span><div>
+          <h4>เครื่องเจาะน้ำตาลปลายนิ้ว</h4>
+          <p>ตรวจระดับน้ำตาลในเลือด เหมาะกับผู้ป่วยเบาหวานที่ต้องเฝ้าระวัง</p>
+          <span class="watch">จับสัญญาณ: น้ำตาลในเลือดสูง/ต่ำ</span></div></div>
+        <div class="dev-card"><span class="ic">🌡️</span><div>
+          <h4>เครื่องวัดออกซิเจน · อุณหภูมิ · น้ำหนัก</h4>
+          <p>วัดออกซิเจนปลายนิ้ว วัดไข้ และชั่งน้ำหนัก เชื่อมเข้าระบบในชุดเดียวกัน</p>
+          <span class="watch">จับสัญญาณ: ออกซิเจนต่ำ · มีไข้ · น้ำหนักเปลี่ยนผิดปกติ</span></div></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--forest);font-weight:600;margin-top:10px;">
+        อุปกรณ์ทุกชิ้นทำหน้าที่ "จับสัญญาณเบื้องต้น" แล้วส่งให้แพทย์เป็นผู้วินิจฉัย — ระบบไม่วินิจฉัยเอง
+      </p>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">4</div>
+  </section>
+
+  <!-- 5 — สัญญาณ → แพทย์ดูอะไรได้ -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow">จากสัญญาณ สู่การดูแล</span>
+      <h2 class="title">ข้อมูลที่เก็บได้ ช่วยให้แพทย์เห็นอะไรล่วงหน้า</h2>
+      <p class="lead" style="margin-top:10px;max-width:1040px;">
+        ระบบเก็บสัญญาณร่างกายต่อเนื่อง ไม่ใช่แค่วัดทีเดียวตอนไปหาหมอ —
+        ทำให้แพทย์เห็น "แนวโน้ม" และสังเกตความผิดปกติได้ก่อนที่จะกลายเป็นเรื่องใหญ่
+      </p>
+      <div class="card" style="margin-top:20px;padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div class="sig-row head"><div>สัญญาณที่ระบบจับได้</div><div>อาจเป็นสัญญาณเตือนของ</div><div>แพทย์นำไปใช้</div></div>
+        <div class="sig-row"><div class="sg">หัวใจเต้นผิดจังหวะ</div><div>โรคหัวใจ · เสี่ยงหลอดเลือดสมอง</div><div>ส่งตรวจเพิ่ม · ป้องกันก่อนเกิดอัมพาต</div></div>
+        <div class="sig-row"><div class="sg">ความดันสูงต่อเนื่อง</div><div>ความดันโลหิตสูง</div><div>ปรับยา · คุมก่อนเกิดภาวะแทรกซ้อน</div></div>
+        <div class="sig-row"><div class="sg">น้ำตาลในเลือดผิดปกติ</div><div>เบาหวาน · ภาวะน้ำตาลต่ำ</div><div>ปรับการดูแล · ลดเสี่ยงฉุกเฉิน</div></div>
+        <div class="sig-row"><div class="sg">ออกซิเจนต่ำ · หายใจผิดปกติ</div><div>โรคปอด · ภาวะหยุดหายใจขณะนอน</div><div>ส่งตรวจปอด · ดูแลการนอน</div></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--ink60);font-style:italic;margin-top:10px;">
+        ระบบทำหน้าที่จับสัญญาณและคัดกรองเบื้องต้นเท่านั้น · การวินิจฉัยและรักษาเป็นของแพทย์
+      </p>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">5</div>
+  </section>
+
+  <!-- 6 — ป้องกันถูกกว่ารักษา + รูปแบบการเก็บข้อมูล -->
+  <section class="slide dark">
+    <div class="slide-pad">
+      <span class="eyebrow">ทำไมคุ้มกว่า</span>
+      <h2 class="title">ป้องกันไว้ก่อน คุ้มกว่ารักษาปลายทาง</h2>
+      <p class="lead" style="margin-top:10px;max-width:1040px;">
+        เมื่อจับสัญญาณได้เร็ว ผู้สูงอายุได้รับการดูแลตั้งแต่เนิ่นๆ —
+        แทนที่จะรอจนอาการหนักแล้วต้องนอนโรงพยาบาล ซึ่งเป็นภาระทั้งครอบครัวและงบประมาณ
+      </p>
+      <div class="grid2" style="margin-top:24px;flex:1;align-content:center;gap:24px;">
+        <div class="card" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);">
+          <h3 style="color:#fff;margin-bottom:12px;">🔁 แบบเดิม · รอจนป่วยหนัก</h3>
+          <p style="color:rgba(255,255,255,.88);font-size:16px;line-height:1.9;">
+            • รู้ตัวเมื่ออาการหนักแล้ว<br>
+            • ต้องนอนโรงพยาบาล ค่าใช้จ่ายสูง<br>
+            • ครอบครัวต้องหยุดงานมาดูแล<br>
+            • บางครั้งกลายเป็นผู้ป่วยติดเตียง
+          </p>
+        </div>
+        <div class="card" style="background:#fff;">
+          <h3 style="color:var(--forest);margin-bottom:12px;">✅ แบบใหม่ · จับสัญญาณก่อน</h3>
+          <p style="color:var(--ink);font-size:16px;line-height:1.9;">
+            • เห็นความผิดปกติแต่เนิ่นๆ<br>
+            • ดูแลที่บ้านได้ ไม่ต้องนอน รพ. บ่อย<br>
+            • ครอบครัวอุ่นใจ ไม่ต้องเฝ้าตลอด<br>
+            • ลดโอกาสเป็นผู้ป่วยติดเตียง
+          </p>
+        </div>
+      </div>
+      <div class="grid3" style="margin-top:18px;gap:14px;">
+        <div class="card" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);padding:14px 18px;">
+          <h4 style="color:#fff;font-size:16px;font-weight:700;margin-bottom:3px;">📲 วัดเองที่บ้าน</h4>
+          <p style="color:rgba(255,255,255,.82);font-size:13.5px;">ผู้สูงอายุ/ผู้ดูแลวัดเอง ค่าส่งเข้าระบบอัตโนมัติ</p></div>
+        <div class="card" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);padding:14px 18px;">
+          <h4 style="color:#fff;font-size:16px;font-weight:700;margin-bottom:3px;">👥 อสม. ช่วยวัดตอนเยี่ยม</h4>
+          <p style="color:rgba(255,255,255,.82);font-size:13.5px;">อสม. นำชุดวัดไปเยี่ยมบ้าน บันทึกให้อัตโนมัติ</p></div>
+        <div class="card" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);padding:14px 18px;">
+          <h4 style="color:#fff;font-size:16px;font-weight:700;margin-bottom:3px;">⌚ เฝ้าต่อเนื่องอัตโนมัติ</h4>
+          <p style="color:rgba(255,255,255,.82);font-size:13.5px;">นาฬิกาจับสัญญาณหัวใจตลอดวันโดยไม่ต้องทำอะไร</p></div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">6</div>
+  </section>
+
+  <!-- 7 — 3 จุดที่ต่างจากที่อื่น (differentiators) -->
+  <section class="slide dark">
+    <div class="slide-pad">
+      <span class="eyebrow">ทำไมต้องแบบนี้</span>
+      <h2 class="title">3 เรื่องที่ทำให้ท่านมั่นใจได้</h2>
+      <p class="lead" style="margin-top:12px;max-width:1000px;">
+        ในตลาดมีคนขาย "ชุดวัดสุขภาพ + แอป" หลายเจ้า แต่ 3 เรื่องนี้คือสิ่งที่ทำให้แนวทางของเราต่าง
+      </p>
+      <div class="grid3" style="margin-top:30px;flex:1;align-content:center;">
+        <div class="card" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);">
+          <span class="ic">🛡️</span>
+          <h3 style="color:#fff;">ไม่ต้องติดกล้องในห้องส่วนตัว</h3>
+          <p style="color:rgba(255,255,255,.85);">ใช้เซนเซอร์ที่เห็น "การเคลื่อนไหว" ไม่เห็นภาพตัวคน ผู้สูงอายุยอมรับได้ ครอบครัวสบายใจ</p></div>
+        <div class="card" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);">
+          <span class="ic">📞</span>
+          <h3 style="color:#fff;">เตือนแล้วมีคนรับสายจริง</h3>
+          <p style="color:rgba(255,255,255,.85);">ไม่ใช่แค่แจ้งเตือนลอยๆ — ระบบเชื่อมต่อกับเจ้าหน้าที่และสายด่วนฉุกเฉิน 1669 ตามขั้นตอนที่ตกลงไว้</p></div>
+        <div class="card" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);">
+          <span class="ic">🏆</span>
+          <h3 style="color:#fff;">เทศบาลได้ข้อมูล และได้ภาพลักษณ์</h3>
+          <p style="color:rgba(255,255,255,.85);">มีข้อมูลสุขภาพผู้สูงอายุทั้งตำบล ใช้ตอบสภาฯ และต่อยอดสมัครรางวัล อปท. ดีเด่นได้</p></div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">7</div>
+  </section>
+
+  <!-- 8 — เมนูโครงการ (intro) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad" style="justify-content:center;">
+      <span class="eyebrow accent">เลือกได้ตามความพร้อม</span>
+      <h2 class="title" style="font-size:44px;">ท่านไม่ต้องลงทุนทั้งตำบลในครั้งเดียว</h2>
+      <p class="lead" style="margin-top:18px;max-width:960px;">
+        เรามี 3 รูปแบบโครงการให้ท่านเลือกตามความพร้อมและงบประมาณ —
+        เริ่มจากเล็กเพื่อทดลอง หรือทำเต็มรูปแบบเลยก็ได้
+        แต่ละแบบใช้แหล่งงบที่ต่างกัน ท่านชี้ได้เลยว่าแบบไหนเหมาะกับเทศบาลของท่าน
+      </p>
+      <div class="grid3" style="margin-top:30px;">
+        <div class="card" style="text-align:center;"><span class="ic">🌱</span><h3>แบบที่ 1 · เริ่มเล็ก</h3><p>ทดลองในชุมชนเดียว ความเสี่ยงต่ำ</p></div>
+        <div class="card" style="text-align:center;"><span class="ic">🌿</span><h3>แบบที่ 2 · ดูแลทั้งตำบล</h3><p>ขยายครอบคลุมกลุ่มเสี่ยง</p></div>
+        <div class="card" style="text-align:center;"><span class="ic">🚒</span><h3>แบบที่ 3 · รวมงานป้องกันภัย</h3><p>ผูกกับงานกู้ชีพ–บรรเทาสาธารณภัย</p></div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">8</div>
+  </section>
+
+  <!-- 9 — เมนู 3 โครงการ (รายละเอียด) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">เมนูโครงการ</span>
+      <h2 class="title">เลือกแบบที่เหมาะกับเทศบาลของท่าน</h2>
+      <div class="grid3" style="margin-top:22px;flex:1;">
+        <div class="menu-card">
+          <span class="tier-tag">เริ่มเล็ก</span>
+          <h3>แบบที่ 1<br>นำร่อง 1 ชุมชน</h3>
+          <span class="who">เหมาะกับ: ท่านที่อยากเห็นผลก่อนตัดสินใจลงทุนใหญ่</span>
+          <ul>
+            <li>เฝ้าระวังผู้สูงอายุกลุ่มเสี่ยงในชุมชนเดียว</li>
+            <li>ทดลองใช้ระยะสั้น เก็บผลจริง</li>
+            <li>มีรายงานให้ท่านใช้ตอบสภาฯ</li>
+            <li>ความเสี่ยงงบประมาณต่ำที่สุด</li>
+          </ul>
+          <div class="budget">💰 เริ่มได้ในงบกองทุนสุขภาพท้องถิ่น (กปท.)</div>
+        </div>
+        <div class="menu-card mid">
+          <span class="tier-tag">ทั้งตำบล</span>
+          <h3>แบบที่ 2<br>ดูแลครอบคลุมทั้งตำบล</h3>
+          <span class="who">เหมาะกับ: ท่านที่พร้อมดูแลผู้สูงอายุกลุ่มเสี่ยงทั่วเขต</span>
+          <ul>
+            <li>ขยายการเฝ้าระวังตามชุมชนที่เสี่ยงสูง</li>
+            <li>ศูนย์เทศบาลเห็นภาพรวมทั้งตำบล</li>
+            <li>ครอบครัวรับรู้สถานะผู้สูงอายุได้</li>
+            <li>เชื่อมต่อระบบสุขภาพในพื้นที่</li>
+          </ul>
+          <div class="budget">💰 ใช้งบดูแลผู้มีภาวะพึ่งพิงระยะยาว (LTC) + กปท.</div>
+        </div>
+        <div class="menu-card big">
+          <span class="tier-tag">รวมป้องกันภัย</span>
+          <h3>แบบที่ 3<br>รวมงานกู้ชีพ–บรรเทาภัย</h3>
+          <span class="who">เหมาะกับ: ท่านที่มีงานป้องกันสาธารณภัยอยู่แล้ว</span>
+          <ul>
+            <li>ผูกกับงานกู้ชีพ–รถฉุกเฉินของเทศบาล</li>
+            <li>เชื่อมการแจ้งเหตุเข้าระบบฉุกเฉิน 1669</li>
+            <li>ดูแลทั้งสุขภาพและความปลอดภัยในเขต</li>
+            <li>ระบบเดียว ตอบได้หลายภารกิจ</li>
+          </ul>
+          <div class="budget">💰 ใช้งบป้องกันสาธารณภัย + งบโครงการ</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--ink60);font-style:italic;margin-top:10px;">
+        แหล่งงบเป็นแนวทางเบื้องต้น · ทีมงานจะช่วยท่านตรวจสอบความเหมาะสมกับระเบียบของแต่ละกองทุน
+      </p>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">9</div>
+  </section>
+
+  <!-- 10 — เมื่อเกิดเหตุ ใครรับสาย (escalation flow) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow">คำถามสำคัญที่สุด</span>
+      <h2 class="title">เตือนแล้ว... ใครรับสาย?</h2>
+      <p class="lead" style="margin-top:10px;max-width:1040px;">
+        ท่านไม่ต้องจ้างคนนั่งเฝ้าหน้าจอ 24 ชั่วโมง — ระบบแบ่งการรับเหตุเป็น 2 ช่วงชัดเจน
+      </p>
+      <div style="margin-top:24px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;">
+        <div class="flowbox alert" style="max-width:640px;margin:0 auto;">
+          <h4>⚠ เกิดเหตุ — ผู้สูงอายุล้ม / กดปุ่มขอความช่วยเหลือ / สัญญาณผิดปกติ</h4>
+          <p>ระบบเฝ้าระวังตรวจจับ และคัดกรองว่าเป็นเหตุจริง ก่อนแจ้งเตือน</p>
+        </div>
+        <div class="flowarrow">↓</div>
+        <div class="grid2" style="gap:24px;">
+          <div class="flowbox">
+            <h4>🕘 ในเวลาราชการ</h4>
+            <p><strong>เจ้าหน้าที่เทศบาล / กองสาธารณสุข</strong> เฝ้าหน้าจอ รับเหตุ และตัดสินใจส่งต่อ</p>
+          </div>
+          <div class="flowbox">
+            <h4>🌙 นอกเวลาราชการ / ไม่มีคนรับใน X นาที</h4>
+            <p>ระบบ <strong>โอนอัตโนมัติ</strong> ไปยังสายด่วนฉุกเฉิน <strong>1669</strong> หรือหน่วยกู้ภัย / โรงพยาบาล ที่ตกลงไว้ล่วงหน้า</p>
+          </div>
+        </div>
+        <div class="flowarrow">↓</div>
+        <div class="flowbox" style="max-width:640px;margin:0 auto;border-color:var(--success);">
+          <h4 style="color:var(--success);">✓ คนช่วยถึงตัวผู้สูงอายุ · บันทึกเหตุการณ์ครบถ้วน</h4>
+          <p>ทุกขั้นตอนถูกบันทึกตามมาตรฐานคุ้มครองข้อมูลส่วนบุคคล (PDPA)</p>
+        </div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">10</div>
+  </section>
+
+  <!-- 11 — ใครรับผิดชอบอะไร (RACI) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow">ความรับผิดชอบชัดเจน</span>
+      <h2 class="title">ใครทำหน้าที่อะไร — ไม่มีภาระลอยๆ</h2>
+      <p class="lead" style="margin-top:10px;max-width:1040px;">
+        เรื่องที่ผู้บริหารกังวลที่สุดคือ "ถ้าเกิดเหตุ ใครรับผิดชอบ" — เราตอบชัดตั้งแต่ต้น
+      </p>
+      <div class="card" style="margin-top:22px;padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div class="raci-row"><div class="who">ระบบ (ของเรา)</div>
+          <div class="do">เฝ้าระวัง · แจ้งเตือน · คัดกรองเบื้องต้น · ส่งต่อตามขั้นตอน — <strong>ไม่วินิจฉัย ไม่รักษา</strong></div></div>
+        <div class="raci-row"><div class="who">เจ้าหน้าที่เทศบาล</div>
+          <div class="do">รับเหตุในเวลาราชการ · ตัดสินใจส่งต่อ · ประสานครอบครัว</div></div>
+        <div class="raci-row"><div class="who">อสม. / ผู้ดูแล</div>
+          <div class="do">ช่วยติดตามเยี่ยมบ้านเฉพาะรายที่ระบบแจ้ง — ไม่ต้องเดินตรวจทุกหลังทุกวัน</div></div>
+        <div class="raci-row"><div class="who">สายด่วน 1669 / รพ.</div>
+          <div class="do"><strong>วินิจฉัยและรักษา</strong> ตามมาตรฐานการแพทย์ — เหมือนที่ทำอยู่ทุกวันนี้</div></div>
+      </div>
+      <p style="font-size:13px;color:var(--forest);font-weight:600;margin-top:12px;">
+        การวินิจฉัยและรักษายังเป็นหน้าที่ของบุคลากรการแพทย์เช่นเดิม เทศบาลทำหน้าที่เฝ้าระวังและส่งต่อเท่านั้น
+      </p>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">11</div>
+  </section>
+
+  <!-- 12 — วันธรรมดาของ อสม. (ลดงาน ไม่เพิ่ม) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow">เบาแรง อสม. และเจ้าหน้าที่</span>
+      <h2 class="title">ระบบนี้ช่วยลดงาน ไม่ใช่เพิ่มงาน</h2>
+      <div class="grid2" style="margin-top:24px;flex:1;align-content:center;gap:24px;">
+        <div class="card" style="border-color:var(--alert);">
+          <span class="pill alert" style="margin-bottom:12px;">แบบเดิม</span>
+          <h3 style="margin-bottom:14px;">อสม. ต้องเดินเคาะบ้านทุกหลัง</h3>
+          <p style="font-size:16px;line-height:1.7;">
+            เดินตรวจเยี่ยมผู้สูงอายุทุกหลังทุกวัน ใช้เวลามาก กำลังคนไม่พอ
+            และยังไม่รู้ว่าระหว่างวันบ้านไหนเกิดเหตุ
+          </p>
+        </div>
+        <div class="card" style="border-color:var(--success);">
+          <span class="pill" style="margin-bottom:12px;background:var(--sage-soft);color:var(--success);">แบบใหม่</span>
+          <h3 style="margin-bottom:14px;">ระบบเฝ้าให้ — อสม. ไปเฉพาะที่จำเป็น</h3>
+          <p style="font-size:16px;line-height:1.7;">
+            ระบบเฝ้าระวังตลอด 24 ชั่วโมงแทน อสม. จะไปเยี่ยมเฉพาะบ้านที่ระบบแจ้งว่ามีเรื่อง
+            กำลังคนเท่าเดิม แต่ดูแลได้ทั่วถึงและตรงจุดกว่า
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">12</div>
+  </section>
+
+  <!-- 13 — ความเป็นส่วนตัว (ทำไมไม่ติดกล้อง) -->
+  <section class="slide dark">
+    <div class="slide-pad">
+      <span class="eyebrow">เคารพศักดิ์ศรีผู้สูงอายุ</span>
+      <h2 class="title">ดูแลได้ โดยไม่ต้องติดกล้องในห้อง</h2>
+      <p class="lead" style="margin-top:12px;max-width:1000px;">
+        เหตุผลที่ครอบครัวส่วนใหญ่ปฏิเสธระบบดูแลที่ใช้กล้อง คือผู้สูงอายุรู้สึกถูกจ้องและเสียศักดิ์ศรี
+        เราจึงเลือกใช้เซนเซอร์ที่เห็น "การเคลื่อนไหว" แต่ไม่เห็น "ตัวคน"
+      </p>
+      <div class="grid2" style="margin-top:26px;flex:1;align-content:center;gap:24px;">
+        <div class="card" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);">
+          <h3 style="color:#fff;margin-bottom:14px;">📷 ระบบที่ใช้กล้อง</h3>
+          <p style="color:rgba(255,255,255,.85);font-size:16px;line-height:1.9;">
+            ✕ เห็นภาพร่างกายผู้สูงอายุชัดเจน<br>
+            ✕ ผู้สูงอายุรู้สึกถูกจ้อง อึดอัด<br>
+            ✕ ติดในห้องนอน/ห้องน้ำลำบาก<br>
+            ✕ ในที่มืดทำงานได้ไม่ดี
+          </p>
+        </div>
+        <div class="card" style="background:#fff;">
+          <h3 style="color:var(--forest);margin-bottom:14px;">📡 เซนเซอร์ของเรา</h3>
+          <p style="color:var(--ink);font-size:16px;line-height:1.9;">
+            ✓ ไม่บันทึกภาพ — เห็นแต่การเคลื่อนไหว<br>
+            ✓ ผู้สูงอายุยอมรับได้ ไม่รู้สึกถูกจ้อง<br>
+            ✓ ติดในห้องส่วนตัวได้ ถูกหลัก PDPA<br>
+            ✓ ทำงานได้ดีแม้ในที่มืด
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">13</div>
+  </section>
+
+  <!-- 14 — ต่อยอดจากสิ่งที่มีอยู่ -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow accent">ไม่ต้องเริ่มจากศูนย์</span>
+      <h2 class="title">ต่อยอดจากสิ่งที่เทศบาลมีอยู่แล้ว</h2>
+      <p class="lead" style="margin-top:12px;max-width:1020px;">
+        เราออกแบบให้ทำงานบนสิ่งที่ท่านลงทุนไปแล้ว ลดงบประมาณรอบใหม่ และลดเวลาติดตั้ง
+      </p>
+      <div class="grid2" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+          <div class="numbadge">1</div><div>
+          <h3 style="margin-bottom:5px;">ศูนย์ดูแลที่เทศบาลมีอยู่</h3>
+          <p style="font-size:15px;">เพิ่มหน้าจอติดตามให้ ไม่ต้องสร้างศูนย์ใหม่</p></div>
+        </div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+          <div class="numbadge">2</div><div>
+          <h3 style="margin-bottom:5px;">งาน อสม. และเยี่ยมบ้านที่ทำอยู่</h3>
+          <p style="font-size:15px;">ระบบช่วยบอกว่าควรไปบ้านไหนก่อน ไม่ทิ้งของเดิม</p></div>
+        </div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+          <div class="numbadge">3</div><div>
+          <h3 style="margin-bottom:5px;">งานกู้ชีพ–รถฉุกเฉินในพื้นที่</h3>
+          <p style="font-size:15px;">เชื่อมการแจ้งเหตุเข้าช่องทางที่กู้ชีพรู้จักอยู่แล้ว</p></div>
+        </div>
+        <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+          <div class="numbadge">4</div><div>
+          <h3 style="margin-bottom:5px;">งบกองทุนที่ท่านมีสิทธิใช้</h3>
+          <p style="font-size:15px;">เริ่มได้ด้วยงบที่หน่วยงานมีอยู่ ไม่ต้องรองบก้อนใหม่</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">14</div>
+  </section>
+
+  <!-- 15 — ประโยชน์ + KPI ตอบสภาฯ -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad">
+      <span class="eyebrow">สิ่งที่เทศบาลและประชาชนได้</span>
+      <h2 class="title">ผลที่ท่านนำไปตอบสภาฯ ได้</h2>
+      <div class="grid4" style="margin-top:24px;flex:1;align-content:center;">
+        <div class="card"><span class="ic">⏱️</span><h3>ช่วยได้เร็วขึ้น</h3>
+          <p>เปลี่ยนจาก "รอคนเห็น" เป็น "ระบบแจ้ง" คนช่วยถึงตัวเร็วขึ้น</p></div>
+        <div class="card"><span class="ic">👨‍👩‍👧</span><h3>ครอบครัวอุ่นใจ</h3>
+          <p>ลูกหลานที่ทำงานต่างถิ่นสบายใจ ผู้สูงอายุอยู่บ้านตัวเองได้</p></div>
+        <div class="card"><span class="ic">📋</span><h3>มีตัวเลขตอบสภาฯ</h3>
+          <p>จำนวนผู้สูงอายุที่ดูแล จำนวนครั้งที่แจ้งเหตุได้ทัน — เป็นผลงานที่วัดได้</p></div>
+        <div class="card"><span class="ic">🏆</span><h3>ภาพลักษณ์ผู้นำที่ใส่ใจ</h3>
+          <p>มีข้อมูลและกรณีศึกษาเพื่อต่อยอดสมัครรางวัล อปท. ดีเด่น</p></div>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">15</div>
+  </section>
+
+  <!-- 16 — อบรม + ดูแลต่อเนื่อง -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="slide-pad" style="justify-content:center;">
+      <span class="eyebrow">เราอยู่ดูแลต่อเนื่อง</span>
+      <h2 class="title" style="font-size:42px;">ไม่ได้แค่ติดตั้งแล้วจากไป</h2>
+      <div class="grid3" style="margin-top:30px;">
+        <div class="card" style="text-align:center;"><span class="ic">🎓</span><h3>อบรมเจ้าหน้าที่และ อสม.</h3>
+          <p>สอนใช้งานจริงจนใช้เป็น ไม่ทิ้งให้งง</p></div>
+        <div class="card" style="text-align:center;"><span class="ic">🛠️</span><h3>มีทีมซัพพอร์ตและรับประกัน</h3>
+          <p>อุปกรณ์มีปัญหา มีทีมดูแล ไม่ปล่อยทิ้ง</p></div>
+        <div class="card" style="text-align:center;"><span class="ic">📅</span><h3>วางแผนปีต่อๆ ไปให้</h3>
+          <p>ชี้แจงค่าใช้จ่ายต่อเนื่องชัด ไม่เป็นภาระงบที่ค้าง</p></div>
+      </div>
+      <p class="lead" style="margin-top:28px;max-width:920px;">
+        เราจะชี้แจงให้ชัดตั้งแต่ต้นว่า ค่าใช้จ่ายส่วนไหนเป็น "ครั้งเดียว" และส่วนไหนเป็น "รายปี"
+        เพื่อให้ท่านวางงบได้อย่างมั่นใจ ไม่มีค่าใช้จ่ายซ่อนเร้น
+      </p>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ</div>
+    <div class="pagenum">16</div>
+  </section>
+
+  <!-- 17 — CTA + 3 คำถาม -->
+  <section class="slide dark">
+    <div class="slide-pad" style="justify-content:center;">
+      <span class="eyebrow">ขั้นต่อไป</span>
+      <h2 class="title" style="font-size:44px;">
+        ขอเวลาท่านสักครู่<br>คุยเรื่องผู้สูงอายุในพื้นที่ของท่าน
+      </h2>
+      <p class="lead" style="margin-top:20px;max-width:940px;">
+        ท่านไม่ต้องตัดสินใจอะไรในวันนี้ — เราอยากฟังก่อนว่าเทศบาลของท่านเจอปัญหาอะไร
+        แล้วจึงเสนอแบบที่เหมาะกับพื้นที่จริง ไม่ใช่ขายแพ็กเกจสำเร็จรูป
+      </p>
+      <div class="card" style="margin-top:30px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);max-width:980px;">
+        <h3 style="color:#fff;margin-bottom:14px;">3 คำถามที่อยากฟังจากท่าน</h3>
+        <p style="color:rgba(255,255,255,.9);font-size:17px;line-height:1.9;">
+          1. ปัญหาการดูแลผู้สูงอายุที่หนักที่สุดในพื้นที่ของท่าน คืออะไร?<br>
+          2. สิ่งที่ท่านกังวลที่สุดถ้าจะเริ่มโครงการแบบนี้ คืออะไร?<br>
+          3. ถ้าจะเริ่มทดลอง — เงื่อนไขสำคัญที่สุดของท่านคืออะไร?
+        </p>
+      </div>
+    </div>
+    <div class="footmark">เอกสารเพื่อการหารือ · มิใช่ข้อผูกพัน</div>
+    <div class="pagenum">17</div>
+  </section>
+
+</div>
+</body>
+</html>
