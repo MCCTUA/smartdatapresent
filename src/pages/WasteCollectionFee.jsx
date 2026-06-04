@@ -470,65 +470,45 @@ function Slide04() {
 
 function Slide05() {
   const tiers = [
-    { l: 'ระดับ 0', t: 'ไม่เข้าร่วม', d: 'ทิ้งรวม · ขยะเปียกเยอะ', f: '60', c: C.alert, cs: C.alertSoft },
-    { l: 'ระดับ 1', t: 'คัดแยกแห้ง', d: 'แยกพลาสติก/กระดาษ', f: '40', c: C.accent, cs: C.accentSoft },
-    { l: 'ระดับ 2', t: 'คัดแยก + อินทรีย์', d: 'แยกเศษอาหารออก', f: '20', c: '#4A7C59', cs: '#E1EFD9' },
-    { l: 'ระดับ 3', t: 'คัดแยก + ปุ๋ยหมัก', d: 'หมักปุ๋ยใช้เอง', f: '10', c: C.success, cs: C.successSoft },
+    { tag: 'ไม่คัดแยก', tagBg: C.alertSoft, tagCol: C.alert, t: '60 ฿', sub: 'ต่อเดือน · ค่า default', d: 'เพดานตามกฎกระทรวง: ค่าเก็บขน 30 ฿ + ค่ากำจัด 30 ฿ — บังคับ 16 พ.ย. 2569', c: C.alert, cs: '#FFFFFF' },
+    { tag: 'คัดแยก verified', tagBg: C.accentSoft, tagCol: C.accent, t: '20 ฿', sub: 'ต่อเดือน · ตรงกับ กทม.', d: 'ลงทะเบียน · ผ่านการสุ่มประเมิน 4 ประเภท (รีไซเคิล · อินทรีย์ · อันตราย · ทั่วไป) — กทม. precedent ตั้งแต่ 1 ต.ค. 2568', c: C.accent, cs: '#FFFFFF', highlight: true },
+    { tag: 'ขายรีไซเคิล', tagBg: C.successSoft, tagCol: C.success, t: '10 ฿', sub: '+ revenue share', d: 'ระดับสูงสุดของระบบ — ครัวเรือนขายรีไซเคิลเข้าระบบ · ได้ส่วนแบ่งกลับ · เกินกว่า กทม. baseline', c: C.success, cs: '#FFFFFF' },
+  ];
+  const stats = [
+    { k: 'กทม. COVERAGE', v: '7%', d: 'รายได้ 500 ลบ./ปี · ต้นทุน 7,000 ลบ./ปี', c: C.alert },
+    { k: 'BKK WASTE PAY', v: '786,099', d: 'ครัวเรือนลงทะเบียนใน 5 เดือน · ก.พ. 2569', c: C.primary },
+    { k: 'เทศบาลนครลำปาง', v: 'ใช้อัตราเดิม', d: 'รอออกข้อบัญญัติใหม่ · เป็นโอกาสของหน่วยงานท้องถิ่นอื่น', c: C.accent, small: true },
+    { k: 'กฎกระทรวง 2567', v: '16 พ.ย. 69', d: 'วันที่บังคับใช้ · เหลือ ~7 เดือน', c: C.primaryDeep },
   ];
   return (
     <Slide num={5}>
-      <Eyebrow accent>กลไกที่ทำให้เทศบาลประหยัด</Eyebrow>
-      <Title size={32}>จ่ายง่ายขึ้น · ทุกคนคัดแยก · เทศบาลลดค่าทิ้งขยะ</Title>
-      <Lead style={{ marginTop: 4, fontSize: 16, maxWidth: 1100 }}>
-        ระบบเชื่อมการจ่ายค่าธรรมเนียมเข้ากับโครงการคัดแยกขยะ — บ้านไหนคัดแยก/หมักปุ๋ย ค่าธรรมเนียมลดลง · พนักงานเก็บขยะสุ่มตรวจ 3 ครั้ง/ปีเพื่อยืนยัน
+      <Eyebrow accent>กฎหมายที่เปิดทาง</Eyebrow>
+      <Title size={28}>กฎกระทรวง 2567 — ให้ อปท. ปรับขึ้นค่าธรรมเนียมได้</Title>
+      <Lead style={{ marginTop: 4, fontSize: 15, maxWidth: 1100 }}>
+        เปิดทางให้หน่วยงานท้องถิ่นขึ้นเพดานค่าธรรมเนียมเป็น 60 ฿/เดือน สำหรับครัวเรือนทั่วไป — และให้ "คัดแยก = จ่ายน้อยลง" เป็นแรงจูงใจที่เป็นทางการ
       </Lead>
 
-      {/* 4-tier discount table */}
-      <div style={{ marginTop: 14, background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 14, padding: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: C.primary, letterSpacing: 1.5, marginBottom: 8 }}>ค่าธรรมเนียมตามระดับการคัดแยก (บาท / เดือน)</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-          {tiers.map((t, i) => (
-            <div key={i} style={{ background: t.cs, border: `2px solid ${t.c}`, borderRadius: 12, padding: '12px 14px', position: 'relative' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: t.c, letterSpacing: 1 }}>{t.l}</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: C.text, marginTop: 3, lineHeight: 1.25 }}>{t.t}</div>
-              <div style={{ fontSize: 11.5, color: C.textMuted, marginTop: 2 }}>{t.d}</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 8 }}>
-                <span style={{ fontSize: 26, fontWeight: 800, color: t.c, lineHeight: 1 }}>{t.f}</span>
-                <span style={{ fontSize: 11, color: C.textMuted }}>บาท/เดือน</span>
-              </div>
-              {i > 0 && (
-                <div style={{ position: 'absolute', top: -10, right: 8, background: '#FFF', border: `1px solid ${t.c}`, color: t.c, fontSize: 10, fontWeight: 700, padding: '2px 9px', borderRadius: 100 }}>
-                  ↓ ลด {60 - parseInt(t.f, 10)} บาท
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+      {/* 4 stat cards — context */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginTop: 12 }}>
+        {stats.map((s, i) => (
+          <div key={i} style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 12, padding: '10px 12px' }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: C.textMuted, letterSpacing: 1.2 }}>{s.k}</div>
+            <div style={{ fontSize: s.small ? 18 : 24, fontWeight: 800, color: s.c, lineHeight: 1.15, marginTop: 3 }}>{s.v}</div>
+            <div style={{ fontSize: 10.5, color: C.textMuted, lineHeight: 1.4, marginTop: 3 }}>{s.d}</div>
+          </div>
+        ))}
       </div>
 
-      {/* 3-column: mechanism flow */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginTop: 16, flex: 1, minHeight: 0 }}>
-        <div style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}`, borderRadius: 12, padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: 1.5, marginBottom: 6 }}>① ลูกบ้านสมัครเข้าโครงการ</div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: C.text, lineHeight: 1.4, marginBottom: 6 }}>เลือกระดับในแอป · ผูกกับบ้าน</div>
-          <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
-            กดปุ่ม "สมัครคัดแยก" หรือ "ทำปุ๋ยหมัก" ในแอป — ระบบบันทึกบ้านเข้าโครงการ และคำนวณส่วนลดให้บิลรอบถัดไป
-          </p>
-        </div>
-        <div style={{ background: C.primarySoft, border: `1px solid ${C.primary}`, borderRadius: 12, padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.primary, letterSpacing: 1.5, marginBottom: 6 }}>② สุ่มตรวจ 3 ครั้ง/ปี</div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: C.text, lineHeight: 1.4, marginBottom: 6 }}>คนขับรถ + คนเก็บขยะ ยืนยันจริง</div>
-          <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
-            ทุก 4 เดือน · พนักงานกดในแอปว่า "บ้าน X คัดแยกจริง" หรือ "ไม่ตรงตามที่สมัคร" — ระบบปรับระดับให้อัตโนมัติ
-          </p>
-        </div>
-        <div style={{ background: C.successSoft, border: `1px solid ${C.success}`, borderRadius: 12, padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.success, letterSpacing: 1.5, marginBottom: 6 }}>③ เทศบาลลดค่าทิ้งขยะ</div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: C.text, lineHeight: 1.4, marginBottom: 6 }}>ขยะเปียกลด → ค่ากำจัด/ตันลด</div>
-          <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
-            ปริมาณขยะเปียก/ขยะรวมลดลง → ค่ารถขนทิ้ง+ค่ากำจัดต่อตันลดลง — ส่วนลดที่ให้ลูกบ้านน้อยกว่าค่าทิ้งที่ประหยัดได้
-          </p>
-        </div>
+      {/* 3-tier pricing — grounded in regulation */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginTop: 14, flex: 1, minHeight: 0 }}>
+        {tiers.map((t, i) => (
+          <div key={i} style={{ background: t.cs, border: `${t.highlight ? 2 : 1}px solid ${t.c}`, borderRadius: 14, padding: '14px 16px', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <span style={{ display: 'inline-block', alignSelf: 'flex-start', fontSize: 11, fontWeight: 700, padding: '3px 11px', borderRadius: 100, background: t.tagBg, color: t.tagCol, marginBottom: 8 }}>{t.tag}</span>
+            <div style={{ fontSize: 34, fontWeight: 800, color: t.c, lineHeight: 1 }}>{t.t}</div>
+            <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>{t.sub}</div>
+            <div style={{ flex: 1, marginTop: 10, fontSize: 12.5, color: C.text, lineHeight: 1.5 }}>{t.d}</div>
+          </div>
+        ))}
       </div>
     </Slide>
   );
@@ -989,30 +969,35 @@ function Slide13() {
       <Eyebrow>ฝั่งพนักงานเก็บขยะ · หน้าจอจริง</Eyebrow>
       <Title size={28}>รถจอดครั้งเดียว · เก็บ 2 ฝั่ง · สุ่มตรวจคัดแยก 3 ครั้ง/ปี</Title>
       <Lead style={{ marginTop: 4, fontSize: 16, maxWidth: 1100 }}>
-        แอปบนมือถือของพนักงาน — เห็นระดับการคัดแยกของแต่ละบ้าน (L0-L3) · บ้านค้างปุ่ม "เก็บ" disabled อัตโนมัติ · ในรอบเก็บปกติ พนักงานกดยืนยัน "สุ่มตรวจ" ได้
+        แอปบนมือถือของพนักงาน — แผนที่ GPS แบบ Google Maps · แสดง zone · จำนวนบ้านที่ต้องเก็บ · ปุ่ม "เลือกบ้าน" เพื่อบันทึกผลและสุ่มตรวจคัดแยก
       </Lead>
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 28, marginTop: 14, flex: 1, alignItems: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 250, background: C.primaryDeep, padding: 8, borderRadius: 26, boxShadow: '0 16px 36px rgba(0,0,0,0.22)' }}>
-            <div style={{ background: '#FFF', borderRadius: 20, overflow: 'hidden', height: 445 }}>
-              <DriverApp />
+      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 36, marginTop: 14, flex: 1, alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <div style={{ background: C.primaryDeep, padding: 8, borderRadius: 28, boxShadow: '0 18px 40px rgba(0,0,0,0.22)' }}>
+            <div style={{ borderRadius: 22, overflow: 'hidden', width: 260, height: 484, background: '#000' }}>
+              <img
+                src="images/waste-fee/driver-map.png"
+                alt="Driver App · GPS Map · Zone A-12"
+                style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </div>
           </div>
-          <div style={{ fontSize: 11.5, fontWeight: 600, color: C.textMuted }}>Driver App · two-sided + sorting tier + spot-check</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, textAlign: 'center' }}>Driver App · GPS Map · Zone A-12 · 12 / 42 หลัง</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
-            { ic: '🗺️', t: 'แผนที่ 2 ฝั่ง · แสดงระดับคัดแยก', d: 'pin สีบอก tier (L0-L3) · พนักงาน 2 คนทำงานพร้อมกัน · รถจอดครั้งเดียวเก็บได้ 8-10 บ้าน' },
-            { ic: '🔎', t: 'สุ่มตรวจคัดแยก 3 ครั้ง/ปี', d: 'ทุก 4 เดือนระบบเตือนให้พนักงานสุ่ม X บ้าน · กดยืนยันว่า "คัดแยกจริง" หรือ "ไม่ตรงตามที่สมัคร" — ระดับและส่วนลดปรับให้บิลถัดไปอัตโนมัติ' },
-            { ic: '🛑', t: 'บ้านค้าง = ปุ่ม "เก็บ" disable', d: 'ระบบเช็คอัตโนมัติ · ไม่มี bypass · ลดความขัดแย้งระหว่างพนักงานกับเจ้าของบ้าน' },
+            { ic: '🗺️', t: 'แผนที่ GPS · zone-based', d: 'พนักงานเห็นแผนที่แบบ Google Maps จริง · แบ่งโซน (A-12) · เห็นทุกบ้านที่ต้องเก็บใน zone นั้น (12 / 42 หลัง)' },
+            { ic: '🔎', t: 'สุ่มตรวจคัดแยก 3 ครั้ง/ปี', d: 'ทุก 4 เดือนระบบเตือนให้พนักงานสุ่ม X บ้าน · กด "เลือกบ้าน" → บันทึก "คัดแยกจริง" หรือ "ไม่ตรงตามที่สมัคร" · ระดับและส่วนลดปรับให้บิลถัดไปอัตโนมัติ' },
+            { ic: '🛑', t: 'บ้านค้าง = ปุ่ม "เก็บ" disable', d: 'ระบบเช็คสถานะค่าธรรมเนียมอัตโนมัติ · บ้านค้างชำระจะถูก skip · ไม่มี bypass · ลดความขัดแย้งระหว่างพนักงานกับเจ้าของบ้าน' },
+            { ic: '📍', t: 'บันทึก GPS ทุกการเก็บ', d: 'พิกัด + เวลา + พนักงานคนไหน · เก็บเป็น audit log สำหรับ สตง. · พิสูจน์ว่ารถมาเก็บจริง' },
           ].map((b, i) => (
-            <Card key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start', padding: '14px 18px' }}>
-              <div style={{ fontSize: 26, lineHeight: 1 }}>{b.ic}</div>
+            <div key={i} style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 12, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{b.ic}</div>
               <div>
-                <CardTitle style={{ fontSize: 16, marginBottom: 4 }}>{b.t}</CardTitle>
-                <CardBody style={{ fontSize: 13 }}>{b.d}</CardBody>
+                <h4 style={{ fontSize: 15, fontWeight: 700, color: C.primaryDeep, lineHeight: 1.35, marginBottom: 2 }}>{b.t}</h4>
+                <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>{b.d}</p>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       </div>
@@ -1184,7 +1169,7 @@ function Slide16() {
 
 function Slide17() {
   const phases = [
-    { n: '1-7', t: 'Setup & นำเข้าข้อมูล', d: 'นำเข้าข้อมูลครัวเรือน · ตั้งชื่อหน่วยงาน · โลโก้ · สีประจำสติ๊กเกอร์ปีงบ · ตั้งอัตราคัดแยก (60→40→20→10)', ic: '⚙️' },
+    { n: '1-7', t: 'Setup & นำเข้าข้อมูล', d: 'นำเข้าข้อมูลครัวเรือน · ตั้งชื่อหน่วยงาน · โลโก้ · สีสติ๊กเกอร์ปีงบ · ตั้งอัตรา 3 tier (60/20/10 ฿) ตามกฎกระทรวง 2567', ic: '⚙️' },
     { n: '8-14', t: 'ฝึกอบรม Officer + Driver', d: 'กองคลัง ½ วัน · พนักงานเก็บขยะ ½ วัน (รวมวิธีสุ่มตรวจ) · มีคู่มือไทย + วิดีโอย้อนหลัง', ic: '🎓' },
     { n: '15-30', t: 'Pilot รอบแรก', d: 'ออกบิลรอบแรก · รับชำระจริง · เก็บขยะผ่าน Driver App · ทีมเราคุมหลังบ้าน 24 ชม.', ic: '🚀' },
     { n: '31+', t: 'เต็มรูปแบบ + ดูแลต่อเนื่อง', d: 'Dunning อัตโนมัติ · ขยายไป Meter OCR / ภาษีป้าย · Account manager รายเดือน', ic: '🛠️' },
@@ -1289,7 +1274,7 @@ function Toolbar() {
     '2 · 🚨 Pain · 4 เรื่องทำให้เก็บไม่ขึ้น',
     '3 · 🚨 Pain · ลูกบ้านอยากจ่ายง่าย · เทศบาลอยากลดค่าทิ้ง',
     '4 · ✨ Solution · 1 platform 3 apps',
-    '5 · 🌱 Story · คัดแยก (60→40→20→10) + สุ่มตรวจ → ลดค่าทิ้ง',
+    '5 · ⚖️ Regulation · กฎกระทรวง 2567 · 60→20→10 ฿ (กทม. precedent)',
     '6 · 📱 Demo · R-02 Dashboard + R-04 Bill QR',
     '7 · 📱 Demo · R-06 Receipt + R-08 Sticker',
     '8 · 📱 Demo · R-09 Schedule + R-11 Issue',
