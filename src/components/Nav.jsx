@@ -30,7 +30,15 @@ export default function Nav() {
           fontFamily: "'Sarabun', system-ui, sans-serif",
         }}
       >
-        <div className="max-w-[1200px] mx-auto h-full flex items-center justify-between px-6">
+        <div className="max-w-[1200px] mx-auto h-full flex items-center px-4 sm:px-6 gap-3">
+          <button
+            className="md:hidden text-white text-2xl leading-none p-2 -ml-2"
+            onClick={() => setOpen(true)}
+            aria-label="เปิดเมนู"
+          >
+            ☰
+          </button>
+
           <Link to="/" className="no-underline flex items-center gap-2">
             <svg width="26" height="26" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="28" height="28" rx="6" fill={PRIMARY} />
@@ -41,7 +49,7 @@ export default function Nav() {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-5">
+          <div className="hidden md:flex items-center gap-5 ml-auto">
             {links.map((link) => {
               // Section-aware active: sub-routes like /cctv-ai/public-area-watch
               // should highlight the parent /cctv-ai link
@@ -65,49 +73,43 @@ export default function Nav() {
               );
             })}
           </div>
-
-          <button
-            className="md:hidden text-white text-xl p-2"
-            onClick={() => setOpen(true)}
-            aria-label="เปิดเมนู"
-          >
-            ☰
-          </button>
         </div>
       </nav>
 
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-7"
+          className="fixed inset-0 z-[999] overflow-y-auto"
           style={{
             background: 'rgba(11, 85, 68, 0.97)',
             fontFamily: "'Sarabun', system-ui, sans-serif",
           }}
         >
           <button
-            className="absolute top-4 right-6 text-white text-3xl"
+            className="absolute top-3 right-5 text-white text-3xl leading-none p-2 z-10"
             onClick={() => setOpen(false)}
             aria-label="ปิดเมนู"
           >
             ✕
           </button>
-          {links.map((link) => {
-            const active = link.to === '/'
-              ? pathname === '/'
-              : pathname === link.to || pathname.startsWith(link.to + '/');
-            return (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={() => setOpen(false)}
-                className="text-[22px] no-underline font-medium"
-                style={{ color: active ? '#9FE1CB' : '#FFF' }}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+          <div className="flex flex-col items-start gap-1 pt-14 pb-6 px-6">
+            {links.map((link) => {
+              const active = link.to === '/'
+                ? pathname === '/'
+                : pathname === link.to || pathname.startsWith(link.to + '/');
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setOpen(false)}
+                  className="text-[18px] no-underline font-medium py-2 w-full"
+                  style={{ color: active ? '#9FE1CB' : '#FFF' }}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       )}
     </>

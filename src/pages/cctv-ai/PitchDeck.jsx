@@ -348,13 +348,20 @@ function ScaledSlide({ children }) {
 
   useEffect(() => {
     function compute() {
-      const target = 1280;
-      const available = Math.min(window.innerWidth - 32, target);
-      setScale(available / target);
+      const targetW = 1280;
+      const targetH = 720;
+      const availableW = Math.max(window.innerWidth - 32, 320);
+      const availableH = Math.max(window.innerHeight - 160, 320);
+      const s = Math.min(availableW / targetW, availableH / targetH, 1);
+      setScale(s);
     }
     compute();
     window.addEventListener('resize', compute);
-    return () => window.removeEventListener('resize', compute);
+    window.addEventListener('orientationchange', compute);
+    return () => {
+      window.removeEventListener('resize', compute);
+      window.removeEventListener('orientationchange', compute);
+    };
   }, []);
 
   return (
