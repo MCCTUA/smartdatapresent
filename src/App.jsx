@@ -20,6 +20,7 @@ import VehicleCheck from './pages/cctv-ai/VehicleCheck';
 import ParkingManagement from './pages/cctv-ai/ParkingManagement';
 import BridgeTunnelWatch from './pages/cctv-ai/BridgeTunnelWatch';
 import CCTVAIPitchDeck from './pages/cctv-ai/PitchDeck';
+import SmartLightPitchDeck from './pages/smartlight/PitchDeck';
 
 export default function App() {
   return (
@@ -29,7 +30,8 @@ export default function App() {
         <main className="flex-1 pt-12">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/smart-street-light" element={<SmartStreetLight />} />
+            <Route path="/smart-street-light" element={<SmartLightPitchDeck />} />
+            <Route path="/smart-street-light/details" element={<SmartStreetLight />} />
             <Route path="/solar-street-light" element={<SolarStreetLight />} />
             <Route path="/fee-management" element={<FeeManagement />} />
             <Route path="/waste-fee" element={<WasteCollectionFee />} />
