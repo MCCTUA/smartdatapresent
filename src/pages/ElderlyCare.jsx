@@ -288,10 +288,11 @@ function DeckStyles() {
       @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
 
       html { scroll-behavior: smooth; }
-      .deck-root { font-family: 'Sarabun', sans-serif; background: #6b6b6b; min-height: 100vh; padding-top: 60px; padding-bottom: 40px; }
+      .deck-root { font-family: 'Sarabun', sans-serif; background: #6b6b6b; min-height: 100vh; padding-top: 56px; padding-bottom: 40px; }
       .deck-toolbar {
-        position: fixed; top: 0; left: 0; right: 0; height: 44px; background: ${C.primaryDeep};
-        color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; z-index: 1000; font-size: 13px;
+        position: fixed; top: 48px; left: 0; right: 0; height: 44px; background: ${C.primaryDeep};
+        color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; z-index: 40; font-size: 13px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       }
       .deck-toolbar button {
         font-family: inherit; background: rgba(255,255,255,.16); color: #fff; border: none;
@@ -305,9 +306,15 @@ function DeckStyles() {
 
       @media print {
         @page { size: 1280px 720px; margin: 0; }
-        body { background: #fff !important; }
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        html, body { background: #fff !important; }
+        nav, .deck-toolbar, .scroll-dots { display: none !important; }
+        main { padding-top: 0 !important; }
         .deck-root { background: #fff !important; padding: 0 !important; margin: 0 !important; }
-        .deck-toolbar, .scroll-dots { display: none !important; }
         .slide-wrapper { margin: 0 !important; width: 1280px !important; height: 720px !important; }
         .slide-scale { transform: none !important; box-shadow: none !important; page-break-after: always; }
         .slide-page { box-shadow: none !important; }
@@ -1368,33 +1375,53 @@ function Slide19() {
 
 function Toolbar() {
   const [open, setOpen] = useState(false);
+  // Pain · Benefit · Demo framing — ชื่อช่วยให้ sales รู้จุดประสงค์แต่ละสไลด์
   const titles = [
-    '1 · Pain Hero', '2 · 4 ปัญหา', '3 · แนวทางใหม่', '4 · ระบบทำงาน', '5 · อุปกรณ์',
-    '6 · สัญญาณ → แพทย์', '7 · ป้องกัน vs รักษา', '8 · 3 จุดต่าง', '9 · Privacy', '10 · เมนูโครงการ',
-    '11 · 3 แบบโครงการ', '12 · ใครรับสาย', '13 · RACI', '14 · อสม.', '15 · ต่อยอด',
-    '16 · Dashboard', '17 · แอป อสม.', '18 · ประโยชน์ + KPI', '19 · อบรม + ดูแล', '20 · CTA',
+    '1 · 🚨 Pain · ผู้สูงอายุล้มในบ้านลำพัง',
+    '2 · 🚨 Pain · 4 เรื่องดูแลแบบเดิมตามไม่ทัน',
+    '3 · ✨ Solution · ระบบ "รู้ก่อน" ที่ใครจะเจอ',
+    '4 · 🔧 How · 3 จุดข้อมูล สู่ศูนย์ใน 1 นาที',
+    '5 · 📦 Hardware · ชุดดูแลสุขภาพให้ผู้สูงอายุ',
+    '6 · 🩺 Benefit · แพทย์เห็นแนวโน้มล่วงหน้า',
+    '7 · 💰 ROI · ป้องกันถูกกว่ารักษาปลายทาง',
+    '8 · 🏆 Why us · 3 จุดต่างที่มั่นใจได้',
+    '9 · 🛡️ Coverage · 3 พื้นที่ ไม่ติดกล้องในห้อง',
+    '10 · 🌱 Choice · ไม่ต้องลงทุนทั้งตำบลทีเดียว',
+    '11 · 💵 Plans · 3 แบบ + แหล่งงบที่ใช้ได้',
+    '12 · 📞 Trust · เตือนแล้วใครรับสาย',
+    '13 · 🎯 Roles · ใครทำหน้าที่อะไร · ไม่มีภาระลอย',
+    '14 · 💪 Win · ระบบช่วยลดงาน อสม.',
+    '15 · 🔁 Reuse · ต่อยอดของที่เทศบาลมี',
+    '16 · 📊 Demo · Dashboard ภาพรวมตำบล',
+    '17 · 📱 Demo · แอป อสม. · บันทึกถูกคน',
+    '18 · 🏛️ Outcome · KPI ตอบสภาฯ ได้',
+    '19 · 🛠️ Support · เราอยู่ดูแลต่อเนื่อง',
+    '20 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
   ];
+  const goTo = (i) => {
+    const el = document.getElementById(`slide-${i + 1}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setOpen(false);
+  };
   return (
     <div className="deck-toolbar">
-      <strong>เอกสารนำเสนอ — โครงการดูแลผู้สูงอายุ (ลูกค้า อปท.)</strong>
-      <span className="note">20 สไลด์ · pain-first · ไม่มีชื่อแบรนด์/ราคา</span>
       <span style={{ flex: 1 }} />
       <span className="note">กด "พิมพ์/บันทึก PDF" แล้วเลือก Landscape</span>
       <button onClick={() => setOpen(!open)}>{open ? 'ปิดเมนู' : 'ไปสไลด์...'}</button>
       <button onClick={() => window.print()}>พิมพ์ / บันทึก PDF</button>
       {open && (
-        <div style={{ position: 'absolute', top: 44, right: 16, background: '#FFF', color: C.text, borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.2)', padding: 8, maxHeight: 'calc(100vh - 60px)', overflowY: 'auto', minWidth: 240, zIndex: 1100 }}>
+        <div style={{ position: 'absolute', top: 44, right: 16, background: '#FFF', color: C.text, borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.2)', padding: 8, maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', minWidth: 320, zIndex: 1100 }}>
           {titles.map((t, i) => (
-            <a
+            <button
               key={i}
-              href={`#slide-${i + 1}`}
-              onClick={() => setOpen(false)}
-              style={{ display: 'block', padding: '8px 12px', fontSize: 13, color: C.text, textDecoration: 'none', borderRadius: 6 }}
+              type="button"
+              onClick={() => goTo(i)}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: 13, color: C.text, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit' }}
               onMouseEnter={(e) => (e.currentTarget.style.background = C.surfaceSoft)}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               {t}
-            </a>
+            </button>
           ))}
         </div>
       )}
