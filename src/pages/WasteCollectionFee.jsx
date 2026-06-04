@@ -1011,8 +1011,9 @@ function Slide13() {
       </Lead>
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 36, marginTop: 14, flex: 1, alignItems: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          {/* No bezel frame — the image fills the space the dark green frame used to occupy */}
-          <div style={{ borderRadius: 24, overflow: 'hidden', width: 276, height: 500, background: '#000', boxShadow: '0 18px 40px rgba(0,0,0,0.22)' }}>
+          {/* No bezel frame — image is the full-bleed app screen (white frame cropped out of the PNG).
+              Box matches the screenshot's natural phone aspect (234×490) so nothing is cropped. */}
+          <div style={{ borderRadius: 24, overflow: 'hidden', width: 245, height: 513, background: '#000', boxShadow: '0 18px 40px rgba(0,0,0,0.22)' }}>
             <img
               src="images/waste-fee/driver-map.png"
               alt="Driver App · GPS Map · Zone A-12"
