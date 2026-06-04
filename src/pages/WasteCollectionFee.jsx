@@ -190,7 +190,12 @@ function DesktopMockup({ src, label, srcW = 1280, srcH = 800 }) {
     if (!containerRef.current) return;
     const compute = () => {
       if (!containerRef.current) return;
-      const { width, height } = containerRef.current.getBoundingClientRect();
+      // Use clientWidth/Height (LAYOUT size) not getBoundingClientRect (RENDERED size).
+      // The whole slide is transform:scale()-ed down on mobile; getBoundingClientRect would
+      // report the already-shrunk box, scaling the iframe a second time so it no longer fills
+      // its frame. clientWidth/Height are unaffected by ancestor transforms.
+      const width = containerRef.current.clientWidth;
+      const height = containerRef.current.clientHeight;
       if (width > 0 && height > 0) {
         setScale(Math.min(width / srcW, height / srcH));
       }
@@ -1006,14 +1011,13 @@ function Slide13() {
       </Lead>
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 36, marginTop: 14, flex: 1, alignItems: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          <div style={{ background: C.primaryDeep, padding: 8, borderRadius: 28, boxShadow: '0 18px 40px rgba(0,0,0,0.22)' }}>
-            <div style={{ borderRadius: 22, overflow: 'hidden', width: 260, height: 484, background: '#000' }}>
-              <img
-                src="images/waste-fee/driver-map.png"
-                alt="Driver App · GPS Map · Zone A-12"
-                style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
+          {/* No bezel frame — the image fills the space the dark green frame used to occupy */}
+          <div style={{ borderRadius: 24, overflow: 'hidden', width: 276, height: 500, background: '#000', boxShadow: '0 18px 40px rgba(0,0,0,0.22)' }}>
+            <img
+              src="images/waste-fee/driver-map.png"
+              alt="Driver App · GPS Map · Zone A-12"
+              style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+            />
           </div>
           <div style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, textAlign: 'center' }}>Driver App · GPS Map · Zone A-12 · 12 / 42 หลัง</div>
         </div>
