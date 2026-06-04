@@ -342,29 +342,37 @@ function ScaledSlide({ children }) {
   // Compute the fit-to-viewport scale. Used for the initial state too, so the first paint
   // is already correctly sized — never a full 1280px canvas (which on iOS Safari left the
   // page horizontally scrolled: nav dots off-screen, slide shoved into the left half).
+  // Measure the LAYOUT viewport (innerWidth/innerHeight), never visualViewport. On mobile,
+  // visualViewport changes every time the address bar slides in/out during scroll and on
+  // pinch-zoom — recomputing there made the slide "breathe" while scrolling (auto-advancing
+  // the deck) and fight the user's pinch-zoom. The layout viewport is stable through both,
+  // so the slide holds still and the browser's native pinch-zoom can magnify it for detail.
   const computeScale = () => {
     if (typeof window === 'undefined') return 1;
     const targetW = 1280;
     const targetH = 720;
-    // visualViewport.height excludes mobile browser chrome (address bar) — falls back to innerHeight
-    const vh = window.visualViewport?.height ?? window.innerHeight;
     const availableW = Math.max(window.innerWidth - 32, 320);
-    const availableH = Math.max(vh - 160, 320);
+    const availableH = Math.max(window.innerHeight - 160, 320);
     return Math.min(availableW / targetW, availableH / targetH, 1);
   };
   const [scale, setScale] = useState(computeScale);
   const wrapperRef = useRef(null);
+  const lastWidthRef = useRef(typeof window === 'undefined' ? 0 : window.innerWidth);
 
   useEffect(() => {
-    const apply = () => setScale(computeScale());
-    apply();
+    // Only re-fit when the viewport WIDTH changes (orientation flip or desktop window resize).
+    // Height-only changes come from the mobile address bar sliding in/out as you scroll —
+    // recomputing there is what made the slide shrink/grow and jump the deck to another page.
+    const apply = () => {
+      if (window.innerWidth === lastWidthRef.current) return;
+      lastWidthRef.current = window.innerWidth;
+      setScale(computeScale());
+    };
     window.addEventListener('resize', apply);
     window.addEventListener('orientationchange', apply);
-    window.visualViewport?.addEventListener('resize', apply);
     return () => {
       window.removeEventListener('resize', apply);
       window.removeEventListener('orientationchange', apply);
-      window.visualViewport?.removeEventListener('resize', apply);
     };
   }, []);
 
