@@ -306,6 +306,12 @@ function DeckStyles() {
       .deck-toolbar .note { opacity: .75; font-size: 12px; }
 
       .slide-wrapper { display: flex; justify-content: center; margin: 0 auto 24px; }
+
+      /* Mobile — keep right-edge nav dots from overlapping the slide on narrow screens,
+         and let the dot column scroll instead of overflowing when there are many slides */
+      .scroll-dots { max-height: calc(100dvh - 120px); overflow-y: auto; scrollbar-width: none; }
+      .scroll-dots::-webkit-scrollbar { display: none; }
+      @media (max-width: 700px) { .scroll-dots { display: none !important; } }
       .slide-scale { transform-origin: top left; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
 
       @media print {
@@ -335,17 +341,21 @@ function ScaledSlide({ children }) {
     function compute() {
       const targetW = 1280;
       const targetH = 720;
+      // visualViewport.height excludes mobile browser chrome (address bar) — falls back to innerHeight
+      const vh = window.visualViewport?.height ?? window.innerHeight;
       const availableW = Math.max(window.innerWidth - 32, 320);
-      const availableH = Math.max(window.innerHeight - 160, 320);
+      const availableH = Math.max(vh - 160, 320);
       const s = Math.min(availableW / targetW, availableH / targetH, 1);
       setScale(s);
     }
     compute();
     window.addEventListener('resize', compute);
     window.addEventListener('orientationchange', compute);
+    window.visualViewport?.addEventListener('resize', compute);
     return () => {
       window.removeEventListener('resize', compute);
       window.removeEventListener('orientationchange', compute);
+      window.visualViewport?.removeEventListener('resize', compute);
     };
   }, []);
 
