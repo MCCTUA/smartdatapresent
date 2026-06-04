@@ -19,6 +19,7 @@ import RoadSafety from './pages/cctv-ai/RoadSafety';
 import VehicleCheck from './pages/cctv-ai/VehicleCheck';
 import ParkingManagement from './pages/cctv-ai/ParkingManagement';
 import BridgeTunnelWatch from './pages/cctv-ai/BridgeTunnelWatch';
+import CCTVAIPitchDeck from './pages/cctv-ai/PitchDeck';
 
 export default function App() {
   return (
@@ -36,7 +37,8 @@ export default function App() {
 
             {/* CCTV + AI catalog + 6 detail apps + technical overview */}
             <Route path="/smart-traffic" element={<SmartTraffic />} />
-            <Route path="/cctv-ai" element={<CCTVAI />} />
+            <Route path="/cctv-ai" element={<CCTVAIPitchDeck />} />
+            <Route path="/cctv-ai/pitch" element={<CCTVAI />} />
             <Route path="/cctv-ai/technical-overview" element={<TechnicalOverview />} />
             <Route path="/cctv-ai/public-area-watch" element={<PublicAreaWatch />} />
             <Route path="/cctv-ai/restricted-zone" element={<RestrictedZone />} />
