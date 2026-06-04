@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import RotateHint from '../../components/RotateHint';
 
 // ---------------------------------------------------------------------------
 // CCTV+AI PitchDeck.jsx — Sales Pitch Deck (20 slides · 1280×720 · print-PDF ready)
@@ -307,7 +308,7 @@ function DeckStyles() {
       @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
 
       html { scroll-behavior: smooth; }
-      .deck-root { font-family: 'Sarabun', sans-serif; background: #6b6b6b; min-height: 100vh; padding-top: 56px; padding-bottom: 40px; }
+      .deck-root { font-family: 'Sarabun', sans-serif; background: #6b6b6b; min-height: 100dvh; padding-top: 56px; padding-bottom: 40px; max-width: 100vw; overflow-x: clip; }
       .deck-toolbar {
         position: fixed; top: 48px; left: 0; right: 0; height: 44px; background: ${C.primaryDeep};
         color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; z-index: 40; font-size: 13px;
@@ -324,7 +325,7 @@ function DeckStyles() {
 
       /* Mobile — keep right-edge nav dots from overlapping the slide on narrow screens,
          and let the dot column scroll instead of overflowing when there are many slides */
-      .scroll-dots { max-height: calc(100dvh - 120px); overflow-y: auto; scrollbar-width: none; }
+      .scroll-dots { right: max(14px, env(safe-area-inset-right, 14px)) !important; max-height: calc(100dvh - 120px); overflow-y: auto; scrollbar-width: none; }
       .scroll-dots::-webkit-scrollbar { display: none; }
       @media (max-width: 700px) { .scroll-dots { display: none !important; } }
       .slide-scale { transform-origin: top left; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
@@ -349,28 +350,32 @@ function DeckStyles() {
 }
 
 function ScaledSlide({ children }) {
-  const [scale, setScale] = useState(1);
+  // Compute the fit-to-viewport scale. Used for the initial state too, so the first paint
+  // is already correctly sized — never a full 1280px canvas (which on iOS Safari left the
+  // page horizontally scrolled: nav dots off-screen, slide shoved into the left half).
+  const computeScale = () => {
+    if (typeof window === 'undefined') return 1;
+    const targetW = 1280;
+    const targetH = 720;
+    // visualViewport.height excludes mobile browser chrome (address bar) — falls back to innerHeight
+    const vh = window.visualViewport?.height ?? window.innerHeight;
+    const availableW = Math.max(window.innerWidth - 32, 320);
+    const availableH = Math.max(vh - 160, 320);
+    return Math.min(availableW / targetW, availableH / targetH, 1);
+  };
+  const [scale, setScale] = useState(computeScale);
   const wrapperRef = useRef(null);
 
   useEffect(() => {
-    function compute() {
-      const targetW = 1280;
-      const targetH = 720;
-      // visualViewport.height excludes mobile browser chrome (address bar) — falls back to innerHeight
-      const vh = window.visualViewport?.height ?? window.innerHeight;
-      const availableW = Math.max(window.innerWidth - 32, 320);
-      const availableH = Math.max(vh - 160, 320);
-      const s = Math.min(availableW / targetW, availableH / targetH, 1);
-      setScale(s);
-    }
-    compute();
-    window.addEventListener('resize', compute);
-    window.addEventListener('orientationchange', compute);
-    window.visualViewport?.addEventListener('resize', compute);
+    const apply = () => setScale(computeScale());
+    apply();
+    window.addEventListener('resize', apply);
+    window.addEventListener('orientationchange', apply);
+    window.visualViewport?.addEventListener('resize', apply);
     return () => {
-      window.removeEventListener('resize', compute);
-      window.removeEventListener('orientationchange', compute);
-      window.visualViewport?.removeEventListener('resize', compute);
+      window.removeEventListener('resize', apply);
+      window.removeEventListener('orientationchange', apply);
+      window.visualViewport?.removeEventListener('resize', apply);
     };
   }, []);
 
@@ -1389,6 +1394,7 @@ export default function PitchDeck() {
   return (
     <>
       <DeckStyles />
+      <RotateHint />
       <Toolbar />
       <ScrollDots count={slides.length} />
       <div className="deck-root">

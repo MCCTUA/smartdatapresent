@@ -26,6 +26,14 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  /* Prevent any horizontal scroll on mobile — `clip` (not `hidden`) so it does not
+     create a scroll container that would break the sticky nav / fixed nav dots */
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   margin: 0;
