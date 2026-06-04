@@ -1,17 +1,17 @@
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState, useRef } from 'react';
 
 // ---------------------------------------------------------------------------
-// SmartTraffic.jsx — /smart-traffic
-// B2B partner pitch · mmWave Radar as sensor-fusion add-on for CCTV deployments
-// Copy: verbatim from infomation/mmWave/mmwave_content.md
-// Design: Civic Trust palette · Font: Sarabun · Framer-motion reveals
+// SmartTraffic.jsx — Sales Pitch Deck (15 slides · 1280×720 · print-PDF ready)
+// Design: Civic Trust palette (Forest #0F6E56 + Cream #FAF7EE + Amber #BA7517 + Navy)
+// Font: Sarabun
+// Audience: ผู้บริหารเมือง (นายก·ปลัด) · B2G · pain-first storytelling
 // ---------------------------------------------------------------------------
 
 const C = {
   primary: '#0F6E56',
   primaryHover: '#1D9E75',
   primaryDeep: '#0B5544',
+  primarySoft: '#E5F0EA',
   surface: '#FAF7EE',
   surfaceSoft: '#F5F1E4',
   text: '#1F2A24',
@@ -25,682 +25,1074 @@ const C = {
   navy: '#0A1F3D',
 };
 
+const IMG = 'images/smart_traffic';
 const VIDEO_SRC = '/videos/0518.mp4';
 const VIDEO_POSTER = '/videos/0518_poster.jpg';
-const CONTACT_HREF =
-  'mailto:mcctua2@gmail.com?subject=ปรึกษา%20Radar%20%2B%20CCTV%20Partner&body=ทีม Smart Data ครับ%2C%0A%0Aสนใจคุย partnership%20Radar%20%2B%20CCTV%0A%0Aชื่อบริษัท:%0Aผู้ติดต่อ:%0Aเบอร์โทรศัพท์:%0Aพื้นที่ติดตั้งหลัก:%0Aโจทย์ลูกค้าที่อยากเสนอ:';
+const TOTAL_SLIDES = 15;
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
-};
-const stagger = { show: { transition: { staggerChildren: 0.08 } } };
+// ---------------------------------------------------------------------------
+// Slide shell — fixed 1280×720, scaled to viewport (screen) and 1:1 (print)
+// ---------------------------------------------------------------------------
 
-function scrollToId(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+function Slide({ num, dark = false, navy = false, children, footer = '' }) {
+  const bg = navy
+    ? `linear-gradient(135deg, ${C.navy} 0%, ${C.primaryDeep} 100%)`
+    : dark
+      ? `linear-gradient(135deg, ${C.primaryDeep} 0%, ${C.primary} 100%)`
+      : C.surface;
+  const isDark = dark || navy;
+  return (
+    <section
+      className="slide-page"
+      data-dark={isDark ? 'true' : 'false'}
+      style={{
+        position: 'relative',
+        width: 1280,
+        height: 720,
+        background: bg,
+        color: isDark ? '#FFF' : C.text,
+        overflow: 'hidden',
+        fontFamily: 'Sarabun, sans-serif',
+        flexShrink: 0,
+      }}
+    >
+      {!isDark && (
+        <div
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 10, background: C.primary }}
+        />
+      )}
+      <div style={{ position: 'absolute', inset: 0, padding: '52px 60px 56px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        {children}
+      </div>
+      {footer && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 20,
+            left: 60,
+            fontSize: 12,
+            color: isDark ? 'rgba(255,255,255,0.7)' : C.textMuted,
+            opacity: 0.85,
+            fontWeight: 500,
+            letterSpacing: 0.5,
+          }}
+        >
+          {footer}
+        </div>
+      )}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 22,
+          right: 38,
+          fontSize: 13,
+          color: isDark ? 'rgba(255,255,255,0.7)' : C.textMuted,
+          fontWeight: 500,
+        }}
+      >
+        {num} / {TOTAL_SLIDES}
+      </div>
+    </section>
+  );
 }
 
-// Inline SVG icon set — neutral line style, single accent color
-const Icon = {
-  Moon: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  ),
-  Rain: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" />
-      <line x1="8" y1="19" x2="8" y2="21" />
-      <line x1="12" y1="19" x2="12" y2="22" />
-      <line x1="16" y1="19" x2="16" y2="21" />
-    </svg>
-  ),
-  Gauge: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d="M12 14l4-4" /><circle cx="12" cy="14" r="8" /><path d="M5 14a7 7 0 0 1 14 0" />
-    </svg>
-  ),
-  Stack: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <polygon points="12 2 2 7 12 12 22 7 12 2" />
-      <polyline points="2 17 12 22 22 17" />
-      <polyline points="2 12 12 17 22 12" />
-    </svg>
-  ),
-  Count: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-      <line x1="9" y1="4" x2="9" y2="20" />
-    </svg>
-  ),
-  Speed: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-    </svg>
-  ),
-  Class: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d="M3 6h18M3 12h18M3 18h18" />
-    </svg>
-  ),
-  Weather: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <circle cx="12" cy="12" r="4" />
-      <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
-      <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
-      <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" /><line x1="16.95" y1="16.95" x2="19.07" y2="19.07" />
-      <line x1="4.93" y1="19.07" x2="7.05" y2="16.95" /><line x1="16.95" y1="7.05" x2="19.07" y2="4.93" />
-    </svg>
-  ),
-  Range: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <polyline points="18 8 22 12 18 16" /><polyline points="6 8 2 12 6 16" />
-    </svg>
-  ),
-  Battery: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <rect x="2" y="7" width="18" height="10" rx="2" /><line x1="22" y1="11" x2="22" y2="13" />
-      <line x1="6" y1="10" x2="6" y2="14" />
-    </svg>
-  ),
-  Building: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <rect x="4" y="3" width="16" height="18" />
-      <line x1="9" y1="7" x2="9" y2="7" /><line x1="15" y1="7" x2="15" y2="7" />
-      <line x1="9" y1="12" x2="9" y2="12" /><line x1="15" y1="12" x2="15" y2="12" />
-      <line x1="9" y1="17" x2="15" y2="17" />
-    </svg>
-  ),
-  Warn: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-      <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  ),
-  Camera: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-      <circle cx="12" cy="13" r="4" />
-    </svg>
-  ),
-  Park: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M9 17V7h4a3 3 0 0 1 0 6H9" />
-    </svg>
-  ),
-  Receipt: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z" />
-      <line x1="8" y1="9" x2="16" y2="9" /><line x1="8" y1="13" x2="14" y2="13" />
-    </svg>
-  ),
-  Plug: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <line x1="6" y1="3" x2="6" y2="9" /><line x1="18" y1="3" x2="18" y2="9" />
-      <path d="M5 9h14v3a7 7 0 0 1-14 0V9z" /><line x1="12" y1="22" x2="12" y2="16" />
-    </svg>
-  ),
-  Handshake: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d="M2 12l3-3 4 4-2 2-5-3z" /><path d="M22 12l-3-3-4 4 2 2 5-3z" />
-      <path d="M9 13l3 3 3-3" />
-    </svg>
-  ),
-  Layers: (p) => (
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <polygon points="12 2 2 7 12 12 22 7 12 2" />
-      <polyline points="2 17 12 22 22 17" />
-    </svg>
-  ),
-};
+// ---------------------------------------------------------------------------
+// Atoms
+// ---------------------------------------------------------------------------
 
-const PAINS = [
-  { icon: <Icon.Moon />, title: 'Pain 1 — มืดแล้วนับไม่ได้', desc: 'ตอนกลางคืน กล้อง IR ก็ยังตกหล่น มอเตอร์ไซค์เล็ก รถความเร็วสูง หรือรถที่เปิดไฟสูงย้อนเลนส์ ระบบนับพลาด' },
-  { icon: <Icon.Rain />, title: 'Pain 2 — ฝน หมอก ฝุ่น = ภาพไม่ชัด', desc: 'หน้าฝนทีไร ภาพเบลอ AI detect ผิด ลูกค้าโทรมาขอสรุปจราจรไม่ได้ ทีมต้องไปกู้ระบบ' },
-  { icon: <Icon.Gauge />, title: 'Pain 3 — ความเร็วต้องวัดจริง ไม่ใช่ประมาณการ', desc: 'ลูกค้าราชการเริ่มถามว่า "วัดความเร็วได้ทุกคันไหม" เพราะต้องเอาไปทำรายงานความปลอดภัยถนน CCTV เดี่ยวๆ ไม่มีคำตอบ' },
-  { icon: <Icon.Stack />, title: 'Pain 4 — ขยายงานยาก ถ้าต้องพึ่ง compute หนัก', desc: 'จะเพิ่ม analytics ลึกๆ ก็ต้องไปอัปเกรด AI box, เพิ่ม GPU, เพิ่ม bandwidth — งบบาน, ลูกค้าถอย' },
-];
+function Eyebrow({ color, dark, alert, accent, children }) {
+  const col = color || (alert ? C.alert : accent ? C.accent : dark ? '#EAE1CC' : C.primary);
+  return (
+    <p
+      style={{
+        display: 'inline-block',
+        fontSize: 14,
+        fontWeight: 700,
+        letterSpacing: 2,
+        textTransform: 'uppercase',
+        color: col,
+        marginBottom: 12,
+      }}
+    >
+      {children}
+    </p>
+  );
+}
 
-const STEPS = [
-  {
-    n: '01',
-    title: 'Radar ตรวจจับ',
-    desc: 'Radar ส่งคลื่นออกไปและรับสะท้อนกลับ ได้ระยะ + ความเร็ว + ทิศทาง ของทุกวัตถุที่เคลื่อนไหวในรัศมีหลายร้อยเมตร — แม้ในความมืดสนิท',
-  },
-  {
-    n: '02',
-    title: 'CCTV ยืนยันภาพ',
-    desc: 'เมื่อ radar เจอวัตถุ ระบบจะ trigger ให้กล้อง CCTV ในตำแหน่งเดียวกัน snap ภาพ ณ จังหวะที่รถอยู่ในเฟรมพอดี ภาพคมขึ้น, ลด false snap, ลด storage',
-  },
-  {
-    n: '03',
-    title: 'รวมข้อมูล ส่งให้ลูกค้า',
-    desc: 'ระบบหลังบ้านนำข้อมูล radar (count, speed, class) + ภาพจาก CCTV + ป้ายทะเบียน มารวมเป็น dashboard เดียว แสดงแบบ real-time + ย้อนหลังได้',
-  },
-];
+function Title({ dark, size = 40, children, style }) {
+  return (
+    <h2
+      style={{
+        fontSize: size,
+        fontWeight: 800,
+        lineHeight: 1.4,
+        color: dark ? '#FFF' : C.primaryDeep,
+        letterSpacing: -0.3,
+        ...style,
+      }}
+    >
+      {children}
+    </h2>
+  );
+}
 
-const FEATURES = [
-  {
-    icon: <Icon.Count />,
-    title: '1. นับยานพาหนะแบบทุกคัน ไม่มีตกหล่น',
-    bullets: [
-      'ตรวจจับได้ทุกขนาด ตั้งแต่มอเตอร์ไซค์ถึงรถบรรทุก',
-      'ความแม่นยำในการนับ ใกล้ระดับสายตามนุษย์',
-      'ทำงานได้ทั้งตอนกลางวันและกลางคืน ไม่มีจุดบอด',
-    ],
-  },
-  {
-    icon: <Icon.Speed />,
-    title: '2. วัดความเร็วได้ทุกคันแบบ real-time',
-    bullets: [
-      'วัด instantaneous speed ของทุกวัตถุที่ผ่านพื้นที่ตรวจจับ',
-      'ใช้หลัก Doppler effect — เป็นการวัดจริง ไม่ใช่ประมาณจากภาพ',
-      'รายงานเป็น km/h ส่งเข้า dashboard ทันที',
-    ],
-  },
-  {
-    icon: <Icon.Class />,
-    title: '3. แยกประเภทยานพาหนะอัตโนมัติ',
-    bullets: [
-      'แยกได้: มอเตอร์ไซค์ / รถยนต์ / รถบรรทุก / รถบัส / คนเดิน',
-      'ใช้ขนาด radar cross-section + รูปแบบความเร็ว ในการจำแนก',
-      'ไม่ต้องพึ่งแสง — ใช้งานคืนได้แม่นเท่ากลางวัน',
-    ],
-  },
-  {
-    icon: <Icon.Weather />,
-    title: '4. ทำงานในทุกสภาพอากาศ',
-    bullets: [
-      'คลื่น Radar ทะลุฝน หมอก ฝุ่น ควัน ได้',
-      'ไม่กระทบจากแสงย้อน / หน้าฝน / ตอนพลบค่ำ',
-      'IP-rated สำหรับติดตั้ง outdoor ระยะยาว',
-    ],
-  },
-  {
-    icon: <Icon.Range />,
-    title: '5. ระยะตรวจจับไกล ครอบคลุมหลายเลน',
-    bullets: [
-      'ระยะตรวจจับยาน 200+ เมตร',
-      'ครอบคลุมถนน 4–6 เลนต่อชุด',
-      'ลดจำนวนจุดติดตั้ง เทียบกับการใช้ CCTV หลายตัว',
-    ],
-  },
-  {
-    icon: <Icon.Battery />,
-    title: '6. กินไฟต่ำ ใช้ compute ของกล้องเดิมได้',
-    bullets: [
-      'กินไฟต่ำกว่า AI camera หลายเท่า',
-      'ส่งข้อมูลเป็น metadata (เลข count, speed, class) ไม่ใช่ video',
-      'bandwidth ที่ต้องใช้น้อยมาก — ใช้กับ network เดิมของไซต์ลูกค้าได้',
-    ],
-  },
-];
+function Lead({ dark, children, style }) {
+  return (
+    <p
+      style={{
+        fontSize: 19,
+        fontWeight: 400,
+        lineHeight: 1.6,
+        color: dark ? 'rgba(255,255,255,0.9)' : C.textMuted,
+        ...style,
+      }}
+    >
+      {children}
+    </p>
+  );
+}
 
-const COMPARE_ROWS = [
-  { situation: 'กลางวัน อากาศดี', cctv: 'นับได้ดี', combo: 'นับได้ดี + วัดความเร็วจริง' },
-  { situation: 'กลางคืน', cctv: 'ตกหล่น เห็นบางคัน', combo: 'นับครบทุกคัน' },
-  { situation: 'ฝนตก / หมอก', cctv: 'ภาพเบลอ AI ผิดพลาด', combo: 'ทำงานปกติ' },
-  { situation: 'ย้อนแสง / พระอาทิตย์ตก', cctv: 'กล้องบอด ช่วงเวลาหนึ่ง', combo: 'ทำงานปกติ' },
-  { situation: 'วัดความเร็วทุกคัน', cctv: 'ทำได้ แต่ใช้ compute สูง', combo: 'ทำได้ทันที ทุกคัน' },
-  { situation: 'แยก class ยานพาหนะ', cctv: 'ใช้ AI vision — แม่นเฉพาะกลางวัน', combo: 'แม่นทั้งกลางวัน-กลางคืน' },
-  { situation: 'Bandwidth ที่ใช้', cctv: 'สูง (video stream)', combo: 'ต่ำมาก (metadata)' },
-  { situation: 'จุดติดตั้งต่อพื้นที่ครอบคลุม', cctv: 'หลายจุด', combo: 'ลดได้ครึ่งหนึ่ง' },
-];
+function Card({ children, dark, style }) {
+  return (
+    <div
+      style={{
+        background: dark ? 'rgba(255,255,255,0.08)' : '#FFF',
+        border: `1px solid ${dark ? 'rgba(255,255,255,0.16)' : C.surfaceSoft}`,
+        borderRadius: 18,
+        padding: '24px 26px',
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
-// Combo column header label — used in desktop table header + mobile card label
-const COMBO_LABEL = 'CCTV + Radar';
+function CardIcon({ children, bg, color }) {
+  return (
+    <div
+      style={{
+        width: 46,
+        height: 46,
+        borderRadius: 12,
+        background: bg || C.primarySoft,
+        color: color || C.primary,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 24,
+        marginBottom: 12,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
-const USE_CASES = [
-  {
-    n: '01',
-    icon: <Icon.Building />,
-    title: 'Traffic Flow Analytics สำหรับ อปท.',
-    desc: 'รายงานปริมาณจราจรรายชั่วโมง / รายวัน / รายสัปดาห์ ต่อเส้นทาง พร้อม peak hours ใช้วางแผนสัญญาณไฟ, ปรับเลน, ขออนุมัติงบขยายถนน — ข้อมูลพร้อมตอบสภา',
-  },
-  {
-    n: '02',
-    icon: <Icon.Warn />,
-    title: 'Speed Monitoring & Black Spot Detection',
-    desc: 'รายงานความเร็วเฉลี่ย + ตำแหน่งที่รถใช้ความเร็วเกินสม่ำเสมอ ส่งให้ตำรวจ / กรมทางหลวง / ขนส่ง ใช้วางแผนจุดติดป้าย, ลูกระนาด, กล้องจับความเร็ว',
-  },
-  {
-    n: '03',
-    icon: <Icon.Camera />,
-    title: 'LPR Trigger (เพิ่มความแม่น LPR เดิม)',
-    desc: 'Radar trigger ให้กล้องของคุณ snap ภาพในจังหวะที่รถอยู่ตำแหน่งดีที่สุด ลด false snap, ลด storage 60–80%, เพิ่ม LPR accuracy โดยไม่ต้องเปลี่ยน engine',
-  },
-  {
-    n: '04',
-    icon: <Icon.Warn />,
-    title: 'School Zone / Hospital Zone Safety',
-    desc: 'ตรวจจับรถที่เกินความเร็วในเขตโรงเรียน / โรงพยาบาล อัตโนมัติ ส่ง alert เข้า LINE / Dashboard ของเทศบาล → ใช้เป็นหลักฐานก่อนเกิดเหตุจริง',
-  },
-  {
-    n: '05',
-    icon: <Icon.Park />,
-    title: 'Parking & Stop Detection',
-    desc: 'ตรวจจับรถจอดผิดที่ / จอดในจุดห้ามจอด / จอดนานเกินกำหนด ตั้ง zone ได้อิสระ — ทำงานบนกล้องและพื้นที่เดิมของลูกค้า',
-  },
-  {
-    n: '06',
-    icon: <Icon.Receipt />,
-    title: 'Vehicle Class Tolling / Fee Capture',
-    desc: 'นับและแยกประเภทยานพาหนะที่เข้า-ออกพื้นที่ (ตลาด, ด่านชุมชน, สวนสาธารณะ) ใช้สอบยอดค่าธรรมเนียม / ตรวจสอบรายได้ — audit trail',
-  },
-];
+function CardTitle({ dark, children, style }) {
+  return (
+    <h3
+      style={{
+        fontSize: 19,
+        fontWeight: 700,
+        color: dark ? '#FFF' : C.text,
+        marginBottom: 7,
+        lineHeight: 1.45,
+        ...style,
+      }}
+    >
+      {children}
+    </h3>
+  );
+}
 
-export default function SmartTraffic() {
-  // Dynamic <head> for partner pitch — sets title + OG tags on mount, restores on unmount
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = 'Smart Traffic · Radar + CCTV Sensor Fusion';
+function CardBody({ dark, children, style }) {
+  return (
+    <p
+      style={{
+        fontSize: 15,
+        color: dark ? 'rgba(255,255,255,0.85)' : C.textMuted,
+        lineHeight: 1.55,
+        ...style,
+      }}
+    >
+      {children}
+    </p>
+  );
+}
 
-    const metas = [
-      { name: 'description', content: 'Radar เสริมกล้อง CCTV ที่คุณติดตั้งให้ลูกค้าอยู่แล้ว — นับรถ วัดความเร็ว แยกประเภท แม่นยำ 24 ชั่วโมง ทุกสภาพอากาศ' },
-      { property: 'og:title', content: 'กล้องเดิมของคุณ เก่งกลางวัน — แต่ยังตอบลูกค้าไม่ได้ตอนกลางคืน ฝนตก และย้อนแสง' },
-      { property: 'og:description', content: 'Radar เสริมกล้อง CCTV ของคุณ ให้ตอบโจทย์ลูกค้าได้ 24/7 ทุกสภาพอากาศ' },
-      { property: 'og:type', content: 'website' },
-      { property: 'og:image', content: VIDEO_POSTER },
-    ];
-    const created = metas.map((attrs) => {
-      const key = attrs.name ? 'name' : 'property';
-      const sel = `meta[${key}="${attrs[key]}"]`;
-      let el = document.head.querySelector(sel);
-      const existed = !!el;
-      if (!el) {
-        el = document.createElement('meta');
-        el.setAttribute(key, attrs[key]);
-        document.head.appendChild(el);
+function NumBadge({ n }) {
+  return (
+    <div
+      style={{
+        width: 44,
+        height: 44,
+        borderRadius: '50%',
+        background: C.primary,
+        color: '#FFF',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 800,
+        fontSize: 19,
+        flexShrink: 0,
+      }}
+    >
+      {n}
+    </div>
+  );
+}
+
+function Pill({ bg, color, children, style }) {
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: 1,
+        textTransform: 'uppercase',
+        padding: '5px 12px',
+        borderRadius: 100,
+        background: bg || 'rgba(255,255,255,0.14)',
+        color: color || '#FFF',
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function Note({ children, style }) {
+  return (
+    <div
+      style={{
+        fontSize: 13.5,
+        color: C.textMuted,
+        padding: '12px 16px',
+        background: '#FFF',
+        borderLeft: `3px solid ${C.accent}`,
+        borderRadius: '0 8px 8px 0',
+        lineHeight: 1.6,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Deck Styles (toolbar + print PDF + scroll-behavior)
+// ---------------------------------------------------------------------------
+
+function DeckStyles() {
+  return (
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+
+      html { scroll-behavior: smooth; }
+      .deck-root { font-family: 'Sarabun', sans-serif; background: #6b6b6b; min-height: 100vh; padding-top: 56px; padding-bottom: 40px; }
+      .deck-toolbar {
+        position: fixed; top: 48px; left: 0; right: 0; height: 44px; background: ${C.primaryDeep};
+        color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; z-index: 40; font-size: 13px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       }
-      const prevContent = el.getAttribute('content');
-      el.setAttribute('content', attrs.content);
-      return { el, prevContent, existed };
-    });
+      .deck-toolbar button {
+        font-family: inherit; background: rgba(255,255,255,.16); color: #fff; border: none;
+        padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: background .15s;
+      }
+      .deck-toolbar button:hover { background: rgba(255,255,255,.28); }
+      .deck-toolbar .note { opacity: .75; font-size: 12px; }
 
-    return () => {
-      document.title = prevTitle;
-      created.forEach(({ el, prevContent, existed }) => {
-        if (!existed) el.remove();
-        else if (prevContent !== null) el.setAttribute('content', prevContent);
-      });
-    };
+      .slide-wrapper { display: flex; justify-content: center; margin: 0 auto 24px; }
+      .slide-scale { transform-origin: top left; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+
+      @media print {
+        @page { size: 1280px 720px; margin: 0; }
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        html, body { background: #fff !important; }
+        nav, .deck-toolbar, .scroll-dots { display: none !important; }
+        main { padding-top: 0 !important; }
+        .deck-root { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+        .slide-wrapper { margin: 0 !important; width: 1280px !important; height: 720px !important; }
+        .slide-scale { transform: none !important; box-shadow: none !important; page-break-after: always; }
+        .slide-page { box-shadow: none !important; }
+      }
+    `}</style>
+  );
+}
+
+function ScaledSlide({ children }) {
+  const [scale, setScale] = useState(1);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function compute() {
+      const target = 1280;
+      const available = Math.min(window.innerWidth - 32, target);
+      setScale(available / target);
+    }
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
   }, []);
 
   return (
-    <div
-      className="smart-traffic-page"
-      style={{ fontFamily: "'Sarabun', Tahoma, sans-serif", color: C.text, background: C.surface }}
-    >
-      {/* ── [1] HERO — Pain-first headline + side video ─────────────────────── */}
-      <section
-        className="px-6 md:px-10 py-16 md:py-24"
-        style={{
-          background: `linear-gradient(135deg, ${C.navy} 0%, ${C.primaryDeep} 100%)`,
-          color: '#FFF',
-        }}
-      >
-        <motion.div
-          className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-12 items-center"
-          initial="hidden"
-          animate="show"
-          variants={stagger}
-        >
-          {/* Copy */}
-          <div>
-            <motion.p
-              variants={fadeUp}
-              className="text-[12px] font-semibold uppercase mb-4"
-              style={{ color: C.accent, letterSpacing: '2.5px' }}
-            >
-              SMART TRAFFIC · SENSOR FUSION
-            </motion.p>
-            <motion.h1
-              variants={fadeUp}
-              className="font-semibold mb-5"
-              style={{ fontSize: 'clamp(30px, 4.6vw, 52px)', lineHeight: 1.18, color: '#FFF' }}
-            >
-              กล้องเดิมของคุณ เก่งกลางวัน — แต่ยังตอบลูกค้าไม่ได้ตอนกลางคืน ฝนตก และย้อนแสง
-            </motion.h1>
-            <motion.p
-              variants={fadeUp}
-              className="text-[16px] md:text-[18px] leading-relaxed mb-3"
-              style={{ color: '#FFFFFFCC' }}
-            >
-              Radar เสริมกล้อง CCTV ที่คุณติดตั้งให้ลูกค้าอยู่แล้ว
-              ให้นับรถ วัดความเร็ว แยกประเภทยานพาหนะ ได้แม่นยำ 24 ชั่วโมง ทุกสภาพอากาศ
-            </motion.p>
-            <motion.p
-              variants={fadeUp}
-              className="text-[16px] md:text-[18px] leading-relaxed mb-8 font-semibold"
-              style={{ color: '#FFF' }}
-            >
-              โดยไม่ต้องเปลี่ยนกล้อง ไม่ต้องเปลี่ยน NVR
-            </motion.p>
-
-            <motion.div variants={fadeUp} className="flex gap-3 flex-wrap">
-              <a
-                href={CONTACT_HREF}
-                className="text-[14px] md:text-[15px] font-semibold px-6 py-3 rounded-lg no-underline transition-all"
-                style={{ background: C.accent, color: '#FFF' }}
-              >
-                คุยโจทย์งานจริงกับเรา
-              </a>
-              <button
-                onClick={() => scrollToId('demo')}
-                className="text-[14px] md:text-[15px] font-semibold px-6 py-3 rounded-lg cursor-pointer transition-all"
-                style={{ background: 'transparent', color: '#FFF', border: '1px solid rgba(255,255,255,0.4)' }}
-              >
-                ดูคลิปสาธิต ↓
-              </button>
-            </motion.div>
-          </div>
-
-          {/* Side video — autoplay muted loop background-style */}
-          <motion.div variants={fadeUp}>
-            <div
-              className="rounded-2xl overflow-hidden relative"
-              style={{
-                background: '#000',
-                border: '1px solid rgba(255,255,255,0.12)',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
-                aspectRatio: '21 / 9',
-              }}
-            >
-              <video
-                src={VIDEO_SRC}
-                poster={VIDEO_POSTER}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className="w-full h-full object-cover block"
-                aria-label="ภาพตัวอย่าง Radar ตรวจจับและวัดความเร็วยานพาหนะ"
-              />
-              <div
-                className="absolute bottom-3 left-3 text-[11px] font-semibold uppercase px-3 py-1 rounded-full"
-                style={{ background: 'rgba(0,0,0,0.6)', color: '#FFF', letterSpacing: '1.5px' }}
-              >
-                LIVE TEST · 26s
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* ── [2] PAIN PANEL — 4 cards (2×2 desktop / 1-col mobile) ───────────── */}
-      <section className="px-6 md:px-10 py-20 md:py-24" style={{ background: C.surfaceSoft }}>
-        <div className="max-w-[1100px] mx-auto">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger}>
-            <motion.div variants={fadeUp} className="max-w-2xl mb-10">
-              <p className="text-[12px] font-semibold uppercase mb-3" style={{ color: C.alert, letterSpacing: '2.5px' }}>
-                ปัญหาที่ดีลเลอร์ CCTV เจอประจำ
-              </p>
-              <h2 className="font-semibold mb-4" style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', color: C.primaryDeep, lineHeight: 1.3 }}>
-                ลูกค้าซื้อกล้องไปแล้ว แต่ขอข้อมูลเพิ่มอีกเรื่อยๆ
-              </h2>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {PAINS.map((p, i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl p-6"
-                  style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderTop: `4px solid ${C.alert}` }}
-                >
-                  <div className="mb-3" style={{ color: C.alert }}>{p.icon}</div>
-                  <div className="text-[16px] font-semibold mb-2" style={{ color: C.alert }}>{p.title}</div>
-                  <p className="text-[14px] leading-relaxed" style={{ color: C.text }}>{p.desc}</p>
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── [3] SOLUTION OVERVIEW — lead + 3 step cards ─────────────────────── */}
-      <section className="px-6 md:px-10 py-20 md:py-24" style={{ background: C.surface }}>
-        <div className="max-w-[1100px] mx-auto">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger}>
-            <motion.div variants={fadeUp} className="max-w-3xl mb-10">
-              <p className="text-[12px] font-semibold uppercase mb-3" style={{ color: C.primary, letterSpacing: '2.5px' }}>
-                แนวทางที่เราเสนอ
-              </p>
-              <h2 className="font-semibold mb-5" style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', color: C.primaryDeep, lineHeight: 1.3 }}>
-                ไม่ต้องเปลี่ยนกล้อง — แค่เติม Radar เป็น "ตาที่สอง"
-              </h2>
-              <p className="text-[15px] leading-relaxed" style={{ color: C.textMuted }}>
-                Radar คือเซนเซอร์คลื่นความถี่สูง ที่มองเห็นการเคลื่อนไหวด้วย <strong style={{ color: C.text }}>คลื่นวิทยุ ไม่ใช่แสง</strong>
-                {' '}แปลว่ามันทำงานได้ดี <strong style={{ color: C.text }}>ในที่ที่กล้องทำงานไม่ดี</strong> — กลางคืน, ฝน, หมอก, ฝุ่น, ย้อนแสง
-                เมื่อเอามาทำงานคู่กับ CCTV ของคุณ ระบบจะใช้ข้อมูลจาก radar เป็นความจริงหลัก (ground truth) และให้ CCTV เป็นตัวยืนยันภาพ + อ่านป้ายทะเบียน → ได้ข้อมูลที่แม่นกว่า CCTV เดี่ยวๆ มาก
-              </p>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {STEPS.map((s) => (
-                <div
-                  key={s.n}
-                  className="rounded-2xl p-6"
-                  style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 4px 16px rgba(31,42,36,0.04)' }}
-                >
-                  <div
-                    className="text-[13px] font-bold mb-3 inline-flex items-center justify-center w-10 h-10 rounded-lg"
-                    style={{ background: C.accentSoft, color: C.accent }}
-                  >
-                    {s.n}
-                  </div>
-                  <div className="text-[16px] font-semibold mb-2" style={{ color: C.primaryDeep }}>STEP {s.n} — {s.title}</div>
-                  <p className="text-[14px] leading-relaxed" style={{ color: C.text }}>{s.desc}</p>
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── [4] FEATURES — 6-card grid · icon + title + 3 bullets ───────────── */}
-      <section className="px-6 md:px-10 py-20 md:py-24" style={{ background: C.surfaceSoft }}>
-        <div className="max-w-[1100px] mx-auto">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger}>
-            <motion.div variants={fadeUp} className="max-w-2xl mb-10">
-              <p className="text-[12px] font-semibold uppercase mb-3" style={{ color: C.primary, letterSpacing: '2.5px' }}>
-                ความสามารถของ Radar ที่เราใช้
-              </p>
-              <h2 className="font-semibold" style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', color: C.primaryDeep, lineHeight: 1.3 }}>
-                เซนเซอร์ระดับงานจราจร ที่ออกแบบสำหรับ outdoor 24/7
-              </h2>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {FEATURES.map((f, i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl p-6"
-                  style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}
-                >
-                  <div className="mb-3" style={{ color: C.primary }}>{f.icon}</div>
-                  <div className="text-[15.5px] font-semibold mb-3 leading-snug" style={{ color: C.primaryDeep }}>{f.title}</div>
-                  <ul className="space-y-1.5">
-                    {f.bullets.map((b, j) => (
-                      <li key={j} className="text-[13.5px] leading-relaxed flex gap-2" style={{ color: C.text }}>
-                        <span aria-hidden style={{ color: C.primary, fontWeight: 700 }}>·</span>
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── [5] DIFFERENTIATOR — table (desktop) / stacked cards (mobile) ───── */}
-      <section className="px-6 md:px-10 py-20 md:py-24" style={{ background: C.surface }}>
-        <div className="max-w-[1100px] mx-auto">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger}>
-            <motion.div variants={fadeUp} className="max-w-2xl mb-10">
-              <p className="text-[12px] font-semibold uppercase mb-3" style={{ color: C.accent, letterSpacing: '2.5px' }}>
-                ทำไมแค่ CCTV ไม่พอ
-              </p>
-              <h2 className="font-semibold" style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', color: C.primaryDeep, lineHeight: 1.3 }}>
-                เปรียบเทียบสิ่งที่ลูกค้าเคยได้ vs สิ่งที่ลูกค้าจะได้
-              </h2>
-            </motion.div>
-
-            {/* Desktop table (md+) */}
-            <motion.div variants={fadeUp} className="hidden md:block rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.surfaceSoft}`, background: '#FFF' }}>
-              <table className="w-full text-left" style={{ borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: C.primaryDeep, color: '#FFF' }}>
-                    <th className="px-5 py-4 text-[13px] font-semibold" style={{ width: '32%' }}>สถานการณ์</th>
-                    <th className="px-5 py-4 text-[13px] font-semibold">CCTV เดี่ยว</th>
-                    <th className="px-5 py-4 text-[13px] font-semibold">{COMBO_LABEL}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {COMPARE_ROWS.map((row, i) => (
-                    <tr key={i} style={{ borderTop: i === 0 ? 'none' : `1px solid ${C.surfaceSoft}`, background: i % 2 === 0 ? '#FFF' : C.surface }}>
-                      <td className="px-5 py-4 text-[14px] font-semibold" style={{ color: C.primaryDeep }}>{row.situation}</td>
-                      <td className="px-5 py-4 text-[14px]" style={{ color: C.textMuted }}>{row.cctv}</td>
-                      <td className="px-5 py-4 text-[14px] font-medium" style={{ color: C.primary }}>{row.combo}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </motion.div>
-
-            {/* Mobile stacked cards (<md) */}
-            <motion.div variants={fadeUp} className="md:hidden space-y-4">
-              {COMPARE_ROWS.map((row, i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl p-5"
-                  style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}
-                >
-                  <div className="text-[13px] font-bold mb-3 uppercase" style={{ color: C.primaryDeep, letterSpacing: '1px' }}>
-                    {row.situation}
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <div className="rounded-lg px-3 py-2" style={{ background: C.alertSoft }}>
-                      <div className="text-[10.5px] font-semibold uppercase mb-1" style={{ color: C.alert, letterSpacing: '1px' }}>CCTV เดี่ยว</div>
-                      <div className="text-[13.5px]" style={{ color: C.text }}>{row.cctv}</div>
-                    </div>
-                    <div className="rounded-lg px-3 py-2" style={{ background: C.successSoft }}>
-                      <div className="text-[10.5px] font-semibold uppercase mb-1" style={{ color: C.success, letterSpacing: '1px' }}>{COMBO_LABEL}</div>
-                      <div className="text-[13.5px] font-medium" style={{ color: C.primaryDeep }}>{row.combo}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-
-            {/* Bottom-line statement */}
-            <motion.p
-              variants={fadeUp}
-              className="text-center font-semibold mt-10 mx-auto max-w-3xl"
-              style={{ fontSize: 'clamp(18px, 2.4vw, 24px)', color: C.primaryDeep, lineHeight: 1.4 }}
-            >
-              Radar ไม่ได้มาแทนกล้อง — มันมาทำให้กล้องของคุณเก่งขึ้น 24/7
-            </motion.p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── [6] USE CASES — 6-card grid (3×2 desktop / 2×3 tablet / 1×6 mobile) ── */}
-      <section className="px-6 md:px-10 py-20 md:py-24" style={{ background: C.surfaceSoft }}>
-        <div className="max-w-[1100px] mx-auto">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger}>
-            <motion.div variants={fadeUp} className="max-w-2xl mb-10">
-              <p className="text-[12px] font-semibold uppercase mb-3" style={{ color: C.primary, letterSpacing: '2.5px' }}>
-                เอาไปทำงานอะไรกับลูกค้าได้บ้าง
-              </p>
-              <h2 className="font-semibold" style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', color: C.primaryDeep, lineHeight: 1.3 }}>
-                ตัวอย่าง 6 application
-              </h2>
-            </motion.div>
-
-            <motion.div
-              variants={fadeUp}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-            >
-              {USE_CASES.map((u) => (
-                <div
-                  key={u.n}
-                  className="rounded-2xl p-6"
-                  style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 4px 16px rgba(31,42,36,0.04)' }}
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div
-                      className="text-[12px] font-bold inline-flex items-center justify-center w-9 h-9 rounded-lg shrink-0"
-                      style={{ background: C.accentSoft, color: C.accent }}
-                    >
-                      {u.n}
-                    </div>
-                    <div style={{ color: C.primary }}>{u.icon}</div>
-                  </div>
-                  <div className="text-[15.5px] font-semibold mb-2 leading-snug" style={{ color: C.primaryDeep }}>{u.title}</div>
-                  <p className="text-[13.5px] leading-relaxed" style={{ color: C.text }}>{u.desc}</p>
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── [7] DEMO CLIP — controls video + caption ────────────────────────── */}
-      <section
-        id="demo"
-        className="px-6 md:px-10 py-20 md:py-24"
-        style={{ background: C.primaryDeep, color: '#FFF', scrollMarginTop: '64px' }}
-      >
-        <div className="max-w-[1100px] mx-auto">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger}>
-            <motion.div variants={fadeUp} className="text-center mb-8">
-              <p className="text-[12px] font-semibold uppercase mb-3" style={{ color: C.accent, letterSpacing: '2.5px' }}>
-                คลิปจริง · ไม่ใช่ animation
-              </p>
-              <h2 className="font-semibold mb-3" style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', color: '#FFF', lineHeight: 1.3 }}>
-                ดู Radar ทำงานจริง 26 วินาที
-              </h2>
-              <p className="text-[15px]" style={{ color: '#FFFFFFCC' }}>
-                ทดสอบจริง · นับยานพาหนะ + วัดความเร็ว + แยกประเภท ในคลิปเดียว
-              </p>
-            </motion.div>
-
-            <motion.div
-              variants={fadeUp}
-              className="mx-auto rounded-2xl overflow-hidden"
-              style={{
-                maxWidth: 960,
-                background: '#000',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}
-            >
-              <video
-                controls
-                poster={VIDEO_POSTER}
-                preload="metadata"
-                playsInline
-                className="w-full h-auto block"
-                aria-label="คลิปทดสอบ Radar — นับยานพาหนะ วัดความเร็ว แยกประเภท"
-              >
-                <source src={VIDEO_SRC} type="video/mp4" />
-                <track kind="captions" srcLang="th" label="ภาษาไทย" />
-                ขออภัย เบราว์เซอร์ของท่านไม่รองรับการแสดงผลวิดีโอ
-              </video>
-            </motion.div>
-
-            <motion.p variants={fadeUp} className="text-center text-[13px] mt-5" style={{ color: '#FFFFFFAA' }}>
-              ภาพจากการทดสอบจริงบนถนนสาธารณะ — ขอสงวนตำแหน่งจุดทดสอบ
-            </motion.p>
-          </motion.div>
-        </div>
-      </section>
+    <div className="slide-wrapper" ref={wrapperRef} style={{ width: 1280 * scale, height: 720 * scale }}>
+      <div className="slide-scale" style={{ transform: `scale(${scale})`, width: 1280, height: 720 }}>
+        {children}
+      </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 1 — HERO (Title + Pain frame)
+// ---------------------------------------------------------------------------
+
+function Slide01() {
+  return (
+    <Slide num={1} navy>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 1fr', gap: 44, alignItems: 'center', height: '100%' }}>
+        <div>
+          <Eyebrow color={C.accent}>SMART TRAFFIC · ระบบบริหารจราจร + ความปลอดภัยจุดตัดทางรถไฟ</Eyebrow>
+          <h1 style={{ fontSize: 46, fontWeight: 800, lineHeight: 1.35, color: '#FFF', letterSpacing: -0.5 }}>
+            ถนนในเขตของท่าน ลื่นไหลและปลอดภัยขึ้น<br />
+            <span style={{ color: C.surfaceSoft }}>ด้วยข้อมูลจริง 24 ชั่วโมง</span>
+          </h1>
+          <Lead dark style={{ marginTop: 22 }}>
+            ระบบเฝ้าระวังและบริหารจราจรอัจฉริยะ ที่ทำงานได้ทั้งกลางคืน ฝนตก และย้อนแสง —
+            และปกป้องจุดตัดทางรถไฟไม่ให้เกิดเหตุซ้ำ
+          </Lead>
+          <div style={{ marginTop: 22, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <Pill>จราจรลื่นไหล</Pill>
+            <Pill>ปลอดภัยจุดตัดรถไฟ</Pill>
+            <Pill>ข้อมูลพร้อมตอบสภา</Pill>
+          </div>
+        </div>
+        <div style={{ width: '100%', height: '78%', borderRadius: 18, overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.45)' }}>
+          <img src={`${IMG}/slide01-hero.png`} alt="แยกจราจรในเขตเทศบาล" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 2 — EXEC SUMMARY (3 cards)
+// ---------------------------------------------------------------------------
+
+function Slide02() {
+  const items = [
+    { ic: '🚦', bg: C.primaryHover, color: '#FFF', t: 'จราจรลื่นไหล', d: 'ไฟแดงปรับตามปริมาณรถจริง ไม่ใช่ตั้งเวลาตายตัว ลดเวลารถติดสะสมในชั่วโมงเร่งด่วน' },
+    { ic: '🛡️', bg: C.alert, color: '#FFF', t: 'ปลอดภัยจุดตัดรถไฟ', d: 'ป้องกันรถติดคร่อมราง ก่อนรถไฟจะมาถึง — ลดความเสี่ยงเหตุร้ายแรงที่เป็นข่าวซ้ำๆ' },
+    { ic: '📊', bg: C.accent, color: '#FFF', t: 'ข้อมูลพร้อมตัดสินใจ', d: 'รายงานปริมาณจราจร จุดเสี่ยง ช่วงเวลาวิกฤต — ใช้วางแผนงบ ขออนุมัติ ตอบสภาได้' },
+  ];
+  return (
+    <Slide num={2}>
+      <Eyebrow>ภาพรวมใน 1 นาที</Eyebrow>
+      <Title>ระบบเดียว แก้ 3 เรื่องที่ประชาชนเดือดร้อนที่สุด</Title>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: 28, marginTop: 18, flex: 1, alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateRows: 'repeat(3,1fr)', gap: 14 }}>
+          {items.map((it, i) => (
+            <Card key={i} style={{ padding: '18px 22px', display: 'flex', gap: 16, alignItems: 'center' }}>
+              <div style={{ width: 54, height: 54, borderRadius: 12, background: it.bg, color: it.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>{it.ic}</div>
+              <div>
+                <CardTitle style={{ marginBottom: 3 }}>{it.t}</CardTitle>
+                <CardBody style={{ fontSize: 14.5 }}>{it.d}</CardBody>
+              </div>
+            </Card>
+          ))}
+        </div>
+        <div style={{ width: '100%', height: '92%', borderRadius: 18, overflow: 'hidden', background: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12, border: `1px solid ${C.surfaceSoft}` }}>
+          <img src={`${IMG}/slide02-summary.png`} alt="ภาพรวมระบบ Smart Traffic 3 เสา" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+        </div>
+      </div>
+      <Note style={{ marginTop: 14 }}>
+        <b>หลักคิด:</b> เราไม่ได้มาขาย "เมืองอัจฉริยะ" — เรามาช่วยแก้ปัญหาจราจรและความปลอดภัยที่ท่านเจอทุกวัน ส่วนรางวัล Smart City คือผลพลอยได้ที่ตามมาเมื่อท่านมีข้อมูลพร้อม
+      </Note>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 3 — PAIN 1 · TRAFFIC
+// ---------------------------------------------------------------------------
+
+function Slide03() {
+  const pains = [
+    { t: 'รอนานเกินจริง', d: 'สัญญาณไฟไม่รู้ว่าตอนนี้เลนไหนรถแน่น ปล่อยไฟตามนาฬิกาอย่างเดียว' },
+    { t: 'จุดเสี่ยงซ้ำซาก', d: 'รถสวนเลน / ขึ้นทางเท้า เกิดที่จุดเดิมๆ แต่ไม่มีข้อมูลยืนยันให้แก้เชิงกายภาพ' },
+    { t: 'ตอบสภาไม่ได้', d: 'เวลาถูกถามว่า "ถนนเส้นนี้รถเยอะแค่ไหน" ไม่มีตัวเลขจริงในมือ' },
+  ];
+  return (
+    <Slide num={3}>
+      <Eyebrow alert>ปัญหาที่ 1</Eyebrow>
+      <Title>ไฟแดงตั้งเวลาตายตัว ไม่ตรงกับรถจริง</Title>
+      <Lead style={{ marginTop: 10, maxWidth: 1080 }}>
+        เลนที่รถแน่นต้องรอ เลนที่ว่างกลับได้ไฟเขียวยาว — รถติดสะสมโดยไม่จำเป็น
+        และเมื่อมีคนขับสวนเลนหรือขึ้นทางเท้า ก็ไม่มีข้อมูลว่าจุดไหนเกิดบ่อย เกิดเวลาใด
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, marginTop: 16, flex: 1, alignItems: 'center' }}>
+        <div style={{ width: '100%', height: '88%', borderRadius: 18, overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.18)' }}>
+          <img src={`${IMG}/slide03-pain-traffic.png`} alt="รถติดในเมือง" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateRows: 'repeat(3,1fr)', gap: 14 }}>
+          {pains.map((p, i) => (
+            <Card key={i} style={{ borderTop: `4px solid ${C.alert}`, padding: '16px 20px' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: C.alert, marginBottom: 4, lineHeight: 1.45 }}>{p.t}</h3>
+              <p style={{ fontSize: 14.5, color: C.text, lineHeight: 1.5 }}>{p.d}</p>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 4 — PAIN 2 · RAILWAY (dark/deep)
+// ---------------------------------------------------------------------------
+
+function Slide04() {
+  const pains = [
+    { t: 'รถติดคร่อมราง', d: 'ข้ามมาแล้วไปต่อไม่ได้ เพราะฝั่งหน้าเต็ม' },
+    { t: 'ไม้กั้นลงไม่ทัน', d: 'มีวัตถุ/รถค้างบนราง ขณะรถไฟใกล้เข้ามา' },
+    { t: 'ไม่มีสัญญาณล่วงหน้า', d: 'ไม่มีระบบแจ้งเตือนก่อนเหตุจะเกิด' },
+  ];
+  return (
+    <Slide num={4} dark>
+      <Eyebrow dark color={C.accent}>ปัญหาที่ 2 · จุดที่อันตรายที่สุด</Eyebrow>
+      <Title dark size={36}>จุดตัดทางรถไฟ — รถติดคร่อมราง คือเหตุร้ายแรงที่เกิดซ้ำ</Title>
+      <Lead dark style={{ marginTop: 10, maxWidth: 1080 }}>
+        อุบัติเหตุรถไฟชนรถที่ติดค้างบนราง มักไม่ได้เกิดจากความประมาทคนเดียว แต่เกิดจาก
+        <strong style={{ color: '#FFF' }}> "รถฝั่งตรงข้ามเต็ม"</strong> ทำให้รถที่ข้ามมาติดค้างบนรางทั้งที่ยังไม่ทันรู้ตัว
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: 24, marginTop: 16, flex: 1, alignItems: 'center' }}>
+        <div style={{ width: '100%', height: '94%', borderRadius: 18, overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.45)' }}>
+          <img src={`${IMG}/slide04-railway-pain.png`} alt="จุดตัดทางรถไฟ — รถติดคร่อมราง" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateRows: 'repeat(3,1fr)', gap: 12 }}>
+          {pains.map((p, i) => (
+            <div key={i} style={{ background: '#16271F', borderRadius: 14, padding: '14px 18px' }}>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: '#FFF', marginBottom: 4, lineHeight: 1.45 }}>{p.t}</h3>
+              <p style={{ fontSize: 14, color: '#cfe8dd', lineHeight: 1.5 }}>{p.d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ marginTop: 12, background: 'rgba(186,117,23,0.18)', border: `1px dashed ${C.accent}`, borderRadius: 12, padding: '10px 16px', fontSize: 13, color: '#f0d9b0', lineHeight: 1.55 }}>
+        ✏️ จุดนี้คือ "พระเอก" ที่ปลอดภัยที่สุดในเชิง compliance — เป็นการปกป้อง
+        <b style={{ color: '#FFF' }}> โครงสร้างพื้นฐานของเมืองเอง</b> (ราง/สะพาน) ไม่ใช่การจับตาประชาชน เหมาะใช้นำเรื่อง
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 5 — SOLUTION · SENSOR FUSION
+// ---------------------------------------------------------------------------
+
+function Slide05() {
+  return (
+    <Slide num={5}>
+      <Eyebrow>ทางออกที่เราเสนอ</Eyebrow>
+      <Title size={36}>"ตา" 2 ชนิดทำงานคู่กัน — เห็นชัดทั้งกลางวันและกลางคืน</Title>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.95fr', gap: 26, marginTop: 18, flex: 1, alignItems: 'center' }}>
+        <div style={{ width: '100%', height: '94%', borderRadius: 18, overflow: 'hidden', background: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10, border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 10px 30px rgba(0,0,0,0.10)' }}>
+          <img src={`${IMG}/slide05-sensor-fusion.png`} alt="กล้อง AI + Radar ทำงานคู่กัน" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 14 }}>
+          <Card style={{ borderTop: `4px solid ${C.success}`, padding: '18px 22px' }}>
+            <CardTitle style={{ color: C.primaryDeep, marginBottom: 6 }}>เซนเซอร์เรดาร์ (Radar)</CardTitle>
+            <CardBody style={{ fontSize: 14.5 }}>
+              มองด้วยคลื่นวิทยุ ไม่ใช่แสง → รู้ตำแหน่ง ความเร็ว ทิศทาง ของทุกคันที่เคลื่อนไหว
+              แม้มืดสนิท ฝนตก หมอกลง — ทำงานได้ในที่ที่กล้องทำงานไม่ดี
+            </CardBody>
+          </Card>
+          <Card style={{ borderTop: `4px solid ${C.success}`, padding: '18px 22px' }}>
+            <CardTitle style={{ color: C.primaryDeep, marginBottom: 6 }}>กล้อง CCTV</CardTitle>
+            <CardBody style={{ fontSize: 14.5 }}>
+              ยืนยันภาพและประเภทยานพาหนะ ใช้คู่กับกล้องที่เมืองมีอยู่แล้วได้
+              ไม่ต้องเปลี่ยนกล้อง ไม่ต้องเปลี่ยนระบบบันทึก
+            </CardBody>
+          </Card>
+        </div>
+      </div>
+      <Note style={{ marginTop: 12 }}>
+        <b>หมายเหตุ compliance:</b> ระบบนี้ <b>เฝ้าระวัง · บันทึก · ส่งข้อมูล</b> เหตุการณ์บนถนนของเมือง
+        ไม่ใช่ "อุปกรณ์ตรวจวัด/ออกใบสั่ง" และการอ่านป้ายทะเบียนทำเฉพาะเมื่อมี event เท่านั้น
+        โดยเทียบกับรายการที่เจ้าหน้าที่เมืองถือเอง — ไม่ใช่การติดตามรถประชาชนทั่วไป
+      </Note>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 6 — HOW IT WORKS · 3 STEPS
+// ---------------------------------------------------------------------------
+
+function Slide06() {
+  const steps = [
+    { n: '01', t: 'เรดาร์ตรวจจับ', d: 'จับระยะ + ความเร็ว + ทิศทางของทุกคันในรัศมีหลายร้อยเมตร แม้มืดสนิท' },
+    { n: '02', t: 'กล้องยืนยันภาพ', d: 'เมื่อเรดาร์เจอวัตถุ ระบบสั่งกล้องเก็บภาพ ณ จังหวะที่รถอยู่ในเฟรมพอดี ภาพคมชัดขึ้น' },
+    { n: '03', t: 'รวมเป็นข้อมูล', d: 'นับรถ · ความเร็ว · ประเภท + ภาพ มารวมเป็นหน้าจอเดียว ดูสดและย้อนหลังได้' },
+  ];
+  return (
+    <Slide num={6}>
+      <Eyebrow>ทำงานอย่างไร</Eyebrow>
+      <Title>3 ขั้น จากเซนเซอร์ → ข้อมูลที่ใช้ได้จริง</Title>
+      <div style={{ width: '100%', height: 280, marginTop: 18, borderRadius: 18, overflow: 'hidden', background: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12, border: `1px solid ${C.surfaceSoft}` }}>
+        <img src={`${IMG}/slide06-howitworks.png`} alt="3 ขั้นตอนการทำงาน" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginTop: 18, flex: 1, alignContent: 'center' }}>
+        {steps.map((s) => (
+          <Card key={s.n} style={{ padding: '18px 22px' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: C.accentSoft, color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, marginBottom: 10 }}>{s.n}</div>
+            <CardTitle style={{ marginBottom: 5 }}>{s.t}</CardTitle>
+            <CardBody style={{ fontSize: 14 }}>{s.d}</CardBody>
+          </Card>
+        ))}
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 7 — EDGE / ARCHITECTURE
+// ---------------------------------------------------------------------------
+
+function Slide07() {
+  return (
+    <Slide num={7}>
+      <Eyebrow>เบื้องหลังที่มั่นใจได้</Eyebrow>
+      <Title size={36}>ประมวลผลที่เสาไฟ — ไม่กินอินเทอร์เน็ตของเมือง</Title>
+      <Lead style={{ marginTop: 10, maxWidth: 1080 }}>
+        ระบบคิดงานส่วนใหญ่ "ที่หน้างาน" (ที่เสาไฟ/ตู้ริมถนน) แล้วส่งเฉพาะ
+        <strong style={{ color: C.text }}> ผลสรุป</strong> เข้าส่วนกลาง ไม่ได้ส่งวิดีโอทั้งหมด
+        → ใช้เน็ตน้อย เสถียร และทำงานต่อได้แม้เน็ตสะดุดชั่วคราว
+      </Lead>
+      <div style={{ flex: 1, marginTop: 16, borderRadius: 18, overflow: 'hidden', background: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18, border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}>
+        <img src={`${IMG}/slide07-edge.png`} alt="Edge processing → Central platform" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+      </div>
+      <Note style={{ marginTop: 14 }}>
+        <b>ผู้บริหารได้อะไร:</b> ไม่ต้องลงทุนวางสายเน็ตใหม่ทั้งเมือง ขยายทีละจุดได้ และระบบไม่ล่มทั้งหมดถ้าจุดใดจุดหนึ่งมีปัญหา
+      </Note>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 8 — COMPARE TABLE
+// ---------------------------------------------------------------------------
+
+function Slide08() {
+  const rows = [
+    ['กลางวัน อากาศดี', 'นับได้ดี', 'นับได้ดี + รู้ความเร็วจริง'],
+    ['กลางคืน', 'ตกหล่น เห็นบางคัน', 'นับครบทุกคัน'],
+    ['ฝนตก / หมอกลง', 'ภาพเบลอ พลาดง่าย', 'ทำงานปกติ'],
+    ['ย้อนแสง / พลบค่ำ', 'กล้องบอดชั่วขณะ', 'ทำงานปกติ'],
+    ['ใช้เน็ตมากแค่ไหน', 'สูง (ส่งวิดีโอ)', 'ต่ำมาก (ส่งสรุป)'],
+    ['จุดติดตั้งต่อพื้นที่', 'หลายจุด', 'ลดจำนวนจุดลงได้'],
+  ];
+  return (
+    <Slide num={8}>
+      <Eyebrow accent>ทำไมกล้องอย่างเดียวไม่พอ</Eyebrow>
+      <Title>สิ่งที่เมืองเคยได้ vs สิ่งที่เมืองจะได้</Title>
+      <div style={{ marginTop: 18, background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1.4fr', background: C.primaryDeep, color: '#FFF' }}>
+          {['สถานการณ์', 'กล้องอย่างเดียว', 'กล้อง + เรดาร์'].map((h, i) => (
+            <div key={i} style={{ padding: '14px 20px', fontSize: 15, fontWeight: 700 }}>{h}</div>
+          ))}
+        </div>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1.4fr', borderTop: `1px solid ${C.surfaceSoft}`, background: i % 2 === 0 ? '#FFF' : C.surface }}>
+            <div style={{ padding: '13px 20px', fontSize: 14.5, fontWeight: 600, color: C.primaryDeep, lineHeight: 1.5 }}>{r[0]}</div>
+            <div style={{ padding: '13px 20px', fontSize: 14.5, color: C.textMuted, lineHeight: 1.5 }}>{r[1]}</div>
+            <div style={{ padding: '13px 20px', fontSize: 14.5, color: C.primary, fontWeight: 600, lineHeight: 1.5 }}>{r[2]}</div>
+          </div>
+        ))}
+      </div>
+      <p style={{ textAlign: 'center', fontSize: 22, fontWeight: 700, color: C.primaryDeep, marginTop: 24, lineHeight: 1.5 }}>
+        เรดาร์ไม่ได้มาแทนกล้อง — มาทำให้กล้องของเมืองทำงานได้ครบ 24 ชั่วโมง
+      </p>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 9 — ADAPTIVE TRAFFIC LIGHT FLOWCHART
+// ---------------------------------------------------------------------------
+
+function Slide09() {
+  return (
+    <Slide num={9}>
+      <Eyebrow>หัวใจที่ 1 · ไฟจราจรอัตโนมัติ</Eyebrow>
+      <Title size={36}>ไฟแดงที่ "ดูรถจริง" แล้วค่อยตัดสินใจ</Title>
+      <Lead style={{ marginTop: 10, maxWidth: 1080 }}>
+        ระบบอ่านปริมาณรถแต่ละเลนตลอดเวลา แล้วปรับเวลาไฟเขียวให้เลนที่รถแน่นกว่า —
+        และเปิดทางให้รถฉุกเฉินก่อนเสมอ
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.45fr 1fr', gap: 22, marginTop: 14, flex: 1, alignItems: 'stretch' }}>
+        <div style={{ width: '100%', height: '100%', borderRadius: 18, overflow: 'hidden', background: '#0E1B16', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.18)' }}>
+          <img src={`${IMG}/slide09-adaptive-light.png`} alt="ระบบไฟอัตโนมัติ" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <FNode kind="start">อ่านจำนวนรถ + คิวรอ ของทุกเลน (ทุกไม่กี่วินาที)</FNode>
+          <FArrow>↓</FArrow>
+          <FNode kind="decision">มีรถฉุกเฉิน / รถพยาบาล หรือไม่?</FNode>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div>
+              <FLabel>มี →</FLabel>
+              <FNode kind="action">เปิดไฟเขียวให้เลนนั้นก่อน</FNode>
+            </div>
+            <div>
+              <FLabel>ไม่มี →</FLabel>
+              <FNode>คำนวณเลนที่ควรได้ไฟเขียวก่อน</FNode>
+            </div>
+          </div>
+          <FArrow>↓</FArrow>
+          <FNode kind="action">ปรับเพิ่ม/ลดเวลาไฟเขียวแบบสด แล้ววนกลับไปอ่านใหม่</FNode>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+function FNode({ kind, children }) {
+  const map = {
+    start: { bg: C.primaryDeep, color: '#FFF', border: C.primaryDeep, weight: 600 },
+    decision: { bg: C.accentSoft, color: C.primaryDeep, border: C.accent, weight: 600 },
+    action: { bg: C.successSoft, color: C.text, border: C.success, weight: 500 },
+    danger: { bg: C.alertSoft, color: C.alert, border: C.alert, weight: 600 },
+  }[kind] || { bg: '#FFF', color: C.text, border: C.surfaceSoft, weight: 500 };
+  return (
+    <div
+      style={{
+        background: map.bg,
+        color: map.color,
+        border: `1.5px solid ${map.border}`,
+        borderRadius: 10,
+        padding: '10px 14px',
+        fontSize: 13,
+        lineHeight: 1.45,
+        fontWeight: map.weight,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function FArrow({ children }) {
+  return <div style={{ textAlign: 'center', fontSize: 16, color: C.textMuted, lineHeight: 1 }}>{children}</div>;
+}
+
+function FLabel({ children }) {
+  return <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textAlign: 'center', padding: '4px 0' }}>{children}</div>;
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 10 — RAILWAY SAFETY FLOW
+// ---------------------------------------------------------------------------
+
+function Slide10() {
+  return (
+    <Slide num={10}>
+      <Eyebrow alert>หัวใจที่ 2 · ความปลอดภัยจุดตัดรถไฟ</Eyebrow>
+      <Title size={36}>กันรถไม่ให้ติดคร่อมราง ก่อนรถไฟจะมาถึง</Title>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 22, marginTop: 16, flex: 1, alignItems: 'stretch' }}>
+        <div style={{ width: '100%', height: '100%', borderRadius: 18, overflow: 'hidden', background: '#0E1B16', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.18)' }}>
+          <img src={`${IMG}/slide10-railway-flow.png`} alt="ระบบป้องกันรถติดคร่อมราง" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <FNode kind="start">เฝ้าดูพื้นที่บนรางและฝั่งตรงข้าม ตลอด 24 ชม.</FNode>
+          <FArrow>↓</FArrow>
+          <FNode kind="decision">ฝั่งตรงข้ามรางเต็ม / รถขยับต่อไม่ได้?</FNode>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6 }}>
+            <FLabel>ใช่ →</FLabel>
+            <FNode kind="danger">เปลี่ยนไฟก่อนเข้าทางรถไฟเป็นแดงทันที — ไม่ปล่อยรถเข้าไปติดบนราง</FNode>
+            <FLabel>มีวัตถุค้างบนรางขณะไม้กั้นลง →</FLabel>
+            <FNode kind="danger">ส่งสัญญาณเตือนล่วงหน้าให้ฝ่ายเดินรถไฟ เพื่อชะลอรถ</FNode>
+          </div>
+          <FArrow>↓</FArrow>
+          <FNode kind="action">บันทึกเหตุการณ์ไว้เป็นหลักฐาน + รายงานจุดเสี่ยง</FNode>
+        </div>
+      </div>
+      <Note style={{ marginTop: 12 }}>
+        <b>หมายเหตุ:</b> การประสานกับระบบเดินรถไฟต้องทำร่วมกับ รฟท. ตามขั้นตอนของหน่วยงาน —
+        สไลด์นี้แสดง "ตรรกะการป้องกัน" ที่ระบบเสนอ
+      </Note>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 11 — SAFETY EVENT DETECTION
+// ---------------------------------------------------------------------------
+
+function Slide11() {
+  const events = [
+    { ic: '↩️', t: 'รถสวนเลน', d: 'เมื่อพบรถวิ่งสวนทิศทางในจุดที่กำหนด ระบบบันทึกเหตุการณ์ส่งให้เจ้าหน้าที่ review' },
+    { ic: '🚶', t: 'รถเข้าพื้นที่ห้าม', d: 'ตีกรอบทางเท้า/พื้นที่ห้าม เมื่อมีรถเข้า ระบบบันทึกไว้ให้เจ้าหน้าที่พิจารณา' },
+    { ic: '🏫', t: 'เขตโรงเรียน/รพ.', d: 'เฝ้าระวังรถเร็วในเขตเปราะบาง แจ้งเตือนเข้าหน้าจอเมือง ก่อนเกิดเหตุจริง' },
+  ];
+  return (
+    <Slide num={11}>
+      <Eyebrow>เหตุการณ์ความปลอดภัยอื่นๆ</Eyebrow>
+      <Title size={32}>บันทึกเหตุเสี่ยง เพื่อให้เจ้าหน้าที่ "ตรวจสอบ" ไม่ใช่ระบบตัดสินเอง</Title>
+      <div style={{ width: '100%', height: 240, marginTop: 16, borderRadius: 18, overflow: 'hidden', background: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10, border: `1px solid ${C.surfaceSoft}` }}>
+        <img src={`${IMG}/slide11-safety-events.png`} alt="ตัวอย่างเหตุการณ์ความปลอดภัย" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginTop: 14, flex: 1, alignContent: 'center' }}>
+        {events.map((e, i) => (
+          <Card key={i} style={{ padding: '16px 20px' }}>
+            <CardIcon bg={C.alertSoft} color={C.alert}>{e.ic}</CardIcon>
+            <CardTitle style={{ marginBottom: 5 }}>{e.t}</CardTitle>
+            <CardBody style={{ fontSize: 13.5 }}>{e.d}</CardBody>
+          </Card>
+        ))}
+      </div>
+      <div style={{ marginTop: 10, background: C.alertSoft, border: `1px dashed ${C.alert}`, borderRadius: 10, padding: '8px 14px', fontSize: 12.5, color: C.alert, lineHeight: 1.5 }}>
+        ⚠️ ระบบไม่ออกใบสั่งอัตโนมัติ · เจ้าหน้าที่เป็นผู้ตัดสินใจ — เพื่อให้สอดคล้องกับระเบียบการบังคับใช้กฎหมายของท้องถิ่น
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 12 — DASHBOARD (dark)
+// ---------------------------------------------------------------------------
+
+function Slide12() {
+  return (
+    <Slide num={12} dark>
+      <Eyebrow dark color={C.accent}>หน้าจอสำหรับผู้บริหาร</Eyebrow>
+      <Title dark>เห็นภาพรวมเมืองในจอเดียว</Title>
+      <Lead dark style={{ marginTop: 8, maxWidth: 1080 }}>
+        แผนที่เมืองแสดงระดับการจราจร (เขียว/เหลือง/แดง) · กราฟแนวโน้มรายวัน-รายสัปดาห์ ·
+        รายการเหตุการณ์ความปลอดภัยล่าสุด — ส่งออกเป็นรายงานเพื่อใช้วางงบและตอบสภาได้
+      </Lead>
+      <div style={{ flex: 1, marginTop: 14, borderRadius: 16, overflow: 'hidden', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.45)' }}>
+        <img src={`${IMG}/slide12-dashboard.png`} alt="Dashboard ระบบบริหารจราจร" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+      </div>
+      <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.7)', marginTop: 10 }}>
+        ตัวเลขบนหน้าจอเป็นภาพประกอบ · ค่าจริงขึ้นกับข้อมูลของแต่ละพื้นที่
+      </p>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 13 — DEMO VIDEO CLIP (uses existing 0518.mp4)
+// ---------------------------------------------------------------------------
+
+function Slide13() {
+  const caps = [
+    { ic: '📍', t: 'ระยะ + ทิศทาง', d: 'รู้ว่าวัตถุอยู่ไกลกี่เมตร · เลนไหน · ทิศใด — ทำ tracking ได้แม่นแม้รถซ้อนกัน' },
+    { ic: '⚡', t: 'ความเร็วจริง', d: 'วัดความเร็วทันทีของทุกคัน · เป็นการวัดจากการสะท้อนคลื่น ไม่ใช่ประมาณจากภาพ' },
+    { ic: '🚗', t: 'แยกประเภท', d: 'มอเตอร์ไซค์ · รถยนต์ · รถบรรทุก · คนเดิน — แยกได้จากขนาดและ pattern ความเร็ว' },
+    { ic: '🌧️', t: 'ทุกสภาพอากาศ · 24 ชม.', d: 'คลื่นวิทยุทะลุฝน หมอก ฝุ่น · ไม่กระทบจากย้อนแสง · ทำงานกลางคืนแม่นเท่ากลางวัน' },
+  ];
+  return (
+    <Slide num={13} dark>
+      <Eyebrow dark color={C.accent}>คลิปจริง · ไม่ใช่ animation</Eyebrow>
+      <Title dark size={32}>Traffic Radar (เรดาร์จราจร) — ดูทำงานจริง 26 วินาที</Title>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 26, marginTop: 14, flex: 1, alignItems: 'center' }}>
+        {/* LEFT — video 50% */}
+        <div>
+          <div style={{ borderRadius: 16, overflow: 'hidden', background: '#000', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <video
+              controls
+              poster={VIDEO_POSTER}
+              preload="metadata"
+              playsInline
+              style={{ display: 'block', width: '100%', height: 'auto' }}
+              aria-label="คลิปทดสอบ Traffic Radar"
+            >
+              <source src={VIDEO_SRC} type="video/mp4" />
+              <track kind="captions" srcLang="th" label="ภาษาไทย" />
+              ขออภัย เบราว์เซอร์ของท่านไม่รองรับการแสดงผลวิดีโอ
+            </video>
+          </div>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 10, lineHeight: 1.5 }}>
+            ภาพจากการทดสอบจริงบนถนนสาธารณะ — กล่องสี่เหลี่ยมในคลิปคือวัตถุที่ระบบ track อยู่
+            พร้อมตัวเลขความเร็ว/ระยะ ที่อัปเดตทุก frame
+          </p>
+        </div>
+
+        {/* RIGHT — capability description */}
+        <div>
+          <p style={{ color: 'rgba(255,255,255,0.92)', fontSize: 16, lineHeight: 1.65, marginBottom: 14 }}>
+            เรดาร์จราจรมองด้วย <strong style={{ color: '#FFF' }}>คลื่นวิทยุ</strong> ไม่ใช่แสง —
+            รู้พร้อมกันทั้ง <strong style={{ color: '#FFF' }}>ระยะ · ทิศทาง · ความเร็ว</strong> ของทุกวัตถุที่เคลื่อนไหว
+            ทำให้ track รถทีละหลายสิบคันได้พร้อมกัน
+          </p>
+          <div style={{ display: 'grid', gridTemplateRows: 'repeat(4,1fr)', gap: 10 }}>
+            {caps.map((c, i) => (
+              <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 12, padding: '12px 14px' }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(186,117,23,0.25)', color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, flexShrink: 0 }}>{c.ic}</div>
+                <div style={{ minWidth: 0 }}>
+                  <h4 style={{ fontSize: 14.5, fontWeight: 700, color: '#FFF', marginBottom: 2, lineHeight: 1.45 }}>{c.t}</h4>
+                  <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.82)', lineHeight: 1.5 }}>{c.d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 14 — ROADMAP (3 phases)
+// ---------------------------------------------------------------------------
+
+function Slide14() {
+  const phases = [
+    { ph: 'ระยะที่ 1', t: 'นำร่อง 1 แยก / 1 จุดตัด', d: 'ติดตั้งจุดวิกฤตที่สุดก่อน เก็บข้อมูลจริง ปรับจูนให้เข้ากับพื้นที่', color: C.primary },
+    { ph: 'ระยะที่ 2', t: 'จุดตัดรถไฟ + แยกหลัก', d: 'ขยายไปจุดเสี่ยงรองลงมา เชื่อมข้อมูลเข้าหน้าจอกลางของเมือง', color: C.accent },
+    { ph: 'ระยะที่ 3', t: 'ขยายทั่วเขต', d: 'ครอบคลุมเส้นทางหลัก พร้อมข้อมูลสำหรับขอรับรองมาตรฐาน/รางวัลในอนาคต', color: C.success },
+  ];
+  return (
+    <Slide num={14}>
+      <Eyebrow>แผนการดำเนินงาน</Eyebrow>
+      <Title>เริ่มจากจุดเดียว พิสูจน์ผล แล้วค่อยขยาย</Title>
+      <div style={{ width: '100%', height: 230, marginTop: 14, borderRadius: 18, overflow: 'hidden', background: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10, border: `1px solid ${C.surfaceSoft}` }}>
+        <img src={`${IMG}/slide13-roadmap.png`} alt="Roadmap 3 ระยะ" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginTop: 16, flex: 1, alignContent: 'center' }}>
+        {phases.map((p, i) => (
+          <div key={i} style={{ background: '#FFF', borderTop: `5px solid ${p.color}`, borderRadius: 14, padding: '18px 22px', border: `1px solid ${C.surfaceSoft}` }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMuted, letterSpacing: 1, marginBottom: 4 }}>{p.ph}</div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: C.primaryDeep, marginBottom: 6, lineHeight: 1.4 }}>{p.t}</h3>
+            <p style={{ fontSize: 14, color: C.text, lineHeight: 1.55 }}>{p.d}</p>
+          </div>
+        ))}
+      </div>
+      <Note style={{ marginTop: 12 }}>
+        <b>ข้อดีของการแบ่งเฟส:</b> ใช้งบทีละก้อนตามปีงบประมาณ ลดความเสี่ยง และเห็นผลก่อนตัดสินใจขยาย
+      </Note>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 15 — IMPACT + CTA (dark navy)
+// ---------------------------------------------------------------------------
+
+function Slide15() {
+  const benefits = [
+    { t: 'ลดความเสี่ยงจุดตัดรถไฟ', d: 'ออกแบบเพื่อกันเหตุรถติดคร่อมราง', tag: 'เป้าหมายการออกแบบ' },
+    { t: 'บรรเทารถติด', d: 'ไฟปรับตามรถจริงในชั่วโมงเร่งด่วน', tag: 'ผลขึ้นกับพื้นที่' },
+    { t: 'มีข้อมูลในมือ', d: 'ใช้วางแผน ขออนุมัติงบ ตอบสภา และต่อยอดรางวัลในอนาคต', tag: null },
+  ];
+  return (
+    <Slide num={15} navy>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 32, alignItems: 'center', height: '100%' }}>
+        <div>
+          <Eyebrow color={C.accent}>ผลลัพธ์ที่ตั้งเป้า</Eyebrow>
+          <Title dark size={38}>ถนนที่ลื่นไหลขึ้น และปลอดภัยขึ้น สำหรับทุกชีวิต</Title>
+          <div style={{ display: 'grid', gridTemplateRows: 'repeat(3,1fr)', gap: 12, marginTop: 18 }}>
+            {benefits.map((b, i) => (
+              <div key={i} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 14, padding: '14px 18px' }}>
+                <h3 style={{ color: '#FFF', fontSize: 17, fontWeight: 700, marginBottom: 4, lineHeight: 1.45 }}>{b.t}</h3>
+                <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13.5, lineHeight: 1.55 }}>
+                  {b.d}
+                  {b.tag && (
+                    <span style={{ display: 'inline-block', marginLeft: 8, fontSize: 10.5, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: C.accentSoft, color: C.accent, letterSpacing: 0.5 }}>{b.tag}</span>
+                  )}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 18, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 14, padding: '14px 18px' }}>
+            <p style={{ color: '#FFF', fontSize: 16, fontWeight: 700, lineHeight: 1.55, marginBottom: 4 }}>
+              ร่วมสร้างเมืองที่ลื่นไหล และปลอดภัยสำหรับทุกชีวิต
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13.5, lineHeight: 1.55 }}>
+              ขั้นถัดไป: นัดสำรวจจุดวิกฤต 1 จุด เพื่อออกแบบนำร่องร่วมกัน
+            </p>
+          </div>
+        </div>
+        <div style={{ width: '100%', height: '88%', borderRadius: 18, overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.45)' }}>
+          <img src={`${IMG}/slide14-impact.png`} alt="ผลลัพธ์เมืองปลอดภัย" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Deck Toolbar (print + jump-to-slide)
+// ---------------------------------------------------------------------------
+
+function Toolbar() {
+  const [open, setOpen] = useState(false);
+  const titles = [
+    '1 · 🚨 Pain · ถนนติดและจุดตัดรถไฟอันตราย',
+    '2 · ✨ Solution · ระบบเดียว แก้ 3 เรื่อง',
+    '3 · 🚨 Pain · ไฟแดงตั้งเวลาตายตัว',
+    '4 · 🚨 Pain · จุดตัดรถไฟ รถติดคร่อมราง',
+    '5 · 📦 Hardware · Radar + CCTV ทำงานคู่กัน',
+    '6 · 🔧 How · 3 ขั้นตอน เซนเซอร์ → ข้อมูล',
+    '7 · 🔧 How · Edge processing ที่เสาไฟ',
+    '8 · 🏆 Why us · เปรียบเทียบ CCTV เดี่ยว vs Combo',
+    '9 · 🔧 How · ไฟจราจรอัตโนมัติ Flow',
+    '10 · 🛡️ Coverage · ป้องกันรถติดคร่อมราง Flow',
+    '11 · 🛡️ Coverage · เหตุการณ์ความปลอดภัยอื่นๆ',
+    '12 · 📊 Demo · Dashboard ผู้บริหาร',
+    '13 · 📊 Demo · คลิป Radar จริง 26 วินาที',
+    '14 · 💵 Plans · Roadmap 3 ระยะ',
+    '15 · 🤝 Close · ผลลัพธ์ + ขั้นต่อไป',
+  ];
+  const goTo = (i) => {
+    const el = document.getElementById(`slide-${i + 1}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setOpen(false);
+  };
+  return (
+    <div className="deck-toolbar">
+      <span style={{ flex: 1 }} />
+      <span className="note">กด "พิมพ์/บันทึก PDF" แล้วเลือก Landscape</span>
+      <button onClick={() => setOpen(!open)}>{open ? 'ปิดเมนู' : 'ไปสไลด์...'}</button>
+      <button onClick={() => window.print()}>พิมพ์ / บันทึก PDF</button>
+      {open && (
+        <div style={{ position: 'absolute', top: 44, right: 16, background: '#FFF', color: C.text, borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.2)', padding: 8, maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', minWidth: 340, zIndex: 1100 }}>
+          {titles.map((t, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => goTo(i)}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: 13, color: C.text, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit' }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = C.surfaceSoft)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ScrollDots — vertical dot indicator
+// ---------------------------------------------------------------------------
+
+function ScrollDots({ count }) {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const idx = parseInt(entry.target.dataset.idx, 10);
+            if (!isNaN(idx)) setActive(idx);
+          }
+        });
+      },
+      { threshold: 0.45, rootMargin: '-20% 0px -20% 0px' }
+    );
+    for (let i = 0; i < count; i++) {
+      const el = document.getElementById(`slide-${i + 1}`);
+      if (el) {
+        el.dataset.idx = String(i);
+        observer.observe(el);
+      }
+    }
+    return () => observer.disconnect();
+  }, [count]);
+
+  return (
+    <div
+      className="scroll-dots"
+      style={{
+        position: 'fixed',
+        right: 14,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        zIndex: 999,
+        background: 'rgba(0,0,0,0.35)',
+        padding: '12px 8px',
+        borderRadius: 100,
+        backdropFilter: 'blur(8px)',
+      }}
+    >
+      {Array.from({ length: count }).map((_, i) => {
+        const isActive = i === active;
+        return (
+          <button
+            key={i}
+            type="button"
+            title={`Slide ${i + 1}`}
+            aria-label={`ไปยังสไลด์ที่ ${i + 1}`}
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById(`slide-${i + 1}`);
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              setActive(i);
+            }}
+            style={{
+              display: 'block',
+              width: isActive ? 12 : 8,
+              height: isActive ? 12 : 8,
+              padding: 0,
+              borderRadius: '50%',
+              background: isActive ? '#FFF' : 'rgba(255,255,255,0.45)',
+              border: isActive ? `2px solid ${C.primaryHover}` : '1px solid rgba(255,255,255,0.6)',
+              transition: 'all .2s ease',
+              cursor: 'pointer',
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main export
+// ---------------------------------------------------------------------------
+
+export default function SmartTraffic() {
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'Smart Traffic · Pitch Deck';
+    return () => { document.title = prevTitle; };
+  }, []);
+
+  const slides = [
+    Slide01, Slide02, Slide03, Slide04, Slide05,
+    Slide06, Slide07, Slide08, Slide09, Slide10,
+    Slide11, Slide12, Slide13, Slide14, Slide15,
+  ];
+  return (
+    <>
+      <DeckStyles />
+      <Toolbar />
+      <ScrollDots count={slides.length} />
+      <div className="deck-root">
+        {slides.map((S, i) => (
+          <div key={i} id={`slide-${i + 1}`}>
+            <ScaledSlide>
+              <S />
+            </ScaledSlide>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
