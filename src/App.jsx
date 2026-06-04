@@ -21,6 +21,7 @@ import ParkingManagement from './pages/cctv-ai/ParkingManagement';
 import BridgeTunnelWatch from './pages/cctv-ai/BridgeTunnelWatch';
 import CCTVAIPitchDeck from './pages/cctv-ai/PitchDeck';
 import SmartLightPitchDeck from './pages/smartlight/PitchDeck';
+import SolarPitchDeck from './pages/solar/PitchDeck';
 
 export default function App() {
   return (
@@ -32,7 +33,8 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/smart-street-light" element={<SmartLightPitchDeck />} />
             <Route path="/smart-street-light/details" element={<SmartStreetLight />} />
-            <Route path="/solar-street-light" element={<SolarStreetLight />} />
+            <Route path="/solar-street-light" element={<SolarPitchDeck />} />
+            <Route path="/solar-street-light/details" element={<SolarStreetLight />} />
             <Route path="/fee-management" element={<FeeManagement />} />
             <Route path="/waste-fee" element={<WasteCollectionFee />} />
             <Route path="/elderly-care" element={<ElderlyCare />} />
