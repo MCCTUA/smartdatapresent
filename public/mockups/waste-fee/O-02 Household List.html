@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-02 · รายการครัวเรือน — Officer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --org-primary:       #1b61c9;
+  --org-primary-light: #e8f0fd;
+  --org-primary-dark:  #1349a0;
+
+  --navy:    #181d26;
+  --navy-80: rgba(24,29,38,0.80);
+  --navy-50: rgba(24,29,38,0.50);
+  --navy-30: rgba(24,29,38,0.30);
+  --navy-10: rgba(24,29,38,0.07);
+
+  --white:       #ffffff;
+  --surface:     #f8fafc;
+  --surface-2:   #f1f4f8;
+  --border:      #e0e2e6;
+  --border-light:#edf0f4;
+
+  --green:       #059669;
+  --green-light: #d1fae5;
+  --red:         #dc2626;
+  --red-light:   #fee2e2;
+  --amber:       #d97706;
+  --amber-light: #fef3c7;
+
+  --shadow-card:    0 0 1px rgba(0,0,0,.12), 0 1px 3px rgba(45,127,249,.10), 0 0 0 .5px rgba(0,0,0,.04) inset;
+  --shadow-hover:   0 0 1px rgba(0,0,0,.14), 0 4px 12px rgba(45,127,249,.18);
+  --shadow-sidebar: 1px 0 0 var(--border);
+
+  --font: 'Prompt','Inter',sans-serif;
+  --sidebar-w:   220px;
+  --topbar-h:    56px;
+  --radius-card: 12px;
+  --radius-sm:   8px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);color:var(--navy);background:var(--surface)}
+button{font-family:var(--font);cursor:pointer;border:none;background:none}
+a{text-decoration:none;color:inherit}
+
+/* ─── LAYOUT ──────────────────────────────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ─── SIDEBAR ─────────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);height:100vh;background:var(--white);
+  box-shadow:var(--shadow-sidebar);display:flex;flex-direction:column;
+  flex-shrink:0;overflow-y:auto;z-index:10;
+}
+.sidebar-logo{
+  display:flex;align-items:center;gap:10px;padding:0 16px;
+  height:var(--topbar-h);border-bottom:1px solid var(--border);
+}
+.org-avatar{
+  width:32px;height:32px;border-radius:8px;background:var(--org-primary);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:12px;font-weight:700;letter-spacing:.5px;flex-shrink:0;
+}
+.org-name{font-size:13px;font-weight:600;color:var(--navy);line-height:1.3}
+.org-sub{font-size:11px;color:var(--navy-50)}
+
+.nav-section{padding:8px 8px 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--navy-30);letter-spacing:1px;
+  text-transform:uppercase;padding:0 8px;margin-bottom:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);
+  font-size:13.5px;font-weight:400;color:var(--navy-80);cursor:pointer;
+  transition:background .12s,color .12s;position:relative;
+}
+.nav-item:hover{background:var(--navy-10);color:var(--navy)}
+.nav-item.active{background:var(--org-primary-light);color:var(--org-primary);font-weight:600}
+.nav-item .icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .icon{opacity:1}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:white;
+  font-size:10px;font-weight:700;border-radius:99px;
+  padding:1px 6px;min-width:18px;text-align:center;
+}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border)}
+.user-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;
+}
+.user-row:hover{background:var(--navy-10)}
+.user-avatar{
+  width:30px;height:30px;border-radius:50%;background:var(--org-primary-light);
+  color:var(--org-primary);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.user-name{font-size:13px;font-weight:500}
+.user-role{font-size:11px;color:var(--navy-50)}
+
+/* ─── MAIN ────────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─── TOPBAR ──────────────────────────────────────────────── */
+.topbar{
+  height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;
+}
+.topbar-title{font-size:16px;font-weight:600;color:var(--navy)}
+.topbar-sub{font-size:13px;color:var(--navy-50);margin-left:4px}
+.topbar-spacer{flex:1}
+
+.btn{
+  display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;
+  font-size:13px;font-weight:500;transition:all .12s;
+}
+.btn-secondary{
+  background:var(--white);color:var(--navy);border:1px solid var(--border);
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.btn-secondary:hover{background:var(--surface);border-color:var(--navy-30)}
+.btn-primary{background:var(--org-primary);color:white;box-shadow:0 1px 3px rgba(27,97,201,.25)}
+.btn-primary:hover{background:var(--org-primary-dark)}
+.btn-ghost{color:var(--navy-50);padding:6px 10px}
+.btn-ghost:hover{color:var(--navy);background:var(--navy-10)}
+
+/* ─── CONTENT ─────────────────────────────────────────────── */
+.content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+
+/* ─── SUMMARY STRIP ───────────────────────────────────────── */
+.summary-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+}
+.sum-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  padding:14px 18px;box-shadow:var(--shadow-card);
+  display:flex;align-items:center;gap:12px;
+}
+.sum-icon{
+  width:38px;height:38px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.sum-label{font-size:12px;color:var(--navy-50);margin-bottom:2px}
+.sum-value{font-size:20px;font-weight:700;color:var(--navy);line-height:1}
+.sum-sub{font-size:11px;color:var(--navy-30);margin-top:2px}
+
+/* ─── TOOLBAR ─────────────────────────────────────────────── */
+.toolbar{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  padding:14px 16px;box-shadow:var(--shadow-card);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.search-wrap{
+  position:relative;flex:1;min-width:220px;max-width:340px;
+}
+.search-wrap svg{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--navy-30);pointer-events:none;
+}
+.search-input{
+  width:100%;padding:7px 10px 7px 34px;border:1px solid var(--border);
+  border-radius:8px;font-family:var(--font);font-size:13px;color:var(--navy);
+  background:var(--surface);outline:none;transition:border .15s,box-shadow .15s;
+}
+.search-input::placeholder{color:var(--navy-30)}
+.search-input:focus{border-color:var(--org-primary);box-shadow:0 0 0 3px rgba(27,97,201,.12);background:var(--white)}
+
+.filter-select{
+  padding:7px 10px;border:1px solid var(--border);border-radius:8px;
+  font-family:var(--font);font-size:13px;color:var(--navy);background:var(--surface);
+  outline:none;cursor:pointer;transition:border .15s;
+}
+.filter-select:focus{border-color:var(--org-primary)}
+
+.filter-chip{
+  display:flex;align-items:center;gap:5px;padding:5px 12px;
+  border:1px solid var(--border);border-radius:99px;
+  font-size:12px;font-weight:500;color:var(--navy-80);background:var(--white);
+  cursor:pointer;transition:all .12s;white-space:nowrap;
+}
+.filter-chip:hover{border-color:var(--navy-30);background:var(--surface)}
+.filter-chip.active{
+  background:var(--org-primary-light);border-color:var(--org-primary);
+  color:var(--org-primary);
+}
+.filter-chip .dot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+}
+
+.toolbar-divider{width:1px;height:24px;background:var(--border);flex-shrink:0}
+.toolbar-spacer{flex:1}
+
+/* ─── TABLE CARD ──────────────────────────────────────────── */
+.table-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  box-shadow:var(--shadow-card);overflow:hidden;flex:1;display:flex;flex-direction:column;
+}
+.table-wrap{overflow-x:auto;flex:1}
+
+table{width:100%;border-collapse:collapse;min-width:860px}
+
+thead{background:var(--surface);border-bottom:1px solid var(--border)}
+th{
+  padding:10px 14px;text-align:left;font-size:11.5px;font-weight:600;
+  color:var(--navy-50);text-transform:uppercase;letter-spacing:.6px;
+  white-space:nowrap;user-select:none;
+}
+th.sortable{cursor:pointer}
+th.sortable:hover{color:var(--navy)}
+th .sort-icon{display:inline-block;margin-left:4px;opacity:.4;font-size:10px}
+th.sort-asc .sort-icon::after{content:'↑';opacity:1}
+th.sort-desc .sort-icon::after{content:'↓';opacity:1}
+th.sort-asc .sort-icon, th.sort-desc .sort-icon{opacity:1;color:var(--org-primary)}
+
+tbody tr{
+  border-bottom:1px solid var(--border-light);
+  transition:background .1s;cursor:pointer;
+}
+tbody tr:hover{background:var(--surface)}
+tbody tr:hover .row-actions{opacity:1}
+tbody tr:last-child{border-bottom:none}
+
+td{padding:11px 14px;font-size:13.5px;color:var(--navy);vertical-align:middle}
+
+.td-house{
+  display:flex;flex-direction:column;gap:1px;
+}
+.td-house-num{font-size:14px;font-weight:600;color:var(--navy);line-height:1.2}
+.td-house-sub{font-size:11.5px;color:var(--navy-50)}
+
+.td-owner{
+  display:flex;align-items:center;gap:8px;
+}
+.owner-avatar{
+  width:28px;height:28px;border-radius:50%;background:var(--org-primary-light);
+  color:var(--org-primary);font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.owner-name{font-size:13.5px;font-weight:500}
+.owner-phone{font-size:11.5px;color:var(--navy-50)}
+
+/* Status badges */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:99px;font-size:12px;font-weight:500;
+  white-space:nowrap;
+}
+.badge-active{background:var(--green-light);color:var(--green)}
+.badge-inactive{background:var(--surface-2);color:var(--navy-50)}
+.badge-overdue{background:var(--red-light);color:var(--red)}
+.badge-partial{background:var(--amber-light);color:var(--amber)}
+.badge-clear{background:var(--green-light);color:var(--green)}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* Arrears cell */
+.arrears-nil{font-size:13px;color:var(--navy-30)}
+.arrears-warn{font-size:13.5px;font-weight:600;color:var(--amber)}
+.arrears-danger{font-size:13.5px;font-weight:700;color:var(--red)}
+
+/* Row actions */
+.row-actions{
+  opacity:0;display:flex;gap:4px;align-items:center;
+  transition:opacity .15s;
+}
+.row-action-btn{
+  padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;
+  border:1px solid var(--border);background:var(--white);color:var(--navy-80);
+  transition:all .1s;white-space:nowrap;
+}
+.row-action-btn:hover{background:var(--org-primary);color:white;border-color:var(--org-primary)}
+.row-action-btn.primary{background:var(--org-primary);color:white;border-color:var(--org-primary)}
+.row-action-btn.primary:hover{background:var(--org-primary-dark)}
+
+/* Overdue bucket badges */
+.ob-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:99px;font-size:11.5px;font-weight:600;
+  white-space:nowrap;
+}
+.ob-7    {background:#fef9c3;color:#854d0e}
+.ob-14   {background:#fef3c7;color:#92400e}
+.ob-30   {background:#ffedd5;color:#9a3412}
+.ob-60   {background:#fee2e2;color:#991b1b}
+.ob-90   {background:#fecaca;color:#7f1d1d}
+.ob-over {background:#7f1d1d;color:#fff}
+
+.penalty-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:11px;color:var(--amber);font-weight:500;
+  background:var(--amber-light);border-radius:4px;
+  padding:1px 6px;white-space:nowrap;margin-top:3px;
+}
+.penalty-waived{
+  text-decoration:line-through;color:var(--navy-30);
+}
+
+/* Overdue breakdown bar */
+.overdue-bar{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  padding:14px 18px;box-shadow:var(--shadow-card);
+  display:none;gap:0;flex-direction:column;
+}
+.overdue-bar.show{display:flex}
+.overdue-bar-title{font-size:12px;font-weight:600;color:var(--navy-50);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.overdue-bar-track{
+  display:flex;height:10px;border-radius:99px;overflow:hidden;width:100%;gap:1px;
+}
+.overdue-bar-seg{height:100%;transition:width .4s;cursor:pointer;position:relative}
+.overdue-bar-seg:first-child{border-radius:99px 0 0 99px}
+.overdue-bar-seg:last-child{border-radius:0 99px 99px 0}
+.overdue-bar-labels{display:flex;justify-content:space-between;margin-top:8px}
+.overdue-bar-label{font-size:11.5px;display:flex;align-items:center;gap:5px;cursor:pointer}
+.overdue-bar-label .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.overdue-bar-label .cnt{font-weight:600;margin-left:2px}
+.overdue-bar-label .pct{color:var(--navy-30);font-size:10.5px}
+
+/* Property type tag */
+.prop-tag{
+  display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;
+  font-size:11.5px;font-weight:500;
+}
+.prop-house{background:#eff6ff;color:#1d4ed8}
+.prop-condo{background:#faf5ff;color:#7c3aed}
+.prop-commercial{background:#fff7ed;color:#c2410c}
+.prop-other{background:var(--surface-2);color:var(--navy-50)}
+
+/* ─── EMPTY STATE ─────────────────────────────────────────── */
+.empty-state{
+  padding:60px 20px;text-align:center;color:var(--navy-50);
+}
+.empty-icon{
+  width:56px;height:56px;border-radius:14px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px;
+}
+.empty-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--navy-50);margin-bottom:20px}
+
+/* ─── SKELETON ────────────────────────────────────────────── */
+.skeleton{
+  background:linear-gradient(90deg,var(--surface-2) 25%,var(--border-light) 50%,var(--surface-2) 75%);
+  background-size:400% 100%;animation:shimmer 1.4s infinite;
+  border-radius:4px;display:inline-block;
+}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+/* ─── PAGINATION ──────────────────────────────────────────── */
+.table-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;
+  background:var(--white);
+}
+.page-info{font-size:13px;color:var(--navy-50)}
+.pagination{display:flex;gap:4px;align-items:center}
+.page-btn{
+  min-width:32px;height:32px;border-radius:6px;font-size:13px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid transparent;background:none;color:var(--navy-80);
+  cursor:pointer;transition:all .12s;padding:0 6px;
+}
+.page-btn:hover:not(:disabled){background:var(--surface-2);border-color:var(--border)}
+.page-btn.active{background:var(--org-primary);color:white;border-color:var(--org-primary)}
+.page-btn:disabled{opacity:.35;cursor:not-allowed}
+.page-dots{font-size:13px;color:var(--navy-30);padding:0 4px}
+
+/* ─── TWEAKS PANEL ────────────────────────────────────────── */
+#tweaks-panel{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--white);border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.14);padding:16px;width:260px;display:none;
+}
+#tweaks-panel h4{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--navy)}
+.tweak-row{margin-bottom:12px}
+.tweak-label{font-size:12px;color:var(--navy-50);margin-bottom:4px}
+.tweak-row select,.tweak-row input[type=color]{
+  width:100%;padding:6px 8px;border:1px solid var(--border);
+  border-radius:6px;font-family:var(--font);font-size:13px;
+  background:var(--surface);color:var(--navy);
+}
+.tweak-row input[type=color]{height:34px;padding:2px 4px;cursor:pointer}
+
+/* ─── ADD MODAL ───────────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:900;
+  display:none;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--white);border-radius:16px;width:560px;max-width:95vw;
+  box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;
+  animation:modal-in .18s ease;
+}
+@keyframes modal-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px;border-bottom:1px solid var(--border);
+}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{
+  width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  color:var(--navy-50);transition:all .12s;cursor:pointer;
+}
+.modal-close:hover{background:var(--surface-2);color:var(--navy)}
+.modal-body{padding:22px;display:flex;flex-direction:column;gap:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:12.5px;font-weight:500;color:var(--navy-80)}
+.form-input{
+  padding:8px 11px;border:1px solid var(--border);border-radius:8px;
+  font-family:var(--font);font-size:13.5px;color:var(--navy);outline:none;
+  transition:border .15s,box-shadow .15s;
+}
+.form-input:focus{border-color:var(--org-primary);box-shadow:0 0 0 3px rgba(27,97,201,.12)}
+.modal-foot{
+  display:flex;justify-content:flex-end;gap:8px;
+  padding:14px 22px;border-top:1px solid var(--border);background:var(--surface);
+}
+
+/* ─── DETAIL SLIDEOUT ─────────────────────────────────────── */
+.slideout{
+  position:fixed;right:0;top:0;bottom:0;width:420px;
+  background:var(--white);box-shadow:-4px 0 30px rgba(0,0,0,.12);
+  z-index:800;transform:translateX(100%);transition:transform .22s ease;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.slideout.open{transform:none}
+.slideout-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.slideout-title{font-size:15px;font-weight:600}
+.slideout-body{flex:1;overflow-y:auto;padding:20px}
+.slideout-section{margin-bottom:20px}
+.slideout-section-label{
+  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;
+  color:var(--navy-30);margin-bottom:10px;
+}
+.detail-row{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13.5px;
+}
+.detail-row:last-child{border-bottom:none}
+.detail-key{color:var(--navy-50);flex-shrink:0;width:130px}
+.detail-val{font-weight:500;text-align:right}
+.bill-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border:1px solid var(--border);border-radius:8px;
+  margin-bottom:8px;cursor:pointer;transition:background .12s;
+}
+.bill-row:hover{background:var(--surface)}
+.bill-period{font-size:13px;font-weight:500}
+.bill-meta{font-size:11.5px;color:var(--navy-50);margin-top:1px}
+.slideout-foot{
+  padding:14px 20px;border-top:1px solid var(--border);
+  display:flex;gap:8px;flex-shrink:0;background:var(--white);
+}
+
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:white;padding:10px 18px;border-radius:8px;
+  font-size:13px;font-weight:500;opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:9999;
+}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ─── SIDEBAR ──────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="org-avatar" id="org-avatar">อบต</div>
+      <div>
+        <div class="org-name" id="org-name-el">อบต.สาธิต</div>
+        <div class="org-sub">Officer Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ภาพรวม</div>
+      <div class="nav-item" onclick="window.location='O-01 KPI Dashboard.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm8-9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1v-5z"/></svg>
+        Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">จัดการ</div>
+      <div class="nav-item active">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        ครัวเรือน
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+        บิลทั้งหมด
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+        รับชำระเงิน
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ติดตาม</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ค้างชำระ
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        อนุมัติคำขอ
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ร้องเรียน
+        <span class="nav-badge" style="background:var(--amber)">12</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">บริการ</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+        สติ๊กเกอร์
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/></svg>
+        รายงาน
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">สม</div>
+        <div>
+          <div class="user-name">สมหญิง ใจดี</div>
+          <div class="user-role">Account Officer</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ──────────────────────────────── -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <span class="topbar-title">ครัวเรือน</span>
+        <span class="topbar-sub">รายการครัวเรือนทั้งหมด</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <button class="btn btn-secondary" onclick="showToast('กำลัง Export Excel…')">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        Export Excel
+      </button>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+        เพิ่มบ้านใหม่
+      </button>
+    </div>
+
+    <div class="content">
+
+      <!-- SUMMARY STRIP -->
+      <div class="summary-strip">
+        <div class="sum-card">
+          <div class="sum-icon" style="background:var(--org-primary-light)">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="var(--org-primary)"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+          </div>
+          <div>
+            <div class="sum-label">ครัวเรือนทั้งหมด</div>
+            <div class="sum-value" id="stat-total">3,016</div>
+            <div class="sum-sub">ในระบบ</div>
+          </div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-icon" style="background:var(--green-light)">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="var(--green)"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          </div>
+          <div>
+            <div class="sum-label">ใช้งานปกติ</div>
+            <div class="sum-value" id="stat-active">2,891</div>
+            <div class="sum-sub">95.9% ของทั้งหมด</div>
+          </div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-icon" style="background:var(--red-light)">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="var(--red)"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+          </div>
+          <div>
+            <div class="sum-label">มียอดค้างชำระ</div>
+            <div class="sum-value" id="stat-arrears" style="color:var(--red)">342</div>
+            <div class="sum-sub">11.3% ของทั้งหมด</div>
+          </div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-icon" style="background:var(--surface-2)">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="var(--navy-50)"><path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/></svg>
+          </div>
+          <div>
+            <div class="sum-label">ระงับการใช้งาน</div>
+            <div class="sum-value" id="stat-inactive">125</div>
+            <div class="sum-sub">4.1% ของทั้งหมด</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+          <input class="search-input" id="search-input" type="text"
+            placeholder="ค้นหาชื่อเจ้าบ้าน, เลขที่บ้าน, หมู่…"
+            oninput="applyFilters()">
+        </div>
+
+        <select class="filter-select" id="filter-zone" onchange="applyFilters()">
+          <option value="">ทุกโซน</option>
+          <option value="A">โซน A</option>
+          <option value="B">โซน B</option>
+          <option value="C">โซน C</option>
+          <option value="D">โซน D</option>
+        </select>
+
+        <select class="filter-select" id="filter-moo" onchange="applyFilters()">
+          <option value="">ทุกหมู่</option>
+          <option value="1">หมู่ 1</option>
+          <option value="2">หมู่ 2</option>
+          <option value="3">หมู่ 3</option>
+          <option value="4">หมู่ 4</option>
+          <option value="5">หมู่ 5</option>
+          <option value="6">หมู่ 6</option>
+          <option value="7">หมู่ 7</option>
+        </select>
+
+        <select class="filter-select" id="filter-type" onchange="applyFilters()">
+          <option value="">ทุกประเภท</option>
+          <option value="house">บ้านเดี่ยว</option>
+          <option value="condo">คอนโด/อพาร์ตเมนต์</option>
+          <option value="commercial">พาณิชย์</option>
+        </select>
+
+        <div class="toolbar-divider"></div>
+
+        <button class="filter-chip active" id="chip-all" onclick="setStatusFilter('all')">
+          ทั้งหมด
+        </button>
+        <button class="filter-chip" id="chip-overdue" onclick="setStatusFilter('overdue')">
+          <span class="dot" style="background:var(--red)"></span>
+          ค้างชำระ
+        </button>
+        <button class="filter-chip" id="chip-active" onclick="setStatusFilter('active')">
+          <span class="dot" style="background:var(--green)"></span>
+          ปกติ
+        </button>
+        <button class="filter-chip" id="chip-inactive" onclick="setStatusFilter('inactive')">
+          <span class="dot" style="background:var(--navy-30)"></span>
+          ระงับ
+        </button>
+
+        <div class="toolbar-spacer"></div>
+
+        <button class="btn btn-ghost" style="font-size:12px" onclick="clearFilters()">
+          ล้างตัวกรอง
+        </button>
+
+        <div style="font-size:12.5px;color:var(--navy-50);white-space:nowrap" id="result-count">
+          แสดง 3,016 รายการ
+        </div>
+      </div>
+
+      <!-- OVERDUE BREAKDOWN BAR (shown only when overdue filter active) -->
+      <div class="overdue-bar" id="overdue-bar">
+        <div class="overdue-bar-title">การแจกแจงระยะเวลาค้างชำระ</div>
+        <div class="overdue-bar-track" id="ob-track"></div>
+        <div class="overdue-bar-labels" id="ob-labels"></div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-card">
+        <div class="table-wrap">
+          <table id="data-table">
+            <thead>
+              <tr>
+                <th class="sortable" data-col="house" onclick="sortBy('house')">
+                  เลขที่บ้าน <span class="sort-icon sort-asc" id="sort-house">↑</span>
+                </th>
+                <th>เจ้าบ้าน</th>
+                <th class="sortable" data-col="moo" onclick="sortBy('moo')">
+                  หมู่ <span class="sort-icon" id="sort-moo"></span>
+                </th>
+                <th>ประเภท</th>
+                <th class="sortable" data-col="zone" onclick="sortBy('zone')">
+                  โซนเก็บขยะ <span class="sort-icon" id="sort-zone"></span>
+                </th>
+                <th>สถานะ</th>
+                <th class="sortable" data-col="arrears" onclick="sortBy('arrears')">
+                  ยอดค้าง <span class="sort-icon" id="sort-arrears"></span>
+                </th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="empty-state" id="empty-state" style="display:none">
+          <div class="empty-icon">
+            <svg width="28" height="28" viewBox="0 0 20 20" fill="var(--navy-30)"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="empty-title">ไม่พบผลการค้นหา</div>
+          <div class="empty-sub">ลองเปลี่ยนคำค้นหาหรือปรับตัวกรอง</div>
+          <button class="btn btn-secondary" onclick="clearFilters()">ล้างตัวกรอง</button>
+        </div>
+
+        <div class="table-footer">
+          <div class="page-info" id="page-info">1–20 จาก 3,016 รายการ</div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ─── DETAIL SLIDEOUT ──────────────────────────────────── -->
+<div class="slideout" id="slideout">
+  <div class="slideout-head">
+    <div class="slideout-title" id="so-title">บ้านเลขที่ 24/1 ม.3</div>
+    <button class="modal-close" onclick="closeSlideout()">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+    </button>
+  </div>
+  <div class="slideout-body" id="so-body"></div>
+  <div class="slideout-foot">
+    <button class="btn btn-primary" style="flex:1" onclick="showToast('ไปยังหน้ารายละเอียดครัวเรือน…')">ดูรายละเอียดเต็ม →</button>
+    <button class="btn btn-secondary" onclick="showToast('เปิดหน้ารับชำระ…')">รับชำระ</button>
+  </div>
+</div>
+
+<!-- ─── ADD MODAL ─────────────────────────────────────────── -->
+<div class="modal-overlay" id="add-modal" onclick="e=>{if(e.target===this)closeAddModal()}">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title">เพิ่มครัวเรือนใหม่</div>
+      <div class="modal-close" onclick="closeAddModal()">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">เลขที่บ้าน *</label>
+          <input class="form-input" type="text" placeholder="เช่น 99/3">
+        </div>
+        <div class="form-group">
+          <label class="form-label">หมู่ที่ *</label>
+          <select class="form-input">
+            <option>เลือกหมู่</option>
+            <option>หมู่ 1</option><option>หมู่ 2</option><option>หมู่ 3</option>
+            <option>หมู่ 4</option><option>หมู่ 5</option><option>หมู่ 6</option><option>หมู่ 7</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">ชื่อเจ้าบ้าน *</label>
+        <input class="form-input" type="text" placeholder="ชื่อ-นามสกุล">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">เบอร์โทรศัพท์</label>
+          <input class="form-input" type="text" placeholder="0XX-XXX-XXXX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ประเภทอสังหาฯ</label>
+          <select class="form-input">
+            <option>บ้านเดี่ยว</option>
+            <option>คอนโด/อพาร์ตเมนต์</option>
+            <option>พาณิชย์</option>
+            <option>อื่นๆ</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">โซนเก็บขยะ</label>
+          <select class="form-input">
+            <option>โซน A</option><option>โซน B</option>
+            <option>โซน C</option><option>โซน D</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">สถานะ</label>
+          <select class="form-input">
+            <option>ใช้งานปกติ</option>
+            <option>ระงับการใช้งาน</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeAddModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveNewHousehold()">บันทึกข้อมูล</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TWEAKS PANEL ───────────────────────────────────────── -->
+<div id="tweaks-panel">
+  <h4>⚙ Tweaks</h4>
+  <div class="tweak-row">
+    <div class="tweak-label">สี Primary ของ อปท.</div>
+    <input type="color" id="tweak-color" value="#1b61c9" oninput="applyPrimary(this.value)">
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">สถานะข้อมูล</div>
+    <select id="tweak-state" onchange="applyDataState(this.value)">
+      <option value="data">มีข้อมูล (ปกติ)</option>
+      <option value="loading">กำลังโหลด (skeleton)</option>
+      <option value="empty">ไม่พบผลการค้นหา</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">ความหนาแน่นข้อมูล</div>
+    <select id="tweak-density" onchange="applyDensity(this.value)">
+      <option value="normal">ปกติ</option>
+      <option value="compact">กระชับ (compact)</option>
+    </select>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── DATA ────────────────────────────────────────────────── */
+const FIRST_TH = ['สมชาย','สมหญิง','วิชัย','นภา','ประสิทธิ์','มาลี','สุรชัย','อรทัย','ชัยณรงค์','กัญญา','บุญมี','ศิริ','วิไล','อนันต์','รัตนา','ธนาพล','จิราพร','สมศักดิ์','อรุณ','พิมพ์ใจ','ธีรพงศ์','นิภา','ยุทธพล','สาวิตรี','ชนะชัย','อัมพร','ณัฐพล','วันดี','สิทธิชัย','เพ็ญศรี'];
+const LAST_TH  = ['สุขใจ','ดีมาก','ใจดี','รักดี','สมบูรณ์','วงศ์ทอง','ศิริมงคล','แก้วเมือง','ธนาคม','พรมมา','ทองดี','บุญเรือง','สาครเขต','วัฒนา','ชัยมงคล','ประเสริฐ','กิจเจริญ','มณีรัตน์','จันทร์แก้ว','สร้อยทอง'];
+const TYPES    = ['house','house','house','condo','commercial'];
+const TYPE_LBL = {house:'บ้านเดี่ยว',condo:'คอนโด/อพาร์ต',commercial:'พาณิชย์'};
+const TYPE_CLS = {house:'prop-house',condo:'prop-condo',commercial:'prop-commercial'};
+const ZONES    = ['A','B','C','D'];
+const MOO      = [1,2,3,4,5,6,7];
+
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pick(arr){return arr[rnd(0,arr.length-1)]}
+
+// seed‐stable random
+function seededRnd(seed){
+  let x=Math.sin(seed+1)*10000;return x-Math.floor(x);
+}
+
+// Overdue bucket helper
+function overdueBucket(days){
+  if(days<=7)  return {label:'≤ 7 วัน',  cls:'ob-7',  level:'current'};
+  if(days<=14) return {label:'≤ 14 วัน', cls:'ob-14', level:'warning_1'};
+  if(days<=30) return {label:'≤ 30 วัน', cls:'ob-30', level:'warning_1'};
+  if(days<=60) return {label:'≤ 60 วัน', cls:'ob-60', level:'warning_2'};
+  if(days<=90) return {label:'≤ 90 วัน', cls:'ob-90', level:'warning_3'};
+  return       {label:'> 90 วัน', cls:'ob-over',level:'legal_action'};
+}
+
+const ARREARS_LEVEL_LBL = {
+  current:'ค้างชำระ',warning_1:'เตือนครั้งที่ 1',
+  warning_2:'เตือนครั้งที่ 2',warning_3:'เตือนครั้งที่ 3',
+  legal_action:'ดำเนินการทางกฎหมาย',
+};
+
+const RAW_DATA = Array.from({length:3016},(_,i)=>{
+  const s = i+7;
+  const hasArrears = seededRnd(s*3)<0.114;
+  const arrears = hasArrears ? Math.round(seededRnd(s*7)*15000+200) : 0;
+  const daysOverdue = hasArrears ? Math.round(seededRnd(s*9)*180+1) : 0;
+  // penalty: 1.5% per month (grace 7 days), capped 20% of principal
+  const penaltyRate = 0.015;
+  const penaltyMonths = Math.max(0, Math.floor((daysOverdue-7)/30));
+  const penalty = hasArrears && daysOverdue>7
+    ? Math.min(Math.round(arrears * penaltyRate * penaltyMonths), Math.round(arrears*0.2))
+    : 0;
+  const inactive = seededRnd(s*5)<0.041;
+  const bucket = hasArrears ? overdueBucket(daysOverdue) : null;
+  return {
+    id: i+1,
+    houseNum: `${rnd(1,120)}/${rnd(1,9)}`,
+    ownerFirst: FIRST_TH[Math.floor(seededRnd(s*2)*FIRST_TH.length)],
+    ownerLast:  LAST_TH[Math.floor(seededRnd(s*4)*LAST_TH.length)],
+    phone: `0${rnd(6,9)}${rnd(1000,9999)}-${rnd(1000,9999)}`,
+    moo: MOO[Math.floor(seededRnd(s)*MOO.length)],
+    type: TYPES[Math.floor(seededRnd(s*6)*TYPES.length)],
+    zone: ZONES[Math.floor(seededRnd(s*8)*ZONES.length)],
+    status: inactive?'inactive':'active',
+    arrears, daysOverdue, penalty, bucket,
+  };
+});
+
+/* ─── STATE ───────────────────────────────────────────────── */
+let currentPage = 1;
+const PAGE_SIZE = 20;
+let sortCol = 'house';
+let sortDir = 'asc';
+let statusFilter = 'all';
+let filteredData = [...RAW_DATA];
+let dataState = 'data';
+
+/* ─── FILTER + SORT ───────────────────────────────────────── */
+function applyFilters(){
+  const q    = document.getElementById('search-input').value.toLowerCase();
+  const zone = document.getElementById('filter-zone').value;
+  const moo  = document.getElementById('filter-moo').value;
+  const type = document.getElementById('filter-type').value;
+
+  filteredData = RAW_DATA.filter(r=>{
+    if(q && !(r.houseNum.toLowerCase().includes(q) ||
+              r.ownerFirst.includes(q) || r.ownerLast.includes(q) ||
+              String(r.moo).includes(q))) return false;
+    if(zone && r.zone !== zone) return false;
+    if(moo  && String(r.moo) !== moo) return false;
+    if(type && r.type !== type) return false;
+    if(statusFilter==='overdue'  && r.arrears===0) return false;
+    if(statusFilter==='active'   && (r.status!=='active'||r.arrears>0)) return false;
+    if(statusFilter==='inactive' && r.status!=='inactive') return false;
+    if(bucketFilter){
+      const b = OB_BUCKETS.find(x=>x.key===bucketFilter);
+      if(!b || !b.test(r.daysOverdue)) return false;
+    }
+    return true;
+  });
+
+  sortData();
+  currentPage = 1;
+  render();
+}
+
+/* ─── OVERDUE BREAKDOWN BAR ───────────────────────────────── */
+const OB_BUCKETS = [
+  {key:'7',  label:'≤ 7 วัน',  color:'#fde047', test:d=>d<=7},
+  {key:'14', label:'≤ 14 วัน', color:'#fbbf24', test:d=>d>7&&d<=14},
+  {key:'30', label:'≤ 30 วัน', color:'#f97316', test:d=>d>14&&d<=30},
+  {key:'60', label:'≤ 60 วัน', color:'#ef4444', test:d=>d>30&&d<=60},
+  {key:'90', label:'≤ 90 วัน', color:'#dc2626', test:d=>d>60&&d<=90},
+  {key:'91', label:'> 90 วัน', color:'#7f1d1d', test:d=>d>90},
+];
+
+function renderOverdueBar(data){
+  const overdue = data.filter(r=>r.arrears>0&&r.daysOverdue>0);
+  const total   = overdue.length;
+  if(total===0){ document.getElementById('overdue-bar').classList.remove('show'); return; }
+  document.getElementById('overdue-bar').classList.add('show');
+  const counts = OB_BUCKETS.map(b=>({...b, count:overdue.filter(r=>b.test(r.daysOverdue)).length}));
+  document.getElementById('ob-track').innerHTML = counts.map(b=>{
+    if(!b.count) return '';
+    const w=(b.count/total*100).toFixed(1);
+    return `<div class="overdue-bar-seg" style="width:${w}%;background:${b.color}"
+      title="${b.label}: ${b.count} ราย (${w}%)" onclick="filterByBucket('${b.key}')"></div>`;
+  }).join('');
+  document.getElementById('ob-labels').innerHTML = counts.map(b=>{
+    if(!b.count) return '';
+    const pct=(b.count/total*100).toFixed(0);
+    const active = bucketFilter===b.key ? 'font-weight:700;' : '';
+    return `<div class="overdue-bar-label" style="${active}" onclick="filterByBucket('${b.key}')">
+      <span class="dot" style="background:${b.color}"></span>
+      <span>${b.label}</span>
+      <span class="cnt">${b.count.toLocaleString()}</span>
+      <span class="pct">(${pct}%)</span>
+    </div>`;
+  }).filter(Boolean).join('');
+}
+
+let bucketFilter = null;
+function filterByBucket(key){
+  bucketFilter = bucketFilter===key ? null : key;
+  applyFilters();
+}
+
+function setStatusFilter(val){
+  statusFilter = val;
+  bucketFilter = null;
+  ['all','overdue','active','inactive'].forEach(k=>{
+    document.getElementById('chip-'+k).classList.toggle('active', k===val);
+  });
+  applyFilters();
+}
+
+function clearFilters(){
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-zone').value = '';
+  document.getElementById('filter-moo').value = '';
+  document.getElementById('filter-type').value = '';
+  statusFilter = 'all';
+  bucketFilter = null;
+  ['all','overdue','active','inactive'].forEach(k=>{
+    document.getElementById('chip-'+k).classList.toggle('active', k==='all');
+  });
+  applyFilters();
+}
+
+function sortBy(col){
+  if(sortCol===col){ sortDir = sortDir==='asc'?'desc':'asc'; }
+  else { sortCol=col; sortDir = col==='arrears'?'desc':'asc'; }
+  // Update sort icons
+  ['house','moo','zone','arrears'].forEach(c=>{
+    const el = document.getElementById('sort-'+c);
+    if(!el) return;
+    el.className = 'sort-icon';
+    if(c===sortCol) el.className += sortDir==='asc'?' sort-asc':' sort-desc';
+  });
+  sortData();
+  render();
+}
+
+function sortData(){
+  filteredData.sort((a,b)=>{
+    let av, bv;
+    if(sortCol==='house')   { av=a.houseNum;  bv=b.houseNum; }
+    if(sortCol==='moo')     { av=a.moo;       bv=b.moo; }
+    if(sortCol==='zone')    { av=a.zone;       bv=b.zone; }
+    if(sortCol==='arrears') { av=a.arrears;    bv=b.arrears; }
+    if(typeof av==='number') return sortDir==='asc'?av-bv:bv-av;
+    return sortDir==='asc'?String(av).localeCompare(String(bv),'th'):String(bv).localeCompare(String(av),'th');
+  });
+}
+
+/* ─── RENDER TABLE ────────────────────────────────────────── */
+function render(){
+  const tbody  = document.getElementById('table-body');
+  const empty  = document.getElementById('empty-state');
+  const info   = document.getElementById('page-info');
+  const count  = document.getElementById('result-count');
+
+  if(dataState==='loading'){ renderSkeleton(tbody); empty.style.display='none'; return; }
+  if(filteredData.length===0){
+    tbody.innerHTML=''; empty.style.display=''; renderPagination(0);
+    count.textContent='ไม่พบรายการ'; info.textContent='–';
+    document.getElementById('overdue-bar').classList.remove('show');
+    return;
+  }
+  empty.style.display='none';
+  renderOverdueBar(filteredData);
+
+  const total = filteredData.length;
+  const pages = Math.ceil(total/PAGE_SIZE);
+  if(currentPage>pages) currentPage=pages;
+  const start=(currentPage-1)*PAGE_SIZE, end=Math.min(start+PAGE_SIZE,total);
+  const slice=filteredData.slice(start,end);
+
+  count.textContent = `แสดง ${total.toLocaleString()} รายการ`;
+  info.textContent  = `${(start+1).toLocaleString()}–${end.toLocaleString()} จาก ${total.toLocaleString()} รายการ`;
+
+  tbody.innerHTML = slice.map(r=>{
+    const initials = r.ownerFirst.slice(0,2);
+    let arrHtml;
+    if(r.arrears>0){
+      const penaltyHtml = r.penalty>0
+        ? `<div class="penalty-chip">+ ค่าปรับ ฿${r.penalty.toLocaleString()}</div>`
+        : '';
+      arrHtml = `<div>
+        <span class="arrears-${r.arrears>5000?'danger':'warn'}">฿${r.arrears.toLocaleString()}</span>
+        ${penaltyHtml}
+      </div>`;
+    } else {
+      arrHtml = `<span class="arrears-nil">–</span>`;
+    }
+    let statusBadge;
+    if(r.status==='inactive'){
+      statusBadge = `<span class="badge badge-inactive"><span class="badge-dot"></span>ระงับ</span>`;
+    } else if(r.arrears>0 && r.bucket){
+      const b = r.bucket;
+      statusBadge = `<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start">
+        <span class="ob-badge ${b.cls}">${b.label}</span>
+        <span style="font-size:11px;color:var(--navy-50)">${r.daysOverdue} วัน · ${ARREARS_LEVEL_LBL[b.level]}</span>
+      </div>`;
+    } else {
+      statusBadge = `<span class="badge badge-active"><span class="badge-dot"></span>ปกติ</span>`;
+    }
+    return `<tr onclick="openSlideout(${r.id})">
+      <td>
+        <div class="td-house">
+          <div class="td-house-num">${r.houseNum}</div>
+          <div class="td-house-sub">หมู่ ${r.moo}</div>
+        </div>
+      </td>
+      <td>
+        <div class="td-owner">
+          <div class="owner-avatar">${initials}</div>
+          <div>
+            <div class="owner-name">${r.ownerFirst} ${r.ownerLast}</div>
+            <div class="owner-phone">${r.phone}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:13.5px;font-weight:500">หมู่ ${r.moo}</td>
+      <td><span class="prop-tag ${TYPE_CLS[r.type]}">${TYPE_LBL[r.type]}</span></td>
+      <td style="font-size:13.5px;font-weight:500;color:var(--navy-80)">โซน ${r.zone}</td>
+      <td>${statusBadge}</td>
+      <td>${arrHtml}</td>
+      <td>
+        <div class="row-actions">
+          <button class="row-action-btn primary" onclick="event.stopPropagation();openSlideout(${r.id})">ดูรายละเอียด</button>
+          ${r.arrears>0?`<button class="row-action-btn" onclick="event.stopPropagation();showToast('เปิดหน้ารับชำระ…')">รับชำระ</button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination(total);
+}
+
+function renderSkeleton(tbody){
+  tbody.innerHTML = Array.from({length:12},()=>`
+    <tr>
+      <td><div class="skeleton" style="width:72px;height:14px"></div><div class="skeleton" style="width:44px;height:10px;margin-top:4px"></div></td>
+      <td><div style="display:flex;gap:8px;align-items:center"><div class="skeleton" style="width:28px;height:28px;border-radius:50%"></div><div><div class="skeleton" style="width:90px;height:13px"></div><div class="skeleton" style="width:70px;height:10px;margin-top:4px"></div></div></div></td>
+      <td><div class="skeleton" style="width:36px;height:13px"></div></td>
+      <td><div class="skeleton" style="width:72px;height:20px;border-radius:99px"></div></td>
+      <td><div class="skeleton" style="width:48px;height:13px"></div></td>
+      <td><div class="skeleton" style="width:72px;height:20px;border-radius:99px"></div></td>
+      <td><div class="skeleton" style="width:60px;height:13px"></div></td>
+      <td></td>
+    </tr>`).join('');
+}
+
+function renderPagination(total){
+  const pg   = document.getElementById('pagination');
+  const pages= Math.ceil(total/PAGE_SIZE);
+  if(pages<=1){ pg.innerHTML=''; return; }
+
+  const btns=[];
+  const addBtn=(n,label,active,disabled)=>{
+    btns.push(`<button class="page-btn${active?' active':''}${disabled?' disabled':''}"
+      ${disabled?'disabled':''} onclick="goPage(${n})">${label}</button>`);
+  };
+
+  addBtn(currentPage-1,'‹',false,currentPage===1);
+
+  const WINDOW=2;
+  let prev=-1;
+  for(let p=1;p<=pages;p++){
+    if(p===1||p===pages||Math.abs(p-currentPage)<=WINDOW){
+      if(prev!==-1&&p-prev>1) btns.push(`<span class="page-dots">…</span>`);
+      addBtn(p,p,p===currentPage,false);
+      prev=p;
+    }
+  }
+
+  addBtn(currentPage+1,'›',false,currentPage===pages);
+  pg.innerHTML=btns.join('');
+}
+
+function goPage(n){
+  const pages=Math.ceil(filteredData.length/PAGE_SIZE);
+  if(n<1||n>pages) return;
+  currentPage=n;
+  render();
+  document.querySelector('.content').scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ─── SLIDEOUT ────────────────────────────────────────────── */
+function openSlideout(id){
+  const r = RAW_DATA.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('so-title').textContent = `บ้านเลขที่ ${r.houseNum} หมู่ ${r.moo}`;
+  const bills = [{p:'เม.ย. 68',amt:1200,s:'overdue'},{p:'มี.ค. 68',amt:1200,s:'paid'},{p:'ก.พ. 68',amt:1200,s:'paid'},{p:'ม.ค. 68',amt:1100,s:'paid'}];
+  const billHtml = bills.map(b=>`
+    <div class="bill-row">
+      <div>
+        <div class="bill-period">ค่าธรรมเนียม ${b.p}</div>
+        <div class="bill-meta">฿${b.amt.toLocaleString()}</div>
+      </div>
+      <span class="badge ${b.s==='paid'?'badge-active':'badge-overdue'}">${b.s==='paid'?'ชำระแล้ว':'ค้างชำระ'}</span>
+    </div>`).join('');
+
+  document.getElementById('so-body').innerHTML = `
+    <div class="slideout-section">
+      <div class="slideout-section-label">ข้อมูลบ้าน</div>
+      <div class="detail-row"><span class="detail-key">เลขที่บ้าน</span><span class="detail-val">${r.houseNum}</span></div>
+      <div class="detail-row"><span class="detail-key">หมู่</span><span class="detail-val">หมู่ ${r.moo}</span></div>
+      <div class="detail-row"><span class="detail-key">ประเภท</span><span class="detail-val">${TYPE_LBL[r.type]}</span></div>
+      <div class="detail-row"><span class="detail-key">โซนเก็บขยะ</span><span class="detail-val">โซน ${r.zone}</span></div>
+      <div class="detail-row"><span class="detail-key">สถานะ</span><span class="detail-val">${r.status==='active'?'ใช้งานปกติ':'ระงับการใช้งาน'}</span></div>
+    </div>
+    <div class="slideout-section">
+      <div class="slideout-section-label">เจ้าบ้าน</div>
+      <div class="detail-row"><span class="detail-key">ชื่อ-นามสกุล</span><span class="detail-val">${r.ownerFirst} ${r.ownerLast}</span></div>
+      <div class="detail-row"><span class="detail-key">โทรศัพท์</span><span class="detail-val">${r.phone}</span></div>
+    </div>
+    <div class="slideout-section">
+      <div class="slideout-section-label">ยอดค้างชำระ</div>
+      <div class="detail-row"><span class="detail-key">ยอดหลัก</span>
+        <span class="detail-val" style="color:${r.arrears>0?'var(--red)':'var(--green)'};font-size:18px">
+          ${r.arrears>0?'฿'+r.arrears.toLocaleString():'ไม่มียอดค้าง'}
+        </span>
+      </div>
+      ${r.arrears>0?`
+      <div class="detail-row"><span class="detail-key">ค้างมาแล้ว</span>
+        <span class="detail-val">
+          <span class="ob-badge ${r.bucket.cls}" style="font-size:12px">${r.daysOverdue} วัน</span>
+        </span>
+      </div>
+      <div class="detail-row"><span class="detail-key">ระดับการติดตาม</span>
+        <span class="detail-val">${ARREARS_LEVEL_LBL[r.bucket.level]}</span>
+      </div>
+      <div class="detail-row"><span class="detail-key">ค่าปรับสะสม</span>
+        <span class="detail-val" style="color:${r.penalty>0?'var(--amber)':'var(--navy-50)'}">
+          ${r.penalty>0?'฿'+r.penalty.toLocaleString():'–'}
+        </span>
+      </div>
+      <div class="detail-row" style="border-top:2px solid var(--border);padding-top:10px">
+        <span class="detail-key" style="font-weight:600">ยอดรวมที่ต้องชำระ</span>
+        <span class="detail-val" style="color:var(--red);font-size:16px;font-weight:700">
+          ฿${(r.arrears+r.penalty).toLocaleString()}
+        </span>
+      </div>`:''}
+    </div>
+    <div class="slideout-section">
+      <div class="slideout-section-label">บิลล่าสุด</div>
+      ${billHtml}
+    </div>`;
+
+  document.getElementById('slideout').classList.add('open');
+}
+function closeSlideout(){ document.getElementById('slideout').classList.remove('open'); }
+
+/* ─── ADD MODAL ───────────────────────────────────────────── */
+function openAddModal(){ document.getElementById('add-modal').classList.add('open'); }
+function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
+function saveNewHousehold(){ closeAddModal(); showToast('บันทึกข้อมูลครัวเรือนใหม่เรียบร้อย ✓'); }
+
+/* ─── TWEAKS ──────────────────────────────────────────────── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "primaryColor": "#1b61c9",
+  "dataState": "data",
+  "density": "normal"
+}/*EDITMODE-END*/;
+
+function applyPrimary(hex){
+  const r=document.documentElement;
+  r.style.setProperty('--org-primary', hex);
+  // derive light & dark
+  r.style.setProperty('--org-primary-light', hex+'22');
+  r.style.setProperty('--org-primary-dark',  hex+'dd');
+  window.parent.postMessage({type:'__edit_mode_set_keys',edits:{primaryColor:hex}},'*');
+}
+function applyDataState(v){
+  dataState=v;
+  if(v==='empty'){
+    filteredData=[];
+    render();
+  } else if(v==='loading'){
+    renderSkeleton(document.getElementById('table-body'));
+    document.getElementById('empty-state').style.display='none';
+  } else {
+    filteredData=[...RAW_DATA];
+    sortData();
+    currentPage=1;
+    render();
+  }
+}
+function applyDensity(v){
+  const compact = v==='compact';
+  document.querySelectorAll('td,th').forEach(el=>{
+    el.style.padding = compact?'7px 14px':'';
+  });
+}
+
+// Tweaks protocol
+window.addEventListener('message',e=>{
+  if(e.data?.type==='__activate_edit_mode') document.getElementById('tweaks-panel').style.display='block';
+  if(e.data?.type==='__deactivate_edit_mode') document.getElementById('tweaks-panel').style.display='none';
+});
+window.parent.postMessage({type:'__edit_mode_available'},'*');
+
+// Apply saved tweaks on load
+applyPrimary(TWEAK_DEFAULTS.primaryColor||'#1b61c9');
+if(TWEAK_DEFAULTS.primaryColor) document.getElementById('tweak-color').value=TWEAK_DEFAULTS.primaryColor;
+
+/* ─── TOAST ───────────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ─── INIT ────────────────────────────────────────────────── */
+applyFilters();
+</script>
+</body>
+</html>

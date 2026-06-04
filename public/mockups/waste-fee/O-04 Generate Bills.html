@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-04 · ออกบิล (Generate Bills) — Officer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --org-primary:       #1b61c9;
+  --org-primary-light: #e8f0fd;
+  --org-primary-dark:  #1349a0;
+
+  --navy:    #181d26;
+  --navy-80: rgba(24,29,38,0.80);
+  --navy-50: rgba(24,29,38,0.50);
+  --navy-30: rgba(24,29,38,0.30);
+  --navy-10: rgba(24,29,38,0.07);
+
+  --white:       #ffffff;
+  --surface:     #f8fafc;
+  --surface-2:   #f1f4f8;
+  --border:      #e0e2e6;
+  --border-light:#edf0f4;
+
+  --green:       #059669;
+  --green-light: #d1fae5;
+  --red:         #dc2626;
+  --red-light:   #fee2e2;
+  --amber:       #d97706;
+  --amber-light: #fef3c7;
+  --purple:      #7c3aed;
+  --purple-light:#ede9fe;
+
+  --shadow-card: 0 0 1px rgba(0,0,0,.12), 0 1px 3px rgba(45,127,249,.10), 0 0 0 .5px rgba(0,0,0,.04) inset;
+  --shadow-hover: 0 0 1px rgba(0,0,0,.14), 0 4px 12px rgba(45,127,249,.18);
+  --shadow-sidebar: 1px 0 0 var(--border);
+
+  --font: 'Prompt','Inter',sans-serif;
+  --sidebar-w:   220px;
+  --topbar-h:    56px;
+  --radius-card: 12px;
+  --radius-sm:   8px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);color:var(--navy);background:var(--surface)}
+button{font-family:var(--font);cursor:pointer;border:none;background:none}
+a{text-decoration:none;color:inherit}
+
+/* ─── LAYOUT ─────────────────────────────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ─── SIDEBAR ────────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);height:100vh;background:var(--white);
+  box-shadow:var(--shadow-sidebar);display:flex;flex-direction:column;
+  flex-shrink:0;overflow-y:auto;z-index:10;
+}
+.sidebar-logo{
+  display:flex;align-items:center;gap:10px;padding:0 16px;
+  height:var(--topbar-h);border-bottom:1px solid var(--border);
+}
+.org-avatar{
+  width:32px;height:32px;border-radius:8px;background:var(--org-primary);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:12px;font-weight:700;letter-spacing:.5px;flex-shrink:0;
+}
+.org-name{font-size:13px;font-weight:600;color:var(--navy);line-height:1.3}
+.org-sub{font-size:11px;color:var(--navy-50)}
+
+.nav-section{padding:8px 8px 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--navy-30);letter-spacing:1px;
+  text-transform:uppercase;padding:0 8px;margin-bottom:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);
+  font-size:13.5px;font-weight:400;color:var(--navy-80);cursor:pointer;
+  transition:background .12s,color .12s;
+}
+.nav-item:hover{background:var(--navy-10);color:var(--navy)}
+.nav-item.active{background:var(--org-primary-light);color:var(--org-primary);font-weight:600}
+.nav-item .icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .icon{opacity:1}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:white;
+  font-size:10px;font-weight:700;border-radius:99px;
+  padding:1px 6px;min-width:18px;text-align:center;
+}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border)}
+.user-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;
+}
+.user-row:hover{background:var(--navy-10)}
+.user-avatar{
+  width:30px;height:30px;border-radius:50%;background:var(--org-primary-light);
+  color:var(--org-primary);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.user-name{font-size:13px;font-weight:500}
+.user-role{font-size:11px;color:var(--navy-50)}
+
+/* ─── MAIN ───────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─── TOPBAR ─────────────────────────────────────────────── */
+.topbar{
+  height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;
+}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.breadcrumb-link{color:var(--navy-50);cursor:pointer;transition:color .12s}
+.breadcrumb-link:hover{color:var(--org-primary)}
+.breadcrumb-sep{color:var(--navy-30);font-size:12px}
+.breadcrumb-cur{font-weight:600;color:var(--navy)}
+.topbar-spacer{flex:1}
+
+.btn{
+  display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;
+  font-size:13px;font-weight:500;transition:all .12s;
+}
+.btn-secondary{
+  background:var(--white);color:var(--navy);border:1px solid var(--border);
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.btn-secondary:hover{background:var(--surface);border-color:var(--navy-30)}
+.btn-primary{background:var(--org-primary);color:white;box-shadow:0 1px 3px rgba(27,97,201,.25)}
+.btn-primary:hover{background:var(--org-primary-dark)}
+.btn-ghost{color:var(--navy-50);padding:6px 10px}
+.btn-ghost:hover{color:var(--navy);background:var(--navy-10)}
+.btn-danger-solid{background:var(--red);color:white;box-shadow:0 1px 3px rgba(220,38,38,.25)}
+.btn-danger-solid:hover{background:#b91c1c}
+.btn-lg{padding:10px 22px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+
+/* ─── CONTENT ────────────────────────────────────────────── */
+.content{flex:1;overflow-y:auto;padding:0;display:flex;flex-direction:column}
+
+/* ─── SECTION CARD ───────────────────────────────────────── */
+.section-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  box-shadow:var(--shadow-card);overflow:hidden;
+}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border-light);
+}
+.section-title{font-size:13px;font-weight:600;color:var(--navy);
+  display:flex;align-items:center;gap:8px}
+.section-title-icon{
+  width:24px;height:24px;border-radius:6px;background:var(--org-primary-light);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.section-body{padding:16px 18px}
+
+/* ─── PAGE HEADER ────────────────────────────────────────── */
+.page-header{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:20px 24px;flex-shrink:0;
+}
+.page-title{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:3px}
+.page-subtitle{font-size:13px;color:var(--navy-50)}
+
+/* ─── STEPPER ────────────────────────────────────────────── */
+.stepper-wrap{
+  padding:20px 24px 0;
+}
+.stepper{
+  display:flex;align-items:center;gap:0;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  overflow:hidden;box-shadow:var(--shadow-card);
+}
+.step{
+  flex:1;display:flex;align-items:center;gap:12px;
+  padding:14px 18px;position:relative;cursor:default;
+  border-right:1px solid var(--border);transition:background .15s;
+}
+.step:last-child{border-right:none}
+.step-number{
+  width:28px;height:28px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--navy-30);flex-shrink:0;
+  transition:all .15s;background:var(--white);
+}
+.step-info{flex:1;min-width:0}
+.step-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--navy-30);transition:color .15s}
+.step-name{font-size:13px;font-weight:500;color:var(--navy-30);transition:color .15s;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* active */
+.step.active .step-number{border-color:var(--org-primary);color:var(--org-primary);background:var(--org-primary-light)}
+.step.active .step-label{color:var(--org-primary)}
+.step.active .step-name{color:var(--navy);font-weight:600}
+.step.active{background:var(--org-primary-light)}
+/* done */
+.step.done .step-number{border-color:var(--green);background:var(--green);color:white}
+.step.done .step-label{color:var(--green)}
+.step.done .step-name{color:var(--navy-50)}
+
+/* ─── WIZARD BODY ────────────────────────────────────────── */
+.wizard-body{
+  flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:16px;
+  overflow-y:auto;
+}
+
+/* ─── FORM ELEMENTS ──────────────────────────────────────── */
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:12.5px;font-weight:500;color:var(--navy-80)}
+.form-label span{font-size:11.5px;color:var(--navy-30);font-weight:400;margin-left:4px}
+.form-input,.form-select{
+  padding:8px 11px;border:1px solid var(--border);border-radius:8px;
+  font-family:var(--font);font-size:13.5px;color:var(--navy);outline:none;
+  background:var(--white);transition:border .15s;
+}
+.form-input:focus,.form-select:focus{
+  border-color:var(--org-primary);box-shadow:0 0 0 3px rgba(27,97,201,.12);
+}
+.form-hint{font-size:11.5px;color:var(--navy-30);margin-top:2px}
+
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* ─── CHECKBOX GROUP ─────────────────────────────────────── */
+.check-group{display:flex;flex-direction:column;gap:8px}
+.check-item{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  border:1px solid var(--border);border-radius:8px;cursor:pointer;
+  transition:all .12s;user-select:none;
+}
+.check-item:hover{background:var(--surface);border-color:var(--navy-30)}
+.check-item.checked{background:var(--org-primary-light);border-color:var(--org-primary)}
+.check-box{
+  width:18px;height:18px;border:2px solid var(--border);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .12s;
+}
+.check-item.checked .check-box{background:var(--org-primary);border-color:var(--org-primary)}
+.check-item-label{font-size:13px;font-weight:500;color:var(--navy)}
+.check-item-sub{font-size:11.5px;color:var(--navy-50);margin-top:1px}
+.check-item-right{margin-left:auto;font-size:12px;color:var(--navy-50);font-weight:500}
+.check-item.checked .check-item-label{color:var(--org-primary)}
+
+/* zone toggle row */
+.zone-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.zone-btn{
+  padding:10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;
+  text-align:center;font-size:13px;font-weight:600;color:var(--navy-50);
+  background:var(--white);transition:all .12s;
+}
+.zone-btn:hover{border-color:var(--navy-30);color:var(--navy)}
+.zone-btn.sel{border-color:var(--org-primary);background:var(--org-primary-light);color:var(--org-primary)}
+.zone-sub{font-size:11px;color:inherit;font-weight:400;margin-top:2px;display:block}
+
+/* ─── SUMMARY STRIP ──────────────────────────────────────── */
+.summary-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-card);
+  box-shadow:var(--shadow-card);overflow:hidden;
+}
+.summary-item{
+  padding:16px 18px;border-right:1px solid var(--border-light);
+}
+.summary-item:last-child{border-right:none}
+.summary-label{font-size:11px;color:var(--navy-50);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.summary-value{font-size:22px;font-weight:700;color:var(--navy);line-height:1}
+.summary-sub{font-size:11px;color:var(--navy-30);margin-top:3px}
+.summary-value.accent{color:var(--org-primary)}
+.summary-value.warn{color:var(--amber)}
+
+/* ─── TABLE ──────────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse}
+thead{background:var(--surface)}
+th{
+  padding:9px 14px;text-align:left;font-size:11px;font-weight:600;
+  color:var(--navy-50);text-transform:uppercase;letter-spacing:.6px;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid var(--border-light);transition:background .1s}
+tbody tr:hover{background:var(--surface)}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 14px;font-size:13px;color:var(--navy);vertical-align:middle}
+.mono{font-family:monospace;font-size:12.5px;color:var(--navy-80)}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
+  border-radius:99px;font-size:11.5px;font-weight:500;white-space:nowrap;
+}
+.s-draft{background:var(--surface-2);color:var(--navy-50)}
+.s-skip{background:var(--amber-light);color:var(--amber)}
+.s-ok{background:var(--green-light);color:var(--green)}
+
+/* ─── CONFIRMATION BOX ───────────────────────────────────── */
+.confirm-box{
+  border:1.5px solid var(--red);border-radius:var(--radius-card);
+  background:#fff9f9;overflow:hidden;
+}
+.confirm-box-head{
+  background:var(--red-light);padding:14px 18px;
+  display:flex;align-items:center;gap:10px;border-bottom:1px solid #fca5a5;
+}
+.confirm-box-head-title{font-size:14px;font-weight:700;color:var(--red)}
+.confirm-box-body{padding:18px}
+.confirm-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 0;border-bottom:1px solid #fee2e2;font-size:13px;
+}
+.confirm-item:last-child{border-bottom:none}
+.confirm-item-label{color:var(--navy-50);font-size:12.5px}
+.confirm-item-value{font-weight:600;color:var(--navy);text-align:right}
+
+/* ─── NOTIFICATION TOGGLE ────────────────────────────────── */
+.notif-box{
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  border:1px solid var(--border);border-radius:10px;background:var(--white);
+  cursor:pointer;transition:border-color .12s;user-select:none;
+}
+.notif-box:hover{border-color:var(--navy-30)}
+.notif-box.on{border-color:var(--org-primary);background:var(--org-primary-light)}
+.notif-icon{
+  width:38px;height:38px;border-radius:9px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .12s;
+}
+.notif-box.on .notif-icon{background:rgba(27,97,201,.15)}
+.notif-label{font-size:13px;font-weight:600;color:var(--navy)}
+.notif-sub{font-size:11.5px;color:var(--navy-50);margin-top:2px}
+.toggle{
+  margin-left:auto;width:40px;height:22px;border-radius:99px;
+  background:var(--border);position:relative;transition:background .15s;flex-shrink:0;
+}
+.toggle::after{
+  content:'';position:absolute;left:3px;top:3px;
+  width:16px;height:16px;border-radius:50%;background:white;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .15s;
+}
+.notif-box.on .toggle{background:var(--org-primary)}
+.notif-box.on .toggle::after{left:21px}
+
+/* ─── PROGRESS SCREEN ────────────────────────────────────── */
+.progress-screen{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 24px;text-align:center;gap:24px;
+}
+.progress-ring{
+  width:80px;height:80px;border-radius:50%;
+  border:6px solid var(--org-primary-light);border-top-color:var(--org-primary);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-title{font-size:18px;font-weight:700;color:var(--navy)}
+.progress-sub{font-size:13px;color:var(--navy-50);max-width:400px;line-height:1.6}
+.progress-bar-wrap{
+  width:100%;max-width:480px;background:var(--surface-2);
+  border-radius:99px;height:10px;overflow:hidden;
+}
+.progress-bar-fill{
+  height:100%;border-radius:99px;background:var(--org-primary);
+  transition:width .4s ease;
+}
+.progress-label{font-size:12.5px;color:var(--navy-50)}
+
+/* ─── SUCCESS SCREEN ─────────────────────────────────────── */
+.success-screen{
+  display:flex;flex-direction:column;align-items:center;
+  padding:40px 24px 24px;text-align:center;gap:6px;
+}
+.success-icon{
+  width:64px;height:64px;border-radius:50%;background:var(--green-light);
+  display:flex;align-items:center;justify-content:center;margin-bottom:6px;
+}
+.success-title{font-size:20px;font-weight:700;color:var(--navy)}
+.success-sub{font-size:13px;color:var(--navy-50);margin-bottom:16px}
+.success-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:560px;margin-bottom:8px;
+}
+.stat-card{
+  background:var(--white);border:1px solid var(--border);border-radius:10px;
+  padding:14px;box-shadow:var(--shadow-card);
+}
+.stat-card .v{font-size:24px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.stat-card .l{font-size:11px;color:var(--navy-50);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.stat-card.green .v{color:var(--green)}
+.stat-card.red .v{color:var(--red)}
+.stat-card.blue .v{color:var(--org-primary)}
+
+/* ─── ERROR REPORT ───────────────────────────────────────── */
+.error-report{
+  width:100%;max-width:620px;background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius-card);box-shadow:var(--shadow-card);overflow:hidden;text-align:left;
+}
+.error-report-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--border-light);
+}
+.error-report-title{font-size:13px;font-weight:600;color:var(--navy)}
+.error-row{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;
+  border-bottom:1px solid var(--border-light);font-size:12.5px;
+}
+.error-row:last-child{border-bottom:none}
+.error-row-house{font-weight:500;color:var(--navy);min-width:120px}
+.error-row-reason{color:var(--navy-50);flex:1}
+.error-badge{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:var(--red-light);color:var(--red)}
+
+/* ─── WIZARD FOOTER ──────────────────────────────────────── */
+.wizard-footer{
+  background:var(--white);border-top:1px solid var(--border);
+  padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.wizard-footer-left{display:flex;gap:8px;align-items:center}
+.wizard-footer-right{display:flex;gap:8px;align-items:center}
+
+/* ─── TWEAKS PANEL ───────────────────────────────────────── */
+#tweaks-panel{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--white);border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.14);padding:16px;width:240px;display:none;
+}
+#tweaks-panel h4{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--navy)}
+.tweak-row{margin-bottom:10px}
+.tweak-label{font-size:11.5px;color:var(--navy-50);margin-bottom:4px}
+.tweak-row select,.tweak-row input[type=color]{
+  width:100%;padding:6px 8px;border:1px solid var(--border);
+  border-radius:6px;font-family:var(--font);font-size:13px;
+  background:var(--surface);color:var(--navy);
+}
+.tweak-row input[type=color]{height:34px;padding:2px 4px;cursor:pointer}
+
+/* ─── TOAST ──────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:white;padding:10px 18px;border-radius:8px;
+  font-size:13px;font-weight:500;opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:9999;
+}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ─── SIDEBAR ──────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="org-avatar">อบต</div>
+      <div>
+        <div class="org-name">อบต.สาธิต</div>
+        <div class="org-sub">Officer Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ภาพรวม</div>
+      <div class="nav-item" onclick="window.location='O-01 KPI Dashboard.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm8-9a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1v-5z"/></svg>
+        Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">จัดการ</div>
+      <div class="nav-item" onclick="window.location='O-02 Household List.html'">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        ครัวเรือน
+      </div>
+      <div class="nav-item active">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+        บิลทั้งหมด
+      </div>
+      <div class="nav-item" onclick="showToast('รับชำระเงิน')">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+        รับชำระเงิน
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">ติดตาม</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ค้างชำระ
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        อนุมัติคำขอ
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        ร้องเรียน
+        <span class="nav-badge" style="background:var(--amber)">12</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">บริการ</div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+        สติ๊กเกอร์
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/></svg>
+        รายงาน
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">สม</div>
+        <div>
+          <div class="user-name">สมหญิง ใจดี</div>
+          <div class="user-role">Account Officer</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ──────────────────────────────── -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span class="breadcrumb-link">บิลทั้งหมด</span>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-cur">ออกบิลใหม่</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <button class="btn btn-ghost" onclick="showToast('บันทึกแบบร่าง')">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293z"/></svg>
+        บันทึกแบบร่าง
+      </button>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="page-title">ออกบิลรายกลุ่ม</div>
+          <div class="page-subtitle">สร้างบิลค่าธรรมเนียมสำหรับรอบการเก็บเงินที่กำหนด — ตรวจสอบข้อมูลให้ครบก่อนยืนยัน</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:12px;color:var(--navy-50)">รอบปัจจุบัน:</div>
+          <div style="font-size:13px;font-weight:600;color:var(--navy);background:var(--surface-2);padding:5px 12px;border-radius:6px;border:1px solid var(--border)">ปีงบ 2568</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEPPER -->
+    <div class="stepper-wrap">
+      <div class="stepper" id="stepper">
+        <div class="step active" id="step-1">
+          <div class="step-number" id="sn-1">1</div>
+          <div class="step-info">
+            <div class="step-label">ขั้นตอนที่ 1</div>
+            <div class="step-name">ตั้งค่าการออกบิล</div>
+          </div>
+        </div>
+        <div class="step" id="step-2">
+          <div class="step-number" id="sn-2">2</div>
+          <div class="step-info">
+            <div class="step-label">ขั้นตอนที่ 2</div>
+            <div class="step-name">ตรวจสอบ Preview</div>
+          </div>
+        </div>
+        <div class="step" id="step-3">
+          <div class="step-number" id="sn-3">3</div>
+          <div class="step-info">
+            <div class="step-label">ขั้นตอนที่ 3</div>
+            <div class="step-name">ยืนยันการออกบิล</div>
+          </div>
+        </div>
+        <div class="step" id="step-4">
+          <div class="step-number" id="sn-4">4</div>
+          <div class="step-info">
+            <div class="step-label">ขั้นตอนที่ 4</div>
+            <div class="step-name">เสร็จสิ้น</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WIZARD BODY -->
+    <div class="wizard-body" id="wizard-body">
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- STEP 1: SETUP -->
+      <!-- ══════════════════════════════════════════ -->
+      <div id="panel-1">
+
+        <div class="form-row-2" style="gap:16px">
+
+          <!-- Left column -->
+          <div style="display:flex;flex-direction:column;gap:14px">
+
+            <!-- Billing Cycle -->
+            <div class="section-card">
+              <div class="section-head">
+                <div class="section-title">
+                  <div class="section-title-icon">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+                  </div>
+                  รอบการออกบิล
+                </div>
+              </div>
+              <div class="section-body" style="display:flex;flex-direction:column;gap:12px">
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <div class="form-label">ปีงบประมาณ</div>
+                    <select class="form-select" id="sel-year">
+                      <option>2568</option>
+                      <option>2567</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <div class="form-label">ประเภทรอบ</div>
+                    <select class="form-select" id="sel-cycle-type" onchange="updateCyclePicker()">
+                      <option value="monthly">รายเดือน</option>
+                      <option value="quarterly" selected>รายไตรมาส</option>
+                      <option value="annual">รายปี</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="form-label">รอบที่ <span>(เลือก 1 รอบ)</span></div>
+                  <div id="cycle-picker" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                    <div class="zone-btn sel" onclick="selCycle(this,'Q1/2568')">Q1 / 2568<span class="zone-sub">ต.ค. 67 – ธ.ค. 67</span></div>
+                    <div class="zone-btn" onclick="selCycle(this,'Q2/2568')">Q2 / 2568<span class="zone-sub">ม.ค. 68 – มี.ค. 68</span></div>
+                    <div class="zone-btn" onclick="selCycle(this,'Q3/2568')">Q3 / 2568<span class="zone-sub">เม.ย. 68 – มิ.ย. 68</span></div>
+                    <div class="zone-btn" onclick="selCycle(this,'Q4/2568')">Q4 / 2568<span class="zone-sub">ก.ค. 68 – ก.ย. 68</span></div>
+                  </div>
+                </div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <div class="form-label">วันที่ออกบิล</div>
+                    <input type="date" class="form-input" id="issue-date" value="2025-04-22">
+                  </div>
+                  <div class="form-group">
+                    <div class="form-label">กำหนดชำระ</div>
+                    <input type="date" class="form-input" id="due-date" value="2025-05-31">
+                  </div>
+                </div>
+                <div class="form-hint" style="display:flex;align-items:center;gap:6px;color:var(--amber);font-size:12px">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  รอบ Q1/2568 ออกบิลไปแล้ว 248 หลัง — การออกบิลซ้ำจะสร้างบิลใหม่สำหรับหลังที่ยังไม่มีบิลเท่านั้น
+                </div>
+              </div>
+            </div>
+
+            <!-- Included services -->
+            <div class="section-card">
+              <div class="section-head">
+                <div class="section-title">
+                  <div class="section-title-icon">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+                  </div>
+                  บริการที่รวมในบิล
+                </div>
+              </div>
+              <div class="section-body" style="display:flex;flex-direction:column;gap:8px">
+                <div class="check-item checked" onclick="toggleCheck(this)">
+                  <div class="check-box">
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="white"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                  </div>
+                  <div>
+                    <div class="check-item-label">ค่าธรรมเนียมเก็บขยะ</div>
+                    <div class="check-item-sub">อัตราตามประเภทอสังหาฯ · บ้านเดี่ยว ฿80/เดือน</div>
+                  </div>
+                  <div class="check-item-right">฿80–240/หลัง</div>
+                </div>
+                <div class="check-item checked" onclick="toggleCheck(this)">
+                  <div class="check-box">
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="white"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                  </div>
+                  <div>
+                    <div class="check-item-label">ค่าน้ำประปา</div>
+                    <div class="check-item-sub">ตาม meter reading รอบ ม.ค.–มี.ค. 68 · อัตรา Tiered</div>
+                  </div>
+                  <div class="check-item-right">ตามมิเตอร์</div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                  <div class="check-box"></div>
+                  <div>
+                    <div class="check-item-label">ค่าไฟฟ้า</div>
+                    <div class="check-item-sub">ตาม meter reading รอบ ม.ค.–มี.ค. 68 · อัตรา Tiered</div>
+                  </div>
+                  <div class="check-item-right">ตามมิเตอร์</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;padding:8px 0 0;font-size:12px;color:var(--navy-50)">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                  ค่าน้ำและค่าไฟจะรวมเฉพาะหลังที่มี meter reading ที่ verified แล้วในรอบนี้
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right column -->
+          <div style="display:flex;flex-direction:column;gap:14px">
+
+            <!-- Zones -->
+            <div class="section-card">
+              <div class="section-head">
+                <div class="section-title">
+                  <div class="section-title-icon">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9A7 7 0 015.05 4.05zm1.414 8.486a5 5 0 107.072-7.072 5 5 0 00-7.072 7.072zM10 11a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+                  </div>
+                  โซนเก็บขยะ
+                </div>
+                <button class="btn btn-ghost" style="font-size:12px;padding:4px 8px" onclick="toggleAllZones()">เลือกทั้งหมด</button>
+              </div>
+              <div class="section-body">
+                <div class="zone-grid">
+                  <div class="zone-btn sel" onclick="toggleZone(this)">โซน A<span class="zone-sub">142 หลัง</span></div>
+                  <div class="zone-btn sel" onclick="toggleZone(this)">โซน B<span class="zone-sub">198 หลัง</span></div>
+                  <div class="zone-btn sel" onclick="toggleZone(this)">โซน C<span class="zone-sub">87 หลัง</span></div>
+                  <div class="zone-btn sel" onclick="toggleZone(this)">โซน D<span class="zone-sub">64 หลัง</span></div>
+                </div>
+                <div style="margin-top:10px;font-size:12px;color:var(--navy-50)">เลือกแล้ว 4/4 โซน · รวม <strong style="color:var(--navy)">491 หลัง</strong></div>
+              </div>
+            </div>
+
+            <!-- Property Types -->
+            <div class="section-card">
+              <div class="section-head">
+                <div class="section-title">
+                  <div class="section-title-icon">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                  </div>
+                  ประเภทอสังหาฯ
+                </div>
+              </div>
+              <div class="section-body" style="display:flex;flex-direction:column;gap:8px">
+                <div class="check-item checked" onclick="toggleCheck(this)" style="padding:8px 12px">
+                  <div class="check-box"><svg width="10" height="10" viewBox="0 0 12 12" fill="white"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+                  <div class="check-item-label">บ้านเดี่ยว</div>
+                  <div class="check-item-right">312 หลัง</div>
+                </div>
+                <div class="check-item checked" onclick="toggleCheck(this)" style="padding:8px 12px">
+                  <div class="check-box"><svg width="10" height="10" viewBox="0 0 12 12" fill="white"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+                  <div class="check-item-label">ทาวน์เฮาส์ / อาคารพาณิชย์</div>
+                  <div class="check-item-right">124 หลัง</div>
+                </div>
+                <div class="check-item checked" onclick="toggleCheck(this)" style="padding:8px 12px">
+                  <div class="check-box"><svg width="10" height="10" viewBox="0 0 12 12" fill="white"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+                  <div class="check-item-label">อาคารชุด / คอนโด</div>
+                  <div class="check-item-right">55 หลัง</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Advanced Options -->
+            <div class="section-card">
+              <div class="section-head">
+                <div class="section-title">
+                  <div class="section-title-icon">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+                  </div>
+                  ตัวเลือกเพิ่มเติม
+                </div>
+              </div>
+              <div class="section-body" style="display:flex;flex-direction:column;gap:10px">
+                <div class="form-group">
+                  <div class="form-label">กลุ่มเป้าหมาย</div>
+                  <select class="form-select">
+                    <option selected>ทุกหลังที่ยังไม่มีบิลในรอบนี้</option>
+                    <option>เฉพาะหลังที่ active เท่านั้น</option>
+                    <option>รวมหลังที่ suspended</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <div class="form-label">ค่าปรับล่าช้า <span>(ถ้าชำระหลังกำหนด)</span></div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <select class="form-select" style="flex:1">
+                      <option>1.5% ต่อเดือน (มาตรฐาน)</option>
+                      <option>ไม่มีค่าปรับ</option>
+                      <option>กำหนดเอง</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="form-label">หมายเหตุในบิล <span>(ไม่บังคับ)</span></div>
+                  <input type="text" class="form-input" placeholder="เช่น ชำระก่อน 31 พ.ค. ลดค่าปรับ 50%">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /panel-1 -->
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- STEP 2: PREVIEW -->
+      <!-- ══════════════════════════════════════════ -->
+      <div id="panel-2" style="display:none;flex-direction:column;gap:16px">
+
+        <!-- Summary strip -->
+        <div class="summary-strip">
+          <div class="summary-item">
+            <div class="summary-label">จำนวนหลังทั้งหมด</div>
+            <div class="summary-value accent">491</div>
+            <div class="summary-sub">4 โซน · 3 ประเภทอสังหาฯ</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">บิลที่จะสร้าง</div>
+            <div class="summary-value">478</div>
+            <div class="summary-sub">ยังไม่มีบิลในรอบนี้</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">ข้ามเนื่องจากปัญหา</div>
+            <div class="summary-value warn">13</div>
+            <div class="summary-sub">ไม่มีค่ามิเตอร์ / ถูก suspend</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">ยอดรวมโดยประมาณ</div>
+            <div class="summary-value" style="font-size:18px;font-weight:700">฿856,240</div>
+            <div class="summary-sub">เฉลี่ย ฿1,791 / หลัง</div>
+          </div>
+        </div>
+
+        <!-- Breakdown by service -->
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title">
+              <div class="section-title-icon">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+              </div>
+              ยอดรวมแยกตามบริการ
+            </div>
+          </div>
+          <div class="section-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border-radius:8px;border:1px solid var(--border-light)">
+              <div style="width:10px;height:36px;border-radius:3px;background:#059669;flex-shrink:0"></div>
+              <div>
+                <div style="font-size:11px;color:var(--navy-50);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">ค่าขยะ</div>
+                <div style="font-size:18px;font-weight:700;color:var(--navy)">฿412,800</div>
+                <div style="font-size:11px;color:var(--navy-30)">478 หลัง · ฿864 เฉลี่ย</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border-radius:8px;border:1px solid var(--border-light)">
+              <div style="width:10px;height:36px;border-radius:3px;background:#0284c7;flex-shrink:0"></div>
+              <div>
+                <div style="font-size:11px;color:var(--navy-50);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">ค่าน้ำ</div>
+                <div style="font-size:18px;font-weight:700;color:var(--navy)">฿443,440</div>
+                <div style="font-size:11px;color:var(--navy-30)">391 หลัง · มีมิเตอร์</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview table -->
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title">
+              <div class="section-title-icon">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd"/></svg>
+              </div>
+              ตัวอย่างบิล <span style="font-size:12px;color:var(--navy-50);font-weight:400">(แสดง 10 รายการ จาก 478 บิลที่จะสร้าง)</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="showToast('ดูทั้งหมด')">ดูทั้งหมด</button>
+              <button class="btn btn-secondary" style="font-size:12px;padding:5px 10px" onclick="showToast('Export Excel')">
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                Export
+              </button>
+            </div>
+          </div>
+          <div>
+            <table>
+              <thead>
+                <tr>
+                  <th>บ้านเลขที่</th>
+                  <th>เจ้าบ้าน</th>
+                  <th>โซน</th>
+                  <th>ค่าขยะ</th>
+                  <th>ค่าน้ำ</th>
+                  <th>ยอดรวม</th>
+                  <th>สถานะ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="mono">24/1 หมู่ 3</span></td>
+                  <td>สมชาย สุขใจ</td>
+                  <td>โซน B</td>
+                  <td>฿240</td>
+                  <td>฿1,560</td>
+                  <td style="font-weight:700">฿1,800</td>
+                  <td><span class="status-pill s-ok">พร้อมออก</span></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">12/3 หมู่ 1</span></td>
+                  <td>วิภา รักดี</td>
+                  <td>โซน A</td>
+                  <td>฿240</td>
+                  <td>฿980</td>
+                  <td style="font-weight:700">฿1,220</td>
+                  <td><span class="status-pill s-ok">พร้อมออก</span></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">88/2 หมู่ 4</span></td>
+                  <td>ประยุทธ์ ใจกล้า</td>
+                  <td>โซน C</td>
+                  <td>฿480</td>
+                  <td>฿2,340</td>
+                  <td style="font-weight:700">฿2,820</td>
+                  <td><span class="status-pill s-ok">พร้อมออก</span></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">5/1 หมู่ 2</span></td>
+                  <td>สุนีย์ มั่นคง</td>
+                  <td>โซน A</td>
+                  <td>฿240</td>
+                  <td style="color:var(--navy-30)">—</td>
+                  <td style="font-weight:700">฿240</td>
+                  <td><span class="status-pill s-skip">ไม่มีมิเตอร์น้ำ</span></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">102 หมู่ 3</span></td>
+                  <td>บุญมา ศรีสุข</td>
+                  <td>โซน B</td>
+                  <td>฿240</td>
+                  <td>฿1,200</td>
+                  <td style="font-weight:700">฿1,440</td>
+                  <td><span class="status-pill s-ok">พร้อมออก</span></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">67 หมู่ 4</span></td>
+                  <td>พิมพา ดวงดี</td>
+                  <td>โซน D</td>
+                  <td>฿720</td>
+                  <td>฿3,880</td>
+                  <td style="font-weight:700">฿4,600</td>
+                  <td><span class="status-pill s-ok">พร้อมออก</span></td>
+                </tr>
+                <tr style="opacity:.55">
+                  <td><span class="mono">33/2 หมู่ 2</span></td>
+                  <td>นายดิน เขียวงาม</td>
+                  <td>โซน A</td>
+                  <td style="color:var(--navy-30)">—</td>
+                  <td style="color:var(--navy-30)">—</td>
+                  <td style="color:var(--navy-30)">ข้าม</td>
+                  <td><span class="status-pill s-draft">Suspended</span></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">14/5 หมู่ 1</span></td>
+                  <td>เรณู ทองแดง</td>
+                  <td>โซน A</td>
+                  <td>฿240</td>
+                  <td>฿760</td>
+                  <td style="font-weight:700">฿1,000</td>
+                  <td><span class="status-pill s-ok">พร้อมออก</span></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">77/1 หมู่ 3</span></td>
+                  <td>ชาญชัย พลิก</td>
+                  <td>โซน B</td>
+                  <td>฿240</td>
+                  <td>฿1,840</td>
+                  <td style="font-weight:700">฿2,080</td>
+                  <td><span class="status-pill s-ok">พร้อมออก</span></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">41 หมู่ 4</span></td>
+                  <td>กมลทิพย์ หัวใจดี</td>
+                  <td>โซน C</td>
+                  <td>฿480</td>
+                  <td>฿2,120</td>
+                  <td style="font-weight:700">฿2,600</td>
+                  <td><span class="status-pill s-ok">พร้อมออก</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--navy-50);display:flex;justify-content:space-between;align-items:center">
+            <span>แสดง 10 จาก 491 รายการ · <span style="color:var(--red)">13 รายการที่จะถูกข้าม</span></span>
+            <span>ยอดรวม: <strong style="color:var(--navy)">฿856,240</strong></span>
+          </div>
+        </div>
+
+        <!-- Skip list -->
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title" style="color:var(--amber)">
+              <div class="section-title-icon" style="background:var(--amber-light)">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--amber)"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              </div>
+              13 รายการที่จะถูกข้าม — ต้องดำเนินการก่อนออกบิล
+            </div>
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 8px" onclick="showToast('Export รายการปัญหา')">Export</button>
+          </div>
+          <div>
+            <table>
+              <thead>
+                <tr>
+                  <th>บ้านเลขที่</th>
+                  <th>เจ้าบ้าน</th>
+                  <th>สาเหตุ</th>
+                  <th>การดำเนินการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="mono">33/2 หมู่ 2</span></td>
+                  <td>นายดิน เขียวงาม</td>
+                  <td><span class="status-pill s-draft">สถานะ Suspended</span></td>
+                  <td><button class="btn btn-ghost" style="font-size:12px;padding:3px 8px" onclick="showToast('ดูรายละเอียดบ้าน')">ดูรายละเอียด</button></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">5/1 หมู่ 2</span></td>
+                  <td>สุนีย์ มั่นคง</td>
+                  <td><span class="status-pill s-skip">ค่ามิเตอร์ยังไม่ verify</span></td>
+                  <td><button class="btn btn-ghost" style="font-size:12px;padding:3px 8px" onclick="showToast('ไปที่ OCR Review')">Review มิเตอร์</button></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">9 หมู่ 1</span></td>
+                  <td>ไพโรจน์ ศรีบุตร</td>
+                  <td><span class="status-pill s-skip">ค่ามิเตอร์ยังไม่ verify</span></td>
+                  <td><button class="btn btn-ghost" style="font-size:12px;padding:3px 8px" onclick="showToast('ไปที่ OCR Review')">Review มิเตอร์</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--navy-50)">
+            แสดง 3 จาก 13 รายการปัญหา · <a href="#" style="color:var(--org-primary)" onclick="return false">ดูทั้งหมด</a>
+          </div>
+        </div>
+
+      </div><!-- /panel-2 -->
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- STEP 3: CONFIRM -->
+      <!-- ══════════════════════════════════════════ -->
+      <div id="panel-3" style="display:none;flex-direction:column;gap:16px;max-width:680px;margin:0 auto;width:100%">
+
+        <!-- Danger box -->
+        <div class="confirm-box">
+          <div class="confirm-box-head">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="var(--red)"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            <div class="confirm-box-head-title">โปรดตรวจสอบก่อนยืนยัน — การออกบิลย้อนกลับได้ยาก</div>
+          </div>
+          <div class="confirm-box-body">
+            <div class="confirm-item">
+              <div class="confirm-item-label">รอบบิล</div>
+              <div class="confirm-item-value">Q1/2568 (ต.ค. 67 – ธ.ค. 67)</div>
+            </div>
+            <div class="confirm-item">
+              <div class="confirm-item-label">วันที่ออกบิล</div>
+              <div class="confirm-item-value">22 เมษายน 2568</div>
+            </div>
+            <div class="confirm-item">
+              <div class="confirm-item-label">กำหนดชำระ</div>
+              <div class="confirm-item-value" style="color:var(--red)">31 พฤษภาคม 2568</div>
+            </div>
+            <div class="confirm-item">
+              <div class="confirm-item-label">โซนที่รวม</div>
+              <div class="confirm-item-value">โซน A, B, C, D (ทุกโซน)</div>
+            </div>
+            <div class="confirm-item">
+              <div class="confirm-item-label">บริการที่รวม</div>
+              <div class="confirm-item-value">ค่าขยะ + ค่าน้ำ</div>
+            </div>
+            <div class="confirm-item">
+              <div class="confirm-item-label">จำนวนบิลที่จะสร้าง</div>
+              <div class="confirm-item-value" style="color:var(--org-primary);font-size:16px">478 บิล</div>
+            </div>
+            <div class="confirm-item">
+              <div class="confirm-item-label">ยอดเงินรวมโดยประมาณ</div>
+              <div class="confirm-item-value" style="font-size:16px">฿856,240</div>
+            </div>
+            <div class="confirm-item">
+              <div class="confirm-item-label">รายการที่ถูกข้าม</div>
+              <div class="confirm-item-value" style="color:var(--amber)">13 หลัง (ปัญหามิเตอร์ / suspended)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification -->
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title">
+              <div class="section-title-icon">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="var(--org-primary)"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+              </div>
+              การแจ้งเตือนประชาชน
+            </div>
+          </div>
+          <div class="section-body" style="display:flex;flex-direction:column;gap:10px">
+            <div class="notif-box on" onclick="toggleNotif(this)" id="notif-line">
+              <div class="notif-icon">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="var(--org-primary)"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/></svg>
+              </div>
+              <div>
+                <div class="notif-label">ส่งแจ้งเตือนผ่าน LINE</div>
+                <div class="notif-sub">ส่งให้ประชาชนที่ผูก LINE ไว้ — <strong>392 หลัง</strong></div>
+              </div>
+              <div class="toggle"></div>
+            </div>
+            <div class="notif-box" onclick="toggleNotif(this)" id="notif-sms">
+              <div class="notif-icon">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="var(--navy-50)"><path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <div class="notif-label">ส่ง SMS</div>
+                <div class="notif-sub">ส่ง SMS ให้ทุกหลัง — คิดเป็นค่าใช้จ่าย ฿0.70/ข้อความ</div>
+              </div>
+              <div class="toggle"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirmation checkbox -->
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 18px;background:var(--white);border:1.5px solid var(--border);border-radius:10px">
+          <input type="checkbox" id="confirm-check" onchange="updateConfirmBtn()"
+            style="margin-top:2px;width:16px;height:16px;accent-color:var(--org-primary);cursor:pointer;flex-shrink:0">
+          <label for="confirm-check" style="font-size:13px;color:var(--navy);line-height:1.6;cursor:pointer">
+            ข้าพเจ้าได้ตรวจสอบข้อมูลทั้งหมดแล้ว และยืนยันการออกบิล <strong>478 ฉบับ</strong> สำหรับรอบ <strong>Q1/2568</strong> — เข้าใจว่าการยกเลิกบิลที่ออกแล้วต้องผ่านกระบวนการอนุมัติ
+          </label>
+        </div>
+
+      </div><!-- /panel-3 -->
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- STEP 4: GENERATING / DONE -->
+      <!-- ══════════════════════════════════════════ -->
+      <div id="panel-4" style="display:none;flex:1;flex-direction:column">
+
+        <!-- Generating sub-panel -->
+        <div id="sub-generating" class="progress-screen">
+          <div class="progress-ring" id="prog-ring"></div>
+          <div>
+            <div class="progress-title">กำลังสร้างบิล...</div>
+            <div class="progress-sub">ระบบกำลังประมวลผลและออกบิลสำหรับแต่ละหลัง — โปรดรอสักครู่ อย่าปิดหน้านี้</div>
+          </div>
+          <div style="width:100%;max-width:480px;display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" id="prog-fill" style="width:0%"></div>
+            </div>
+            <div class="progress-label" id="prog-label">กำลังเริ่มต้น...</div>
+          </div>
+        </div>
+
+        <!-- Done sub-panel -->
+        <div id="sub-done" style="display:none;flex-direction:column;align-items:center;gap:16px;padding:32px 24px">
+          <div class="success-screen" style="padding:0;width:100%">
+            <div class="success-icon">
+              <svg width="32" height="32" viewBox="0 0 20 20" fill="var(--green)"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="success-title">ออกบิลสำเร็จ!</div>
+            <div class="success-sub">รอบ Q1/2568 · ออกบิลเมื่อ 22 เม.ย. 2568 เวลา 14:32 น. โดย สมหญิง ใจดี</div>
+
+            <div class="success-stats">
+              <div class="stat-card blue">
+                <div class="v">475</div>
+                <div class="l">บิลที่สร้างสำเร็จ</div>
+              </div>
+              <div class="stat-card red">
+                <div class="v">3</div>
+                <div class="l">เกิดข้อผิดพลาด</div>
+              </div>
+              <div class="stat-card green">
+                <div class="v">฿853,400</div>
+                <div class="l">ยอดรวมทั้งหมด</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error report -->
+          <div class="error-report" style="max-width:580px">
+            <div class="error-report-head">
+              <div class="error-report-title" style="display:flex;align-items:center;gap:7px">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="var(--red)"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                3 รายการที่ล้มเหลว — ต้องดำเนินการเพิ่มเติม
+              </div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:4px 8px" onclick="showToast('Export รายการ error')">Export</button>
+            </div>
+            <div class="error-row">
+              <div class="error-row-house">102/A หมู่ 1</div>
+              <div class="error-row-reason">คำนวณค่าน้ำไม่ได้ — มิเตอร์ค่าเก่ากว่าค่าใหม่ (ข้อมูลมิเตอร์ผิดพลาด)</div>
+              <span class="error-badge">มิเตอร์</span>
+            </div>
+            <div class="error-row">
+              <div class="error-row-house">7 หมู่ 3</div>
+              <div class="error-row-reason">ไม่พบอัตราค่าธรรมเนียมสำหรับประเภทอสังหาฯ "Mixed-use"</div>
+              <span class="error-badge">อัตรา</span>
+            </div>
+            <div class="error-row">
+              <div class="error-row-house">55/3 หมู่ 2</div>
+              <div class="error-row-reason">ข้อมูลเจ้าบ้านไม่ครบ — ไม่มีข้อมูลสมาชิกในครัวเรือน</div>
+              <span class="error-badge">ข้อมูล</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:8px 0">
+            <button class="btn btn-primary btn-lg" onclick="showToast('ดูบิลทั้งหมดในรอบ Q1/2568')">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+              ดูบิลทั้งหมด
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="showToast('ส่งแจ้งเตือน LINE')">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/></svg>
+              ส่งแจ้งเตือน LINE
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="showToast('Download รายงาน PDF')">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+              Download รายงาน
+            </button>
+          </div>
+
+        </div>
+      </div><!-- /panel-4 -->
+
+    </div><!-- /wizard-body -->
+
+    <!-- WIZARD FOOTER -->
+    <div class="wizard-footer" id="wizard-footer">
+      <div class="wizard-footer-left">
+        <button class="btn btn-ghost" id="btn-back" onclick="prevStep()" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          ย้อนกลับ
+        </button>
+        <span id="footer-info" style="font-size:12.5px;color:var(--navy-50)">ขั้นตอนที่ 1 จาก 3</span>
+      </div>
+      <div class="wizard-footer-right">
+        <button class="btn btn-secondary" onclick="showToast('ยกเลิกและออก')">ยกเลิก</button>
+        <button class="btn btn-primary btn-lg" id="btn-next" onclick="nextStep()">
+          ดู Preview
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- TWEAKS PANEL -->
+<div id="tweaks-panel">
+  <h4>Tweaks</h4>
+  <div class="tweak-row">
+    <div class="tweak-label">สีหลักองค์กร</div>
+    <input type="color" value="#1b61c9" oninput="document.documentElement.style.setProperty('--org-primary',this.value);
+      document.documentElement.style.setProperty('--org-primary-light',this.value+'22');
+      document.documentElement.style.setProperty('--org-primary-dark',this.value)">
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">ขั้นตอนปัจจุบัน (Demo)</div>
+    <select onchange="jumpToStep(parseInt(this.value))">
+      <option value="1">1 – ตั้งค่า</option>
+      <option value="2">2 – Preview</option>
+      <option value="3">3 – ยืนยัน</option>
+      <option value="4">4 – กำลังออก / เสร็จ</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">Step 4 State</div>
+    <select id="tweak-step4" onchange="setStep4State(this.value)">
+      <option value="generating">กำลังสร้าง</option>
+      <option value="done" selected>เสร็จสิ้น</option>
+    </select>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "primaryColor": "#1b61c9"
+}/*EDITMODE-END*/;
+
+// ─── Tweaks protocol ───────────────────────────────────
+window.addEventListener('message', e => {
+  if (e.data?.type === '__activate_edit_mode') document.getElementById('tweaks-panel').style.display = 'block';
+  if (e.data?.type === '__deactivate_edit_mode') document.getElementById('tweaks-panel').style.display = 'none';
+});
+window.parent.postMessage({type: '__edit_mode_available'}, '*');
+
+// Apply saved primary color
+document.documentElement.style.setProperty('--org-primary', TWEAK_DEFAULTS.primaryColor);
+document.documentElement.style.setProperty('--org-primary-dark', shadeColor(TWEAK_DEFAULTS.primaryColor, -20));
+document.documentElement.style.setProperty('--org-primary-light', hexToLight(TWEAK_DEFAULTS.primaryColor));
+
+function shadeColor(hex, pct) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, Math.max(0, (num >> 16) + pct));
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + pct));
+  const b = Math.min(255, Math.max(0, (num & 0xff) + pct));
+  return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function hexToLight(hex) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = (num >> 16); const g = (num >> 8) & 0xff; const b = num & 0xff;
+  return `rgba(${r},${g},${b},0.12)`;
+}
+
+// ─── Step management ───────────────────────────────────
+let currentStep = 1;
+const totalSteps = 3; // user-visible
+
+function setStepUI(n) {
+  for (let i = 1; i <= 4; i++) {
+    const s = document.getElementById('step-' + i);
+    const sn = document.getElementById('sn-' + i);
+    s.classList.remove('active','done');
+    if (i < n) {
+      s.classList.add('done');
+      sn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="white"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+    } else if (i === n) {
+      s.classList.add('active');
+      sn.textContent = i;
+    } else {
+      sn.textContent = i;
+    }
+  }
+  // panels
+  for (let i = 1; i <= 4; i++) {
+    const p = document.getElementById('panel-' + i);
+    if (p) p.style.display = (i === n) ? 'flex' : 'none';
+  }
+  // footer
+  const btnBack = document.getElementById('btn-back');
+  const btnNext = document.getElementById('btn-next');
+  const footerInfo = document.getElementById('footer-info');
+  const footer = document.getElementById('wizard-footer');
+
+  btnBack.style.display = (n > 1 && n < 4) ? 'flex' : 'none';
+
+  if (n === 1) {
+    btnNext.style.display = 'flex';
+    btnNext.innerHTML = 'ดู Preview <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>';
+    btnNext.className = 'btn btn-primary btn-lg';
+    footerInfo.textContent = 'ขั้นตอนที่ 1 จาก 3';
+    footer.style.display = 'flex';
+  } else if (n === 2) {
+    btnNext.style.display = 'flex';
+    btnNext.innerHTML = 'ดำเนินการต่อ <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>';
+    btnNext.className = 'btn btn-primary btn-lg';
+    footerInfo.textContent = 'ขั้นตอนที่ 2 จาก 3';
+    footer.style.display = 'flex';
+  } else if (n === 3) {
+    btnNext.style.display = 'flex';
+    btnNext.id = 'btn-next';
+    btnNext.innerHTML = '✓ ยืนยันและออกบิล 478 ฉบับ';
+    btnNext.className = 'btn btn-danger-solid btn-lg';
+    btnNext.disabled = !document.getElementById('confirm-check')?.checked;
+    footerInfo.textContent = 'ขั้นตอนที่ 3 จาก 3 — โปรดอ่านให้ครบก่อนกด';
+    footer.style.display = 'flex';
+  } else if (n === 4) {
+    footer.style.display = 'none';
+  }
+}
+
+function nextStep() {
+  if (currentStep >= 4) return;
+  currentStep++;
+  setStepUI(currentStep);
+  if (currentStep === 4) {
+    startGenerating();
+  }
+}
+
+function prevStep() {
+  if (currentStep <= 1) return;
+  currentStep--;
+  setStepUI(currentStep);
+}
+
+function jumpToStep(n) {
+  currentStep = n;
+  setStepUI(n);
+  if (n === 4) {
+    const state = document.getElementById('tweak-step4')?.value || 'done';
+    setStep4State(state);
+  }
+}
+
+function updateConfirmBtn() {
+  const checked = document.getElementById('confirm-check').checked;
+  document.getElementById('btn-next').disabled = !checked;
+}
+
+// ─── Step 4 generation ─────────────────────────────────
+function startGenerating() {
+  setStep4State('generating');
+  const fill = document.getElementById('prog-fill');
+  const label = document.getElementById('prog-label');
+  const stages = [
+    [0, 'กำลังเตรียมข้อมูลรอบบิล...'],
+    [15, 'คำนวณค่าธรรมเนียมเก็บขยะ...'],
+    [35, 'คำนวณค่าน้ำจากมิเตอร์...'],
+    [55, 'สร้างเลขที่บิล BL-2568-XXXX...'],
+    [72, 'บันทึกข้อมูลเข้าฐานข้อมูล...'],
+    [88, 'เตรียมการแจ้งเตือน LINE...'],
+    [100, 'เสร็จสิ้น!'],
+  ];
+  let i = 0;
+  function tick() {
+    if (i >= stages.length) {
+      setTimeout(() => setStep4State('done'), 500);
+      return;
+    }
+    const [pct, txt] = stages[i++];
+    fill.style.width = pct + '%';
+    label.textContent = txt;
+    setTimeout(tick, i === stages.length ? 200 : 600 + Math.random() * 400);
+  }
+  setTimeout(tick, 300);
+}
+
+function setStep4State(state) {
+  document.getElementById('sub-generating').style.display = state === 'generating' ? 'flex' : 'none';
+  const done = document.getElementById('sub-done');
+  done.style.display = state === 'done' ? 'flex' : 'none';
+  if (state === 'done') {
+    document.getElementById('step-4').classList.remove('active');
+    document.getElementById('step-4').classList.add('done');
+  } else {
+    document.getElementById('step-4').classList.add('active');
+    document.getElementById('step-4').classList.remove('done');
+  }
+}
+
+// ─── Cycle picker ──────────────────────────────────────
+function selCycle(el, label) {
+  el.closest('#cycle-picker').querySelectorAll('.zone-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ─── Zone toggles ──────────────────────────────────────
+function toggleZone(el) { el.classList.toggle('sel'); }
+let allZones = true;
+function toggleAllZones() {
+  allZones = !allZones;
+  document.querySelectorAll('.zone-grid .zone-btn').forEach(b => {
+    if (allZones) b.classList.add('sel'); else b.classList.remove('sel');
+  });
+}
+
+// ─── Check toggles ─────────────────────────────────────
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  const box = el.querySelector('.check-box');
+  if (el.classList.contains('checked')) {
+    box.innerHTML = `<svg width="10" height="10" viewBox="0 0 12 12" fill="white"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+  } else {
+    box.innerHTML = '';
+  }
+}
+
+// ─── Notification toggle ───────────────────────────────
+function toggleNotif(el) { el.classList.toggle('on'); }
+
+// ─── Cycle picker type ────────────────────────────────
+function updateCyclePicker() {
+  const type = document.getElementById('sel-cycle-type').value;
+  const picker = document.getElementById('cycle-picker');
+  if (type === 'quarterly') {
+    picker.style.gridTemplateColumns = '1fr 1fr';
+    picker.innerHTML = `
+      <div class="zone-btn sel" onclick="selCycle(this,'Q1/2568')">Q1 / 2568<span class="zone-sub">ต.ค. 67 – ธ.ค. 67</span></div>
+      <div class="zone-btn" onclick="selCycle(this,'Q2/2568')">Q2 / 2568<span class="zone-sub">ม.ค. 68 – มี.ค. 68</span></div>
+      <div class="zone-btn" onclick="selCycle(this,'Q3/2568')">Q3 / 2568<span class="zone-sub">เม.ย. 68 – มิ.ย. 68</span></div>
+      <div class="zone-btn" onclick="selCycle(this,'Q4/2568')">Q4 / 2568<span class="zone-sub">ก.ค. 68 – ก.ย. 68</span></div>`;
+  } else if (type === 'monthly') {
+    picker.style.gridTemplateColumns = '1fr 1fr 1fr';
+    picker.innerHTML = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']
+      .map((m,i) => `<div class="zone-btn${i===0?' sel':''}" onclick="selCycle(this,'${m} 68')">${m} 68</div>`).join('');
+  } else {
+    picker.style.gridTemplateColumns = '1fr 1fr';
+    picker.innerHTML = `
+      <div class="zone-btn sel" onclick="selCycle(this,'2568')">ปีงบ 2568<span class="zone-sub">ต.ค. 67 – ก.ย. 68</span></div>
+      <div class="zone-btn" onclick="selCycle(this,'2567')">ปีงบ 2567<span class="zone-sub">ต.ค. 66 – ก.ย. 67</span></div>`;
+  }
+}
+
+// ─── Toast ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── Init ──────────────────────────────────────────────
+setStepUI(1);
+</script>
+</body>
+</html>

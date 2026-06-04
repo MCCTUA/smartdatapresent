@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-08 ติดตามค้างชำระ — Officer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #1a6fb5;
+    --primary-light: #e8f2fc;
+    --primary-mid: #5a9fd4;
+    --primary-dark: #0f4a7d;
+    --sidebar-w: 64px;
+    --panel-w: 400px;
+    --header-h: 56px;
+
+    --l0: #64748b;  --l0-bg: #f1f5f9;  --l0-border: #cbd5e1;
+    --l1: #d97706;  --l1-bg: #fffbeb;  --l1-border: #fcd34d;
+    --l2: #ea580c;  --l2-bg: #fff7ed;  --l2-border: #fdba74;
+    --l3: #dc2626;  --l3-bg: #fef2f2;  --l3-border: #fca5a5;
+    --ll: #7c3aed;  --ll-bg: #f5f3ff;  --ll-border: #c4b5fd;
+
+    --gray-50: #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1; --gray-400: #94a3b8; --gray-500: #64748b;
+    --gray-600: #475569; --gray-700: #334155; --gray-800: #1e293b;
+    --gray-900: #0f172a;
+
+    --font: 'IBM Plex Sans Thai', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --radius: 8px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+    --shadow: 0 2px 8px rgba(0,0,0,.10);
+  }
+  html, body, #root { height: 100%; }
+  body { font-family: var(--font); background: var(--gray-100); color: var(--gray-800); font-size: 14px; line-height: 1.5; }
+  button { font-family: var(--font); cursor: pointer; border: none; background: none; }
+  input, select, textarea { font-family: var(--font); font-size: 14px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+  /* Tweaks panel */
+  #tweaks-panel {
+    display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    padding: 20px; width: 280px; font-family: var(--font); font-size: 13px;
+  }
+  #tweaks-panel.show { display: block; }
+  .tweak-title { font-weight: 600; font-size: 14px; color: var(--gray-800); margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+  .tweak-row { margin-bottom: 14px; }
+  .tweak-label { color: var(--gray-600); margin-bottom: 4px; font-size: 12px; }
+  .tweak-row input[type=color] { width: 100%; height: 36px; border: 1px solid var(--gray-200); border-radius: 6px; cursor: pointer; padding: 2px; }
+  .tweak-row select { width: 100%; padding: 7px 10px; border: 1px solid var(--gray-200); border-radius: 6px; background: white; color: var(--gray-700); }
+  .tweak-row input[type=range] { width: 100%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Tweaks panel (outside React) -->
+<div id="tweaks-panel">
+  <div class="tweak-title">⚙ Tweaks</div>
+  <div class="tweak-row">
+    <div class="tweak-label">Primary Color (สีประจำ อปท.)</div>
+    <input type="color" id="tw-color" value="#1a6fb5">
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">ชื่อ อปท.</div>
+    <select id="tw-org">
+      <option value="เทศบาลตำบลสุขสันต์">เทศบาลตำบลสุขสันต์</option>
+      <option value="อบต. หนองแสง">อบต. หนองแสง</option>
+      <option value="เทศบาลเมืองมะขาม">เทศบาลเมืองมะขาม</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-label">มุมมองตาราง</div>
+    <select id="tw-density">
+      <option value="comfortable">Comfortable</option>
+      <option value="compact">Compact</option>
+    </select>
+  </div>
+</div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── Data ───────────────────────────────────────────────────────────────────
+const LEVELS = [
+  { id: 'overdue', label: 'ค้างชำระใหม่', short: 'ใหม่', color: '#64748b', bg: '#f1f5f9', border: '#cbd5e1', tag: 'L0' },
+  { id: 'warning1', label: 'เตือนครั้งที่ 1', short: 'เตือน 1', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', tag: 'W1' },
+  { id: 'warning2', label: 'เตือนครั้งที่ 2', short: 'เตือน 2', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', tag: 'W2' },
+  { id: 'warning3', label: 'เตือนครั้งที่ 3 / ระงับ', short: 'ระงับ', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', tag: 'W3' },
+  { id: 'legal', label: 'ดำเนินการทางกฎหมาย', short: 'กฎหมาย', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', tag: 'กม.' },
+];
+
+const villages = ['หมู่ที่ 1', 'หมู่ที่ 2', 'หมู่ที่ 3', 'หมู่ที่ 4', 'หมู่ที่ 5'];
+const firstNames = ['สมชาย','สมหญิง','วิภา','อนุชา','มาลี','สุดา','ประเสริฐ','วิไล','ชูศักดิ์','อรุณ','สุพรรณ','บุญมี','ทองดี','ศรีวรรณ','ปราณี'];
+const lastNames = ['ใจดี','มีสุข','รักดี','ใจกว้าง','ทองแดง','สุขสันต์','มั่นคง','พงศ์ไพร','วงศ์ศรี','ประสิทธิ์','กิจดี','บุญมาก'];
+
+function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function fmtThb(n) { return n.toLocaleString('th-TH') + ' บาท'; }
+function fmtDate(d) {
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+}
+
+const warningHistory = [
+  [], // L0
+  [{ date: '15 ก.พ. 2568', type: 'หนังสือเตือน ครั้งที่ 1', outcome: 'ไม่มีการตอบสนอง' }],
+  [
+    { date: '15 ก.พ. 2568', type: 'หนังสือเตือน ครั้งที่ 1', outcome: 'ไม่มีการตอบสนอง' },
+    { date: '1 มี.ค. 2568', type: 'หนังสือเตือน ครั้งที่ 2', outcome: 'ไม่มีการตอบสนอง' },
+  ],
+  [
+    { date: '10 ม.ค. 2568', type: 'หนังสือเตือน ครั้งที่ 1', outcome: 'ไม่มีการตอบสนอง' },
+    { date: '25 ม.ค. 2568', type: 'หนังสือเตือน ครั้งที่ 2', outcome: 'ไม่มีการตอบสนอง' },
+    { date: '10 ก.พ. 2568', type: 'หนังสือเตือน ครั้งที่ 3', outcome: 'ระงับบริการแล้ว' },
+  ],
+  [
+    { date: '1 ต.ค. 2567', type: 'หนังสือเตือน ครั้งที่ 1', outcome: 'ไม่มีการตอบสนอง' },
+    { date: '20 ต.ค. 2567', type: 'หนังสือเตือน ครั้งที่ 2', outcome: 'ไม่มีการตอบสนอง' },
+    { date: '5 พ.ย. 2567', type: 'หนังสือเตือน ครั้งที่ 3', outcome: 'ไม่มีการตอบสนอง' },
+    { date: '20 พ.ย. 2567', type: 'ส่งเรื่องกฎหมาย', outcome: 'รออนุมัติ' },
+  ],
+];
+
+const levelCounts = [42, 28, 15, 8, 4];
+const levelAmounts = [85400, 210600, 180750, 144200, 98800];
+
+let _seed = 42;
+function seededRnd(arr) { _seed = (_seed * 1664525 + 1013904223) & 0xffffffff; return arr[Math.abs(_seed) % arr.length]; }
+
+const ALL_ROWS = Array.from({ length: 97 }, (_, i) => {
+  const lvlIdx = i < 42 ? 0 : i < 70 ? 1 : i < 85 ? 2 : i < 93 ? 3 : 4;
+  const daysOverdue = lvlIdx === 0 ? 7 + (i % 25) : lvlIdx === 1 ? 30 + (i % 30) : lvlIdx === 2 ? 60 + (i % 20) : lvlIdx === 3 ? 90 + (i % 30) : 120 + (i % 60);
+  const amount = lvlIdx === 0 ? 800 + (i * 37 % 1200) : lvlIdx === 1 ? 2000 + (i * 113 % 5000) : lvlIdx === 2 ? 5000 + (i * 211 % 8000) : lvlIdx === 3 ? 8000 + (i * 317 % 10000) : 12000 + (i * 431 % 20000);
+  const houseNo = `${Math.floor(i / 5) + 1}/${i % 5 + 1}`;
+  return {
+    id: i + 1,
+    houseNo,
+    owner: `${seededRnd(firstNames)} ${seededRnd(lastNames)}`,
+    village: villages[i % 5],
+    level: LEVELS[lvlIdx],
+    lvlIdx,
+    daysOverdue,
+    amount,
+    lastWarning: warningHistory[lvlIdx].length > 0 ? warningHistory[lvlIdx][warningHistory[lvlIdx].length - 1].date : '-',
+    warningCount: warningHistory[lvlIdx].length,
+    hasLine: i % 3 !== 2,
+    lastContact: lvlIdx > 0 ? warningHistory[lvlIdx][warningHistory[lvlIdx].length - 1].date : '-',
+    installmentPlan: lvlIdx === 3 && i % 2 === 0,
+    notes: lvlIdx === 3 ? 'ติดต่อไม่ได้หลายครั้ง' : '',
+    warningHistory: warningHistory[lvlIdx],
+  };
+});
+
+// ─── Colours ────────────────────────────────────────────────────────────────
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return { r, g, b };
+}
+function applyPrimary(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const root = document.documentElement;
+  root.style.setProperty('--primary', hex);
+  root.style.setProperty('--primary-light', `rgba(${r},${g},${b},.10)`);
+  root.style.setProperty('--primary-mid', `rgba(${r},${g},${b},.55)`);
+  root.style.setProperty('--primary-dark', `rgba(${r},${g},${b},.90)`);
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+function Badge({ level }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: '2px 8px', borderRadius: 99,
+      fontSize: 12, fontWeight: 600,
+      color: level.color, background: level.bg,
+      border: `1px solid ${level.border}`,
+    }}>{level.tag} {level.short}</span>
+  );
+}
+
+function KpiCard({ label, value, sub, accent, icon }) {
+  return (
+    <div style={{
+      background: 'white', borderRadius: 10, padding: '16px 20px',
+      boxShadow: '0 1px 3px rgba(0,0,0,.07)', flex: 1, minWidth: 0,
+      borderTop: `3px solid ${accent}`,
+    }}>
+      <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 16 }}>{icon}</span>{label}
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--gray-800)', lineHeight: 1.2 }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: 'var(--gray-400)', marginTop: 2 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function EscalationPath({ activeTab, onTabChange }) {
+  const totals = levelCounts;
+  const amounts = levelAmounts;
+  return (
+    <div style={{ background: 'white', borderRadius: 10, padding: '18px 24px', boxShadow: '0 1px 3px rgba(0,0,0,.07)', marginBottom: 20 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gray-400)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>
+        เส้นทาง Escalation — คลิกเพื่อกรอง
+      </div>
+      <div style={{ display: 'flex', alignItems: 'stretch', gap: 0 }}>
+        {LEVELS.map((lv, i) => {
+          const active = activeTab === i;
+          const isLast = i === LEVELS.length - 1;
+          return (
+            <React.Fragment key={lv.id}>
+              <button onClick={() => onTabChange(i)} style={{
+                flex: i === 0 ? 1.5 : 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                padding: '12px 16px', borderRadius: 8, border: `2px solid ${active ? lv.color : 'transparent'}`,
+                background: active ? lv.bg : 'var(--gray-50)',
+                cursor: 'pointer', transition: 'all 0.15s', position: 'relative',
+                outline: 'none',
+              }}>
+                <div style={{ fontSize: 11, color: active ? lv.color : 'var(--gray-400)', fontWeight: 600, marginBottom: 4, letterSpacing: '0.04em' }}>
+                  {lv.tag}
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: active ? lv.color : 'var(--gray-700)', lineHeight: 1 }}>
+                  {totals[i]}
+                </div>
+                <div style={{ fontSize: 11, color: active ? lv.color : 'var(--gray-500)', marginTop: 3, fontWeight: 500 }}>
+                  {lv.label}
+                </div>
+                <div style={{ fontSize: 11, color: active ? lv.color : 'var(--gray-400)', marginTop: 2 }}>
+                  {amounts[i].toLocaleString('th-TH')} ฿
+                </div>
+              </button>
+              {!isLast && (
+                <div style={{ display: 'flex', alignItems: 'center', padding: '0 2px', color: 'var(--gray-300)', fontSize: 18, flexShrink: 0 }}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M7 4l6 6-6 6" stroke="var(--gray-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
+        <button onClick={() => onTabChange(-1)} style={{
+          marginLeft: 12, padding: '10px 16px', borderRadius: 8, border: `2px solid ${activeTab === -1 ? 'var(--primary)' : 'var(--gray-200)'}`,
+          background: activeTab === -1 ? 'var(--primary-light)' : 'white',
+          color: activeTab === -1 ? 'var(--primary)' : 'var(--gray-500)',
+          fontWeight: 600, fontSize: 12, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center',
+        }}>
+          ทั้งหมด ({ALL_ROWS.length})
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ActionBar({ selected, onAction }) {
+  const count = selected.size;
+  if (!count) return null;
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
+      background: 'var(--primary-light)', borderRadius: 8, border: '1px solid var(--primary-mid)',
+      marginBottom: 12,
+    }}>
+      <span style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600 }}>เลือก {count} รายการ</span>
+      <div style={{ flex: 1 }}/>
+      <Btn variant="ghost" size="sm" onClick={() => onAction('warn')}>📨 ส่งหนังสือเตือน</Btn>
+      <Btn variant="ghost" size="sm" onClick={() => onAction('log')}>📝 บันทึกการติดต่อ</Btn>
+      <Btn variant="ghost" size="sm" onClick={() => onAction('level')}>↑ อัปเดตระดับ</Btn>
+    </div>
+  );
+}
+
+function Btn({ children, variant = 'primary', size = 'md', onClick, disabled, style: extraStyle }) {
+  const base = {
+    display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 6,
+    fontWeight: 500, cursor: disabled ? 'not-allowed' : 'pointer', transition: 'all 0.12s',
+    fontSize: size === 'sm' ? 12 : 13, padding: size === 'sm' ? '5px 10px' : '7px 14px',
+    opacity: disabled ? 0.5 : 1,
+  };
+  const variants = {
+    primary: { background: 'var(--primary)', color: 'white', border: '1.5px solid var(--primary)' },
+    secondary: { background: 'white', color: 'var(--gray-700)', border: '1.5px solid var(--gray-200)' },
+    ghost: { background: 'transparent', color: 'var(--primary)', border: '1.5px solid var(--primary-mid)' },
+    danger: { background: '#fef2f2', color: '#dc2626', border: '1.5px solid #fca5a5' },
+    legal: { background: '#f5f3ff', color: '#7c3aed', border: '1.5px solid #c4b5fd' },
+  };
+  return <button onClick={disabled ? undefined : onClick} style={{ ...base, ...variants[variant], ...extraStyle }}>{children}</button>;
+}
+
+function Tag({ children, color }) {
+  return <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 4, background: color + '18', color, fontWeight: 600 }}>{children}</span>;
+}
+
+// ─── Detail Side Panel ────────────────────────────────────────────────────────
+function DetailPanel({ row, onClose, onAction }) {
+  if (!row) return null;
+  const lv = row.level;
+  return (
+    <div style={{
+      width: 'var(--panel-w)', flexShrink: 0, background: 'white',
+      borderLeft: '1px solid var(--gray-200)', display: 'flex', flexDirection: 'column',
+      height: '100%', overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--gray-800)', marginBottom: 4 }}>
+            บ้าน {row.houseNo}
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--gray-500)' }}>{row.village}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Badge level={lv}/>
+          <button onClick={onClose} style={{ background: 'var(--gray-100)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: 'var(--gray-500)' }}>×</button>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
+        {/* Owner info */}
+        <Section title="ข้อมูลเจ้าบ้าน">
+          <InfoRow label="ชื่อ-นามสกุล" value={row.owner}/>
+          <InfoRow label="LINE" value={row.hasLine ? <Tag color="#00B900">เชื่อมแล้ว</Tag> : <Tag color="#94a3b8">ไม่มี LINE</Tag>}/>
+          <InfoRow label="ติดต่อล่าสุด" value={row.lastContact}/>
+          {row.notes && <InfoRow label="หมายเหตุ" value={<span style={{color:'var(--gray-500)',fontStyle:'italic'}}>{row.notes}</span>}/>}
+        </Section>
+
+        {/* Arrears summary */}
+        <Section title="สรุปค้างชำระ">
+          <div style={{ background: lv.bg, border: `1px solid ${lv.border}`, borderRadius: 8, padding: 12, marginBottom: 8 }}>
+            <div style={{ fontSize: 11, color: lv.color, fontWeight: 600, marginBottom: 4 }}>ยอดค้างทั้งหมด</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: lv.color }}>{row.amount.toLocaleString('th-TH')} บาท</div>
+          </div>
+          <InfoRow label="ค้างชำระมา" value={<span style={{color: lv.color, fontWeight:600}}>{row.daysOverdue} วัน</span>}/>
+          <InfoRow label="หนังสือเตือน" value={`${row.warningCount} ฉบับ`}/>
+          {row.installmentPlan && <InfoRow label="แผนผ่อนชำระ" value={<Tag color="#0891b2">มีแผน</Tag>}/>}
+        </Section>
+
+        {/* Warning history */}
+        {row.warningHistory.length > 0 && (
+          <Section title="ประวัติหนังสือเตือน">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {row.warningHistory.map((wh, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <div style={{ width: 2, background: lv.border, borderRadius: 1, alignSelf: 'stretch', flexShrink: 0, margin: '4px 0' }}/>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gray-700)' }}>{wh.type}</div>
+                    <div style={{ fontSize: 11, color: 'var(--gray-400)' }}>{wh.date}</div>
+                    <div style={{ fontSize: 11, color: lv.color, marginTop: 1 }}>{wh.outcome}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+      </div>
+
+      {/* Actions footer */}
+      <div style={{ borderTop: '1px solid var(--gray-100)', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {row.lvlIdx < 3 && (
+          <Btn variant="primary" onClick={() => onAction('warn', row)} style={{width:'100%',justifyContent:'center'}}>
+            📨 ส่งหนังสือเตือน
+          </Btn>
+        )}
+        <Btn variant="secondary" onClick={() => onAction('log', row)} style={{width:'100%',justifyContent:'center'}}>
+          📝 บันทึกการติดต่อ
+        </Btn>
+        {row.lvlIdx < 4 && (
+          <Btn variant="ghost" onClick={() => onAction('level', row)} style={{width:'100%',justifyContent:'center'}}>
+            ↑ อัปเดตระดับความรุนแรง
+          </Btn>
+        )}
+        {row.lvlIdx >= 2 && row.lvlIdx < 4 && (
+          <Btn variant="legal" onClick={() => onAction('legal', row)} style={{width:'100%',justifyContent:'center'}}>
+            ⚖ เริ่มกระบวนการทางกฎหมาย
+          </Btn>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, children }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gray-400)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10, borderBottom: '1px solid var(--gray-100)', paddingBottom: 6 }}>
+        {title}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{children}</div>
+    </div>
+  );
+}
+function InfoRow({ label, value }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+      <span style={{ fontSize: 12, color: 'var(--gray-500)', flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 13, color: 'var(--gray-700)', fontWeight: 500, textAlign: 'right' }}>{value}</span>
+    </div>
+  );
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function Modal({ title, children, onClose, icon }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(15,23,42,.45)', zIndex: 1000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+    }} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 520, boxShadow: '0 20px 60px rgba(0,0,0,.2)', overflow: 'hidden' }}>
+        <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          {icon && <span style={{ fontSize: 18 }}>{icon}</span>}
+          <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--gray-800)' }}>{title}</span>
+          <div style={{ flex: 1 }}/>
+          <button onClick={onClose} style={{ background: 'var(--gray-100)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-500)', fontSize: 16 }}>×</button>
+        </div>
+        <div style={{ padding: '20px 22px' }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function WarnModal({ row, onClose }) {
+  const [channel, setChannel] = useState({ letter: true, line: row?.hasLine ?? false, sms: false });
+  const [template, setTemplate] = useState('warning1');
+  const [sent, setSent] = useState(false);
+  if (sent) return (
+    <Modal title="ส่งหนังสือเตือนสำเร็จ" onClose={onClose} icon="✅">
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>📨</div>
+        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>ส่งหนังสือเตือนแล้ว</div>
+        <div style={{ color: 'var(--gray-500)', fontSize: 13 }}>บ้าน {row?.houseNo} — {row?.owner}</div>
+        <div style={{ marginTop: 20 }}>
+          <Btn variant="primary" onClick={onClose} style={{width:'100%',justifyContent:'center'}}>ปิด</Btn>
+        </div>
+      </div>
+    </Modal>
+  );
+  return (
+    <Modal title={`ส่งหนังสือเตือน — บ้าน ${row?.houseNo}`} onClose={onClose} icon="📨">
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 6 }}>Template หนังสือ</div>
+        <select value={template} onChange={e => setTemplate(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid var(--gray-200)', borderRadius: 6 }}>
+          <option value="warning1">หนังสือเตือน ครั้งที่ 1</option>
+          <option value="warning2">หนังสือเตือน ครั้งที่ 2</option>
+          <option value="warning3">หนังสือเตือน ครั้งที่ 3 + ระงับบริการ</option>
+          <option value="legal">แจ้งดำเนินการทางกฎหมาย</option>
+        </select>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 8 }}>ช่องทางการส่ง</div>
+        {[
+          { key: 'letter', label: '📄 พิมพ์หนังสือ', always: true },
+          { key: 'line', label: '💚 LINE', disabled: !row?.hasLine, note: !row?.hasLine ? '(ไม่มีบัญชี LINE)' : '' },
+          { key: 'sms', label: '📱 SMS' },
+        ].map(opt => (
+          <label key={opt.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, cursor: opt.disabled ? 'not-allowed' : 'pointer', opacity: opt.disabled ? 0.4 : 1 }}>
+            <input type="checkbox" checked={channel[opt.key]} disabled={opt.disabled}
+              onChange={e => setChannel(c => ({ ...c, [opt.key]: e.target.checked }))}/>
+            <span style={{ fontSize: 13 }}>{opt.label}</span>
+            {opt.note && <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>{opt.note}</span>}
+          </label>
+        ))}
+      </div>
+      <div style={{ background: 'var(--gray-50)', borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 12, color: 'var(--gray-600)' }}>
+        <strong>ตัวอย่างข้อความ LINE:</strong><br/>
+        <span style={{ color: 'var(--gray-500)' }}>เรียน คุณ{row?.owner} บ้านเลขที่ {row?.houseNo} — ท่านมียอดค้างชำระ {row?.amount?.toLocaleString('th-TH')} บาท กรุณาชำระภายใน 15 วัน มิฉะนั้นบริการจะถูกระงับ</span>
+      </div>
+      <Btn variant="primary" onClick={() => setSent(true)} style={{ width: '100%', justifyContent: 'center' }}>ยืนยันส่งหนังสือเตือน</Btn>
+    </Modal>
+  );
+}
+
+function LogModal({ row, onClose }) {
+  const [note, setNote] = useState('');
+  const [outcome, setOutcome] = useState('no_response');
+  const [saved, setSaved] = useState(false);
+  if (saved) return (
+    <Modal title="บันทึกสำเร็จ" onClose={onClose} icon="✅">
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ fontSize: 42, marginBottom: 12 }}>📝</div>
+        <div style={{ fontWeight: 600 }}>บันทึกการติดต่อแล้ว</div>
+        <div style={{ marginTop: 20 }}><Btn variant="primary" onClick={onClose} style={{width:'100%',justifyContent:'center'}}>ปิด</Btn></div>
+      </div>
+    </Modal>
+  );
+  return (
+    <Modal title={`บันทึกการติดต่อ — บ้าน ${row?.houseNo}`} onClose={onClose} icon="📝">
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 6 }}>ผลการติดต่อ</div>
+        <select value={outcome} onChange={e => setOutcome(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid var(--gray-200)', borderRadius: 6 }}>
+          <option value="no_response">ไม่มีการตอบสนอง</option>
+          <option value="promised">สัญญาว่าจะชำระ</option>
+          <option value="partial">ชำระบางส่วน</option>
+          <option value="disputed">โต้แย้งยอด</option>
+          <option value="unable">ไม่สามารถชำระได้ (แจ้งเหตุผล)</option>
+        </select>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 6 }}>บันทึกเพิ่มเติม</div>
+        <textarea value={note} onChange={e => setNote(e.target.value)} rows={3}
+          placeholder="รายละเอียดการสนทนา หรือข้อตกลง..."
+          style={{ width: '100%', padding: '8px 10px', border: '1px solid var(--gray-200)', borderRadius: 6, resize: 'vertical' }}/>
+      </div>
+      <Btn variant="primary" onClick={() => setSaved(true)} style={{ width: '100%', justifyContent: 'center' }}>บันทึก</Btn>
+    </Modal>
+  );
+}
+
+function LegalModal({ row, onClose }) {
+  const [reason, setReason] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  if (submitted) return (
+    <Modal title="ส่งคำขออนุมัติแล้ว" onClose={onClose} icon="⚖">
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ fontSize: 42, marginBottom: 12 }}>⏳</div>
+        <div style={{ fontWeight: 600 }}>รอการอนุมัติจาก Supervisor</div>
+        <div style={{ fontSize: 13, color: 'var(--gray-500)', marginTop: 6 }}>คำขอถูกส่งไปยัง Approval Inbox แล้ว</div>
+        <div style={{ margin: '16px auto', background: '#f5f3ff', borderRadius: 8, padding: 12, maxWidth: 260 }}>
+          <div style={{ fontSize: 11, color: '#7c3aed', fontWeight: 600 }}>เลขที่คำขอ</div>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 15, fontWeight: 700, color: '#7c3aed' }}>APR-{String(Math.floor(Math.random()*9000)+1000)}</div>
+        </div>
+        <Btn variant="primary" onClick={onClose} style={{width:'100%',justifyContent:'center'}}>ปิด</Btn>
+      </div>
+    </Modal>
+  );
+  return (
+    <Modal title={`เริ่มกระบวนการทางกฎหมาย — บ้าน ${row?.houseNo}`} onClose={onClose} icon="⚖">
+      <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 13, color: '#dc2626' }}>
+        ⚠ การดำเนินการนี้ต้องผ่านการอนุมัติจาก Supervisor ก่อนมีผล
+      </div>
+      <div style={{ marginBottom: 4, fontSize: 12, color: 'var(--gray-500)' }}>ยอดค้างชำระ</div>
+      <div style={{ fontSize: 20, fontWeight: 700, color: '#7c3aed', marginBottom: 16 }}>{row?.amount?.toLocaleString('th-TH')} บาท ({row?.daysOverdue} วัน)</div>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 6 }}>เหตุผลและรายละเอียด</div>
+        <textarea value={reason} onChange={e => setReason(e.target.value)} rows={4}
+          placeholder="ระบุเหตุผล และสรุปมาตรการที่ผ่านมา..."
+          style={{ width: '100%', padding: '8px 10px', border: '1px solid var(--gray-200)', borderRadius: 6, resize: 'vertical' }}/>
+      </div>
+      <Btn variant="legal" onClick={() => reason.length > 5 && setSubmitted(true)} style={{ width: '100%', justifyContent: 'center', opacity: reason.length > 5 ? 1 : 0.5 }}>
+        ⚖ ส่งคำขออนุมัติ
+      </Btn>
+    </Modal>
+  );
+}
+
+function LevelModal({ row, onClose }) {
+  const [target, setTarget] = useState(row ? Math.min(row.lvlIdx + 1, 4) : 1);
+  const [saved, setSaved] = useState(false);
+  if (saved) return (
+    <Modal title="อัปเดตระดับสำเร็จ" onClose={onClose} icon="✅">
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ fontSize: 42, marginBottom: 12 }}>✅</div>
+        <div style={{ fontWeight: 600 }}>อัปเดตระดับแล้ว</div>
+        <div style={{ marginTop: 16 }}><Btn variant="primary" onClick={onClose} style={{width:'100%',justifyContent:'center'}}>ปิด</Btn></div>
+      </div>
+    </Modal>
+  );
+  return (
+    <Modal title={`อัปเดตระดับ — บ้าน ${row?.houseNo}`} onClose={onClose} icon="↑">
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 8 }}>เปลี่ยนเป็นระดับ</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {LEVELS.map((lv, i) => (
+            <label key={lv.id} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 12px', borderRadius: 6, border: `1.5px solid ${target === i ? lv.color : 'var(--gray-200)'}`, background: target === i ? lv.bg : 'white' }}>
+              <input type="radio" checked={target === i} onChange={() => setTarget(i)}/>
+              <Badge level={lv}/>
+              <span style={{ fontSize: 13, color: 'var(--gray-600)' }}>{lv.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+      <Btn variant="primary" onClick={() => setSaved(true)} style={{ width: '100%', justifyContent: 'center' }}>ยืนยันเปลี่ยนระดับ</Btn>
+    </Modal>
+  );
+}
+
+// ─── Nav ──────────────────────────────────────────────────────────────────────
+function NavItem({ icon, label, active }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px',
+      borderRadius: 7, background: active ? 'var(--primary-light)' : 'transparent',
+      color: active ? 'var(--primary)' : 'var(--gray-500)',
+      cursor: 'pointer', fontSize: 13, fontWeight: active ? 600 : 400,
+      marginBottom: 2, whiteSpace: 'nowrap',
+    }}>
+      <span style={{ fontSize: 15 }}>{icon}</span>{label}
+    </div>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+function App() {
+  const [activeTab, setActiveTab] = useState(-1); // -1 = all
+  const [search, setSearch] = useState('');
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [modal, setModal] = useState(null); // { type, row }
+  const [orgName, setOrgName] = useState('เทศบาลตำบลสุขสันต์');
+  const [density, setDensity] = useState('comfortable');
+  const [sortCol, setSortCol] = useState('daysOverdue');
+  const [sortDir, setSortDir] = useState('desc');
+
+  // Tweaks wiring
+  useEffect(() => {
+    const colorEl = document.getElementById('tw-color');
+    const orgEl = document.getElementById('tw-org');
+    const densityEl = document.getElementById('tw-density');
+    if (colorEl) colorEl.addEventListener('input', e => applyPrimary(e.target.value));
+    if (orgEl) orgEl.addEventListener('change', e => setOrgName(e.target.value));
+    if (densityEl) densityEl.addEventListener('change', e => setDensity(e.target.value));
+
+    window.addEventListener('message', e => {
+      if (e.data?.type === '__activate_edit_mode') document.getElementById('tweaks-panel')?.classList.add('show');
+      if (e.data?.type === '__deactivate_edit_mode') document.getElementById('tweaks-panel')?.classList.remove('show');
+    });
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+  }, []);
+
+  // Filter & sort
+  const rows = ALL_ROWS
+    .filter(r => activeTab === -1 || r.lvlIdx === activeTab)
+    .filter(r => !search || r.houseNo.includes(search) || r.owner.includes(search) || r.village.includes(search))
+    .sort((a, b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      if (typeof va === 'string') { va = va.localeCompare('th'); vb = vb.localeCompare('th'); }
+      return sortDir === 'asc' ? va - vb : vb - va;
+    });
+
+  const totalAmount = rows.reduce((s, r) => s + r.amount, 0);
+
+  const toggleSort = col => {
+    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortCol(col); setSortDir('desc'); }
+  };
+
+  const toggleSelect = id => setSelectedIds(s => {
+    const n = new Set(s);
+    n.has(id) ? n.delete(id) : n.add(id);
+    return n;
+  });
+  const toggleAll = () => {
+    if (selectedIds.size === rows.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(rows.map(r => r.id)));
+  };
+
+  const openAction = (type, row) => {
+    setModal({ type, row: row || (selectedIds.size === 1 ? rows.find(r => selectedIds.has(r.id)) : null) });
+  };
+
+  const rowH = density === 'compact' ? 40 : 50;
+
+  const ColHeader = ({ col, label, align = 'left' }) => (
+    <th onClick={() => toggleSort(col)} style={{ padding: '10px 12px', fontSize: 11, fontWeight: 600, color: 'var(--gray-400)', letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer', textAlign: align, whiteSpace: 'nowrap', userSelect: 'none', background: 'var(--gray-50)' }}>
+      {label} {sortCol === col ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+    </th>
+  );
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--gray-100)' }}>
+      {/* Sidebar */}
+      <div style={{ width: 220, background: 'white', borderRight: '1px solid var(--gray-200)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+        <div style={{ padding: '16px 14px', borderBottom: '1px solid var(--gray-100)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+              {orgName.slice(0, 2)}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gray-700)', lineHeight: 1.4 }}>{orgName}</div>
+          </div>
+        </div>
+        <nav style={{ padding: '12px 8px', flex: 1, overflow: 'auto' }}>
+          <NavItem icon="📊" label="Dashboard"/>
+          <NavItem icon="🏠" label="ครัวเรือน"/>
+          <NavItem icon="📄" label="รายการบิล"/>
+          <NavItem icon="💰" label="รับชำระเงิน"/>
+          <NavItem icon="🚨" label="ติดตามค้างชำระ" active/>
+          <NavItem icon="✅" label="อนุมัติ"/>
+          <NavItem icon="💬" label="ร้องเรียน"/>
+          <NavItem icon="📈" label="รายงาน"/>
+          <div style={{ borderTop: '1px solid var(--gray-100)', margin: '8px 0' }}/>
+          <NavItem icon="⚙" label="ตั้งค่า"/>
+        </nav>
+        <div style={{ padding: '12px 14px', borderTop: '1px solid var(--gray-100)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--gray-200)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--gray-500)' }}>อ</div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gray-700)' }}>อรอุมา ขยัน</div>
+              <div style={{ fontSize: 11, color: 'var(--gray-400)' }}>Account Officer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+        {/* Top bar */}
+        <div style={{ height: 'var(--header-h)', background: 'white', borderBottom: '1px solid var(--gray-200)', display: 'flex', alignItems: 'center', padding: '0 24px', gap: 8, flexShrink: 0 }}>
+          <div style={{ fontSize: 11, color: 'var(--gray-400)' }}>Officer Portal</div>
+          <span style={{ color: 'var(--gray-300)' }}>/</span>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-700)' }}>ติดตามค้างชำระ</div>
+          <div style={{ flex: 1 }}/>
+          <div style={{ position: 'relative' }}>
+            <button style={{ background: 'var(--gray-100)', border: 'none', borderRadius: 8, width: 34, height: 34, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>🔔</button>
+            <div style={{ position: 'absolute', top: 4, right: 4, width: 8, height: 8, background: '#dc2626', borderRadius: '50%', border: '2px solid white' }}/>
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px' }}>
+          {/* Page title */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div>
+              <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--gray-800)', marginBottom: 2 }}>ติดตามค้างชำระ</h1>
+              <div style={{ fontSize: 13, color: 'var(--gray-400)' }}>ปีงบประมาณ 2568 · อัปเดต: {new Date().toLocaleDateString('th-TH')}</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Btn variant="secondary">⬇ Export Excel</Btn>
+              <Btn variant="primary" onClick={() => openAction('warn')}>📨 ส่งหนังสือแบบ Batch</Btn>
+            </div>
+          </div>
+
+          {/* KPI Cards */}
+          <div style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
+            <KpiCard label="ครัวเรือนค้างชำระ" value={`${ALL_ROWS.length} หลัง`} sub="จากทั้งหมด 1,240 หลัง" accent="var(--primary)" icon="🏠"/>
+            <KpiCard label="ยอดค้างรวม" value={`${(719750).toLocaleString('th-TH')} ฿`} sub="เฉลี่ย 7,420 ฿/หลัง" accent="#dc2626" icon="💰"/>
+            <KpiCard label="รอดำเนินการ" value="47 รายการ" sub="next action ค้างอยู่" accent="#d97706" icon="⏰"/>
+            <KpiCard label="ดำเนินการทางกฎหมาย" value="4 หลัง" sub="อยู่ระหว่างกระบวนการ" accent="#7c3aed" icon="⚖"/>
+          </div>
+
+          {/* Escalation path */}
+          <EscalationPath activeTab={activeTab} onTabChange={setActiveTab}/>
+
+          {/* Search & filter */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 12, alignItems: 'center' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-400)', fontSize: 14 }}>🔍</span>
+              <input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="ค้นหา บ้านเลขที่ · ชื่อเจ้าบ้าน · หมู่..."
+                style={{ width: '100%', padding: '8px 12px 8px 32px', border: '1px solid var(--gray-200)', borderRadius: 8, background: 'white', fontSize: 13 }}/>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--gray-400)', whiteSpace: 'nowrap' }}>
+              {rows.length} รายการ · {totalAmount.toLocaleString('th-TH')} ฿
+            </div>
+          </div>
+
+          {/* Bulk action bar */}
+          {selectedIds.size > 0 && (
+            <ActionBar selected={selectedIds} onAction={openAction}/>
+          )}
+
+          {/* Table */}
+          <div style={{ background: 'white', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,.07)', overflow: 'hidden', border: '1px solid var(--gray-200)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--gray-200)' }}>
+                  <th style={{ padding: '10px 12px', background: 'var(--gray-50)' }}>
+                    <input type="checkbox" checked={selectedIds.size === rows.length && rows.length > 0} onChange={toggleAll}/>
+                  </th>
+                  <ColHeader col="houseNo" label="บ้านเลขที่"/>
+                  <ColHeader col="owner" label="เจ้าบ้าน"/>
+                  <ColHeader col="village" label="หมู่"/>
+                  <ColHeader col="amount" label="ยอดค้าง" align="right"/>
+                  <ColHeader col="daysOverdue" label="วันที่ค้าง" align="right"/>
+                  <th style={{ padding: '10px 12px', fontSize: 11, fontWeight: 600, color: 'var(--gray-400)', letterSpacing: '0.06em', textTransform: 'uppercase', background: 'var(--gray-50)' }}>ระดับ</th>
+                  <ColHeader col="warningCount" label="หนังสือ" align="right"/>
+                  <th style={{ padding: '10px 12px', fontSize: 11, fontWeight: 600, color: 'var(--gray-400)', background: 'var(--gray-50)' }}>การติดต่อ</th>
+                  <th style={{ padding: '10px 12px', fontSize: 11, fontWeight: 600, color: 'var(--gray-400)', background: 'var(--gray-50)' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, idx) => {
+                  const lv = row.level;
+                  const isSelected = selectedRow?.id === row.id;
+                  const isChecked = selectedIds.has(row.id);
+                  return (
+                    <tr key={row.id} onClick={() => setSelectedRow(isSelected ? null : row)}
+                      style={{
+                        height: rowH, borderBottom: '1px solid var(--gray-100)',
+                        background: isSelected ? 'var(--primary-light)' : isChecked ? 'var(--gray-50)' : 'white',
+                        cursor: 'pointer', transition: 'background 0.1s',
+                      }}>
+                      <td style={{ padding: '0 12px' }} onClick={e => { e.stopPropagation(); toggleSelect(row.id); }}>
+                        <input type="checkbox" checked={isChecked} onChange={() => toggleSelect(row.id)} onClick={e => e.stopPropagation()}/>
+                      </td>
+                      <td style={{ padding: '0 12px', fontFamily: 'var(--mono)', fontWeight: 600, fontSize: 13, color: 'var(--gray-800)', whiteSpace: 'nowrap' }}>{row.houseNo}</td>
+                      <td style={{ padding: '0 12px', fontSize: 13, color: 'var(--gray-700)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {row.owner}
+                          {row.hasLine && <span style={{ fontSize: 10, padding: '1px 4px', background: '#dcfce7', color: '#16a34a', borderRadius: 3, fontWeight: 600 }}>LINE</span>}
+                        </div>
+                      </td>
+                      <td style={{ padding: '0 12px', fontSize: 13, color: 'var(--gray-500)', whiteSpace: 'nowrap' }}>{row.village}</td>
+                      <td style={{ padding: '0 12px', textAlign: 'right', fontFamily: 'var(--mono)', fontWeight: 600, fontSize: 13, color: lv.color, whiteSpace: 'nowrap' }}>
+                        {row.amount.toLocaleString('th-TH')}
+                      </td>
+                      <td style={{ padding: '0 12px', textAlign: 'right' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: row.daysOverdue > 90 ? '#dc2626' : row.daysOverdue > 60 ? '#ea580c' : row.daysOverdue > 30 ? '#d97706' : 'var(--gray-500)' }}>
+                          {row.daysOverdue}
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--gray-400)' }}> วัน</span>
+                      </td>
+                      <td style={{ padding: '0 12px' }}>
+                        <Badge level={lv}/>
+                      </td>
+                      <td style={{ padding: '0 12px', textAlign: 'right', fontSize: 13, color: row.warningCount > 0 ? lv.color : 'var(--gray-400)', fontWeight: row.warningCount > 0 ? 600 : 400 }}>
+                        {row.warningCount > 0 ? `${row.warningCount} ฉบับ` : '—'}
+                      </td>
+                      <td style={{ padding: '0 12px', fontSize: 12, color: 'var(--gray-400)', whiteSpace: 'nowrap' }}>
+                        {row.lastContact !== '-' ? row.lastContact : <span style={{color:'var(--gray-300)'}}>—</span>}
+                      </td>
+                      <td style={{ padding: '0 12px' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          {row.lvlIdx < 4 && (
+                            <button onClick={e => { e.stopPropagation(); openAction('warn', row); }}
+                              title="ส่งหนังสือเตือน"
+                              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid var(--gray-200)', background: 'white', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              📨
+                            </button>
+                          )}
+                          <button onClick={e => { e.stopPropagation(); openAction('log', row); }}
+                            title="บันทึกการติดต่อ"
+                            style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid var(--gray-200)', background: 'white', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            📝
+                          </button>
+                          {row.lvlIdx >= 2 && row.lvlIdx < 4 && (
+                            <button onClick={e => { e.stopPropagation(); openAction('legal', row); }}
+                              title="ดำเนินการทางกฎหมาย"
+                              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #c4b5fd', background: '#f5f3ff', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              ⚖
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {rows.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--gray-400)' }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
+                <div style={{ fontWeight: 600 }}>ไม่พบรายการ</div>
+              </div>
+            )}
+          </div>
+          <div style={{ height: 24 }}/>
+        </div>
+      </div>
+
+      {/* Detail panel */}
+      {selectedRow && (
+        <DetailPanel row={selectedRow} onClose={() => setSelectedRow(null)} onAction={openAction}/>
+      )}
+
+      {/* Modals */}
+      {modal?.type === 'warn' && <WarnModal row={modal.row} onClose={() => setModal(null)}/>}
+      {modal?.type === 'log' && <LogModal row={modal.row} onClose={() => setModal(null)}/>}
+      {modal?.type === 'legal' && <LegalModal row={modal.row} onClose={() => setModal(null)}/>}
+      {modal?.type === 'level' && <LevelModal row={modal.row} onClose={() => setModal(null)}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

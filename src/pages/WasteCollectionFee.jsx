@@ -1,26 +1,21 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
+import React, { useEffect, useState, useRef } from 'react';
 
 // ---------------------------------------------------------------------------
-// WasteCollectionFee.jsx — Product 1: ค่าธรรมเนียมเก็บขยะ (WASTE-FEE)
-// Design: Civic Trust palette (Forest green #0F6E56 + Cream #FAF7EE + Amber #BA7517)
+// WasteCollectionFee.jsx — Sales Pitch Deck (19 slides · 1280×720 · print-PDF)
+// Product: ระบบจัดเก็บค่าธรรมเนียมเก็บขยะ (Gismo Local-Fee Platform)
+// Design: Civic Trust palette (Forest #0F6E56 + Cream #FAF7EE + Amber #BA7517)
 // Font: Sarabun
-// Pain-first storytelling: pain → กฎหมาย → ตปท. → solution → ROI → CTA
-// Hero anchor data: อบต.กุฏโง้ง (200K vs 3M = 15:1)
-// Sources: see Products/WASTE-FEE/research/01-RESEARCH-BRIEF.md
+// Pain narrative: ค่าน้อย+เสียเวลาไปจ่าย+เก็บได้เฉพาะเวลาราชการ → ค้าง 25-40%
+// Story angle: จ่ายง่ายขึ้น + เชื่อมกับโครงการคัดแยก (60→40→20→10) → ลดค่าทิ้งของเทศบาล
+// System demo: iframe-embedded real HTML mockups from public/mockups/waste-fee/
 // ---------------------------------------------------------------------------
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
-};
-const stagger = { show: { transition: { staggerChildren: 0.08 } } };
-
-// Civic Trust shorthand
 const C = {
   primary: '#0F6E56',
   primaryHover: '#1D9E75',
   primaryDeep: '#0B5544',
+  primarySoft: '#E5F0EA',
   surface: '#FAF7EE',
   surfaceSoft: '#F5F1E4',
   text: '#1F2A24',
@@ -29,2030 +24,1391 @@ const C = {
   accentSoft: '#FAEEDA',
   alert: '#A32D2D',
   alertSoft: '#FCEBEB',
-  success: '#639922',
+  success: '#5B8C2A',
   successSoft: '#EAF3DE',
 };
 
+const TOTAL_SLIDES = 19;
+
+// Map slide demo IDs → real HTML mockup file paths (under public/mockups/waste-fee/)
+// Filenames URL-encoded (spaces → %20). R-xx mobile mockups use a design-canvas
+// with multiple artboards — `?embed=1#sN` tells design-canvas.jsx to focus on
+// artboard sN with chrome hidden (see patches in design-canvas.jsx).
+const MOCK = 'mockups/waste-fee/';
+const M = {
+  resDashboard: MOCK + 'R-02-ResidentDashboard.html?embed=1#s1',
+  bill: MOCK + 'R-04-BillDetails.html?embed=1#s1',
+  payQR: MOCK + 'R-05-PaymentFlow.html?embed=1#s2',
+  receipt: MOCK + 'R-06-Receipt.html?embed=1#s1',
+  sticker: MOCK + 'R-08%20Sticker%20Status.html',
+  schedule: MOCK + 'R-09%20Collection%20Schedule.html',
+  issueSubmit: MOCK + 'R-10%20Submit%20Issue.html',
+  issueTrack: MOCK + 'R-11%20Issue%20Tracking.html',
+  kpi: MOCK + 'O-01%20KPI%20Dashboard.html',
+  households: MOCK + 'O-02%20Household%20List.html',
+  generateBills: MOCK + 'O-04%20Generate%20Bills.html',
+  recordPayment: MOCK + 'O-06%20Record%20Payment.html',
+  receiptIssue: MOCK + 'O-07%20Receipt%20Issuance.html',
+  arrears: MOCK + 'O-08%20Arrears%20Management.html',
+};
+
 // ---------------------------------------------------------------------------
-// Reusable atoms
+// Slide shell
 // ---------------------------------------------------------------------------
 
-function Eyebrow({ color = C.primary, children }) {
+function Slide({ num, dark = false, children, footer = '' }) {
   return (
-    <p
-      className="text-[12px] font-semibold uppercase mb-3"
-      style={{ color, letterSpacing: '2.5px' }}
+    <section
+      className="slide-page"
+      data-dark={dark ? 'true' : 'false'}
+      style={{
+        position: 'relative',
+        width: 1280,
+        height: 720,
+        background: dark ? `linear-gradient(135deg, ${C.primaryDeep} 0%, ${C.primary} 100%)` : C.surface,
+        color: dark ? '#FFF' : C.text,
+        overflow: 'hidden',
+        fontFamily: 'Sarabun, sans-serif',
+        flexShrink: 0,
+      }}
     >
+      {!dark && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 10, background: C.primary }} />
+      )}
+      <div style={{ position: 'absolute', inset: 0, padding: '52px 60px 56px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        {children}
+      </div>
+      {footer && (
+        <div style={{ position: 'absolute', bottom: 20, left: 60, fontSize: 12, color: dark ? 'rgba(255,255,255,0.7)' : C.textMuted, opacity: 0.85, fontWeight: 500, letterSpacing: 0.5 }}>
+          {footer}
+        </div>
+      )}
+      <div style={{ position: 'absolute', bottom: 22, right: 38, fontSize: 13, color: dark ? 'rgba(255,255,255,0.7)' : C.textMuted, fontWeight: 500 }}>
+        {num} / {TOTAL_SLIDES}
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Atoms
+// ---------------------------------------------------------------------------
+
+function Eyebrow({ color, dark, alert, accent, children }) {
+  const col = color || (alert ? C.alert : accent ? C.accent : dark ? '#EAE1CC' : C.primary);
+  return (
+    <p style={{ display: 'inline-block', fontSize: 14, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: col, marginBottom: 12 }}>
       {children}
     </p>
   );
 }
 
-function Section({ children, bg = 'cream', id = '' }) {
-  const bgMap = {
-    cream: C.surface,
-    soft: C.surfaceSoft,
-    deep: C.primaryDeep,
-    white: '#FFFFFF',
-  };
-  const isDeep = bg === 'deep';
+function Title({ dark, size = 40, children, style }) {
   return (
-    <section
-      id={id}
-      className="px-6 md:px-10 py-20 md:py-24"
-      style={{ background: bgMap[bg], color: isDeep ? '#FFF' : C.text }}
-    >
+    <h2 style={{ fontSize: size, fontWeight: 800, lineHeight: 1.4, color: dark ? '#FFF' : C.primaryDeep, letterSpacing: -0.3, ...style }}>
       {children}
-    </section>
+    </h2>
   );
 }
 
-function StatCard({ label, value, sub, accent = C.primary }) {
+function Lead({ dark, children, style }) {
   return (
-    <div
-      className="rounded-2xl p-6"
-      style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}
-    >
-      <div className="text-[12px] font-medium uppercase tracking-wider mb-2" style={{ color: C.textMuted }}>{label}</div>
-      <div className="text-[32px] md:text-[36px] font-semibold leading-tight" style={{ color: accent }}>{value}</div>
-      {sub && <div className="text-[13px] mt-2 leading-relaxed" style={{ color: C.textMuted }}>{sub}</div>}
+    <p style={{ fontSize: 21, fontWeight: 400, lineHeight: 1.55, color: dark ? 'rgba(255,255,255,0.9)' : C.textMuted, ...style }}>
+      {children}
+    </p>
+  );
+}
+
+function Card({ children, dark, style }) {
+  return (
+    <div style={{ background: dark ? 'rgba(255,255,255,0.08)' : '#FFF', border: `1px solid ${dark ? 'rgba(255,255,255,0.16)' : C.surfaceSoft}`, borderRadius: 18, padding: '24px 26px', ...style }}>
+      {children}
     </div>
   );
 }
 
-function Pill({ children, variant = 'primary' }) {
-  const variants = {
-    primary: { bg: C.primary, color: '#FFF' },
-    outline: { bg: 'transparent', color: C.primary, border: `1px solid ${C.primary}` },
-    accent: { bg: C.accentSoft, color: C.accent },
-    alert: { bg: C.alertSoft, color: C.alert },
-    success: { bg: C.successSoft, color: '#3B6D11' },
-    muted: { bg: '#FFFFFF', color: C.textMuted, border: `1px solid ${C.surfaceSoft}` },
-  };
-  const v = variants[variant];
+function CardIcon({ children }) {
+  return <span style={{ fontSize: 36, lineHeight: 1, marginBottom: 12, display: 'block' }}>{children}</span>;
+}
+
+function CardTitle({ dark, children, style }) {
   return (
-    <span
-      className="inline-flex items-center text-[12px] font-medium px-3 py-1 rounded-full"
-      style={{ background: v.bg, color: v.color, border: v.border || 'none' }}
-    >
+    <h3 style={{ fontSize: 20, fontWeight: 700, color: dark ? '#FFF' : C.text, marginBottom: 7, lineHeight: 1.45, ...style }}>
       {children}
-    </span>
+    </h3>
   );
 }
 
-function CTAButton({ children, primary = false, onClick }) {
+function CardBody({ dark, children, style }) {
   return (
-    <button
-      onClick={onClick}
-      className="text-[15px] font-medium px-6 py-3 rounded-lg cursor-pointer transition-all"
-      style={
-        primary
-          ? { background: C.primary, color: '#FFF', border: 'none' }
-          : { background: 'transparent', color: C.primary, border: `1px solid ${C.primary}` }
+    <p style={{ fontSize: 15, color: dark ? 'rgba(255,255,255,0.85)' : C.textMuted, lineHeight: 1.55, ...style }}>
+      {children}
+    </p>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Mockup iframe — embeds the real HTML mockups, scaled to fit slide layout
+// ---------------------------------------------------------------------------
+
+// MobileMockup — embeds a real mobile HTML mockup, scrolling locked, pointer events disabled.
+// offsetX/offsetY: shift iframe content within frame (negative values scroll content up/left)
+function MobileMockup({ src, label, scale = 0.58, offsetX = 0, offsetY = 0, srcW = 420, srcH = 820 }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div style={{ width: srcW * scale, height: srcH * scale, overflow: 'hidden', borderRadius: 22, background: '#f0eee9', boxShadow: '0 14px 32px rgba(0,0,0,0.18)', position: 'relative' }}>
+        <iframe
+          src={src}
+          loading="lazy"
+          title={label}
+          scrolling="no"
+          style={{
+            width: srcW,
+            height: srcH,
+            border: 'none',
+            transform: `scale(${scale}) translate(${offsetX}px, ${offsetY}px)`,
+            transformOrigin: 'top left',
+            display: 'block',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
+      {label && <div style={{ fontSize: 11.5, fontWeight: 600, color: C.textMuted, textAlign: 'center' }}>{label}</div>}
+    </div>
+  );
+}
+
+// DesktopMockup — embeds a real desktop HTML mockup, auto-scaled to fit container.
+// Uses ResizeObserver so the iframe always fits no matter how the slide layout
+// divides space (full-width vs side-by-side with content panel).
+function DesktopMockup({ src, label, srcW = 1280, srcH = 800 }) {
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(0.5);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const compute = () => {
+      if (!containerRef.current) return;
+      const { width, height } = containerRef.current.getBoundingClientRect();
+      if (width > 0 && height > 0) {
+        setScale(Math.min(width / srcW, height / srcH));
       }
-      onMouseEnter={(e) => {
-        if (primary) e.currentTarget.style.background = C.primaryHover;
-        else e.currentTarget.style.background = C.primary, (e.currentTarget.style.color = '#FFF');
-      }}
-      onMouseLeave={(e) => {
-        if (primary) e.currentTarget.style.background = C.primary;
-        else e.currentTarget.style.background = 'transparent', (e.currentTarget.style.color = C.primary);
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Persona prototype panels (5 panels — switchable)
-// Layout patterns adapted from utilitfeeapp design system (Apr 2569 handoff)
-// — re-skinned in Civic Trust palette (Forest green + Cream + Sarabun)
-// Design references: O-01 KPI Dashboard · R-08 Sticker · R-09 Schedule
-//                    D-01 My Routes · D-02 Route Map · O-12 Sticker Issuance
-// ---------------------------------------------------------------------------
-
-const PERSONAS = [
-  { key: 'mayor', label: 'ผู้บริหาร', sub: 'KPI Dashboard' },
-  { key: 'resident', label: 'ประชาชน', sub: 'LINE Mini App' },
-  { key: 'driver', label: 'เจ้าหน้าที่', sub: 'Driver App' },
-  { key: 'sticker', label: 'ออกสติ๊กเกอร์', sub: 'Officer Portal' },
-  { key: 'roi', label: 'ROI Calculator', sub: 'ดูผลลัพธ์' },
-];
-
-// Tier color tokens — used across multiple panels (sticker, map, dashboard)
-const TIER_COLOR = {
-  notSorted: { bg: C.alert, soft: C.alertSoft, label: '60฿ ไม่แยก' },
-  sorted: { bg: C.accent, soft: C.accentSoft, label: '20฿ แยก' },
-  recycled: { bg: C.success, soft: C.successSoft, label: '10฿ รีไซเคิล' },
-};
-
-// ───────────────────────────────────────────────────────────────────────────
-// Panel 1 · Mayor — adapted from O-01 KPI Dashboard
-// ───────────────────────────────────────────────────────────────────────────
-
-function PanelChrome({ title, subtitle, status, children }) {
-  return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-      <div
-        className="px-5 py-3 flex items-center gap-3 text-[12px]"
-        style={{ background: '#FFF', color: C.textMuted, borderBottom: `1px solid ${C.surfaceSoft}` }}
-      >
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold"
-          style={{ background: C.primary, color: '#FFF', letterSpacing: '0.5px' }}
-        >
-          อบต
-        </div>
-        <div>
-          <div className="font-semibold" style={{ color: C.text, fontSize: '13px' }}>{title}</div>
-          <div style={{ color: C.textMuted, fontSize: '11px' }}>{subtitle}</div>
-        </div>
-        {status && <span className="ml-auto flex items-center gap-1.5" style={{ color: C.success }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></span>
-          {status}
-        </span>}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function MayorPanel() {
-  const [period, setPeriod] = useState('month');
-  const periods = [
-    { k: 'week', label: '7 วัน' },
-    { k: 'month', label: 'เดือนนี้' },
-    { k: 'quarter', label: 'ไตรมาส' },
-    { k: 'year', label: 'ปีงบฯ 69' },
-  ];
-
-  return (
-    <PanelChrome title="KPI Dashboard" subtitle="Officer Portal · ภาพรวมการจัดเก็บ" status="Real-time">
-      <div className="p-6 md:p-8">
-        {/* Period tabs */}
-        <div className="flex flex-wrap items-center gap-2 mb-5">
-          <div className="flex p-1 rounded-lg" style={{ background: C.surfaceSoft }}>
-            {periods.map(p => (
-              <button
-                key={p.k}
-                onClick={() => setPeriod(p.k)}
-                className="text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
-                style={period === p.k
-                  ? { background: '#FFF', color: C.text, boxShadow: `0 1px 3px ${C.primary}22` }
-                  : { background: 'transparent', color: C.textMuted, border: 'none' }}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-          <div className="ml-auto text-[12px] flex items-center gap-2" style={{ color: C.textMuted }}>
-            <span>เทศบาลของท่าน · 3,000 ครัวเรือน</span>
-          </div>
-        </div>
-
-        {/* Alert banner */}
-        <div className="rounded-xl p-3 mb-5 flex items-start gap-3" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
-          <span className="text-[16px] leading-none mt-0.5" style={{ color: C.accent }}>⚠</span>
-          <div className="text-[13px] flex-1" style={{ color: C.text }}>
-            อัตราการจัดเก็บเดือนนี้ <strong>78.4%</strong> — ต่ำกว่าเป้า 85% · ค้างชำระเพิ่ม +23 หลังจากสัปดาห์ที่แล้ว
-            <a href="#" onClick={(e) => e.preventDefault()} className="ml-2 underline" style={{ color: C.accent }}>ดูรายการ →</a>
-          </div>
-        </div>
-
-        {/* 4 KPI cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {/* Revenue */}
-          <div className="rounded-xl p-4" style={{ background: '#FFF', border: `1px solid ${C.successSoft}`, borderLeft: `3px solid ${C.success}` }}>
-            <div className="text-[11px] uppercase tracking-wider mb-2" style={{ color: C.textMuted }}>ยอดรายได้เดือนนี้</div>
-            <div className="text-[22px] font-semibold leading-tight" style={{ color: C.text }}>
-              ฿485<span className="text-[16px]">,200</span>
-            </div>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px]">
-              <span style={{ color: C.success }}>↑ 12.3%</span>
-              <span style={{ color: C.textMuted }}>จากเดือนก่อน</span>
-            </div>
-            <div className="text-[10px] mt-2 pt-2 border-t" style={{ color: C.textMuted, borderColor: C.surfaceSoft }}>
-              เป้าหมายปี: ฿5.8M · สะสม 55.4%
-            </div>
-          </div>
-
-          {/* Collection rate */}
-          <div className="rounded-xl p-4" style={{ background: '#FFF', border: `1px solid ${C.accentSoft}`, borderLeft: `3px solid ${C.accent}` }}>
-            <div className="text-[11px] uppercase tracking-wider mb-2" style={{ color: C.textMuted }}>อัตราการจัดเก็บ</div>
-            <div className="text-[22px] font-semibold leading-tight" style={{ color: C.text }}>
-              78.4<span className="text-[16px]">%</span>
-            </div>
-            <div className="mt-2">
-              <div className="flex justify-between text-[9px] mb-1" style={{ color: C.textMuted }}>
-                <span>0%</span>
-                <span style={{ color: C.accent }}>เป้า 85%</span>
-                <span>100%</span>
-              </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: C.surfaceSoft }}>
-                <div className="h-full" style={{ width: '78.4%', background: C.accent }}></div>
-              </div>
-            </div>
-            <div className="text-[10px] mt-2" style={{ color: C.textMuted }}>↓ 2.1% · ก่อน 80.5%</div>
-          </div>
-
-          {/* Overdue bills */}
-          <div className="rounded-xl p-4" style={{ background: '#FFF', border: `1px solid ${C.alertSoft}`, borderLeft: `3px solid ${C.alert}` }}>
-            <div className="text-[11px] uppercase tracking-wider mb-2" style={{ color: C.textMuted }}>บิลค้างชำระ</div>
-            <div className="text-[22px] font-semibold leading-tight" style={{ color: C.text }}>
-              342<span className="text-[14px] font-normal" style={{ color: C.textMuted }}> ใบ</span>
-            </div>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px]">
-              <span style={{ color: C.alert }}>↑ 23 ใบ</span>
-              <span style={{ color: C.textMuted }}>สัปดาห์ก่อน</span>
-            </div>
-            <div className="text-[10px] mt-2 pt-2 border-t" style={{ color: C.textMuted, borderColor: C.surfaceSoft }}>
-              เกิน 90 วัน: <strong style={{ color: C.alert }}>48 ใบ</strong>
-            </div>
-          </div>
-
-          {/* Total arrears */}
-          <div className="rounded-xl p-4" style={{ background: '#FFF', border: `1px solid ${C.alertSoft}`, borderLeft: `3px solid ${C.alert}` }}>
-            <div className="text-[11px] uppercase tracking-wider mb-2" style={{ color: C.textMuted }}>ยอดค้างรวม</div>
-            <div className="text-[22px] font-semibold leading-tight" style={{ color: C.text }}>
-              ฿1.28<span className="text-[16px]">M</span>
-            </div>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px]">
-              <span style={{ color: C.alert }}>↑ ฿84,200</span>
-              <span style={{ color: C.textMuted }}>เดือนก่อน</span>
-            </div>
-            <div className="text-[10px] mt-2 pt-2 border-t" style={{ color: C.textMuted, borderColor: C.surfaceSoft }}>
-              342 ครัวเรือน · เฉลี่ย ฿3,747/หลัง
-            </div>
-          </div>
-        </div>
-
-        {/* 3-tier breakdown bar */}
-        <div className="mb-5">
-          <div className="flex items-baseline justify-between mb-2">
-            <div className="text-[13px] font-semibold" style={{ color: C.text }}>การกระจายของครัวเรือน — 3 Tier</div>
-            <div className="text-[11px]" style={{ color: C.textMuted }}>3,000 หลัง</div>
-          </div>
-          <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${C.surfaceSoft}` }}>
-            <div className="flex h-10">
-              <div className="flex items-center justify-center text-[11px] font-medium text-white" style={{ background: TIER_COLOR.notSorted.bg, width: '20%' }}>20% · {TIER_COLOR.notSorted.label}</div>
-              <div className="flex items-center justify-center text-[11px] font-medium text-white" style={{ background: TIER_COLOR.sorted.bg, width: '50%' }}>50% · {TIER_COLOR.sorted.label}</div>
-              <div className="flex items-center justify-center text-[11px] font-medium text-white" style={{ background: TIER_COLOR.recycled.bg, width: '30%' }}>30% · {TIER_COLOR.recycled.label}</div>
-            </div>
-            <div className="flex text-[11px] py-2 px-3" style={{ background: '#FFF', color: C.textMuted }}>
-              <span style={{ width: '20%' }}>600 หลัง</span>
-              <span style={{ width: '50%' }}>1,500 หลัง</span>
-              <span style={{ width: '30%' }}>900 หลัง</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Secondary stats row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
-          <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: C.surface }}>
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[16px]" style={{ background: C.alertSoft, color: C.alert }}>⚠</div>
-            <div className="flex-1">
-              <div className="text-[11px]" style={{ color: C.textMuted }}>บ้านที่ถูกข้าม (ไม่จ่าย)</div>
-              <div className="text-[16px] font-semibold" style={{ color: C.alert }}>87 หลัง</div>
-              <div className="text-[10px]" style={{ color: C.textMuted }}>เดือนก่อน 64 · <span style={{ color: C.alert }}>+35.9%</span></div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: C.surface }}>
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[16px]" style={{ background: C.successSoft, color: C.success }}>✓</div>
-            <div className="flex-1">
-              <div className="text-[11px]" style={{ color: C.textMuted }}>คัดแยกขยะถูกต้อง</div>
-              <div className="text-[16px] font-semibold" style={{ color: C.success }}>61.2%</div>
-              <div className="text-[10px]" style={{ color: C.textMuted }}>1,847 / 3,016 · <span style={{ color: C.success }}>↑ 4.1%</span></div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: C.surface }}>
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[16px]" style={{ background: '#E6F1FB', color: '#185FA5' }}>🚛</div>
-            <div className="flex-1">
-              <div className="text-[11px]" style={{ color: C.textMuted }}>เที่ยวเก็บขยะเดือนนี้</div>
-              <div className="text-[16px] font-semibold" style={{ color: C.text }}>68 เที่ยว</div>
-              <div className="text-[10px]" style={{ color: C.textMuted }}>4,082 หลัง/เที่ยว เฉลี่ย</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Sampling cycle banner */}
-        <div className="rounded-xl p-4" style={{ background: C.successSoft, border: `1px solid ${C.success}33` }}>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#3B6D11' }}>รอบสุ่มประเมิน</span>
-            <Pill variant="success">รอบที่ 2/4 ปี 2569</Pill>
-          </div>
-          <div className="text-[13px]" style={{ color: C.text }}>
-            ระบบสุ่ม <strong>33%</strong> ของครัวเรือนที่ลงทะเบียน — รอบนี้ <strong>800 หลัง</strong> · ทุกบ้านจะถูกสุ่มเฉลี่ย <strong>1 ครั้ง/ปี (±1)</strong> ตาม Stratified random algorithm
-          </div>
-        </div>
-      </div>
-    </PanelChrome>
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Panel 2 · Resident — adapted from R-08 Sticker Status + R-09 Collection Schedule
-// ───────────────────────────────────────────────────────────────────────────
-
-function StickerGraphic({ size = 160, color = C.success, year = '2568' }) {
-  // Adapted from R-08 — circular sticker with year + tier
-  return (
-    <div style={{ position: 'relative', width: size, height: size, margin: '0 auto' }}>
-      <div
-        style={{
-          width: '100%', height: '100%', borderRadius: '50%',
-          background: color,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `0 8px 24px ${color}55, inset 0 -4px 12px rgba(0,0,0,0.08)`,
-        }}
-      >
-        <div style={{ fontSize: size * 0.08, color: '#FFF', opacity: 0.9, letterSpacing: '2px', fontWeight: 600, textTransform: 'uppercase' }}>
-          ปีงบฯ
-        </div>
-        <div style={{ fontSize: size * 0.30, color: '#FFF', fontWeight: 800, letterSpacing: '1px', lineHeight: 1, marginTop: 2 }}>
-          {year}
-        </div>
-        <div style={{ fontSize: size * 0.08, color: '#FFF', opacity: 0.85, marginTop: 6, letterSpacing: '1px' }}>
-          ✓ คัดแยก
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ResidentPanel() {
-  const [tab, setTab] = useState('sticker');
-
-  // R-09 mock — next 4 collection days
-  const nextCollections = [
-    { day: 'จ.', date: '5 พ.ค.', isNext: true },
-    { day: 'พ.', date: '7 พ.ค.', isNext: false },
-    { day: 'ศ.', date: '9 พ.ค.', isNext: false },
-    { day: 'จ.', date: '12 พ.ค.', isNext: false },
-  ];
-
-  return (
-    <PanelChrome title="LINE Mini App" subtitle="ประชาชน · คุณสมศรี · 89/1 ม.3" status="online">
-      <div className="p-5 md:p-7 flex flex-col md:flex-row gap-5">
-        {/* Phone frame — R-08 style */}
-        <div className="mx-auto md:mx-0 flex-shrink-0" style={{ width: 260 }}>
-          <div className="rounded-[28px] p-1.5" style={{ background: '#1F2A24' }}>
-            <div className="rounded-[22px] overflow-hidden" style={{ background: '#FFF' }}>
-              {/* Status bar */}
-              <div className="px-3.5 py-1.5 flex justify-between text-[9px] font-medium" style={{ background: '#06C755', color: '#FFF' }}>
-                <span>LINE</span>
-                <span>14:32</span>
-              </div>
-
-              {/* Tab switcher inside phone */}
-              <div className="flex border-b" style={{ borderColor: C.surfaceSoft }}>
-                {[
-                  { k: 'sticker', label: 'สติ๊กเกอร์' },
-                  { k: 'schedule', label: 'ตารางเก็บขยะ' },
-                ].map(t => (
-                  <button
-                    key={t.k}
-                    onClick={() => setTab(t.k)}
-                    className="flex-1 text-[11px] font-medium py-2.5"
-                    style={tab === t.k
-                      ? { background: '#FFF', color: C.primary, borderBottom: `2px solid ${C.primary}`, marginBottom: '-1px' }
-                      : { background: '#FFF', color: C.textMuted, border: 'none' }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* R-08 — Sticker view */}
-              {tab === 'sticker' && (
-                <div className="p-4 pb-5">
-                  <div className="text-center mb-3">
-                    <Pill variant="success">✓ ได้รับสติ๊กเกอร์แล้ว</Pill>
-                  </div>
-                  <StickerGraphic size={140} color={C.success} year="2568" />
-                  <div className="text-center mt-3">
-                    <div className="text-[12px] font-semibold" style={{ color: C.text }}>สีเขียว · Tier 10 บาท</div>
-                    <div className="text-[10px] mt-1" style={{ color: C.textMuted }}>ปีงบฯ 2568 · 1 ต.ค. 67 – 30 ก.ย. 68</div>
-                  </div>
-                  {/* History — small dots */}
-                  <div className="mt-4 pt-3 border-t" style={{ borderColor: C.surfaceSoft }}>
-                    <div className="text-[10px] mb-2" style={{ color: C.textMuted }}>ประวัติ 4 ปี</div>
-                    <div className="flex gap-2 justify-between">
-                      {[
-                        { y: '68', c: C.success },
-                        { y: '67', c: '#185FA5' },
-                        { y: '66', c: C.accent },
-                        { y: '65', c: C.alert },
-                      ].map((h, i) => (
-                        <div key={i} className="flex flex-col items-center gap-1">
-                          <div className="w-7 h-7 rounded-full" style={{ background: h.c }}></div>
-                          <span className="text-[9px]" style={{ color: C.textMuted }}>{h.y}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* R-09 — Schedule view */}
-              {tab === 'schedule' && (
-                <div className="p-4 pb-5">
-                  <div className="rounded-lg p-3 mb-3" style={{ background: C.surface }}>
-                    <div className="text-[10px] mb-1" style={{ color: C.textMuted }}>โซน A · เส้นทาง 1</div>
-                    <div className="text-[13px] font-semibold" style={{ color: C.text }}>หมู่ 1, 2, 3</div>
-                    <div className="text-[10px] mt-1 flex items-center gap-1" style={{ color: C.textMuted }}>
-                      <span>🕐</span> 06:00 – 09:00 น.
-                    </div>
-                  </div>
-                  <div className="text-[11px] mb-2" style={{ color: C.textMuted }}>เก็บขยะ 4 ครั้งถัดไป</div>
-                  <div className="space-y-1.5">
-                    {nextCollections.map((c, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 rounded-lg px-3 py-2"
-                        style={c.isNext
-                          ? { background: C.successSoft, border: `1px solid ${C.success}33` }
-                          : { background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}
-                      >
-                        <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold"
-                          style={c.isNext
-                            ? { background: C.success, color: '#FFF' }
-                            : { background: C.surfaceSoft, color: C.textMuted }}
-                        >
-                          {c.day}
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-[11px] font-medium" style={{ color: C.text }}>{c.date}</div>
-                          {c.isNext && <div className="text-[9px]" style={{ color: '#3B6D11' }}>ครั้งถัดไป · เหลือ 5 วัน</div>}
-                        </div>
-                        {c.isNext && <span className="text-[10px]" style={{ color: C.success }}>เร็วๆ นี้</span>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Bottom action button */}
-              <div className="px-4 pb-4 pt-2 border-t" style={{ borderColor: C.surfaceSoft }}>
-                <button
-                  className="w-full text-[12px] font-semibold py-2.5 rounded-lg"
-                  style={{ background: C.primary, color: '#FFF', border: 'none' }}
-                >
-                  ชำระด้วย QR PromptPay
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right info column */}
-        <div className="flex-1">
-          <div className="text-[14px] font-semibold mb-3" style={{ color: C.text }}>ทำไมประชาชนใช้ระบบนี้?</div>
-          <div className="space-y-2.5 text-[13px]" style={{ color: C.text }}>
-            <div className="flex gap-2.5">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: C.successSoft, color: C.success }}>✓</span>
-              <span><strong>เห็นบิลทันที</strong> — ไม่ต้องรอกระดาษ ไม่ต้องไปที่ทำการ</span>
-            </div>
-            <div className="flex gap-2.5">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: C.successSoft, color: C.success }}>✓</span>
-              <span><strong>จ่ายผ่าน LINE</strong> — กดปุ่มเดียวแสดง QR PromptPay</span>
-            </div>
-            <div className="flex gap-2.5">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: C.successSoft, color: C.success }}>✓</span>
-              <span><strong>คัดแยก = ประหยัด</strong> — สติ๊กเกอร์เขียวจ่าย 10 ฿/เดือน + ส่วนแบ่งรีไซเคิล</span>
-            </div>
-            <div className="flex gap-2.5">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: C.successSoft, color: C.success }}>✓</span>
-              <span><strong>เห็นตารางเก็บล่วงหน้า</strong> — รู้ว่ารถมาเมื่อไหร่ ไม่ต้องเดาวัน</span>
-            </div>
-            <div className="flex gap-2.5">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: C.successSoft, color: C.success }}>✓</span>
-              <span><strong>ตรวจสอบเจ้าหน้าที่</strong> — สแกน QR บัตรเจ้าหน้าที่ก่อนชำระ ป้องกันมิจฉาชีพ</span>
-            </div>
-          </div>
-          <div className="mt-4 rounded-lg p-3" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
-            <div className="text-[11px] font-semibold uppercase mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>Reality check</div>
-            <div className="text-[12px]" style={{ color: C.text }}>
-              กทม. มีคนลงทะเบียน <strong>786,099 หลัง</strong> ใน 5 เดือน (BKK WASTE PAY) — ประชาชนเลือกถ้ามีแรงจูงใจจริง
-            </div>
-          </div>
-        </div>
-      </div>
-    </PanelChrome>
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Panel 3 · Driver — adapted from D-01 My Routes + D-02 Route Map
-// ───────────────────────────────────────────────────────────────────────────
-
-// ── Reusable: Phone frame (mobile screens used by field staff) ───────────────
-function PhoneFrame({ caption, children, accent = C.primary }) {
-  return (
-    <div className="flex flex-col items-center" style={{ width: 220 }}>
-      <div className="rounded-[28px] p-1.5 shadow-lg" style={{ background: '#1F2A24' }}>
-        <div className="rounded-[22px] overflow-hidden relative" style={{ background: '#FFF', width: 200, height: 400 }}>
-          {/* Status bar */}
-          <div className="px-3 py-1 flex justify-between items-center text-[8px] font-medium" style={{ background: accent, color: '#FFF' }}>
-            <span>{new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</span>
-            <span className="flex gap-1 items-center">
-              <span>📶</span><span>4G</span><span>🔋 86%</span>
-            </span>
-          </div>
-          {children}
-        </div>
-      </div>
-      <div className="text-[11px] font-medium mt-2 text-center" style={{ color: C.text }}>{caption}</div>
-    </div>
-  );
-}
-
-function DriverPanel() {
-  // Numbers from D-01 reference
-  const totalHouses = 48;
-  const collectedHouses = 29;
-  const skippedHouses = 4;
-  const remaining = totalHouses - collectedHouses - skippedHouses;
-  const pct = Math.round((collectedHouses / totalHouses) * 100);
-  const [activeScreen, setActiveScreen] = useState('today');
-
-  // Mock queue for "Today" screen
-  const queue = [
-    { id: 1, addr: '89/1 ม.3', name: 'นายมานพ', tier: 'success', label: '10฿', state: 'เก็บแล้ว 13:45', done: true },
-    { id: 2, addr: '89/3 ม.3', name: 'น.ส.สมศรี', tier: 'accent', label: '20฿', state: 'สุ่มถ่ายรูปแล้ว', done: true, sampled: true },
-    { id: 3, addr: '90/2 ม.3', name: 'นายประสิทธิ์', tier: 'alert', label: '60฿', state: 'ค้างชำระ · ข้าม', skipped: true },
-    { id: 4, addr: '92/4 ม.3', name: 'น.ส.วิภา', tier: 'success', label: '10฿', state: 'ครั้งถัดไป', current: true },
-    { id: 5, addr: '94/1 ม.3', name: 'นายชาลี', tier: 'accent', label: '20฿', state: 'รอเก็บ' },
-    { id: 6, addr: '94/3 ม.3', name: 'น.ส.อุไร', tier: 'success', label: '10฿', state: 'รอเก็บ' },
-  ];
-
-  return (
-    <PanelChrome title="Driver App · Mobile" subtitle="นายประยุทธ์ · รถ ขข-09 · เส้นทาง 1" status="GPS Active">
-      <div className="p-5 md:p-7">
-        {/* Progress hero (above phones) */}
-        <div className="rounded-xl p-5 mb-5" style={{ background: C.primary, color: '#FFF' }}>
-          <div className="flex items-baseline justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wider opacity-80">รอบเช้า · 06:00 น.</div>
-            <div className="text-[11px] opacity-80">หมู่ 1, 2, 3 · โซน A</div>
-          </div>
-          <div className="flex items-baseline gap-2 mb-3">
-            <span className="text-[36px] font-bold leading-none">{collectedHouses}</span>
-            <span className="text-[16px] font-medium opacity-90">/ {totalHouses} หลัง</span>
-            <span className="text-[14px] ml-auto opacity-90">{pct}%</span>
-          </div>
-          <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(255,255,255,0.2)' }}>
-            <div className="h-full" style={{ width: `${pct}%`, background: '#FFF' }}></div>
-          </div>
-          <div className="flex gap-4 text-[11px]">
-            <span className="opacity-90">เก็บแล้ว <strong>{collectedHouses}</strong></span>
-            <span className="opacity-90">ข้ามแล้ว <strong>{skippedHouses}</strong></span>
-            <span className="opacity-90">เหลือ <strong>{remaining}</strong></span>
-            <span className="ml-auto opacity-90">~ 1 ชม. 20 นาที</span>
-          </div>
-        </div>
-
-        {/* === 3 phone screens — mobile-first showcase === */}
-        <div className="text-[12px] font-medium mb-3" style={{ color: C.text }}>
-          มือถือของเจ้าหน้าที่ในรถเก็บขยะ — 3 หน้าจอที่ใช้จริง
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-5 md:gap-7 mb-6">
-
-          {/* ════════ Phone 1 — Today's Route List ════════ */}
-          <PhoneFrame caption="หน้าหลัก · รายการบ้านวันนี้">
-            {/* Header */}
-            <div className="px-3 py-2 border-b" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
-              <div className="flex items-center gap-2">
-                <button className="text-[14px]" style={{ color: C.textMuted }}>☰</button>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-semibold" style={{ color: C.text }}>เส้นทาง 1 · ฝั่งซ้าย</div>
-                  <div className="text-[8px]" style={{ color: C.textMuted }}>หมู่ 3 · 26 หลัง</div>
-                </div>
-                <span className="text-[8px] flex items-center gap-1" style={{ color: C.success }}>
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></span>GPS
-                </span>
-              </div>
-              {/* Mini progress */}
-              <div className="mt-2 flex items-baseline gap-1.5">
-                <span className="text-[18px] font-bold leading-none" style={{ color: C.primary }}>{collectedHouses}</span>
-                <span className="text-[10px]" style={{ color: C.textMuted }}>/ {totalHouses} หลัง</span>
-                <span className="ml-auto text-[10px] font-medium" style={{ color: C.primary }}>{pct}%</span>
-              </div>
-              <div className="h-1 mt-1 rounded-full overflow-hidden" style={{ background: C.surfaceSoft }}>
-                <div className="h-full" style={{ width: `${pct}%`, background: C.primary }}></div>
-              </div>
-            </div>
-
-            {/* List */}
-            <div className="overflow-y-auto" style={{ height: 280, background: '#FFF' }}>
-              {queue.map((row) => (
-                <div
-                  key={row.id}
-                  className="flex items-center gap-2 px-3 py-2 border-b"
-                  style={{
-                    borderColor: C.surfaceSoft,
-                    background: row.current ? C.successSoft : row.skipped ? '#FAFAFA' : '#FFF',
-                    opacity: row.done ? 0.65 : 1,
-                  }}
-                >
-                  <div
-                    className="w-7 h-7 rounded-md flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0"
-                    style={{ background: row.tier === 'success' ? C.success : row.tier === 'accent' ? C.accent : C.alert }}
-                  >
-                    {row.label}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-medium truncate" style={{ color: C.text }}>{row.addr}</div>
-                    <div className="text-[8px] truncate" style={{ color: C.textMuted }}>
-                      {row.name} · {row.state}
-                    </div>
-                  </div>
-                  {row.done && row.sampled && <span className="text-[10px]">📷</span>}
-                  {row.done && !row.sampled && <span className="text-[10px]" style={{ color: C.success }}>✓</span>}
-                  {row.skipped && <span className="text-[10px]" style={{ color: C.alert }}>✕</span>}
-                  {row.current && <span className="text-[8px] font-bold" style={{ color: C.success }}>NOW</span>}
-                </div>
-              ))}
-            </div>
-
-            {/* Bottom tab bar */}
-            <div className="absolute bottom-0 left-0 right-0 flex border-t" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
-              {[
-                { k: 'list', label: 'รายการ', icon: '☰', active: true },
-                { k: 'map', label: 'แผนที่', icon: '🗺' },
-                { k: 'me', label: 'ฉัน', icon: '👤' },
-              ].map((t, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center py-1.5"
-                  style={{ color: t.active ? C.primary : C.textMuted, borderTop: t.active ? `2px solid ${C.primary}` : 'none', marginTop: t.active ? -1 : 0 }}>
-                  <span className="text-[12px]">{t.icon}</span>
-                  <span className="text-[8px] mt-0.5">{t.label}</span>
-                </div>
-              ))}
-            </div>
-          </PhoneFrame>
-
-          {/* ════════ Phone 2 — Map View ════════ */}
-          <PhoneFrame caption="แผนที่เส้นทาง · GPS Real-time">
-            {/* Search bar */}
-            <div className="absolute top-6 left-2 right-2 z-10">
-              <div className="rounded-full px-2.5 py-1.5 flex items-center gap-1.5 shadow-md" style={{ background: '#FFF' }}>
-                <span className="text-[10px]">🔍</span>
-                <span className="text-[9px] flex-1" style={{ color: C.textMuted }}>หมู่ 3 · เส้นทาง 1</span>
-                <span className="text-[10px]">⚙</span>
-              </div>
-            </div>
-
-            {/* Google-style map */}
-            <div className="relative" style={{ height: 340, background: '#EDE9DD', overflow: 'hidden' }}>
-              <svg width="100%" height="100%" viewBox="0 0 200 340" preserveAspectRatio="xMidYMid slice" style={{ display: 'block' }}>
-                <rect x="0" y="0" width="200" height="340" fill="#EDE9DD" />
-                {/* Park areas */}
-                <ellipse cx="30" cy="40" rx="40" ry="30" fill="#C8DEC0" />
-                <path d="M 150 280 L 200 270 L 200 340 L 140 340 Z" fill="#C8DEC0" />
-                {/* River */}
-                <path d="M 200 60 Q 175 110 185 160 T 200 250 L 200 280 Q 165 250 175 200 T 200 80 Z" fill="#A6CFE8" />
-                <rect x="178" y="170" width="22" height="5" fill="#EDE9DD" />
-
-                {/* Building blocks */}
-                <g fill="#DDD7C8" stroke="#CFC9BA" strokeWidth="0.4">
-                  <rect x="20" y="100" width="32" height="20" rx="1.5" />
-                  <rect x="20" y="125" width="32" height="20" rx="1.5" />
-                  <rect x="20" y="150" width="32" height="20" rx="1.5" />
-                  <rect x="20" y="175" width="32" height="20" rx="1.5" />
-                  <rect x="62" y="100" width="32" height="20" rx="1.5" />
-                  <rect x="62" y="125" width="32" height="20" rx="1.5" />
-                  <rect x="62" y="150" width="32" height="20" rx="1.5" />
-                  <rect x="62" y="175" width="32" height="20" rx="1.5" />
-                  <rect x="62" y="200" width="32" height="20" rx="1.5" />
-                  <rect x="105" y="100" width="32" height="20" rx="1.5" />
-                  <rect x="105" y="125" width="32" height="20" rx="1.5" />
-                  <rect x="105" y="150" width="32" height="20" rx="1.5" />
-                  <rect x="105" y="175" width="32" height="20" rx="1.5" />
-                  <rect x="105" y="200" width="32" height="20" rx="1.5" />
-                  <rect x="148" y="125" width="28" height="20" rx="1.5" />
-                  <rect x="148" y="150" width="28" height="20" rx="1.5" />
-                  <rect x="148" y="175" width="28" height="20" rx="1.5" />
-                  <rect x="148" y="200" width="28" height="20" rx="1.5" />
-                </g>
-
-                {/* Roads — borders */}
-                <g stroke="#C8B89A" strokeLinecap="round" fill="none">
-                  <path d="M 0 95 L 200 95" strokeWidth="9" />
-                  <path d="M 0 220 L 200 220" strokeWidth="9" />
-                  <path d="M 56 0 L 56 340" strokeWidth="9" />
-                  <path d="M 142 0 L 142 340" strokeWidth="9" />
-                </g>
-                {/* Roads — fill */}
-                <g strokeLinecap="round" fill="none">
-                  <path d="M 0 95 L 200 95" stroke="#FFF7DA" strokeWidth="7" />
-                  <path d="M 0 220 L 200 220" stroke="#FFF7DA" strokeWidth="7" />
-                  <path d="M 56 0 L 56 340" stroke="#FFF7DA" strokeWidth="7" />
-                  <path d="M 142 0 L 142 340" stroke="#FFF7DA" strokeWidth="7" />
-                </g>
-                {/* Road label */}
-                <text x="100" y="97" textAnchor="middle" fontSize="6" fill="#7A6A4A" fontStyle="italic" fontFamily="Sarabun">ถ.หลัก</text>
-
-                {/* Completed route line — Google blue */}
-                <path d="M 30 95 L 56 95 L 56 130 L 100 130 L 100 220" stroke="#1B61C9" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" />
-
-                {/* House pins */}
-                {[
-                  { x: 36, y: 110, c: C.success, done: true },
-                  { x: 36, y: 135, c: C.accent, done: true },
-                  { x: 36, y: 160, c: C.success, done: true },
-                  { x: 36, y: 185, c: C.alert, done: false },
-                  { x: 78, y: 110, c: C.accent, done: true },
-                  { x: 78, y: 135, c: C.success, done: true },
-                  { x: 78, y: 160, c: C.success, done: true },
-                  { x: 78, y: 185, c: C.accent, done: false },
-                  { x: 78, y: 210, c: C.alert, done: false },
-                  { x: 121, y: 110, c: C.success, done: false },
-                  { x: 121, y: 135, c: C.success, done: false },
-                  { x: 121, y: 160, c: C.accent, done: false },
-                  { x: 121, y: 185, c: C.alert, done: false },
-                  { x: 121, y: 210, c: C.success, done: false },
-                  { x: 162, y: 135, c: C.accent, done: false },
-                  { x: 162, y: 160, c: C.success, done: false },
-                  { x: 162, y: 185, c: C.success, done: false },
-                ].map((h, i) => (
-                  <g key={i} style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25))' }}>
-                    <path
-                      d={`M ${h.x} ${h.y - 6} C ${h.x - 3.5} ${h.y - 6}, ${h.x - 3.5} ${h.y - 1}, ${h.x} ${h.y + 3} C ${h.x + 3.5} ${h.y - 1}, ${h.x + 3.5} ${h.y - 6}, ${h.x} ${h.y - 6} Z`}
-                      fill={h.done ? '#9CA3AF' : h.c}
-                      stroke="#FFF"
-                      strokeWidth="0.9"
-                    />
-                    <circle cx={h.x} cy={h.y - 4} r="1.1" fill="#FFF" />
-                  </g>
-                ))}
-
-                {/* Truck position */}
-                <g style={{ filter: 'drop-shadow(0 1.5px 2px rgba(0,0,0,0.35))' }}>
-                  <ellipse cx="100" cy="222" rx="9" ry="2" fill="rgba(0,0,0,0.18)" />
-                  <circle cx="100" cy="220" r="11" fill={C.primary} stroke="#FFF" strokeWidth="2" />
-                  <text x="100" y="223" textAnchor="middle" fontSize="9" fill="#FFF" fontWeight="700">🚛</text>
-                  {/* Pulse ring */}
-                  <circle cx="100" cy="220" r="11" fill="none" stroke={C.primary} strokeWidth="1.5">
-                    <animate attributeName="r" values="11;18;11" dur="2.4s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.6;0;0.6" dur="2.4s" repeatCount="indefinite" />
-                  </circle>
-                </g>
-
-                {/* Sample badge */}
-                <g>
-                  <rect x="125" y="155" width="58" height="13" rx="6.5" fill={C.accent} />
-                  <text x="154" y="164" textAnchor="middle" fontSize="7" fill="#FFF" fontWeight="600" fontFamily="Sarabun">📷 สุ่ม</text>
-                </g>
-
-                {/* Map controls */}
-                <g>
-                  <rect x="178" y="50" width="18" height="36" rx="3" fill="#FFF" stroke="#D8D2C2" strokeWidth="0.4" />
-                  <line x1="178" y1="68" x2="196" y2="68" stroke="#D8D2C2" strokeWidth="0.4" />
-                  <text x="187" y="64" textAnchor="middle" fontSize="11" fill="#5F6B65" fontWeight="600">+</text>
-                  <text x="187" y="82" textAnchor="middle" fontSize="11" fill="#5F6B65" fontWeight="600">−</text>
-                  <circle cx="187" cy="100" r="8.5" fill="#FFF" stroke="#D8D2C2" strokeWidth="0.4" />
-                  <polygon points="187,94 189,100 187,98 185,100" fill={C.alert} />
-                  <polygon points="187,106 189,100 187,102 185,100" fill="#5F6B65" />
-                  <text x="187" y="108" textAnchor="middle" fontSize="3.5" fill="#5F6B65" fontWeight="600">N</text>
-                </g>
-
-                {/* Scale */}
-                <g transform="translate(8 320)">
-                  <rect x="0" y="-4" width="46" height="8" fill="#FFF" stroke="#D8D2C2" strokeWidth="0.4" rx="1.5" />
-                  <line x1="4" y1="0" x2="42" y2="0" stroke="#1F2A24" strokeWidth="0.7" />
-                  <line x1="4" y1="-2" x2="4" y2="2" stroke="#1F2A24" strokeWidth="0.7" />
-                  <line x1="42" y1="-2" x2="42" y2="2" stroke="#1F2A24" strokeWidth="0.7" />
-                  <text x="46" y="2" fontSize="5" fill="#5F6B65" fontFamily="Sarabun" dx="2">200 ม.</text>
-                </g>
-              </svg>
-
-              {/* Bottom info card overlay */}
-              <div className="absolute bottom-12 left-2 right-2 rounded-lg p-2 shadow-md" style={{ background: '#FFF' }}>
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded flex items-center justify-center text-[8px] font-bold text-white" style={{ background: C.success }}>10฿</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[9px] font-semibold truncate" style={{ color: C.text }}>92/4 ม.3 · น.ส.วิภา</div>
-                    <div className="text-[7px]" style={{ color: C.textMuted }}>หลังถัดไป · 12 ม. ข้างหน้า</div>
-                  </div>
-                  <button className="text-[8px] font-semibold px-2 py-1 rounded" style={{ background: C.primary, color: '#FFF' }}>เริ่ม</button>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom tab bar */}
-            <div className="absolute bottom-0 left-0 right-0 flex border-t" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
-              {[
-                { k: 'list', label: 'รายการ', icon: '☰' },
-                { k: 'map', label: 'แผนที่', icon: '🗺', active: true },
-                { k: 'me', label: 'ฉัน', icon: '👤' },
-              ].map((t, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center py-1.5"
-                  style={{ color: t.active ? C.primary : C.textMuted, borderTop: t.active ? `2px solid ${C.primary}` : 'none', marginTop: t.active ? -1 : 0 }}>
-                  <span className="text-[12px]">{t.icon}</span>
-                  <span className="text-[8px] mt-0.5">{t.label}</span>
-                </div>
-              ))}
-            </div>
-          </PhoneFrame>
-
-          {/* ════════ Phone 3 — House Detail / Photo Capture ════════ */}
-          <PhoneFrame caption="ถ่ายรูปหลักฐาน · บ้านที่ถูกสุ่ม">
-            {/* Top header */}
-            <div className="px-3 py-2 border-b flex items-center gap-2" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
-              <button className="text-[12px]" style={{ color: C.textMuted }}>‹</button>
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-semibold" style={{ color: C.text }}>89/3 ม.3</div>
-                <div className="text-[8px]" style={{ color: C.textMuted }}>น.ส.สมศรี รักดี</div>
-              </div>
-              <Pill variant="accent">สุ่มรอบนี้</Pill>
-            </div>
-
-            {/* Tier info */}
-            <div className="px-3 py-2.5" style={{ background: C.accentSoft, borderBottom: `1px solid ${C.surfaceSoft}` }}>
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-bold text-white" style={{ background: C.accent }}>20฿</div>
-                <div className="flex-1">
-                  <div className="text-[10px] font-semibold" style={{ color: C.text }}>คัดแยก verified · 20 ฿/เดือน</div>
-                  <div className="text-[8px]" style={{ color: C.textMuted }}>ลงทะเบียนเมื่อ 12 ก.พ. 69</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Camera viewfinder */}
-            <div className="relative" style={{ height: 180, background: '#1F2A24' }}>
-              {/* Mock camera view — gradient */}
-              <div className="absolute inset-0" style={{
-                background: 'linear-gradient(135deg, #4A5568 0%, #2D3748 50%, #1F2A24 100%)',
-              }}></div>
-
-              {/* Trash bag illustration */}
-              <svg width="100%" height="100%" viewBox="0 0 200 180" style={{ position: 'absolute', inset: 0 }}>
-                {/* Ground */}
-                <rect x="0" y="130" width="200" height="50" fill="rgba(0,0,0,0.3)" />
-                {/* Green bag (sorted) */}
-                <ellipse cx="60" cy="135" rx="22" ry="6" fill="rgba(0,0,0,0.4)" />
-                <path d="M 42 130 Q 42 105 50 95 L 70 95 Q 78 105 78 130 Q 78 138 60 138 Q 42 138 42 130 Z" fill={C.success} />
-                <path d="M 50 95 L 50 88 L 70 88 L 70 95" stroke="#FFF" strokeWidth="1.5" fill="none" />
-                {/* Yellow bag (recyclable) */}
-                <ellipse cx="120" cy="138" rx="20" ry="5" fill="rgba(0,0,0,0.4)" />
-                <path d="M 105 134 Q 105 112 112 103 L 128 103 Q 135 112 135 134 Q 135 141 120 141 Q 105 141 105 134 Z" fill={C.accent} />
-                <path d="M 112 103 L 112 96 L 128 96 L 128 103" stroke="#FFF" strokeWidth="1.5" fill="none" />
-              </svg>
-
-              {/* Corner brackets (camera frame) */}
-              <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }} viewBox="0 0 200 180">
-                <g stroke="#FFF" strokeWidth="2" fill="none" opacity="0.85">
-                  <path d="M 12 12 L 12 28 M 12 12 L 28 12" />
-                  <path d="M 188 12 L 188 28 M 188 12 L 172 12" />
-                  <path d="M 12 168 L 12 152 M 12 168 L 28 168" />
-                  <path d="M 188 168 L 188 152 M 188 168 L 172 168" />
-                </g>
-              </svg>
-
-              {/* GPS overlay top-left */}
-              <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[8px] font-medium flex items-center gap-1" style={{ background: 'rgba(0,0,0,0.6)', color: '#FFF' }}>
-                <span style={{ color: C.success }}>●</span> 13.7521°N 100.5018°E
-              </div>
-              {/* Live badge */}
-              <div className="absolute top-2 right-2 px-2 py-0.5 rounded text-[8px] font-bold flex items-center gap-1" style={{ background: C.alert, color: '#FFF' }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#FFF' }}></span> REC
-              </div>
-              {/* Timestamp */}
-              <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[8px]" style={{ background: 'rgba(0,0,0,0.6)', color: '#FFF', fontFamily: 'monospace' }}>
-                30 เม.ย. 69 · 14:32:11
-              </div>
-            </div>
-
-            {/* Sorting checklist */}
-            <div className="px-3 py-2 text-[9px]">
-              <div className="font-semibold mb-1.5" style={{ color: C.text }}>คัดแยกถูกต้อง?</div>
-              <div className="space-y-1">
-                {[
-                  { label: 'ขยะอินทรีย์', ok: true, color: C.success },
-                  { label: 'ขยะรีไซเคิล', ok: true, color: C.accent },
-                  { label: 'ขยะอันตราย', ok: false, color: '#9CA3AF' },
-                  { label: 'ขยะทั่วไป', ok: true, color: '#5F6B65' },
-                ].map((c, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[8px]">
-                    <span className="w-3 h-3 rounded-sm flex items-center justify-center" style={{ background: c.ok ? c.color : 'transparent', border: `1px solid ${c.ok ? c.color : C.textMuted}`, color: '#FFF' }}>
-                      {c.ok && '✓'}
-                    </span>
-                    <span style={{ color: C.text }}>{c.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Capture buttons */}
-            <div className="absolute bottom-12 left-0 right-0 px-3 flex items-center justify-center gap-2">
-              <button className="w-7 h-7 rounded-full flex items-center justify-center text-[10px]" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>↺</button>
-              <button className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: C.primary, border: '3px solid #FFF', boxShadow: '0 2px 6px rgba(0,0,0,0.25)' }}>
-                <span className="text-[14px]">📷</span>
-              </button>
-              <button className="w-7 h-7 rounded-full flex items-center justify-center text-[10px]" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>⚡</button>
-            </div>
-
-            {/* Bottom tab bar */}
-            <div className="absolute bottom-0 left-0 right-0 flex border-t" style={{ borderColor: C.surfaceSoft, background: '#FFF' }}>
-              {[
-                { k: 'list', label: 'รายการ', icon: '☰' },
-                { k: 'map', label: 'แผนที่', icon: '🗺' },
-                { k: 'me', label: 'ฉัน', icon: '👤' },
-              ].map((t, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center py-1.5"
-                  style={{ color: t.active ? C.primary : C.textMuted }}>
-                  <span className="text-[12px]">{t.icon}</span>
-                  <span className="text-[8px] mt-0.5">{t.label}</span>
-                </div>
-              ))}
-            </div>
-          </PhoneFrame>
-
-        </div>
-
-        {/* Two-sided route badges (compact, below phones) */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          <div className="rounded-lg p-3 text-center" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
-            <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>ฝั่งซ้าย</div>
-            <div className="text-[20px] font-semibold" style={{ color: C.text }}>26 หลัง</div>
-            <div className="text-[10px]" style={{ color: C.success }}>เก็บแล้ว 18</div>
-          </div>
-          <div className="rounded-lg p-3 text-center" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
-            <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: C.textMuted }}>ฝั่งขวา</div>
-            <div className="text-[20px] font-semibold" style={{ color: C.text }}>22 หลัง</div>
-            <div className="text-[10px]" style={{ color: C.success }}>เก็บแล้ว 11</div>
-          </div>
-        </div>
-
-        {/* Callout: why this is faster */}
-        <div className="rounded-xl p-4 mb-2 grid grid-cols-1 md:grid-cols-3 gap-4" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>เหตุผลที่ทำงานเร็วขึ้น</div>
-            <div className="text-[12px] leading-relaxed" style={{ color: C.text }}>ถ่ายรูปแค่บ้านที่สุ่ม <strong>(33%)</strong> ไม่ใช่ทุกบ้าน → ลดเวลาถ่ายรูป<strong>ประมาณการ −67%</strong></div>
-          </div>
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>ใช้บนมือถือธรรมดา</div>
-            <div className="text-[12px] leading-relaxed" style={{ color: C.text }}>ไม่ต้องซื้อ tablet ราคาแพง · ใช้ Android ปกติได้ · GPS + กล้องในตัว</div>
-          </div>
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>ออฟไลน์ก็ทำงานได้</div>
-            <div className="text-[12px] leading-relaxed" style={{ color: C.text }}>เก็บข้อมูลในเครื่องระหว่างไม่มี signal · sync อัตโนมัติเมื่อ online กลับมา</div>
-          </div>
-        </div>
-      </div>
-    </PanelChrome>
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Panel 4 · Officer — adapted from O-12 Sticker Issuance
-// ───────────────────────────────────────────────────────────────────────────
-
-function StickerPanel() {
-  const [selectedHouse, setSelectedHouse] = useState(2);
-
-  // Mock household queue — like O-12
-  const queue = [
-    { id: 1, addr: '88/2 ม.3', name: 'นายมานพ ใจดี', status: 'paid', amount: '120฿', tier: 'sorted', issued: false },
-    { id: 2, addr: '89/1 ม.3', name: 'น.ส.สมศรี รักดี', status: 'paid', amount: '120฿', tier: 'recycled', issued: false }, // Active
-    { id: 3, addr: '89/3 ม.3', name: 'นายประสิทธิ์ ขยัน', status: 'paid', amount: '240฿', tier: 'sorted', issued: false },
-    { id: 4, addr: '90/1 ม.3', name: 'น.ส.วิภาภรณ์', status: 'unpaid', amount: '720฿', tier: 'notSorted', issued: false },
-    { id: 5, addr: '90/2 ม.3', name: 'นายสุเทพ', status: 'partial', amount: '60/240฿', tier: 'notSorted', issued: false },
-    { id: 6, addr: '91/1 ม.3', name: 'น.ส.อุไรวรรณ', status: 'paid', amount: '120฿', tier: 'recycled', issued: true, issuedDate: '21 เม.ย. 69' },
-    { id: 7, addr: '91/4 ม.3', name: 'นายชาลี', status: 'paid', amount: '240฿', tier: 'sorted', issued: true, issuedDate: '20 เม.ย. 69' },
-  ];
-
-  const active = queue.find(q => q.id === selectedHouse) || queue[1];
-  const tierMap = TIER_COLOR[active.tier] || TIER_COLOR.sorted;
-
-  const statusBadge = (status, amount) => {
-    if (status === 'paid') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold" style={{ background: C.successSoft, color: '#3B6D11' }}>✓ ชำระแล้ว {amount}</span>;
-    if (status === 'unpaid') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold" style={{ background: C.alertSoft, color: C.alert }}>✕ ค้าง {amount}</span>;
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold" style={{ background: C.accentSoft, color: C.accent }}>⚠ {amount}</span>;
-  };
-
-  return (
-    <PanelChrome title="ออกสติ๊กเกอร์" subtitle="Officer Portal · O-12 Sticker Issuance" status="ปีงบฯ 2569">
-      <div className="p-5 md:p-7">
-        {/* Top — period banner */}
-        <div className="rounded-xl p-3 mb-4 flex flex-wrap items-center gap-3" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: C.accent }}>รอบสติ๊กเกอร์</div>
-            <div className="text-[13px] font-medium" style={{ color: C.text }}>ปีงบประมาณ 2569 · 1 ต.ค. 68 – 30 ก.ย. 69</div>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <span className="text-[11px]" style={{ color: C.textMuted }}>ออกแล้ววันนี้</span>
-            <span className="text-[16px] font-semibold" style={{ color: C.text }}>32 ดวง</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {/* LEFT — Search + Queue (3 col) */}
-          <div className="md:col-span-3">
-            {/* Search */}
-            <div className="relative mb-3">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px]" style={{ color: C.textMuted }}>🔍</span>
-              <input
-                type="text"
-                placeholder="ค้นหาด้วยเลขที่บ้าน หรือสแกน QR Code"
-                className="w-full pl-9 pr-3 py-2.5 rounded-lg text-[13px] outline-none"
-                style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}`, color: C.text, fontFamily: 'inherit' }}
-              />
-            </div>
-
-            <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: C.textMuted }}>คิวรอออกสติ๊กเกอร์ — {queue.filter(q => !q.issued).length} ครัวเรือน</div>
-
-            {/* Queue list */}
-            <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${C.surfaceSoft}` }}>
-              {queue.map((row, i) => {
-                const isActive = row.id === selectedHouse;
-                const isIssued = row.issued;
-                return (
-                  <button
-                    key={row.id}
-                    onClick={() => !isIssued && setSelectedHouse(row.id)}
-                    disabled={isIssued}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
-                    style={{
-                      background: isActive ? C.successSoft : '#FFF',
-                      borderBottom: i < queue.length - 1 ? `1px solid ${C.surfaceSoft}` : 'none',
-                      cursor: isIssued ? 'default' : 'pointer',
-                      opacity: isIssued ? 0.6 : 1,
-                    }}
-                  >
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
-                      style={{ background: TIER_COLOR[row.tier].bg }}
-                    >
-                      {TIER_COLOR[row.tier].label.split(' ')[0]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-semibold" style={{ color: C.text }}>{row.addr}</span>
-                        <span className="text-[11px]" style={{ color: C.textMuted }}>· {row.name}</span>
-                      </div>
-                      <div className="mt-0.5">{statusBadge(row.status, row.amount)}</div>
-                    </div>
-                    {isIssued
-                      ? <span className="text-[10px]" style={{ color: C.success }}>✓ ออกแล้ว {row.issuedDate}</span>
-                      : isActive
-                        ? <span className="text-[10px] font-semibold" style={{ color: C.success }}>กำลังเลือก →</span>
-                        : <span className="text-[14px]" style={{ color: C.textMuted }}>›</span>}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* RIGHT — Sticker preview + Issue button (2 col) */}
-          <div className="md:col-span-2">
-            <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: C.textMuted }}>พรีวิวสติ๊กเกอร์</div>
-            <div className="rounded-xl p-5 mb-3" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
-              {/* Sticker visual */}
-              <StickerGraphic size={130} color={tierMap.bg} year="2569" />
-              <div className="text-center mt-3">
-                <div className="text-[13px] font-semibold" style={{ color: C.text }}>{active.addr}</div>
-                <div className="text-[11px]" style={{ color: C.textMuted }}>{active.name}</div>
-                <div className="mt-2">
-                  <Pill variant={active.tier === 'recycled' ? 'success' : active.tier === 'sorted' ? 'accent' : 'alert'}>
-                    Tier · {tierMap.label}
-                  </Pill>
-                </div>
-              </div>
-            </div>
-
-            <button
-              disabled={active.status === 'unpaid'}
-              className="w-full text-[14px] font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all"
-              style={active.status === 'unpaid'
-                ? { background: C.surfaceSoft, color: C.textMuted, border: 'none', cursor: 'not-allowed' }
-                : { background: C.primary, color: '#FFF', border: 'none', cursor: 'pointer' }}
-            >
-              {active.status === 'unpaid' ? 'ต้องชำระเงินก่อน' : 'พิมพ์ + ออกสติ๊กเกอร์'}
-            </button>
-
-            <div className="mt-3 text-[11px] leading-relaxed" style={{ color: C.textMuted }}>
-              <strong style={{ color: C.text }}>วิธีทำงาน:</strong> ประชาชนชำระเงินเสร็จ → ระบบ enrich tier color (10/20/60฿) → เจ้าหน้าที่กดปุ่มเดียวเพื่อพิมพ์สติ๊กเกอร์ตามสีและส่งให้ ครัวเรือนติดที่หน้าบ้านสำหรับปีงบฯ ปัจจุบัน
-            </div>
-          </div>
-        </div>
-      </div>
-    </PanelChrome>
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Panel 5 · ROI Calculator (re-skinned with design tokens)
-// ───────────────────────────────────────────────────────────────────────────
-
-function ROICalculator() {
-  const [households, setHouseholds] = useState(2000);
-
-  // Pricing model — based on briefing §3.7 + §8 numbers
-  const result = useMemo(() => {
-    const tierA_pct = 0.20; // ไม่แยก
-    const tierB_pct = 0.50; // คัดแยก
-    const tierC_pct = 0.30; // ขายรีไซเคิล
-    const months = 12;
-
-    const beforeRevenue = households * 20 * months; // ของเดิม 20฿/เดือน
-    const afterRevenue =
-      households * tierA_pct * 60 * months +
-      households * tierB_pct * 20 * months +
-      households * tierC_pct * 10 * months;
-
-    // Cost model — ประมาณการ 5 ฿/วัน/ครัวเรือน ก่อน · −35% หลัง
-    const beforeCost = households * 5 * 365;
-    const afterCost = beforeCost * 0.65;
-
-    const beforeRatio = beforeRevenue / beforeCost;
-    const afterRatio = afterRevenue / afterCost;
-
-    return {
-      beforeRevenue: Math.round(beforeRevenue),
-      afterRevenue: Math.round(afterRevenue),
-      revenueDelta: Math.round(((afterRevenue - beforeRevenue) / beforeRevenue) * 100),
-      beforeCost: Math.round(beforeCost),
-      afterCost: Math.round(afterCost),
-      costDelta: Math.round(((afterCost - beforeCost) / beforeCost) * 100),
-      beforeRatio: (beforeRatio * 100).toFixed(1),
-      afterRatio: (afterRatio * 100).toFixed(1),
     };
-  }, [households]);
-
-  const fmt = (n) => n.toLocaleString('th-TH');
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [srcW, srcH]);
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-      <div
-        className="px-5 py-3 flex items-center gap-3 text-[12px]"
-        style={{ background: C.surfaceSoft, color: C.textMuted, borderBottom: `1px solid ${C.surfaceSoft}` }}
-      >
-        <span className="font-medium">ROI Calculator · ประมาณการสำหรับหน่วยงานของท่าน</span>
-        <span className="ml-auto" style={{ color: C.textMuted }}>* ตัวเลขเป็นประมาณการ</span>
-      </div>
-
-      <div className="p-6 md:p-8">
-        {/* Slider */}
-        <div className="mb-6">
-          <div className="flex items-baseline justify-between mb-3">
-            <span className="text-[13px] font-medium" style={{ color: C.text }}>จำนวนครัวเรือนในหน่วยงาน</span>
-            <span className="text-[24px] font-semibold" style={{ color: C.primary }}>{fmt(households)}</span>
-          </div>
-          <input
-            type="range"
-            min="500"
-            max="6000"
-            step="100"
-            value={households}
-            onChange={(e) => setHouseholds(parseInt(e.target.value))}
-            className="w-full"
-            style={{ accentColor: C.primary }}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minHeight: 0, minWidth: 0 }}>
+      <div style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 10, overflow: 'hidden', boxShadow: '0 10px 28px rgba(0,0,0,0.14)', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: '#F1ECDA', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 6, borderBottom: `1px solid ${C.surfaceSoft}`, flexShrink: 0 }}>
+          <span style={{ width: 9, height: 9, borderRadius: 9, background: '#E2685A', display: 'inline-block' }} />
+          <span style={{ width: 9, height: 9, borderRadius: 9, background: '#E6B23F', display: 'inline-block' }} />
+          <span style={{ width: 9, height: 9, borderRadius: 9, background: '#7DC95E', display: 'inline-block' }} />
+          <span style={{ marginLeft: 10, fontSize: 10.5, color: C.textMuted, background: '#FFF', padding: '2px 10px', borderRadius: 100, border: `1px solid ${C.surfaceSoft}` }}>gismo.go.th / officer</span>
+        </div>
+        <div ref={containerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+          <iframe
+            src={src}
+            loading="lazy"
+            title={label}
+            scrolling="no"
+            style={{
+              width: srcW,
+              height: srcH,
+              border: 'none',
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              display: 'block',
+              pointerEvents: 'none',
+            }}
           />
-          <div className="flex justify-between text-[11px] mt-2" style={{ color: C.textMuted }}>
-            <span>500 (อบต. เล็กมาก)</span>
-            <span>2,000 (กุฏโง้ง)</span>
-            <span>6,000 (เทศบาลใหญ่)</span>
-          </div>
         </div>
+      </div>
+      {label && <div style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, textAlign: 'center' }}>{label}</div>}
+    </div>
+  );
+}
 
-        {/* Before / After comparison */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-          {/* Before */}
-          <div className="rounded-xl p-5" style={{ background: C.alertSoft, border: `1px solid ${C.alert}33` }}>
-            <div className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: C.alert }}>ก่อน — ระบบเดิม</div>
-            <div className="space-y-2 text-[13px]" style={{ color: C.text }}>
-              <div className="flex justify-between">
-                <span>รายได้/ปี</span>
-                <span className="font-semibold">{fmt(result.beforeRevenue)} ฿</span>
-              </div>
-              <div className="flex justify-between">
-                <span>ต้นทุน/ปี</span>
-                <span className="font-semibold">{fmt(result.beforeCost)} ฿</span>
-              </div>
-              <div className="border-t pt-2 mt-2 flex justify-between" style={{ borderColor: `${C.alert}33` }}>
-                <span className="font-semibold">Coverage</span>
-                <span className="font-semibold" style={{ color: C.alert }}>{result.beforeRatio}%</span>
-              </div>
-            </div>
-          </div>
+// ---------------------------------------------------------------------------
+// Deck styles + scaled wrapper
+// ---------------------------------------------------------------------------
 
-          {/* After */}
-          <div className="rounded-xl p-5" style={{ background: C.successSoft, border: `1px solid ${C.success}33` }}>
-            <div className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: '#3B6D11' }}>หลัง — ระบบใหม่ 3-Tier</div>
-            <div className="space-y-2 text-[13px]" style={{ color: C.text }}>
-              <div className="flex justify-between">
-                <span>รายได้/ปี</span>
-                <span className="font-semibold" style={{ color: C.success }}>{fmt(result.afterRevenue)} ฿ ({result.revenueDelta > 0 ? '+' : ''}{result.revenueDelta}%)</span>
-              </div>
-              <div className="flex justify-between">
-                <span>ต้นทุน/ปี</span>
-                <span className="font-semibold" style={{ color: C.success }}>{fmt(result.afterCost)} ฿ ({result.costDelta}%)</span>
-              </div>
-              <div className="border-t pt-2 mt-2 flex justify-between" style={{ borderColor: `${C.success}33` }}>
-                <span className="font-semibold">Coverage</span>
-                <span className="font-semibold" style={{ color: '#3B6D11' }}>{result.afterRatio}%</span>
-              </div>
-            </div>
-          </div>
-        </div>
+function DeckStyles() {
+  return (
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
 
-        {/* Tier breakdown */}
-        <div className="rounded-xl p-4" style={{ background: C.surface }}>
-          <div className="text-[12px] font-medium mb-2" style={{ color: C.text }}>โครงสร้าง 3 Tier (สมมุติ 20% / 50% / 30%)</div>
-          <div className="flex gap-2">
-            <div className="flex-1 rounded-lg p-3 text-center" style={{ background: '#FFF' }}>
-              <div className="text-[11px]" style={{ color: C.alert }}>ไม่แยก · 60฿</div>
-              <div className="text-[16px] font-semibold" style={{ color: C.text }}>{Math.round(households * 0.2)} หลัง</div>
-            </div>
-            <div className="flex-1 rounded-lg p-3 text-center" style={{ background: '#FFF' }}>
-              <div className="text-[11px]" style={{ color: C.accent }}>คัดแยก · 20฿</div>
-              <div className="text-[16px] font-semibold" style={{ color: C.text }}>{Math.round(households * 0.5)} หลัง</div>
-            </div>
-            <div className="flex-1 rounded-lg p-3 text-center" style={{ background: '#FFF' }}>
-              <div className="text-[11px]" style={{ color: C.success }}>ขายรีไซเคิล · 10฿</div>
-              <div className="text-[16px] font-semibold" style={{ color: C.text }}>{Math.round(households * 0.3)} หลัง</div>
-            </div>
-          </div>
-        </div>
+      html { scroll-behavior: smooth; }
+      .deck-root { font-family: 'Sarabun', sans-serif; background: #6b6b6b; min-height: 100vh; padding-top: 56px; padding-bottom: 40px; }
+      .deck-toolbar {
+        position: fixed; top: 48px; left: 0; right: 0; height: 44px; background: ${C.primaryDeep};
+        color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; z-index: 40; font-size: 13px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      }
+      .deck-toolbar button {
+        font-family: inherit; background: rgba(255,255,255,.16); color: #fff; border: none;
+        padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: background .15s;
+      }
+      .deck-toolbar button:hover { background: rgba(255,255,255,.28); }
+      .deck-toolbar .note { opacity: .75; font-size: 12px; }
 
-        <div className="mt-5 rounded-lg p-3 text-[11px] leading-relaxed" style={{ background: C.surfaceSoft, color: C.textMuted }}>
-          <strong style={{ color: C.text }}>หมายเหตุ:</strong> ตัวเลขเป็นประมาณการจาก briefing ภายใน — ผลจริงขึ้นกับการลงทะเบียนของประชาชน · ประสิทธิภาพการคัดแยก · ราคา recyclable rate ในตลาด · เปรียบเทียบ baseline 20 ฿/หลัง/เดือน
-        </div>
+      .slide-wrapper { display: flex; justify-content: center; margin: 0 auto 24px; }
+      .slide-scale { transform-origin: top left; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+
+      @media print {
+        @page { size: 1280px 720px; margin: 0; }
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        html, body { background: #fff !important; }
+        nav, .deck-toolbar, .scroll-dots { display: none !important; }
+        main { padding-top: 0 !important; }
+        .deck-root { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+        .slide-wrapper { margin: 0 !important; width: 1280px !important; height: 720px !important; }
+        .slide-scale { transform: none !important; box-shadow: none !important; page-break-after: always; }
+        .slide-page { box-shadow: none !important; }
+      }
+    `}</style>
+  );
+}
+
+function ScaledSlide({ children }) {
+  const [scale, setScale] = useState(1);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function compute() {
+      const target = 1280;
+      const available = Math.min(window.innerWidth - 32, target);
+      setScale(available / target);
+    }
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, []);
+
+  return (
+    <div className="slide-wrapper" ref={wrapperRef} style={{ width: 1280 * scale, height: 720 * scale }}>
+      <div className="slide-scale" style={{ transform: `scale(${scale})`, width: 1280, height: 720 }}>
+        {children}
       </div>
     </div>
   );
 }
 
-function PrototypePanels() {
-  const [active, setActive] = useState('mayor');
+// ===========================================================================
+// SLIDE 1 — HERO
+// ===========================================================================
 
-  const renderPanel = () => {
-    switch (active) {
-      case 'mayor': return <MayorPanel />;
-      case 'resident': return <ResidentPanel />;
-      case 'driver': return <DriverPanel />;
-      case 'sticker': return <StickerPanel />;
-      case 'roi': return <ROICalculator />;
-      default: return <MayorPanel />;
-    }
-  };
-
+function Slide01() {
   return (
-    <div>
-      {/* Persona switcher */}
-      <div className="flex flex-wrap gap-2 mb-6 justify-center">
-        {PERSONAS.map((p) => (
-          <button
-            key={p.key}
-            onClick={() => setActive(p.key)}
-            className="text-[13px] font-medium px-5 py-2.5 rounded-full cursor-pointer transition-all"
-            style={
-              active === p.key
-                ? { background: C.primary, color: '#FFF', border: 'none' }
-                : { background: '#FFF', color: C.text, border: `1px solid ${C.surfaceSoft}` }
-            }
-          >
-            {p.label}
-            <span className="ml-2 text-[11px] opacity-70">{p.sub}</span>
-          </button>
+    <Slide num={1} dark>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.25fr .75fr', gap: 48, alignItems: 'center', height: '100%' }}>
+        <div>
+          <Eyebrow dark>อปท. ของท่าน · งานเก็บค่าธรรมเนียมขยะ</Eyebrow>
+          <h1 style={{ fontSize: 46, fontWeight: 800, lineHeight: 1.4, color: '#FFF', letterSpacing: -0.5 }}>
+            ค่าขยะถูก · จ่ายไม่สะดวก<br />
+            สุดท้ายค้างชำระ <span style={{ color: '#FCB05A' }}>25–40%</span><br />
+            ขยะเปียกเยอะ <span style={{ color: '#FCB05A' }}>ค่าทิ้งแพง</span>
+          </h1>
+          <Lead dark style={{ marginTop: 20, maxWidth: 620 }}>
+            ค่าขยะ <strong style={{ color: '#FFF' }}>30-60 บาท/เดือน</strong> — แต่ประชาชนต้องเสียเวลามาจ่ายเองที่ อปท. ในเวลาราชการ
+            ผลคือเลื่อนจ่ายเรื่อยๆ จนเก็บไม่ขึ้น · ในขณะที่เทศบาลยังต้องจ่ายค่าทิ้งขยะแพงทุกเดือน
+          </Lead>
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 20, padding: '26px 28px' }}>
+          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, fontWeight: 700, marginBottom: 14 }}>ภาพรวมตัวเลข</div>
+          {[
+            { v: '25–40%', l: 'อัตราค้างชำระค่าขยะ' },
+            { v: '30–60฿', l: 'ค่าขยะ/เดือน · ลูกบ้านไม่อยากเสียเวลา' },
+            { v: '8:30–16:30', l: 'เก็บได้เฉพาะเวลาราชการ' },
+            { v: '↑', l: 'ค่าทิ้งขยะแพงขึ้น (ขยะเปียกเยอะ)' },
+          ].map((x, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 0', borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.12)' : 'none' }}>
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>{x.l}</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: '#FCB05A' }}>{x.v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 2 — 4 Pain points (REVISED: convenience-first, not bill generation)
+// ===========================================================================
+
+function Slide02() {
+  const pains = [
+    { icon: '💸', title: 'ค่าน้อย · ค่าเดินทาง+เวลาแพงกว่า', desc: 'ค่าขยะ 40 บาท แต่ลูกบ้านต้องเสียเวลาทำงาน + ค่าน้ำมัน มา อปท. — ไม่คุ้มเวลา จึงเลื่อนเรื่อยๆ' },
+    { icon: '🕒', title: 'เก็บได้เฉพาะเวลาราชการ', desc: 'จันทร์-ศุกร์ 8:30-16:30 ตรงกับเวลาทำงานของลูกบ้านพอดี — ใครจะลางานมาจ่าย 40 บาท?' },
+    { icon: '📈', title: 'เลื่อนแล้วเลื่อนอีก กลายเป็นค้าง 25-40%', desc: 'ลูกบ้านไม่ใช่ไม่อยากจ่าย — แต่ไม่สะดวกพอ พอเลื่อนข้ามเดือนก็พอกพูน จนกลายเป็นยอดค้างสะสม' },
+    { icon: '🗑️', title: 'ทิ้งขยะแพง — เพราะไม่คัดแยก', desc: 'แม้เก็บค่าธรรมเนียมได้ แต่ขยะที่ทิ้งมีน้ำหนัก/ปริมาณเปียกเยอะ ทำให้เทศบาลต้องจ่ายค่ากำจัดต่อตันสูง' },
+  ];
+  return (
+    <Slide num={2}>
+      <Eyebrow alert>ปัญหาที่ อปท. เจอจริง</Eyebrow>
+      <Title>4 เรื่องที่ทำให้งานเก็บค่าขยะ "เก็บไม่ขึ้น"</Title>
+      <Lead style={{ marginTop: 12, maxWidth: 1020 }}>
+        ปัญหาไม่ใช่การออกบิล — แต่คือ "ความสะดวก" ของลูกบ้าน · และ "ต้นทุนการทิ้งขยะ" ที่ยังแพงอยู่
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 24, flex: 1, alignContent: 'center' }}>
+        {pains.map((p, i) => (
+          <Card key={i}>
+            <CardIcon>{p.icon}</CardIcon>
+            <CardTitle>{p.title}</CardTitle>
+            <CardBody>{p.desc}</CardBody>
+          </Card>
         ))}
       </div>
+    </Slide>
+  );
+}
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={active}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.3 }}
-        >
-          {renderPanel()}
-        </motion.div>
-      </AnimatePresence>
+// ===========================================================================
+// SLIDE 3 — 2 sides: ลูกบ้านอยากจ่ายง่าย · เทศบาลอยากเก็บได้ + ลดค่าทิ้ง
+// ===========================================================================
 
-      <div className="text-center mt-4 text-[12px]" style={{ color: C.textMuted }}>
-        <strong style={{ color: C.text }}>Speaker hint:</strong> ลองให้ผู้บริหารหน่วยงานเลือก persona ที่ตรงกับงานของท่าน · เริ่มจาก "ผู้บริหาร" → "ประชาชน" → "เจ้าหน้าที่" → "ออกสติ๊กเกอร์" → ปิดด้วย ROI Calculator (ปรับจำนวนครัวเรือนของท่านได้)
+function Slide03() {
+  const resident = [
+    'ค่าขยะ 40 บาท · แต่ค่ารถ+เสียเวลาทำงานแพงกว่า',
+    'อยากจ่ายให้จบ แต่ไม่มีช่อง online · ไม่มี QR',
+    'ลืมไปเรื่อย เพราะไม่มีอะไรเตือน',
+    'จ่ายแล้วได้ใบเสร็จกระดาษ หายง่าย ใช้ยื่นไม่ได้',
+  ];
+  const officer = [
+    'ต้องส่งเจ้าหน้าที่ไปเก็บถึงบ้าน · เปลืองคน',
+    'ไม่รู้ใครจ่ายแล้ว ใครค้าง · ไม่มี dashboard',
+    'ขยะเปียกเยอะ ค่ากำจัดต่อตันแพงทุกเดือน',
+    'โครงการคัดแยก/ปุ๋ยหมัก ไม่รู้ใครทำจริง',
+  ];
+  return (
+    <Slide num={3}>
+      <Eyebrow alert>ทั้งสองฝ่ายเจ็บคนละแบบ</Eyebrow>
+      <Title>ลูกบ้านอยากจ่ายง่าย · เทศบาลอยากลดต้นทุนการทิ้ง</Title>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 24, flex: 1, alignContent: 'center' }}>
+        <Card style={{ border: `2px solid ${C.alert}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <div style={{ fontSize: 32 }}>👨‍👩‍👧</div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.alert, letterSpacing: 1.5 }}>มุมประชาชน</div>
+              <div style={{ fontSize: 19, fontWeight: 700, color: C.text }}>"ไม่ใช่ไม่อยากจ่าย — แค่ไม่สะดวก"</div>
+            </div>
+          </div>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {resident.map((r, i) => (
+              <li key={i} style={{ fontSize: 14.5, color: C.text, lineHeight: 1.55, padding: '5px 0 5px 22px', position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 0, color: C.alert, fontWeight: 800 }}>×</span>
+                {r}
+              </li>
+            ))}
+          </ul>
+        </Card>
+        <Card style={{ border: `2px solid ${C.accent}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <div style={{ fontSize: 32 }}>🏛️</div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.accent, letterSpacing: 1.5 }}>มุมเทศบาล</div>
+              <div style={{ fontSize: 19, fontWeight: 700, color: C.text }}>"เก็บได้ ก็ยังขาดทุนค่าทิ้ง"</div>
+            </div>
+          </div>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {officer.map((o, i) => (
+              <li key={i} style={{ fontSize: 14.5, color: C.text, lineHeight: 1.55, padding: '5px 0 5px 22px', position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 0, color: C.accent, fontWeight: 800 }}>×</span>
+                {o}
+              </li>
+            ))}
+          </ul>
+        </Card>
       </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 4 — Solution overview · 1 platform 3 apps
+// ===========================================================================
+
+function Slide04() {
+  return (
+    <Slide num={4}>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+        <Eyebrow>แนวทางใหม่</Eyebrow>
+        <Title size={44}>1 แพลตฟอร์ม · 3 แอป · จ่ายง่ายขึ้น · ค่าทิ้งถูกลง</Title>
+        <Lead style={{ marginTop: 18, maxWidth: 1040 }}>
+          แอปประชาชนทำให้จ่ายง่ายไม่ต้องเดินทาง · ระบบเจ้าหน้าที่ติดตามได้ใครจ่าย/ใครค้าง ·
+          พนักงานเก็บขยะรู้บ้านที่เข้าโครงการคัดแยก/ปุ๋ยหมัก — ทั้งหมดเชื่อมในระบบเดียว
+        </Lead>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginTop: 32 }}>
+          {[
+            { ic: '📱', t: 'แอปประชาชน', d: 'ดูบิล · จ่าย PromptPay QR ที่บ้าน · ใบเสร็จดิจิทัล · ตามวันเก็บขยะ — เลิกเดินทางมา อปท.' },
+            { ic: '🖥️', t: 'ระบบเจ้าหน้าที่', d: 'แยกได้ทันทีว่าใครค้าง · ใครจ่ายแล้ว · ใครเข้าโครงการคัดแยก · ส่งหนังสือเตือน LINE/SMS/พิมพ์ในคลิกเดียว' },
+            { ic: '🚛', t: 'แอปคนเก็บขยะ', d: 'แผนที่สองฝั่งถนน · บ้านค้างถูก skip อัตโนมัติ · บันทึก "สุ่มตรวจคัดแยก" 3 ครั้ง/ปี เพื่อยืนยันสิทธิ์ส่วนลด' },
+          ].map((p, i) => (
+            <Card key={i} style={{ border: `2px solid ${C.primary}` }}>
+              <CardIcon>{p.ic}</CardIcon>
+              <CardTitle>{p.t}</CardTitle>
+              <CardBody>{p.d}</CardBody>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 5 — Story · เชื่อมการจ่ายเข้ากับการคัดแยก · ลดค่าทิ้ง
+// ===========================================================================
+
+function Slide05() {
+  const tiers = [
+    { l: 'ระดับ 0', t: 'ไม่เข้าร่วม', d: 'ทิ้งรวม · ขยะเปียกเยอะ', f: '60', c: C.alert, cs: C.alertSoft },
+    { l: 'ระดับ 1', t: 'คัดแยกแห้ง', d: 'แยกพลาสติก/กระดาษ', f: '40', c: C.accent, cs: C.accentSoft },
+    { l: 'ระดับ 2', t: 'คัดแยก + อินทรีย์', d: 'แยกเศษอาหารออก', f: '20', c: '#4A7C59', cs: '#E1EFD9' },
+    { l: 'ระดับ 3', t: 'คัดแยก + ปุ๋ยหมัก', d: 'หมักปุ๋ยใช้เอง', f: '10', c: C.success, cs: C.successSoft },
+  ];
+  return (
+    <Slide num={5}>
+      <Eyebrow accent>กลไกที่ทำให้เทศบาลประหยัด</Eyebrow>
+      <Title size={32}>จ่ายง่ายขึ้น · ทุกคนคัดแยก · เทศบาลลดค่าทิ้งขยะ</Title>
+      <Lead style={{ marginTop: 4, fontSize: 16, maxWidth: 1100 }}>
+        ระบบเชื่อมการจ่ายค่าธรรมเนียมเข้ากับโครงการคัดแยกขยะ — บ้านไหนคัดแยก/หมักปุ๋ย ค่าธรรมเนียมลดลง · พนักงานเก็บขยะสุ่มตรวจ 3 ครั้ง/ปีเพื่อยืนยัน
+      </Lead>
+
+      {/* 4-tier discount table */}
+      <div style={{ marginTop: 14, background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 14, padding: 14 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.primary, letterSpacing: 1.5, marginBottom: 8 }}>ค่าธรรมเนียมตามระดับการคัดแยก (บาท / เดือน)</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+          {tiers.map((t, i) => (
+            <div key={i} style={{ background: t.cs, border: `2px solid ${t.c}`, borderRadius: 12, padding: '12px 14px', position: 'relative' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: t.c, letterSpacing: 1 }}>{t.l}</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: C.text, marginTop: 3, lineHeight: 1.25 }}>{t.t}</div>
+              <div style={{ fontSize: 11.5, color: C.textMuted, marginTop: 2 }}>{t.d}</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 8 }}>
+                <span style={{ fontSize: 26, fontWeight: 800, color: t.c, lineHeight: 1 }}>{t.f}</span>
+                <span style={{ fontSize: 11, color: C.textMuted }}>บาท/เดือน</span>
+              </div>
+              {i > 0 && (
+                <div style={{ position: 'absolute', top: -10, right: 8, background: '#FFF', border: `1px solid ${t.c}`, color: t.c, fontSize: 10, fontWeight: 700, padding: '2px 9px', borderRadius: 100 }}>
+                  ↓ ลด {60 - parseInt(t.f, 10)} บาท
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3-column: mechanism flow */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginTop: 16, flex: 1, minHeight: 0 }}>
+        <div style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}`, borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: 1.5, marginBottom: 6 }}>① ลูกบ้านสมัครเข้าโครงการ</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: C.text, lineHeight: 1.4, marginBottom: 6 }}>เลือกระดับในแอป · ผูกกับบ้าน</div>
+          <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
+            กดปุ่ม "สมัครคัดแยก" หรือ "ทำปุ๋ยหมัก" ในแอป — ระบบบันทึกบ้านเข้าโครงการ และคำนวณส่วนลดให้บิลรอบถัดไป
+          </p>
+        </div>
+        <div style={{ background: C.primarySoft, border: `1px solid ${C.primary}`, borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.primary, letterSpacing: 1.5, marginBottom: 6 }}>② สุ่มตรวจ 3 ครั้ง/ปี</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: C.text, lineHeight: 1.4, marginBottom: 6 }}>คนขับรถ + คนเก็บขยะ ยืนยันจริง</div>
+          <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
+            ทุก 4 เดือน · พนักงานกดในแอปว่า "บ้าน X คัดแยกจริง" หรือ "ไม่ตรงตามที่สมัคร" — ระบบปรับระดับให้อัตโนมัติ
+          </p>
+        </div>
+        <div style={{ background: C.successSoft, border: `1px solid ${C.success}`, borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.success, letterSpacing: 1.5, marginBottom: 6 }}>③ เทศบาลลดค่าทิ้งขยะ</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: C.text, lineHeight: 1.4, marginBottom: 6 }}>ขยะเปียกลด → ค่ากำจัด/ตันลด</div>
+          <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
+            ปริมาณขยะเปียก/ขยะรวมลดลง → ค่ารถขนทิ้ง+ค่ากำจัดต่อตันลดลง — ส่วนลดที่ให้ลูกบ้านน้อยกว่าค่าทิ้งที่ประหยัดได้
+          </p>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 6 — Resident demo · R-02 Dashboard + R-04 Bill
+// ===========================================================================
+
+function Slide06() {
+  return (
+    <Slide num={6}>
+      <Eyebrow>ฝั่งประชาชน · หน้าจอจริง</Eyebrow>
+      <Title size={32}>เปิดแอปครั้งเดียว · เห็นยอดค้าง · จ่าย QR ที่บ้าน</Title>
+      <Lead style={{ marginTop: 4, fontSize: 16, maxWidth: 1100 }}>
+        ประชาชนเห็นยอดค้างทันทีโดยไม่ต้องโทรถาม · จ่ายด้วย PromptPay QR ในมือถือเครื่องเดิม · ไม่ต้องลางานมา อปท.
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24, marginTop: 16, flex: 1, alignItems: 'center' }}>
+        <MobileMockup src={M.resDashboard} label="R-02 · หน้าแรก ประชาชน" />
+        <MobileMockup src={M.payQR} label="R-05 · QR PromptPay สแกนจ่าย" />
+        <div>
+          <div style={{ fontSize: 11.5, color: C.primary, fontWeight: 700, letterSpacing: 1.5, marginBottom: 10 }}>สิ่งที่ประชาชนทำได้</div>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {[
+              ['📊', 'เปิดแอปเห็นยอดค้างทันที — ไม่ต้องโทรถาม'],
+              ['💳', 'จ่ายด้วย PromptPay QR · ใช้แอปธนาคารเครื่องเดิม'],
+              ['🧾', 'ใบเสร็จดิจิทัลอย่างเป็นทางการ มีเลขที่กำกับ'],
+              ['🔔', 'แจ้งเตือนก่อนถึงกำหนดผ่าน LINE / SMS'],
+              ['🌱', 'สมัครเข้าโครงการคัดแยกในแอป → ส่วนลดมาเอง'],
+            ].map((x, i) => (
+              <li key={i} style={{ display: 'flex', gap: 10, padding: '7px 0', borderBottom: i < 4 ? `1px dashed ${C.surfaceSoft}` : 'none' }}>
+                <span style={{ fontSize: 18, lineHeight: 1.4, flexShrink: 0 }}>{x[0]}</span>
+                <span style={{ fontSize: 13, color: C.text, lineHeight: 1.5 }}>{x[1]}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 7 — Resident demo · R-06 Receipt + R-08 Sticker
+// ===========================================================================
+
+function Slide07() {
+  return (
+    <Slide num={7}>
+      <Eyebrow>ฝั่งประชาชน · หน้าจอจริง (ต่อ)</Eyebrow>
+      <Title size={32}>ใบเสร็จดิจิทัล · สถานะสติ๊กเกอร์ · เห็นในมือถือ</Title>
+      <Lead style={{ marginTop: 4, fontSize: 16, maxWidth: 1100 }}>
+        ใบเสร็จเป็นทางการในมือถือ มีเลขที่กำกับ ใช้ยื่นได้ · สถานะสติ๊กเกอร์บอกว่าบ้านนี้จ่ายแล้ว/อยู่ในระดับคัดแยกใด
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24, marginTop: 16, flex: 1, alignItems: 'center' }}>
+        <MobileMockup src={M.receipt} label="R-06 · ใบเสร็จดิจิทัล" />
+        <MobileMockup src={M.sticker} label="R-08 · สถานะสติ๊กเกอร์" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Card style={{ borderLeft: `4px solid ${C.success}`, padding: '16px 18px' }}>
+            <CardTitle style={{ fontSize: 17 }}>🧾 ใบเสร็จออกอัตโนมัติ</CardTitle>
+            <CardBody style={{ fontSize: 13 }}>เลขที่ระบบกำกับ · บาร์โค้ดให้ จนท. ยืนยัน · ดาวน์โหลด PDF ใช้ยื่นได้</CardBody>
+          </Card>
+          <Card style={{ borderLeft: `4px solid ${C.accent}`, padding: '16px 18px' }}>
+            <CardTitle style={{ fontSize: 17 }}>🏷️ สติ๊กเกอร์ = สถานะการจ่าย + ระดับคัดแยก</CardTitle>
+            <CardBody style={{ fontSize: 13 }}>สีสติ๊กเกอร์บอกระดับ (0-3) · พนักงานเห็นจากรถ ไม่ต้องตรวจซ้ำ</CardBody>
+          </Card>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 8 — Resident demo · R-09 Schedule + R-11 Issue
+// ===========================================================================
+
+function Slide08() {
+  return (
+    <Slide num={8}>
+      <Eyebrow>ฝั่งประชาชน · หน้าจอจริง (ต่อ)</Eyebrow>
+      <Title size={32}>ตารางเก็บขยะ · แจ้งร้องเรียน · ติดตามได้ทุกขั้นตอน</Title>
+      <Lead style={{ marginTop: 4, fontSize: 16, maxWidth: 1100 }}>
+        รู้ล่วงหน้ารถขยะมาวันไหน · เวลาไหน · ถ้ามีปัญหาแจ้งในแอป + ติดตามได้ — ไม่ต้องโทรไป อปท. ซ้ำๆ
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24, marginTop: 16, flex: 1, alignItems: 'center' }}>
+        <MobileMockup src={M.schedule} label="R-09 · ตารางเก็บขยะ" />
+        <MobileMockup src={M.issueTrack} label="R-11 · ติดตามร้องเรียน" />
+        <div>
+          <div style={{ fontSize: 11.5, color: C.primary, fontWeight: 700, letterSpacing: 1.5, marginBottom: 10 }}>ลดสายโทรเข้า อปท.</div>
+          <Card style={{ padding: '14px 16px', marginBottom: 10 }}>
+            <CardTitle style={{ fontSize: 16 }}>📅 ปฏิทินเก็บขยะ</CardTitle>
+            <CardBody style={{ fontSize: 12.5 }}>LINE เตือนคืนก่อนเก็บ · เลิกโทรถาม "วันนี้รถมาไหม"</CardBody>
+          </Card>
+          <Card style={{ padding: '14px 16px' }}>
+            <CardTitle style={{ fontSize: 16 }}>🎫 Issue Tracking · SLA 48 ชม.</CardTitle>
+            <CardBody style={{ fontSize: 12.5 }}>ทุกสถานะมี timestamp · ตรวจสอบ สตง. ได้</CardBody>
+          </Card>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 9 — Officer demo · O-01 KPI Dashboard (full width)
+// ===========================================================================
+
+function Slide09() {
+  const kpis = [
+    { ic: '💰', t: 'รายได้วันนี้ vs เป้าหมาย', d: 'เปิดมาเห็นรายได้รวมวัน-เดือน-ปี เทียบเป้าทันที — เลิกรอรายงานสิ้นเดือน' },
+    { ic: '📊', t: 'อัตราชำระตรงเวลา', d: 'เห็น % บ้านที่จ่ายตรงเวลา · เห็นแนวโน้มย้อนหลัง 6 เดือน · ตอบสภาฯ ได้เป็นกราฟ' },
+    { ic: '⚠️', t: 'เคสค้างชำระ + วันที่เกิน', d: 'เห็นจำนวนบิลค้าง · ยอดรวมที่ต้องตามเก็บ · บ้านที่เข้าระดับ "ระงับเก็บ"' },
+    { ic: '🌱', t: '% บ้านในโครงการคัดแยก', d: 'ดูได้ว่าโครงการคัดแยก/ปุ๋ยหมัก ครอบคลุมกี่ % แล้ว — ใช้วางแผนขยายต่อ' },
+  ];
+  return (
+    <Slide num={9}>
+      <Eyebrow accent>ฝั่ง อปท. · หน้าจอจริง</Eyebrow>
+      <Title size={28}>ผู้บริหารเห็นรายได้ทุกวัน · ไม่ต้องรอรายงานสิ้นเดือน</Title>
+      <Lead style={{ marginTop: 4, fontSize: 15.5, maxWidth: 1100 }}>
+        Dashboard แบบ real-time — เปิดเข้ามาเห็น 4 ตัวเลขสำคัญ พร้อมกราฟแนวโน้ม
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.45fr 1fr', gap: 18, marginTop: 12, flex: 1, minHeight: 0 }}>
+        <DesktopMockup src={M.kpi} label="O-01 · KPI Dashboard สำหรับปลัด / กองคลัง" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.primary, letterSpacing: 1.5, marginBottom: 2 }}>4 ตัวเลขที่ปลัดเช็กเป็นอย่างแรก</div>
+          {kpis.map((k, i) => (
+            <div key={i} style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 11, padding: '11px 14px', display: 'flex', gap: 11, alignItems: 'flex-start' }}>
+              <div style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{k.ic}</div>
+              <div>
+                <h4 style={{ fontSize: 14, fontWeight: 700, color: C.primaryDeep, marginBottom: 2, lineHeight: 1.35 }}>{k.t}</h4>
+                <p style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.45 }}>{k.d}</p>
+              </div>
+            </div>
+          ))}
+          <div style={{ background: C.primarySoft, borderRadius: 10, padding: '9px 14px', marginTop: 4, display: 'flex', alignItems: 'center', gap: 9 }}>
+            <div style={{ fontSize: 20 }}>📥</div>
+            <div style={{ fontSize: 12, color: C.primaryDeep, lineHeight: 1.45 }}>
+              <strong>Export รายงาน สตง.</strong> — ปุ่มเดียว PDF/Excel · มี audit log ครบ
+            </div>
+          </div>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 10 — Officer demo · O-02 Households + O-04 Generate
+// ===========================================================================
+
+function Slide10() {
+  const features = [
+    { ic: '🔎', t: 'ค้นหาทุกแบบ', d: 'ค้นด้วยเลขบ้าน · ชื่อเจ้าของ · หมู่ · ประเภท · ระดับคัดแยก' },
+    { ic: '🏷️', t: 'แยกสถานะอัตโนมัติ', d: 'จ่ายแล้ว / ค้าง / รอชำระ / ระงับเก็บ — ดูสีรู้ทันที' },
+    { ic: '🌱', t: 'ระดับคัดแยก L0-L3', d: 'เห็นทันทีว่าบ้านไหนคัดแยก/หมักปุ๋ย และคิดค่าธรรมเนียมตามนั้น' },
+    { ic: '⚡', t: 'สร้างบิลทั้ง อปท. ใน 1 คลิก', d: '918 ใบ · ใช้เวลา 30 วินาที · ส่งทั้งกระดาษ + LINE + Email' },
+  ];
+  return (
+    <Slide num={10}>
+      <Eyebrow accent>ฝั่ง อปท. · หน้าจอจริง (ต่อ)</Eyebrow>
+      <Title size={28}>ครัวเรือนทุกหลัง · ใครจ่าย/ใครค้าง · อยู่โครงการอะไร</Title>
+      <Lead style={{ marginTop: 4, fontSize: 15.5, maxWidth: 1100 }}>
+        แยกได้ทันที: ใครจ่ายแล้ว · ใครค้าง · บ้านไหนเข้าโครงการคัดแยก · บ้านไหนทำปุ๋ยหมัก
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.55fr 1fr', gap: 18, marginTop: 12, flex: 1, minHeight: 0 }}>
+        <DesktopMockup src={M.households} label="O-02 · รายการครัวเรือน + ระดับคัดแยก" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {features.map((f, i) => (
+            <div key={i} style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 12, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{f.ic}</div>
+              <div>
+                <h4 style={{ fontSize: 15, fontWeight: 700, color: C.primaryDeep, marginBottom: 2, lineHeight: 1.35 }}>{f.t}</h4>
+                <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.45 }}>{f.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 11 — Officer demo · O-06 Record Payment
+// ===========================================================================
+
+function Slide11() {
+  const steps = [
+    { n: 1, t: 'สแกน Barcode บนบิล', d: 'ใช้ USB scanner หรือกล้องมือถือ · ระบบดึงข้อมูลบิลขึ้นมาในวินาที' },
+    { n: 2, t: 'เลือกวิธีชำระ', d: 'เงินสด · โอน · PromptPay QR — รับได้ทุกแบบ' },
+    { n: 3, t: 'ระบบคำนวณทอนให้', d: 'ใส่ยอดที่ลูกบ้านให้ · ระบบบอกทอนทันที — ไม่คำนวณผิด' },
+    { n: 4, t: 'ใบเสร็จออกอัตโนมัติ', d: 'พิมพ์กระดาษ (A4 / 80mm) หรือส่ง LINE — ลูกค้าได้ทั้ง 2 แบบ' },
+  ];
+  return (
+    <Slide num={11}>
+      <Eyebrow accent>ฝั่ง อปท. · หน้าจอจริง (ต่อ)</Eyebrow>
+      <Title size={28}>หน้าเคาน์เตอร์: 4 ขั้นตอน · เสร็จใน 1 นาที</Title>
+      <Lead style={{ marginTop: 4, fontSize: 15.5, maxWidth: 1100 }}>
+        สำหรับลูกบ้านที่ยังเลือกจ่ายเงินสด — ก็เร็วกว่าเดิมหลายเท่า · เลิกพิมพ์ใบเสร็จมือ · เลิกคำนวณทอนผิด
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.55fr 1fr', gap: 18, marginTop: 12, flex: 1, minHeight: 0 }}>
+        <DesktopMockup src={M.recordPayment} label="O-06 · รับชำระเงินที่เคาน์เตอร์" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center' }}>
+          {steps.map((s) => (
+            <div key={s.n} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', background: C.primary, color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>{s.n}</div>
+              <div style={{ paddingTop: 2 }}>
+                <h4 style={{ fontSize: 15, fontWeight: 700, color: C.primaryDeep, lineHeight: 1.35, marginBottom: 2 }}>{s.t}</h4>
+                <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>{s.d}</p>
+              </div>
+            </div>
+          ))}
+          <div style={{ background: C.primarySoft, borderRadius: 10, padding: '10px 14px', marginTop: 6, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ fontSize: 22 }}>⏱️</div>
+            <div style={{ fontSize: 12.5, color: C.primaryDeep, lineHeight: 1.4 }}>
+              <strong>จากเดิม 5 นาที/ราย</strong> เหลือ <strong style={{ color: C.success }}>&lt; 1 นาที/ราย</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 12 — Officer demo · O-07 Receipt + O-08 Arrears
+// ===========================================================================
+
+function Slide12() {
+  const levels = [
+    { l: 'ใหม่', n: '23', c: '#7E8B83', cs: '#EAECE5', d: 'เกินกำหนด 1-30 วัน · ไม่ต้องทำอะไร — รอเตือนรอบแรก' },
+    { l: 'เตือน 1', n: '14', c: '#D48A1B', cs: '#FFEDC5', d: 'เกิน 31-60 วัน · ส่ง LINE / SMS / Email อัตโนมัติ' },
+    { l: 'เตือน 2', n: '8', c: '#C25A26', cs: '#FBDDC4', d: 'เกิน 61-90 วัน · พิมพ์หนังสือเตือนเป็นทางการ + LINE' },
+    { l: 'ระงับเก็บ', n: '3', c: '#A32D2D', cs: C.alertSoft, d: 'เกิน 90 วัน · บ้านนี้รถขยะไม่เก็บ · ปุ่ม "เก็บ" บน Driver App ถูก disable' },
+    { l: 'กฎหมาย', n: '0', c: '#7C3AED', cs: '#EDE3FB', d: 'ส่งฟ้อง · เคสค้างหนัก — ส่งทุกข้อมูลให้นิติกรในคลิก' },
+  ];
+  return (
+    <Slide num={12}>
+      <Eyebrow accent>ฝั่ง อปท. · หน้าจอจริง (ต่อ)</Eyebrow>
+      <Title size={28}>ค้างชำระไม่ลอย · ระบบแบ่งระดับให้อัตโนมัติ</Title>
+      <Lead style={{ marginTop: 4, fontSize: 15.5, maxWidth: 1100 }}>
+        ไม่ต้องโทรไล่ทีละบ้าน · ไม่ต้องจดในสมุด · ระบบยกระดับให้ตามจำนวนวันที่เกินกำหนด · ส่งหนังสือเตือนเป็น batch ในคลิกเดียว
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 18, marginTop: 12, flex: 1, minHeight: 0 }}>
+        <DesktopMockup src={M.arrears} label="O-08 · ติดตามค้างชำระ (Arrears Management)" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, justifyContent: 'center' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.primary, letterSpacing: 1.5, marginBottom: 4 }}>5 ระดับการยกระดับ (ESCALATION)</div>
+          {levels.map((lv, i) => (
+            <div key={i} style={{ background: lv.cs, border: `1.5px solid ${lv.c}`, borderRadius: 9, padding: '8px 12px', display: 'flex', gap: 10, alignItems: 'center' }}>
+              <div style={{ width: 38, height: 38, borderRadius: 7, background: '#FFF', color: lv.c, fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${lv.c}` }}>{lv.n}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: lv.c, lineHeight: 1.2 }}>{lv.l}</div>
+                <div style={{ fontSize: 11, color: C.text, lineHeight: 1.4 }}>{lv.d}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 13 — Driver app + spot-check (verify sorting)
+// ===========================================================================
+
+function PhoneStatusBar({ dark }) {
+  return (
+    <div style={{ background: dark ? C.primaryDeep : '#FFF', color: dark ? '#FFF' : C.text, padding: '6px 14px', fontSize: 10.5, fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span>9:41</span>
+      <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>📶 5G · 🔋 92%</span>
+    </div>
+  );
+}
+
+function DriverMap() {
+  // GIS-style map: real-looking roads, water, park, building parcels, house pins with tier colors.
+  const houses = [
+    { x: 70, y: 80, c: C.success, l: '042', tier: '3' },
+    { x: 110, y: 80, c: C.alert, l: '044', tier: '×' },
+    { x: 200, y: 80, c: '#4A7C59', l: '046', tier: '2' },
+    { x: 240, y: 80, c: C.accent, l: '048', tier: '1' },
+    { x: 70, y: 175, c: C.success, l: '041', tier: '3' },
+    { x: 110, y: 175, c: '#4A7C59', l: '043', tier: '2' },
+    { x: 200, y: 175, c: C.accent, l: '045', tier: '1' },
+    { x: 240, y: 175, c: C.accent, l: '047', tier: '1' },
+  ];
+  return (
+    <svg viewBox="0 0 380 250" style={{ width: '100%', height: '100%' }} xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="map-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E8E2CF" strokeWidth="0.4" />
+        </pattern>
+        <filter id="shadow-mark" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1" floodOpacity="0.3" />
+        </filter>
+      </defs>
+
+      {/* Base map background — paper/satellite hybrid look */}
+      <rect width="380" height="250" fill="#F5EFE0" />
+      <rect width="380" height="250" fill="url(#map-grid)" />
+
+      {/* Park / green area (top-left) */}
+      <path d="M 0 0 L 130 0 L 145 28 L 138 58 L 95 70 L 0 65 Z" fill="#D7E7B8" />
+      <text x="55" y="35" fontSize="9" fill="#5B7D2E" fontStyle="italic" fontWeight="600">สวนสาธารณะ</text>
+      <circle cx="40" cy="50" r="5" fill="#9CBE61" /><circle cx="60" cy="48" r="4" fill="#9CBE61" />
+      <circle cx="85" cy="55" r="6" fill="#9CBE61" /><circle cx="108" cy="50" r="5" fill="#9CBE61" />
+
+      {/* Water — canal flowing through */}
+      <path d="M 380 10 Q 340 30 350 70 T 365 130 Q 360 180 380 220" stroke="#A8D0E2" strokeWidth="16" fill="none" />
+      <path d="M 380 10 Q 340 30 350 70 T 365 130 Q 360 180 380 220" stroke="#7FB9D8" strokeWidth="1" fill="none" strokeDasharray="0" opacity="0.5" />
+      <text x="338" y="105" fontSize="8" fill="#3C7898" fontStyle="italic" transform="rotate(78 338 105)">คลองชลประทาน</text>
+
+      {/* Building parcel blocks (light gray rectangles) */}
+      <g fill="#E2DAC4" stroke="#C9BFA3" strokeWidth="0.5">
+        <rect x="40" y="62" width="22" height="18" rx="1" />
+        <rect x="65" y="62" width="22" height="18" rx="1" />
+        <rect x="90" y="62" width="22" height="18" rx="1" />
+        <rect x="180" y="62" width="22" height="18" rx="1" />
+        <rect x="205" y="62" width="22" height="18" rx="1" />
+        <rect x="230" y="62" width="22" height="18" rx="1" />
+        <rect x="255" y="62" width="22" height="18" rx="1" />
+        <rect x="280" y="62" width="22" height="18" rx="1" />
+        <rect x="40" y="157" width="22" height="18" rx="1" />
+        <rect x="65" y="157" width="22" height="18" rx="1" />
+        <rect x="90" y="157" width="22" height="18" rx="1" />
+        <rect x="180" y="157" width="22" height="18" rx="1" />
+        <rect x="205" y="157" width="22" height="18" rx="1" />
+        <rect x="230" y="157" width="22" height="18" rx="1" />
+        <rect x="255" y="157" width="22" height="18" rx="1" />
+        <rect x="280" y="157" width="22" height="18" rx="1" />
+      </g>
+
+      {/* Roads — main road horizontal */}
+      <line x1="0" y1="125" x2="380" y2="125" stroke="#F4D88F" strokeWidth="22" />
+      <line x1="0" y1="125" x2="380" y2="125" stroke="#FFFFFF" strokeWidth="18" />
+      <line x1="0" y1="125" x2="380" y2="125" stroke="#F4D88F" strokeWidth="0.6" strokeDasharray="6 6" />
+      <text x="14" y="121" fontSize="8" fill="#8C7126" fontWeight="600">ถ.ลาดพร้าว</text>
+
+      {/* Side road vertical */}
+      <line x1="150" y1="0" x2="150" y2="250" stroke="#E8E1CF" strokeWidth="14" />
+      <line x1="150" y1="0" x2="150" y2="250" stroke="#FFFFFF" strokeWidth="11" />
+      <text x="155" y="40" fontSize="7" fill="#7C7259">ซ.ลาดพร้าว 12</text>
+
+      {/* Side road vertical 2 */}
+      <line x1="320" y1="0" x2="320" y2="250" stroke="#E8E1CF" strokeWidth="14" />
+      <line x1="320" y1="0" x2="320" y2="250" stroke="#FFFFFF" strokeWidth="11" />
+
+      {/* Truck on main road */}
+      <g transform="translate(155, 115)" filter="url(#shadow-mark)">
+        <rect width="28" height="22" rx="3" fill={C.primary} />
+        <rect x="2" y="3" width="8" height="6" rx="1" fill="#A6DDC5" />
+        <circle cx="7" cy="22" r="3" fill="#222" />
+        <circle cx="22" cy="22" r="3" fill="#222" />
+        <text x="14" y="16" textAnchor="middle" fontSize="11" fill="#FFF">🚛</text>
+      </g>
+      <text x="155" y="148" fontSize="7.5" fill={C.primary} fontWeight="700">รถ #B-3</text>
+
+      {/* House markers — pin style */}
+      {houses.map((h, i) => (
+        <g key={i} filter="url(#shadow-mark)">
+          <path d={`M ${h.x} ${h.y - 16} m -10 0 a 10 10 0 1 0 20 0 a 10 10 0 1 0 -20 0 M ${h.x} ${h.y - 6} L ${h.x - 4} ${h.y} L ${h.x + 4} ${h.y} Z`} fill={h.c} stroke="#FFF" strokeWidth="1.5" />
+          <text x={h.x} y={h.y - 13} textAnchor="middle" fontSize="9" fontWeight="800" fill="#FFF">{h.tier}</text>
+          <text x={h.x} y={h.y + 11} textAnchor="middle" fontSize="7.5" fontWeight="700" fill={C.text}>{h.l}</text>
+        </g>
+      ))}
+
+      {/* Map controls — top-right zoom + layer */}
+      <g transform="translate(347, 8)">
+        <rect width="22" height="20" rx="3" fill="#FFF" stroke="#C9BFA3" strokeWidth="0.5" />
+        <text x="11" y="14" textAnchor="middle" fontSize="11" fill={C.text} fontWeight="700">+</text>
+        <rect y="22" width="22" height="20" rx="3" fill="#FFF" stroke="#C9BFA3" strokeWidth="0.5" />
+        <text x="11" y="36" textAnchor="middle" fontSize="11" fill={C.text} fontWeight="700">−</text>
+      </g>
+
+      {/* Layer toggle — top-left */}
+      <g transform="translate(8, 8)">
+        <rect width="58" height="18" rx="4" fill="#FFF" stroke="#C9BFA3" strokeWidth="0.5" />
+        <rect x="2" y="2" width="26" height="14" rx="3" fill={C.primary} />
+        <text x="15" y="12" textAnchor="middle" fontSize="7.5" fill="#FFF" fontWeight="700">🗺 แผนที่</text>
+        <text x="43" y="12" textAnchor="middle" fontSize="7.5" fill={C.textMuted}>🛰 ดาวเทียม</text>
+      </g>
+
+      {/* Compass — top right */}
+      <g transform="translate(352, 60)">
+        <circle r="11" fill="#FFF" stroke="#C9BFA3" strokeWidth="0.6" />
+        <path d="M 0 -8 L 3 4 L 0 1 L -3 4 Z" fill={C.alert} />
+        <text x="0" y="-13" textAnchor="middle" fontSize="7" fontWeight="700" fill={C.text}>N</text>
+      </g>
+
+      {/* Scale bar — bottom left */}
+      <g transform="translate(10, 232)">
+        <rect width="40" height="3" fill="#FFF" stroke="#444" strokeWidth="0.5" />
+        <rect width="20" height="3" fill="#222" />
+        <text x="0" y="-2" fontSize="6.5" fill="#444">0</text>
+        <text x="20" y="-2" fontSize="6.5" fill="#444" textAnchor="middle">25m</text>
+        <text x="42" y="-2" fontSize="6.5" fill="#444">50m</text>
+      </g>
+
+      {/* Legend — bottom right */}
+      <g transform="translate(228, 218)" fontSize="7" fill={C.text}>
+        <rect x="-4" y="-6" width="148" height="28" rx="4" fill="rgba(255,255,255,0.92)" stroke="#C9BFA3" strokeWidth="0.4" />
+        <circle cx="2" cy="2" r="3" fill={C.success} /><text x="9" y="4">L3 ปุ๋ยหมัก</text>
+        <circle cx="48" cy="2" r="3" fill="#4A7C59" /><text x="55" y="4">L2 แยก+อินทรีย์</text>
+        <circle cx="2" cy="14" r="3" fill={C.accent} /><text x="9" y="16">L1 แยกแห้ง</text>
+        <circle cx="48" cy="14" r="3" fill={C.alert} /><text x="55" y="16">ค้าง · ข้าม</text>
+      </g>
+    </svg>
+  );
+}
+
+function DriverApp() {
+  return (
+    <>
+      <PhoneStatusBar dark />
+      <div style={{ background: C.primaryDeep, color: '#FFF', padding: '8px 12px' }}>
+        <div style={{ fontSize: 11.5, fontWeight: 700 }}>เส้นทาง R-12 · ม.5</div>
+        <div style={{ fontSize: 9.5, opacity: 0.75 }}>รถ #B-3 · กะเช้า · 06:30</div>
+      </div>
+      <div style={{ background: '#FFF', height: 220 }}>
+        <DriverMap />
+      </div>
+      <div style={{ padding: 9 }}>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.primary, marginBottom: 4 }}>คลัสเตอร์: บ้าน 042-048</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
+          <div style={{ background: C.successSoft, border: `1px solid ${C.success}`, borderRadius: 7, padding: 7 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: C.success }}>042 · L3 · ปุ๋ยหมัก</div>
+            <div style={{ fontSize: 8, color: C.text }}>สมชาย · จ่ายแล้ว ฿10</div>
+            <button style={{ background: C.success, color: '#FFF', border: 'none', borderRadius: 5, padding: '3px 0', fontSize: 8.5, fontWeight: 700, width: '100%', marginTop: 3 }}>✓ เก็บ + 🔎 สุ่มตรวจ</button>
+          </div>
+          <div style={{ background: C.alertSoft, border: `1px solid ${C.alert}`, borderRadius: 7, padding: 7 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: C.alert }}>044 · ค้าง 32 วัน</div>
+            <div style={{ fontSize: 8, color: C.text }}>ค้าง ฿1,240 · ไม่มีสติ๊กเกอร์</div>
+            <button disabled style={{ background: '#CCC', color: '#FFF', border: 'none', borderRadius: 5, padding: '3px 0', fontSize: 9, width: '100%', marginTop: 3 }}>SKIP · ข้าม</button>
+          </div>
+          <div style={{ background: '#E1EFD9', border: '1px solid #4A7C59', borderRadius: 7, padding: 7 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: '#4A7C59' }}>046 · L2 · คัดแยก</div>
+            <div style={{ fontSize: 8, color: C.text }}>นพดล · จ่ายแล้ว ฿20</div>
+            <button style={{ background: '#4A7C59', color: '#FFF', border: 'none', borderRadius: 5, padding: '3px 0', fontSize: 9, fontWeight: 700, width: '100%', marginTop: 3 }}>✓ เก็บ</button>
+          </div>
+          <div style={{ background: C.accentSoft, border: `1px solid ${C.accent}`, borderRadius: 7, padding: 7 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: C.accent }}>048 · L1 · แห้ง</div>
+            <div style={{ fontSize: 8, color: C.text }}>มาลี · จ่ายแล้ว ฿40</div>
+            <button style={{ background: C.accent, color: '#FFF', border: 'none', borderRadius: 5, padding: '3px 0', fontSize: 9, fontWeight: 700, width: '100%', marginTop: 3 }}>✓ เก็บ</button>
+          </div>
+        </div>
+        <div style={{ background: C.primarySoft, borderRadius: 7, padding: '6px 9px', marginTop: 7, fontSize: 10, color: C.primaryDeep, lineHeight: 1.4 }}>
+          <strong>🔎 สุ่มตรวจรอบที่ 2/3</strong> (พ.ค.-ส.ค.) · ครบ 3 บ้านแล้ว
+        </div>
+      </div>
+    </>
+  );
+}
+
+function Slide13() {
+  return (
+    <Slide num={13}>
+      <Eyebrow>ฝั่งพนักงานเก็บขยะ · หน้าจอจริง</Eyebrow>
+      <Title size={28}>รถจอดครั้งเดียว · เก็บ 2 ฝั่ง · สุ่มตรวจคัดแยก 3 ครั้ง/ปี</Title>
+      <Lead style={{ marginTop: 4, fontSize: 16, maxWidth: 1100 }}>
+        แอปบนมือถือของพนักงาน — เห็นระดับการคัดแยกของแต่ละบ้าน (L0-L3) · บ้านค้างปุ่ม "เก็บ" disabled อัตโนมัติ · ในรอบเก็บปกติ พนักงานกดยืนยัน "สุ่มตรวจ" ได้
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 28, marginTop: 14, flex: 1, alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 250, background: C.primaryDeep, padding: 8, borderRadius: 26, boxShadow: '0 16px 36px rgba(0,0,0,0.22)' }}>
+            <div style={{ background: '#FFF', borderRadius: 20, overflow: 'hidden', height: 445 }}>
+              <DriverApp />
+            </div>
+          </div>
+          <div style={{ fontSize: 11.5, fontWeight: 600, color: C.textMuted }}>Driver App · two-sided + sorting tier + spot-check</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {[
+            { ic: '🗺️', t: 'แผนที่ 2 ฝั่ง · แสดงระดับคัดแยก', d: 'pin สีบอก tier (L0-L3) · พนักงาน 2 คนทำงานพร้อมกัน · รถจอดครั้งเดียวเก็บได้ 8-10 บ้าน' },
+            { ic: '🔎', t: 'สุ่มตรวจคัดแยก 3 ครั้ง/ปี', d: 'ทุก 4 เดือนระบบเตือนให้พนักงานสุ่ม X บ้าน · กดยืนยันว่า "คัดแยกจริง" หรือ "ไม่ตรงตามที่สมัคร" — ระดับและส่วนลดปรับให้บิลถัดไปอัตโนมัติ' },
+            { ic: '🛑', t: 'บ้านค้าง = ปุ่ม "เก็บ" disable', d: 'ระบบเช็คอัตโนมัติ · ไม่มี bypass · ลดความขัดแย้งระหว่างพนักงานกับเจ้าของบ้าน' },
+          ].map((b, i) => (
+            <Card key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start', padding: '14px 18px' }}>
+              <div style={{ fontSize: 26, lineHeight: 1 }}>{b.ic}</div>
+              <div>
+                <CardTitle style={{ fontSize: 16, marginBottom: 4 }}>{b.t}</CardTitle>
+                <CardBody style={{ fontSize: 13 }}>{b.d}</CardBody>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 14 — Trust · PDPA + Security
+// ===========================================================================
+
+function Slide14() {
+  const items = [
+    { ic: '🇹🇭', t: 'ข้อมูลทั้งหมดอยู่ในประเทศไทย', d: 'AWS Bangkok region · ตาม PDPA มาตรา 28 · ไม่ส่งข้อมูลออกนอกประเทศ' },
+    { ic: '🔒', t: 'Row-Level Security (RLS)', d: 'ข้อมูลของแต่ละ อปท. แยกกันสมบูรณ์ ข้ามกันไม่ได้เด็ดขาด · ผู้ดูแลของเราเองก็เข้าไม่ได้' },
+    { ic: '🛡️', t: 'Zero-Knowledge ID', d: 'Gismo ไม่เก็บเลขบัตรประชาชน · ใช้ ID อ้างอิงเท่านั้น · เชื่อมกรมที่ดิน/มหาดไทยตามต้องการ' },
+    { ic: '📋', t: 'Audit Log ครบทุก action', d: 'ทุกคำสั่ง edit/approval/refund/spot-check มี timestamp + user + reason · ตรวจสอบ สตง. ใน 1 คลิก' },
+  ];
+  return (
+    <Slide num={14} dark>
+      <Eyebrow dark>ข้อมูลปลอดภัย · ตรวจสอบได้</Eyebrow>
+      <Title dark size={36}>PDPA-compliant · ตอบ สตง. ได้ทุกบรรทัด</Title>
+      <Lead dark style={{ marginTop: 12, maxWidth: 1020 }}>
+        ทุกการกระทำในระบบมี audit log · ข้อมูลแต่ละ อปท. แยกกันชัดเจน · เจ้าหน้าที่เข้าได้เฉพาะหน้าที่ตัวเอง
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 22, flex: 1, alignContent: 'center' }}>
+        {items.map((it, i) => (
+          <Card key={i} dark style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+            <div style={{ fontSize: 32, lineHeight: 1, flexShrink: 0 }}>{it.ic}</div>
+            <div>
+              <CardTitle dark style={{ fontSize: 18, marginBottom: 4 }}>{it.t}</CardTitle>
+              <CardBody dark style={{ fontSize: 14 }}>{it.d}</CardBody>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 15 — Before / After
+// ===========================================================================
+
+function Slide15() {
+  const rows = [
+    ['ลูกบ้านจ่ายค่าขยะ', 'มาเองที่ อปท. ในเวลาราชการ', 'จ่ายในแอป ที่ไหน เมื่อไหร่ก็ได้'],
+    ['อัตราชำระตรงเวลา', '60-70% (ค้าง 25-40%)', 'เพิ่มขึ้น ≥ 20% ภายในปีแรก'],
+    ['ขยะที่ทิ้ง', 'ขยะรวม · ขยะเปียกเยอะ · ค่าทิ้งสูง', 'แยกตามระดับ · ขยะเปียกลด · ค่าทิ้งลด'],
+    ['โครงการคัดแยก/ปุ๋ยหมัก', 'ไม่รู้ใครทำจริง · ส่วนลดให้แบบประมาณ', 'ระบุบ้านได้ + พนักงานสุ่มตรวจ 3x/ปี'],
+    ['ติดตามค้างชำระ', 'โทรไล่ทีละบ้าน · จดในสมุด', 'แบ่งระดับอัตโนมัติ · timeline ครบ'],
+    ['รถขยะกับบ้านค้าง', 'พึ่งสายตา · เกิดข้อโต้แย้ง', 'ระบบ disable ปุ่ม "เก็บ" อัตโนมัติ'],
+    ['รายงาน สตง.', 'รวบรวมเอกสาร 1-2 สัปดาห์', 'Export PDF/Excel 1 คลิก'],
+  ];
+  return (
+    <Slide num={15}>
+      <Eyebrow>ก่อน vs หลัง</Eyebrow>
+      <Title>เปลี่ยนงานทั้ง 7 เรื่องในการเก็บค่าขยะ</Title>
+      <div style={{ marginTop: 18, background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 18, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.6fr 1.6fr', background: C.primary }}>
+          {['เรื่อง', 'แบบเดิม', 'แบบใหม่'].map((h, i) => (
+            <div key={i} style={{ padding: '12px 18px', color: '#FFF', fontWeight: 700, fontSize: 15 }}>{h}</div>
+          ))}
+        </div>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.6fr 1.6fr', borderTop: `1px solid ${C.surfaceSoft}`, alignItems: 'center' }}>
+            <div style={{ padding: '10px 18px', fontSize: 13.5, fontWeight: 700, color: C.primary }}>{r[0]}</div>
+            <div style={{ padding: '10px 18px', fontSize: 13, color: C.alert, lineHeight: 1.4 }}>✗ {r[1]}</div>
+            <div style={{ padding: '10px 18px', fontSize: 13, color: C.success, fontWeight: 600, lineHeight: 1.4 }}>✓ {r[2]}</div>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: 12.5, color: C.textMuted, fontStyle: 'italic', marginTop: 10 }}>
+        ตัวเลข baseline จากการสำรวจ อปท. ขนาดกลาง 918 ครัวเรือน · ผลจริงอาจต่างกันตามขนาดและความพร้อม
+      </p>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 16 — Plans (3 tiers)
+// ===========================================================================
+
+function Slide16() {
+  const tiers = [
+    {
+      tag: 'เริ่มเล็ก',
+      tagBg: C.primary,
+      title: 'Starter\n< 1,000 ครัวเรือน',
+      price: '2,500 – 5,000',
+      who: 'เหมาะกับ: อบต. ขนาดเล็ก',
+      items: [
+        'แอปประชาชน + Officer Portal',
+        'ออกบิลรอบเดือน + รับชำระ',
+        'รายงานพื้นฐาน',
+        'อบรม + onboarding 7 วัน',
+      ],
+      budget: '💰 งบสารสนเทศ · งบดำเนินงาน',
+    },
+    {
+      tag: 'พร้อมเปลี่ยน',
+      tagBg: '#4A7C59',
+      title: 'Professional\n1,000 – 5,000 ครัวเรือน',
+      price: '8,000 – 15,000',
+      who: 'เหมาะกับ: เทศบาลตำบล · อบต.กลาง',
+      items: [
+        'ครบ Starter +',
+        'Driver App + sorting tier + spot-check',
+        'Dunning อัตโนมัติ (LINE + SMS)',
+        'ระบบจัดการเงินเกิน/คืนเงิน',
+        'API เชื่อมต่อกรมที่ดิน',
+      ],
+      budget: '💰 งบโครงการ + งบสารสนเทศ',
+    },
+    {
+      tag: 'เต็มรูปแบบ',
+      tagBg: C.accent,
+      title: 'Enterprise\n> 5,000 ครัวเรือน',
+      price: '20,000 – 40,000',
+      who: 'เหมาะกับ: เทศบาลเมือง · นคร',
+      items: [
+        'ครบ Pro +',
+        'Multi-zone + ผู้ใช้ไม่จำกัด',
+        'Custom report + Export สตง.',
+        'SLA 99.9% + Account manager',
+        'Onboarding + อบรมเต็มทีม',
+      ],
+      budget: '💰 งบโครงการพิเศษ · งบลงทุน',
+    },
+  ];
+  return (
+    <Slide num={16}>
+      <Eyebrow accent>แผนราคา · 3 ระดับ</Eyebrow>
+      <Title>เลือกขนาดที่เหมาะกับ อปท. ของท่าน</Title>
+      <Lead style={{ marginTop: 10, maxWidth: 1040 }}>
+        ราคาเป็น "บาท/เดือน" — ไม่มีค่าติดตั้งซ่อน · ยกเลิกได้ทุกเมื่อ · onboarding 30 วันรวมในแพ็กเกจ
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginTop: 14, flex: 1 }}>
+        {tiers.map((m, i) => (
+          <div key={i} style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 20, padding: '22px 22px 18px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <span style={{ position: 'absolute', top: 0, right: 0, background: m.tagBg, color: '#FFF', fontSize: 12, fontWeight: 700, padding: '5px 14px', borderBottomLeftRadius: 14 }}>{m.tag}</span>
+            <h3 style={{ fontSize: 19, fontWeight: 800, color: C.primaryDeep, marginBottom: 4, lineHeight: 1.25, whiteSpace: 'pre-line' }}>{m.title}</h3>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: C.textMuted, marginBottom: 10, display: 'block' }}>{m.who}</span>
+            <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>เริ่มต้น</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: C.primary, lineHeight: 1.1 }}>฿ {m.price}</div>
+            <div style={{ fontSize: 11.5, color: C.textMuted, marginBottom: 10 }}>บาท / เดือน</div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {m.items.map((it, j) => (
+                <li key={j} style={{ fontSize: 13, color: C.text, lineHeight: 1.5, padding: '3px 0 3px 18px', position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: 0, color: C.success, fontWeight: 800 }}>✓</span>
+                  {it}
+                </li>
+              ))}
+            </ul>
+            <div style={{ marginTop: 'auto', paddingTop: 12, fontSize: 12, fontWeight: 600, color: C.primary, borderTop: `1px dashed ${C.surfaceSoft}` }}>{m.budget}</div>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: 11.5, color: C.textMuted, fontStyle: 'italic', marginTop: 8 }}>
+        ราคาเป็นแนวทางเบื้องต้น · ส่วนลด อปท. ขนาดเล็กที่เริ่มต้นพร้อมกัน · ทีมงานยินดีปรับ scope ตามงบที่ท่านมี
+      </p>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 17 — 30-day Onboarding
+// ===========================================================================
+
+function Slide17() {
+  const phases = [
+    { n: '1-7', t: 'Setup & นำเข้าข้อมูล', d: 'นำเข้าข้อมูลครัวเรือน · ตั้งชื่อหน่วยงาน · โลโก้ · สีประจำสติ๊กเกอร์ปีงบ · ตั้งอัตราคัดแยก (60→40→20→10)', ic: '⚙️' },
+    { n: '8-14', t: 'ฝึกอบรม Officer + Driver', d: 'กองคลัง ½ วัน · พนักงานเก็บขยะ ½ วัน (รวมวิธีสุ่มตรวจ) · มีคู่มือไทย + วิดีโอย้อนหลัง', ic: '🎓' },
+    { n: '15-30', t: 'Pilot รอบแรก', d: 'ออกบิลรอบแรก · รับชำระจริง · เก็บขยะผ่าน Driver App · ทีมเราคุมหลังบ้าน 24 ชม.', ic: '🚀' },
+    { n: '31+', t: 'เต็มรูปแบบ + ดูแลต่อเนื่อง', d: 'Dunning อัตโนมัติ · ขยายไป Meter OCR / ภาษีป้าย · Account manager รายเดือน', ic: '🛠️' },
+  ];
+  return (
+    <Slide num={17}>
+      <Eyebrow>30 วัน เริ่มใช้งานได้</Eyebrow>
+      <Title size={36}>ไม่ใช่แค่ติดตั้ง — เราอยู่จนระบบนิ่ง</Title>
+      <Lead style={{ marginTop: 12, maxWidth: 1040 }}>
+        จากวันแรกที่เซ็นสัญญา ถึงวันที่ออกบิลรอบแรก — ทีมเราเดินคู่ทุกขั้น ไม่ทิ้งให้ จนท. งงคนเดียว
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginTop: 20, flex: 1, alignItems: 'stretch' }}>
+        {phases.map((p, i) => (
+          <Card key={i} style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'absolute', top: -12, left: 16, background: C.primary, color: '#FFF', fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 100, letterSpacing: 1 }}>วันที่ {p.n}</div>
+            <CardIcon>{p.ic}</CardIcon>
+            <CardTitle style={{ fontSize: 18 }}>{p.t}</CardTitle>
+            <CardBody style={{ fontSize: 13.5 }}>{p.d}</CardBody>
+          </Card>
+        ))}
+      </div>
+      <div style={{ background: C.primarySoft, borderRadius: 14, padding: '14px 18px', marginTop: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ fontSize: 28 }}>📞</div>
+        <div style={{ fontSize: 14, color: C.primaryDeep, lineHeight: 1.5 }}>
+          <strong>ผู้ดูแลคนเดียว ตลอดสัญญา</strong> — Account manager ประจำ อปท. ไม่ใช่ call center เปลี่ยนคน
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 18 — Benefit summary
+// ===========================================================================
+
+function Slide18() {
+  const benefits = [
+    { ic: '💸', t: 'ลดค่าทิ้งขยะของเทศบาล', d: 'บ้านคัดแยก/หมักปุ๋ยมากขึ้น → ขยะเปียกลด → ค่ารถขน+ค่ากำจัด/ตันลด · ส่วนลดที่ให้ลูกบ้าน คุ้มกับค่าทิ้งที่ประหยัด' },
+    { ic: '📈', t: 'รายได้ค่าขยะเก็บได้ ≥ 20%', d: 'จากอัตราชำระตรงเวลาดีขึ้น (จ่ายผ่านแอป ไม่ลืม ไม่ค้าง) · ลดต้นทุนเจ้าหน้าที่ออกเก็บ' },
+    { ic: '📊', t: 'รายงานพร้อมตอบสภาฯ ทุกวัน', d: 'ตัวเลขรายได้ · อัตราชำระ · % บ้านในโครงการคัดแยก · ผลสุ่มตรวจ — Export 1 คลิก' },
+    { ic: '🏆', t: 'ภาพลักษณ์ อปท. ทันสมัย', d: 'ใช้ผลโครงการต่อยอดสมัครรางวัล อปท. ดีเด่นด้านดิจิทัล/สิ่งแวดล้อม' },
+  ];
+  return (
+    <Slide num={18} dark>
+      <Eyebrow dark>สิ่งที่ท่านได้</Eyebrow>
+      <Title dark size={38}>ผลที่ท่านนำไปตอบสภาฯ ได้</Title>
+      <Lead dark style={{ marginTop: 12, maxWidth: 1020 }}>
+        ไม่ใช่แค่ "ระบบใหม่" — แต่เป็นผลงานที่วัดได้ทั้ง 2 ทาง: รายได้เพิ่ม + ค่าใช้จ่ายลด
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 22, flex: 1, alignContent: 'center' }}>
+        {benefits.map((b, i) => (
+          <Card key={i} dark style={{ display: 'flex', gap: 18, alignItems: 'flex-start' }}>
+            <div style={{ fontSize: 34, lineHeight: 1, flexShrink: 0 }}>{b.ic}</div>
+            <div>
+              <CardTitle dark style={{ fontSize: 19, marginBottom: 4 }}>{b.t}</CardTitle>
+              <CardBody dark style={{ fontSize: 14 }}>{b.d}</CardBody>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </Slide>
+  );
+}
+
+// ===========================================================================
+// SLIDE 19 — Close · 3 questions
+// ===========================================================================
+
+function Slide19() {
+  return (
+    <Slide num={19} dark>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+        <Eyebrow dark>ขั้นต่อไป</Eyebrow>
+        <Title dark size={44}>
+          ขอเวลาท่านสักครู่<br />คุยเรื่อง อปท. ของท่าน
+        </Title>
+        <Lead dark style={{ marginTop: 20, maxWidth: 940 }}>
+          ท่านไม่ต้องตัดสินใจวันนี้ — เราอยากฟังก่อนว่า อปท. ของท่านเก็บค่าขยะอยู่อย่างไร เจ็บปวดตรงไหน
+          และมีโครงการคัดแยกอยู่แล้วหรือยัง · จากนั้นเราจะเสนอแบบที่เหมาะกับขนาด งบประมาณ และความพร้อมจริง
+        </Lead>
+        <div style={{ marginTop: 30, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 18, padding: '24px 28px', maxWidth: 1000 }}>
+          <h3 style={{ color: '#FFF', fontSize: 20, fontWeight: 700, marginBottom: 14 }}>3 คำถามที่อยากฟังจากท่าน</h3>
+          <p style={{ color: 'rgba(255,255,255,.9)', fontSize: 17, lineHeight: 1.9 }}>
+            1. อปท. ของท่านเก็บค่าขยะอยู่กี่ครัวเรือน · อัตราค้างชำระประมาณเท่าไหร่?<br />
+            2. ค่าทิ้งขยะต่อตันของท่าน ปัจจุบันแพงแค่ไหน · มีโครงการคัดแยกอยู่หรือยัง?<br />
+            3. ถ้าจะเริ่ม pilot — งบประมาณที่ใช้ได้คือก้อนไหน (สารสนเทศ · ดำเนินงาน · โครงการ)?
+          </p>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Toolbar (jump-to-slide + print)
+// ---------------------------------------------------------------------------
+
+function Toolbar() {
+  const [open, setOpen] = useState(false);
+  const titles = [
+    '1 · 🚨 Pain · ค่าถูก · จ่ายไม่สะดวก · ค้าง 25-40%',
+    '2 · 🚨 Pain · 4 เรื่องทำให้เก็บไม่ขึ้น',
+    '3 · 🚨 Pain · ลูกบ้านอยากจ่ายง่าย · เทศบาลอยากลดค่าทิ้ง',
+    '4 · ✨ Solution · 1 platform 3 apps',
+    '5 · 🌱 Story · คัดแยก (60→40→20→10) + สุ่มตรวจ → ลดค่าทิ้ง',
+    '6 · 📱 Demo · R-02 Dashboard + R-04 Bill QR',
+    '7 · 📱 Demo · R-06 Receipt + R-08 Sticker',
+    '8 · 📱 Demo · R-09 Schedule + R-11 Issue',
+    '9 · 🖥️ Demo · O-01 KPI Dashboard',
+    '10 · 🖥️ Demo · O-02 Households + O-04 Generate',
+    '11 · 🖥️ Demo · O-06 รับชำระ (< 1 นาที)',
+    '12 · 🖥️ Demo · O-07 Receipt + O-08 Arrears',
+    '13 · 🚛 Demo · Driver App · tier + สุ่มตรวจ',
+    '14 · 🛡️ Trust · PDPA + Zero-Knowledge + Audit',
+    '15 · 🩺 Benefit · ก่อน vs หลัง (7 เรื่อง)',
+    '16 · 💵 Plans · Starter / Pro / Enterprise',
+    '17 · 🛠️ Support · 30 วัน · onboarding',
+    '18 · 🏛️ Outcome · ลดค่าทิ้ง + เก็บได้เพิ่ม',
+    '19 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
+  ];
+  const goTo = (i) => {
+    const el = document.getElementById(`slide-${i + 1}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setOpen(false);
+  };
+  return (
+    <div className="deck-toolbar">
+      <span style={{ flex: 1 }} />
+      <span className="note">กด "พิมพ์/บันทึก PDF" แล้วเลือก Landscape</span>
+      <button onClick={() => setOpen(!open)}>{open ? 'ปิดเมนู' : 'ไปสไลด์...'}</button>
+      <button onClick={() => window.print()}>พิมพ์ / บันทึก PDF</button>
+      {open && (
+        <div style={{ position: 'absolute', top: 44, right: 16, background: '#FFF', color: C.text, borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.2)', padding: 8, maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', minWidth: 360, zIndex: 1100 }}>
+          {titles.map((t, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => goTo(i)}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: 13, color: C.text, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit' }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = C.surfaceSoft)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Main Page
+// ScrollDots
+// ---------------------------------------------------------------------------
+
+function ScrollDots({ count }) {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const idx = parseInt(entry.target.dataset.idx, 10);
+            if (!isNaN(idx)) setActive(idx);
+          }
+        });
+      },
+      { threshold: 0.45, rootMargin: '-20% 0px -20% 0px' }
+    );
+    for (let i = 0; i < count; i++) {
+      const el = document.getElementById(`slide-${i + 1}`);
+      if (el) {
+        el.dataset.idx = String(i);
+        observer.observe(el);
+      }
+    }
+    return () => observer.disconnect();
+  }, [count]);
+
+  return (
+    <div className="scroll-dots" style={{ position: 'fixed', right: 14, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 8, zIndex: 999, background: 'rgba(0,0,0,0.35)', padding: '12px 8px', borderRadius: 100, backdropFilter: 'blur(8px)' }}>
+      {Array.from({ length: count }).map((_, i) => {
+        const isActive = i === active;
+        return (
+          <button
+            key={i}
+            type="button"
+            title={`Slide ${i + 1}`}
+            aria-label={`ไปยังสไลด์ที่ ${i + 1}`}
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById(`slide-${i + 1}`);
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              setActive(i);
+            }}
+            style={{ display: 'block', width: isActive ? 12 : 8, height: isActive ? 12 : 8, padding: 0, borderRadius: '50%', background: isActive ? '#FFF' : 'rgba(255,255,255,0.45)', border: isActive ? `2px solid ${C.primaryHover}` : '1px solid rgba(255,255,255,0.6)', transition: 'all .2s ease', cursor: 'pointer' }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main export
 // ---------------------------------------------------------------------------
 
 export default function WasteCollectionFee() {
+  const slides = [Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07, Slide08, Slide09, Slide10, Slide11, Slide12, Slide13, Slide14, Slide15, Slide16, Slide17, Slide18, Slide19];
   return (
-    <div className="civic-scope" style={{ background: C.surface }}>
-
-      {/* ════════════════════ HERO — Pain First ════════════════════ */}
-      <section
-        className="px-6 md:px-10 pt-16 pb-20 md:pt-24 md:pb-28"
-        style={{ background: C.surface }}
-      >
-        <motion.div
-          className="max-w-[1100px] mx-auto"
-          initial="hidden"
-          animate="show"
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp}>
-            <Eyebrow color={C.accent}>ปัญหาประจำวันที่ท่านอาจไม่รู้ว่ามี</Eyebrow>
-          </motion.div>
-
-          <motion.h1
-            variants={fadeUp}
-            className="font-semibold mb-6"
-            style={{ fontSize: 'clamp(34px, 5vw, 56px)', color: C.text, lineHeight: 1.3 }}
-          >
-            <span className="block">เก็บค่าธรรมเนียม <span style={{ color: C.primary }}>200,000 ฿/ปี</span></span>
-            <span className="block">แต่จ่ายค่าทิ้งขยะ <span style={{ color: C.alert }}>3,000,000 ฿/ปี</span></span>
-          </motion.h1>
-
-          <motion.p variants={fadeUp} className="text-[18px] md:text-[20px] leading-relaxed max-w-[780px] mb-8" style={{ color: C.textMuted }}>
-            อบต./เทศบาลส่วนใหญ่ในไทยขาดทุนกับการจัดการขยะแบบเงียบๆ
-            ตัวเลขนี้มาจาก <strong style={{ color: C.text }}>อบต.กุฏโง้ง</strong> ชลบุรี (~2,000 ครัวเรือน) —
-            <strong style={{ color: C.text }}> รายได้ : ต้นทุน = ประมาณการ 1 : 15</strong>
-          </motion.p>
-
-          <motion.div variants={fadeUp} className="flex flex-wrap gap-3 mb-10">
-            <Pill variant="alert">15:1 · ขาดทุน 15 เท่า</Pill>
-            <Pill variant="muted">~30-44% Collection rate (ประมาณการ)</Pill>
-            <Pill variant="muted">เก็บเงินสด → หาย/ทุจริต</Pill>
-          </motion.div>
-
-          <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
-            <CTAButton primary onClick={() => document.getElementById('solution')?.scrollIntoView({ behavior: 'smooth' })}>
-              ดูวิธีแก้
-            </CTAButton>
-            <CTAButton onClick={() => document.getElementById('prototype')?.scrollIntoView({ behavior: 'smooth' })}>
-              ลอง Prototype
-            </CTAButton>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* ════════════════════ STATS ════════════════════ */}
-      <section className="px-6 md:px-10 py-12" style={{ background: '#FFF', borderTop: `1px solid ${C.surfaceSoft}`, borderBottom: `1px solid ${C.surfaceSoft}` }}>
-        <div className="max-w-[1100px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="กทม. Coverage" value="7%" sub="รายได้ 500ลบ./ปี · ต้นทุน 7,000ลบ./ปี" accent={C.alert} />
-          <StatCard label="BKK WASTE PAY" value="786,099" sub="ครัวเรือนลงทะเบียนใน 5 เดือน · ก.พ. 2569" accent={C.primary} />
-          <StatCard label="เทศบาลนครลำปาง" value="ใช้อัตราเดิม" sub="รอออกข้อบัญญัติใหม่ · เป็นโอกาสของหน่วยงานท้องถิ่นอื่น" accent={C.accent} />
-          <StatCard label="กฎกระทรวง 2567" value="16 พ.ย. 69" sub="วันที่บังคับใช้ · เหลือ ~7 เดือน" accent={C.primary} />
-        </div>
-      </section>
-
-      {/* ════════════════════ THE LAW ════════════════════ */}
-      <Section bg="cream" id="law">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="text-center mb-12">
-            <Eyebrow>กฎหมายที่เปิดทาง</Eyebrow>
-            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
-              กฎกระทรวง 2567 — ให้ อปท. <span style={{ color: C.primary }}>ปรับขึ้นค่าธรรมเนียม</span> ได้
-            </h2>
-            <p className="max-w-[680px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
-              เปิดทางให้หน่วยงานท้องถิ่นขึ้นเพดานค่าธรรมเนียมเป็น 60 ฿/เดือน สำหรับครัวเรือนทั่วไป — และให้ "คัดแยก = จ่ายน้อยลง" เป็นแรงจูงใจที่เป็นทางการ
-            </p>
+    <>
+      <DeckStyles />
+      <Toolbar />
+      <ScrollDots count={slides.length} />
+      <div className="deck-root">
+        {slides.map((S, i) => (
+          <div key={i} id={`slide-${i + 1}`}>
+            <ScaledSlide>
+              <S />
+            </ScaledSlide>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="rounded-2xl p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-              <Pill variant="alert">ไม่คัดแยก</Pill>
-              <div className="text-[40px] font-semibold mt-3 mb-1" style={{ color: C.alert }}>60 ฿</div>
-              <div className="text-[13px] mb-3" style={{ color: C.textMuted }}>ต่อเดือน · ค่า default</div>
-              <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-                เพดานตามกฎกระทรวง: ค่าเก็บขน 30 ฿ + ค่ากำจัด 30 ฿ — บังคับ 16 พ.ย. 2569
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-6" style={{ background: '#FFF', border: `2px solid ${C.accent}` }}>
-              <Pill variant="accent">คัดแยก verified</Pill>
-              <div className="text-[40px] font-semibold mt-3 mb-1" style={{ color: C.accent }}>20 ฿</div>
-              <div className="text-[13px] mb-3" style={{ color: C.textMuted }}>ต่อเดือน · ตรงกับ กทม.</div>
-              <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-                ลงทะเบียน · ผ่านการสุ่มประเมิน 4 ประเภท (รีไซเคิล · อินทรีย์ · อันตราย · ทั่วไป) — กทม. precedent ตั้งแต่ 1 ต.ค. 2568
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-              <Pill variant="success">ขายรีไซเคิล</Pill>
-              <div className="text-[40px] font-semibold mt-3 mb-1" style={{ color: C.success }}>10 ฿</div>
-              <div className="text-[13px] mb-3" style={{ color: C.textMuted }}>+ revenue share</div>
-              <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-                ระดับสูงสุดของระบบ — ครัวเรือนขายรีไซเคิลเข้าระบบ · ได้ส่วนแบ่งกลับ · เกินกว่า กทม. baseline
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 rounded-2xl p-6" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-              <div>
-                <div className="text-[12px] font-semibold uppercase mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>นาฬิกานับถอยหลัง</div>
-                <div className="text-[20px] font-semibold" style={{ color: C.text }}>เหลือ ~7 เดือนก่อนกฎหมายบังคับ</div>
-              </div>
-              <div className="md:ml-auto text-[13px] leading-relaxed" style={{ color: C.text }}>
-                หน่วยงานที่ออกข้อบัญญัติก่อน — มีเวลาทดสอบระบบ · ขอ Smart City Award · ใช้เป็น showcase
-              </div>
-            </div>
-          </div>
-        </div>
-      </Section>
-
-      {/* ════════════════════ INTERNATIONAL BENCHMARK ════════════════════ */}
-      <Section bg="white">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="text-center mb-12">
-            <Eyebrow>ตัวอย่างที่ทำสำเร็จแล้ว</Eyebrow>
-            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
-              สิ่งที่ <span style={{ color: C.primary }}>เมืองอื่นทำได้</span> ท่านก็ทำได้
-            </h2>
-          </div>
-
-          <div className="space-y-6">
-            {/* Thailand precedent — อบต.ดอนแก้ว เชียงใหม่ (verified via Thai PBS) */}
-            <div className="rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6" style={{ background: C.successSoft, border: `1px solid ${C.success}33` }}>
-              <div>
-                <Pill variant="success">ไทย · ทำได้แล้ว 25+ ปี</Pill>
-                <div className="text-[20px] font-semibold mt-3" style={{ color: C.text }}>อบต.ดอนแก้ว</div>
-                <div className="text-[13px] mt-1" style={{ color: C.textMuted }}>อ.แม่ริม จ.เชียงใหม่</div>
-              </div>
-              <div className="md:col-span-2">
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>เริ่ม 7 ม.ค. 2543</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.success }}>0 ถังขยะ</div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>ค่าจัดเก็บ</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.primary }}>70 ฿/เดือน</div>
-                  </div>
-                </div>
-                <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-                  ชุมชน <strong>"ไร้ถังขยะ-ไร้รถเก็บขยะ"</strong> — คัดแยก 4 ประเภทที่ต้นทาง · อาสาสมัครหมู่บ้านเก็บไปจัดการ · พิสูจน์ว่า อบต.ขนาดเล็ก-กลาง ทำได้จริงต่อเนื่องกว่า 25 ปี (อ้างอิง Thai PBS)
-                </div>
-              </div>
-            </div>
-
-            {/* Singapore */}
-            <div className="rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-              <div>
-                <Pill variant="muted">สิงคโปร์</Pill>
-                <div className="text-[20px] font-semibold mt-3" style={{ color: C.text }}>NEA · 3 PWC Model</div>
-                <div className="text-[13px] mt-1" style={{ color: C.textMuted }}>5.6 ล้านคน · ตั้งแต่ ก.ค. 2024</div>
-              </div>
-              <div className="md:col-span-2">
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>HDB จ่าย/เดือน</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.primary }}>S$10.20</div>
-                    <div className="text-[11px]" style={{ color: C.textMuted }}>≈ 260 ฿ · 4x ของ กทม.</div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>Coverage rate</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.success }}>~100%</div>
-                    <div className="text-[11px]" style={{ color: C.textMuted }}>เก็บผ่าน utility bill</div>
-                  </div>
-                </div>
-                <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-                  เก็บค่าธรรมเนียมร่วมกับบิลน้ำ/ไฟ → ไม่มี leakage · 3 PWC แบ่ง 6 sectors ผ่านประมูล · "Sort It Out" campaign 2024
-                </div>
-              </div>
-            </div>
-
-            {/* Yokohama */}
-            <div className="rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-              <div>
-                <Pill variant="muted">ญี่ปุ่น</Pill>
-                <div className="text-[20px] font-semibold mt-3" style={{ color: C.text }}>Yokohama · G30 Plan</div>
-                <div className="text-[13px] mt-1" style={{ color: C.textMuted }}>3.7 ล้านคน · 2003-2013</div>
-              </div>
-              <div className="md:col-span-2">
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>ลดขยะ</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.success }}>−43%</div>
-                    <div className="text-[11px]" style={{ color: C.textMuted }}>แม้ประชากรเพิ่ม +8%</div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>Capex หลีกเลี่ยง</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.primary }}>€900M</div>
-                    <div className="text-[11px]" style={{ color: C.textMuted }}>ไม่ต้องสร้างเตาเผา 2 โรง</div>
-                  </div>
-                </div>
-                <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-                  ขยายการคัดแยกจาก 5 → 10 ประเภท · community engagement หนัก · ค่าเก็บขยะครัวเรือนปกติ = ฟรี (เก็บเฉพาะขยะใหญ่)
-                </div>
-              </div>
-            </div>
-
-            {/* Kamikatsu */}
-            <div className="rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-              <div>
-                <Pill variant="muted">ญี่ปุ่น · เมืองเล็ก</Pill>
-                <div className="text-[20px] font-semibold mt-3" style={{ color: C.text }}>Kamikatsu · Zero Waste</div>
-                <div className="text-[13px] mt-1" style={{ color: C.textMuted }}>1,400 คน · upper-bound case</div>
-              </div>
-              <div className="md:col-span-2">
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>ลดปริมาณขยะ</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.success }}>150 → 54 ตัน</div>
-                    <div className="text-[11px]" style={{ color: C.textMuted }}>−65% · 20 ปี</div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider" style={{ color: C.textMuted }}>Recycling rate</div>
-                    <div className="text-[28px] font-semibold" style={{ color: C.success }}>81%</div>
-                    <div className="text-[11px]" style={{ color: C.textMuted }}>เฉลี่ยญี่ปุ่น 20% · สหรัฐ 10%</div>
-                  </div>
-                </div>
-                <div className="text-[13px] leading-relaxed" style={{ color: C.text }}>
-                  คัดแยก 45 ประเภท · ไม่มีรถเก็บขยะ — ประชาชนเอามาเองที่ Zero Waste Center · พิสูจน์ upper bound ของระบบคัดแยก
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Section>
-
-      {/* ════════════════════ 6 กลยุทธ์ลดขยะที่ต้นทาง ════════════════════ */}
-      {/* Inserted 2026-04-30: Tua wants to collect feedback from นายก อปท.
-          on which waste-reduction strategy interests them most.
-          All 6 cards cite verified Thai cases (web-verified 2026-04-30).
-          Sources: matichon, ThaiPBS, dmcr, dla.go.th, thairath.
-          TODO: replace href="#feedback-form" with Tua's Google Form URL. */}
-      <Section bg="white" id="reduction">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="text-center mb-12">
-            <Eyebrow color={C.accent}>ลดขยะ = ลดต้นทุนกำจัด</Eyebrow>
-            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
-              6 กลยุทธ์ที่ <span style={{ color: C.primary }}>อปท.ไทยทำแล้ว</span> — ตำบลของท่านก็ทำได้
-            </h2>
-            <p className="max-w-[780px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
-              การคัดแยกอย่างเดียวลดขยะได้ส่วนหนึ่ง — แต่เมื่อรวมกลยุทธ์อื่นๆ (ปุ๋ยหมัก · ธนาคารขยะ · RDF · ฯลฯ) อปท. หลายแห่งลดปริมาณขยะที่ต้องนำไปทิ้งได้อย่างมีนัยสำคัญ ระบบ <strong style={{ color: C.text }}>ค่าธรรมเนียม 3-Tier</strong> ของเรารองรับทุกกลยุทธ์
-            </p>
-          </div>
-
-          {/* National hero banner */}
-          <div className="rounded-2xl p-6 md:p-8 mb-10" style={{ background: C.primaryDeep, color: '#FFF' }}>
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-              <div>
-                <div className="text-[12px] font-semibold uppercase mb-2" style={{ color: '#9FE1CB', letterSpacing: '2px' }}>
-                  ระดับชาติ · ม.ค. 2567
-                </div>
-                <div className="text-[22px] md:text-[26px] font-semibold leading-tight">
-                  ธนาคารขยะ อปท. ครอบคลุม <span style={{ color: '#9FE1CB' }}>100%</span> ทั่วประเทศ
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4 md:ml-auto md:flex-shrink-0">
-                <div className="text-center">
-                  <div className="text-[24px] md:text-[28px] font-semibold" style={{ color: '#9FE1CB' }}>7,773</div>
-                  <div className="text-[11px] text-white/70">อปท.</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-[24px] md:text-[28px] font-semibold" style={{ color: '#9FE1CB' }}>14,655</div>
-                  <div className="text-[11px] text-white/70">ธนาคารขยะ</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-[24px] md:text-[28px] font-semibold" style={{ color: '#9FE1CB' }}>897.5 ลบ.</div>
-                  <div className="text-[11px] text-white/70">รายได้สะสม</div>
-                </div>
-              </div>
-            </div>
-            <div className="text-[12px] mt-4 text-white/60">
-              ปลัดกระทรวงมหาดไทย ประกาศสำเร็จ ม.ค. 2567 (อ้างอิงมติชนสุดสัปดาห์ + กรมส่งเสริมการปกครองท้องถิ่น)
-            </div>
-          </div>
-
-          {/* 6 strategy cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {[
-              {
-                num: '01',
-                tier: C.success,
-                title: 'ปุ๋ยหมัก / ย่อยสลายเศษอาหาร',
-                concept: 'ขยะเปียกประมาณ 40-60% ของทั้งหมด → เปลี่ยนเป็นปุ๋ยอินทรีย์ ลดน้ำหนักที่ต้องขนทิ้ง',
-                refName: 'เทศบาลนครรังสิต',
-                refLoc: 'ปทุมธานี',
-                refMetric: '20 ตัน/วัน',
-                refContext: 'โรงงานแปรรูปเศษอาหาร + ผักตบชวา ภายใน 24 ชม. (ร่วมกับไบโอแอ็กซ์เซล + ม.สงขลานครินทร์) เริ่มปี 2565',
-                refSource: 'มติชน · สยามรัฐ',
-              },
-              {
-                num: '02',
-                tier: C.primary,
-                title: 'ธนาคารขยะรีไซเคิล',
-                concept: 'ฝากขยะรีไซเคิลแลกแต้ม/เงินสะสม → คะแนนใช้หักค่าธรรมเนียมหรือถอนเป็นเงิน',
-                refName: 'ระดับชาติ — ทุก อปท.',
-                refLoc: '7,773 อปท. ครอบคลุม 100%',
-                refMetric: '897.5 ลบ.',
-                refContext: 'รายได้สะสมจาก 1,077 อปท. (2560-2567) · มท. ประกาศสำเร็จ ม.ค. 2567 · อปท.ส่วนใหญ่มีระบบนี้แล้ว — ขยายฐานสมาชิกได้',
-                refSource: 'กระทรวงมหาดไทย · สถ. (dla.go.th)',
-              },
-              {
-                num: '03',
-                tier: C.accent,
-                title: 'ชุมชนไร้ถังขยะ (คัดแยกที่ต้นทาง)',
-                concept: 'ไม่มีถังขยะ-ไม่มีรถเก็บขยะ — คัดแยก 4 ประเภทที่บ้าน · อาสาสมัครเก็บนำไปจัดการ',
-                refName: 'อบต.ดอนแก้ว',
-                refLoc: 'อ.แม่ริม เชียงใหม่',
-                refMetric: '25+ ปี',
-                refContext: 'เริ่ม 7 ม.ค. 2543 · ค่าจัดเก็บ 70 ฿/เดือน · ทำต่อเนื่องถึงปัจจุบัน — พิสูจน์ว่า อบต.ขนาดกลางทำได้',
-                refSource: 'Thai PBS',
-              },
-              {
-                num: '04',
-                tier: C.success,
-                title: 'Zero Waste Community',
-                concept: 'หลัก 3R (Reduce-Reuse-Recycle) + ธนาคารขยะ + วินัยชุมชน — ระดับครัวเรือนถึงระดับชุมชน',
-                refName: 'บ้านดอนกลอย',
-                refLoc: 'อ.ด่านขุนทด นครราชสีมา',
-                refMetric: 'ถ้วยพระราชทาน',
-                refContext: 'ชุมชนปลอดขยะระดับประเทศ ปี 2562 · ยกระดับเป็นศูนย์เรียนรู้ขยะเหลือศูนย์ที่ 19 ของประเทศ ปี 2563',
-                refSource: 'กรมทรัพยากรทางทะเลและชายฝั่ง · ไทยโพสต์',
-              },
-              {
-                num: '05',
-                tier: C.alert,
-                title: 'RDF — ขยะเชื้อเพลิง',
-                concept: 'ขยะแห้งติดไฟได้ (พลาสติก/ยาง/ผ้า) → คัด → อัดแท่ง → ส่งโรงปูน/โรงไฟฟ้าเป็นเชื้อเพลิง',
-                refName: 'เทศบาลนครนครราชสีมา',
-                refLoc: 'นครราชสีมา',
-                refMetric: '230 ตัน/วัน',
-                refContext: 'ศูนย์กำจัดขยะ + โรงผลิต RDF ส่งโรงปูน · เปิด 2554 · ดำเนินการต่อเนื่อง · เหมาะกับเทศบาลขนาดใหญ่หรือ cluster ของ อปท.',
-                refSource: 'ไทยรัฐ',
-              },
-              {
-                num: '06',
-                tier: C.primary,
-                title: 'บูรณาการระดับจังหวัด',
-                concept: 'จับกลุ่ม อปท. ในจังหวัดเดียวกัน ทำกลยุทธ์ลดขยะร่วมกัน → economy of scale + ใช้งบจังหวัด',
-                refName: 'จังหวัดอุบลราชธานี',
-                refLoc: 'อุบลราชธานี',
-                refMetric: 'ชนะเลิศประเทศ',
-                refContext: 'รางวัลจังหวัดสะอาด ระดับประเทศ ปี 2567 · บริหารจัดการขยะมูลฝอยชุมชนยั่งยืน หลัก 3 ช (ใช้น้อย-ใช้ซ้ำ-นำกลับมาใช้ใหม่)',
-                refSource: 'มติชน · LINE TODAY · JS100',
-              },
-            ].map((s, i) => (
-              <motion.div
-                key={s.num}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="rounded-2xl p-6 flex flex-col"
-                style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}
-              >
-                <div className="flex items-baseline justify-between mb-3">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: s.tier, letterSpacing: '2px' }}>
-                    กลยุทธ์ {s.num}
-                  </span>
-                  <span className="w-2 h-2 rounded-full" style={{ background: s.tier }}></span>
-                </div>
-                <h3 className="text-[20px] font-semibold mb-2 leading-tight" style={{ color: C.text }}>
-                  {s.title}
-                </h3>
-                <p className="text-[13.5px] leading-relaxed mb-5" style={{ color: C.textMuted }}>
-                  {s.concept}
-                </p>
-
-                {/* Reference card */}
-                <div className="mt-auto rounded-xl p-4" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-                  <div className="flex items-baseline gap-2 mb-1.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: s.tier, letterSpacing: '1.5px' }}>อ้างอิง</span>
-                    <span className="text-[11px]" style={{ color: C.textMuted }}>{s.refLoc}</span>
-                  </div>
-                  <div className="flex items-baseline justify-between gap-3 mb-2">
-                    <div className="text-[15px] font-semibold" style={{ color: C.text }}>{s.refName}</div>
-                    <div className="text-[16px] font-semibold flex-shrink-0" style={{ color: s.tier }}>{s.refMetric}</div>
-                  </div>
-                  <p className="text-[12px] leading-relaxed mb-2" style={{ color: C.textMuted }}>
-                    {s.refContext}
-                  </p>
-                  <div className="text-[10.5px] pt-2 border-t" style={{ color: C.textMuted, borderColor: C.surfaceSoft }}>
-                    Source: {s.refSource}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Tie-in to WASTE-FEE */}
-          <div className="mt-10 rounded-2xl p-6 md:p-7" style={{ background: C.accentSoft, border: `1px solid ${C.accent}33` }}>
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-              <div>
-                <div className="text-[12px] font-semibold uppercase mb-1" style={{ color: C.accent, letterSpacing: '1.5px' }}>
-                  เชื่อมต่อกับระบบของเรา
-                </div>
-                <div className="text-[16px] md:text-[17px] font-semibold leading-snug" style={{ color: C.text }}>
-                  ระบบ WASTE-FEE รองรับทั้ง 6 กลยุทธ์ — Tier 10 ฿ ขายรีไซเคิล · ส่วนลดให้คนคัดแยก · Dashboard ติดตามกลยุทธ์ที่ท่านเลือก
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Feedback CTA */}
-          <div className="mt-8 rounded-2xl p-6 md:p-8 text-center" style={{ background: C.primary, color: '#FFF' }}>
-            <div className="text-[12px] font-semibold uppercase mb-3" style={{ color: '#9FE1CB', letterSpacing: '2.5px' }}>
-              นายก / ปลัด — ขอความเห็นจากท่าน
-            </div>
-            <h3 className="text-[22px] md:text-[26px] font-semibold mb-3 leading-tight">
-              กลยุทธ์ไหน <span style={{ color: '#9FE1CB' }}>เหมาะกับหน่วยงานของท่าน</span> ที่สุด?
-            </h3>
-            <p className="text-[15px] leading-relaxed text-white/85 mb-6 max-w-[680px] mx-auto">
-              ใช้เวลาประมาณ 2 นาที — ตอบแบบสอบถามสั้นๆ เกี่ยวกับ 6 กลยุทธ์ข้างบน · เราใช้ feedback ของท่านปรับ roadmap ระบบ และจะส่ง playbook ฟรีของกลยุทธ์ที่ท่านเลือกให้
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <a
-                href="#feedback-form"
-                onClick={(e) => { e.preventDefault(); alert('แบบสอบถามจะเปิดให้ใช้งานเร็วๆ นี้ — ระหว่างรอ ท่านส่งความเห็นทาง email ได้เลย'); }}
-                className="inline-block text-[15px] font-semibold px-6 py-3 rounded-lg no-underline cursor-pointer"
-                style={{ background: '#FFF', color: C.primary }}
-              >
-                ตอบแบบสอบถาม (2 นาที)
-              </a>
-              <a
-                href="mailto:mcctua2@gmail.com?subject=ความเห็นเรื่อง%206%20กลยุทธ์ลดขยะ&body=กลยุทธ์ที่หน่วยงานของผม/ดิฉันสนใจที่สุด:%20%0A%0Aชื่อหน่วยงาน:%20%0Aขนาดประมาณ%20(ครัวเรือน):%20%0Aผู้ติดต่อ:%20"
-                className="inline-block text-[15px] font-medium px-6 py-3 rounded-lg no-underline"
-                style={{ background: 'transparent', color: '#FFF', border: '1px solid rgba(255,255,255,0.4)' }}
-              >
-                ส่งความเห็นทาง email
-              </a>
-            </div>
-          </div>
-        </div>
-      </Section>
-
-      {/* ════════════════════ SOLUTION OVERVIEW ════════════════════ */}
-      <Section bg="cream" id="solution">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="text-center mb-12">
-            <Eyebrow>วิธีที่เราช่วยท่าน</Eyebrow>
-            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
-              ระบบเดียว — <span style={{ color: C.primary }}>3-Tier</span> + Driver + Sticker + LIFF + Dashboard
-            </h2>
-            <p className="max-w-[680px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
-              สิ่งที่ทำให้ระบบของเราต่างจาก BKK WASTE PAY: เพิ่ม Tier 10 ฿ (ขายรีไซเคิล) · Stratified random sampling 33% · Driver tracking + Sticker color gate
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {[
-              { title: '3-Tier Pricing', sub: '60 / 20 / 10 ฿', desc: 'อิงเพดานกฎกระทรวง + กทม. precedent · เพิ่ม Tier 10 ฿ revenue share สำหรับครัวเรือนที่ขายรีไซเคิลเข้าระบบ' },
-              { title: 'Stratified Random Sampling', sub: '33% / รอบ', desc: 'ทุกบ้านถูกสุ่มเฉลี่ย 1 ครั้ง/ปี (±1) — ประมาณการลด storage รูป −67% · พนง. ทำงานเร็วขึ้น 3 เท่า' },
-              { title: 'Driver App + GPS', sub: 'Field tracking', desc: 'tablet ในรถเก็บขยะ · บันทึกเก็บได้/ข้าม/ไม่คัดแยก · รถจอด 1 ครั้ง เก็บ 2 ฝั่ง · BKK WASTE PAY ไม่มี' },
-              { title: 'Sticker Color Gate', sub: 'Visual enforcement', desc: 'ครัวเรือนจ่าย → ติดสติ๊กเกอร์ตามสี Tier · ไม่จ่าย = ไม่มีสติ๊กเกอร์ = รถข้าม (ปรับได้ตามนโยบายของแต่ละหน่วยงาน)' },
-              { title: 'LINE Mini App (LIFF)', sub: 'ประชาชน-facing', desc: 'ดูบิล/จ่าย/ร้องเรียน บน LINE ที่ทุกบ้านมี · QR PromptPay · ใบเสร็จดิจิทัล · ไม่ต้อง install แอปแยก' },
-              { title: 'Mayor Dashboard', sub: 'Real-time KPI', desc: 'รายได้ vs ต้นทุน · 3-Tier breakdown · Coverage ratio · รถเก็บขยะ live map · Excel/PDF export ในคลิกเดียว' },
-            ].map((m, i) => (
-              <div key={i} className="rounded-2xl p-6" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}` }}>
-                <div className="flex items-baseline justify-between mb-3">
-                  <h3 className="text-[18px] font-semibold" style={{ color: C.text }}>{m.title}</h3>
-                  <span className="text-[12px] font-medium" style={{ color: C.primary }}>{m.sub}</span>
-                </div>
-                <p className="text-[14px] leading-relaxed" style={{ color: C.textMuted }}>{m.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      {/* ════════════════════ INTERACTIVE PROTOTYPE ════════════════════ */}
-      <Section bg="soft" id="prototype">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="text-center mb-10">
-            <Eyebrow color={C.accent}>Live Prototype · ลองได้เลย</Eyebrow>
-            <h2 className="font-semibold leading-tight mb-3" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
-              เลือกมุมมอง — <span style={{ color: C.primary }}>4 persona</span> ที่ใช้งานจริง
-            </h2>
-            <p className="max-w-[680px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
-              ระบบเดียวที่ทำงานจาก 4 มุมพร้อมกัน — ผู้บริหาร / ประชาชน / เจ้าหน้าที่ / ROI calculator (ปรับจำนวนครัวเรือนของท่านได้)
-            </p>
-          </div>
-
-          <PrototypePanels />
-        </div>
-      </Section>
-
-      {/* ════════════════════ UI SHOWCASE ════════════════════ */}
-      <Section bg="white" id="ui-showcase">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="text-center mb-12">
-            <Eyebrow>หน้าจอระบบจริง</Eyebrow>
-            <h2 className="font-semibold leading-tight mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
-              UI ครบวงจร <span style={{ color: C.primary }}>Web & Mobile</span>
-            </h2>
-            <p className="max-w-[680px] mx-auto text-[16px] leading-relaxed" style={{ color: C.textMuted }}>
-              ออกแบบมาเพื่อหน่วยงานท้องถิ่นโดยเฉพาะ — ใช้งานง่าย รองรับทุก Platform ทั้งหน้าจอผู้ดูแลระบบและประชาชน
-            </p>
-          </div>
-
-          {/* ── Featured: Main Dashboard ─────────────────────────── */}
-          <div className="mb-6 rounded-2xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 8px 32px rgba(31, 42, 36, 0.06)' }}>
-            <div className="px-4 py-2.5 flex items-center gap-3 border-b" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold" style={{ background: C.primary, color: '#FFF' }}>อบต</div>
-              <div className="flex-1">
-                <div className="text-[12px] font-semibold" style={{ color: C.text }}>แผงควบคุมผู้ดูแลระบบ</div>
-                <div className="text-[10px]" style={{ color: C.textMuted }}>The Digital Ledger · Officer Portal</div>
-              </div>
-              <span className="text-[10px] flex items-center gap-1.5" style={{ color: C.success }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></span>
-                Live
-              </span>
-            </div>
-            <div style={{ height: 559, overflow: 'hidden', position: 'relative', background: '#FFF' }}>
-              <iframe
-                src="ui/main_screen.html"
-                title="Main Dashboard"
-                loading="lazy"
-                style={{ position: 'absolute', top: 0, left: 0, width: 1440, height: 860, transform: 'scale(0.65)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
-              />
-            </div>
-          </div>
-
-          {/* ── 3-col Desktop Screens ─────────────────────────── */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            {[
-              { src: 'ui/bill_listing.html', label: 'จัดการรอบบิล', desc: 'สร้างและติดตามบิลทุกประเภท' },
-              { src: 'ui/Daily_Bank_Reconclliation.html', label: 'กระทบยอดธนาคาร', desc: 'Daily Auto-Reconciliation' },
-              { src: 'ui/phase_6_web.html', label: 'รายงานปฏิบัติงาน', desc: 'ติดตามรถเก็บขยะ GPS' },
-            ].map((s, i) => (
-              <div key={i} className="rounded-xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 2px 8px rgba(31, 42, 36, 0.04)' }}>
-                <div className="px-3 py-1.5 flex items-center gap-2 border-b" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></div>
-                  <span className="text-[11px] font-medium" style={{ color: C.text }}>{s.label}</span>
-                </div>
-                <div style={{ height: 258, overflow: 'hidden', position: 'relative', background: '#FFF' }}>
-                  <iframe
-                    src={s.src}
-                    title={s.label}
-                    loading="lazy"
-                    style={{ position: 'absolute', top: 0, left: 0, width: 1024, height: 860, transform: 'scale(0.30)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
-                  />
-                </div>
-                <div className="px-3 py-2 border-t" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
-                  <p className="text-[11px] leading-tight" style={{ color: C.textMuted }}>{s.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* ── 4-col Mobile Phones (LIFF + Field) ─────────────────────────── */}
-          <div className="text-center mb-4">
-            <span className="text-[12px] font-medium uppercase tracking-wider" style={{ color: C.textMuted, letterSpacing: '2px' }}>
-              บนมือถือ — ประชาชน + เจ้าหน้าที่ภาคสนาม
-            </span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 justify-items-center">
-            {[
-              { src: 'ui/billing.html', label: 'ชำระค่าธรรมเนียม' },
-              { src: 'ui/collection_notification.html', label: 'แจ้งเตือนประชาชน' },
-              { src: 'ui/line_mini_app_notification_fee.html', label: 'LINE Mini App' },
-              { src: 'ui/phase_6_mobile.html', label: 'รถเก็บขยะ (GPS)' },
-            ].map((s, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div className="rounded-[22px] overflow-hidden" style={{
-                  width: 214,
-                  height: 463,
-                  border: `3px solid ${C.text}`,
-                  boxShadow: '0 10px 30px rgba(31, 42, 36, 0.18)',
-                  background: '#FFF',
-                }}>
-                  <div style={{ height: 463, overflow: 'hidden', position: 'relative' }}>
-                    <iframe
-                      src={s.src}
-                      title={s.label}
-                      loading="lazy"
-                      style={{ position: 'absolute', top: 0, left: 0, width: 390, height: 844, transform: 'scale(0.549)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
-                    />
-                  </div>
-                </div>
-                <p className="text-[12px] mt-3 text-center font-medium" style={{ color: C.text }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* ── 2-col Registration Screens ─────────────────────────── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { src: 'ui/House_registration.html', label: 'ทะเบียนบ้านและประชาชน', desc: 'บันทึกและจัดการข้อมูลผู้เสียค่าธรรมเนียม' },
-              { src: 'ui/Officer_registration.html', label: 'จัดการเจ้าหน้าที่', desc: 'ลงทะเบียนและกำหนดสิทธิ์เจ้าหน้าที่' },
-            ].map((s, i) => (
-              <div key={i} className="rounded-xl overflow-hidden" style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, boxShadow: '0 2px 8px rgba(31, 42, 36, 0.04)' }}>
-                <div className="px-3 py-1.5 flex items-center gap-2 border-b" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: C.success }}></div>
-                  <span className="text-[11px] font-medium" style={{ color: C.text }}>{s.label}</span>
-                </div>
-                <div style={{ height: 388, overflow: 'hidden', position: 'relative', background: '#FFF' }}>
-                  <iframe
-                    src={s.src}
-                    title={s.label}
-                    loading="lazy"
-                    style={{ position: 'absolute', top: 0, left: 0, width: 1024, height: 860, transform: 'scale(0.451)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
-                  />
-                </div>
-                <div className="px-3 py-2 border-t" style={{ background: C.surface, borderColor: C.surfaceSoft }}>
-                  <p className="text-[11px]" style={{ color: C.textMuted }}>{s.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Footnote */}
-          <div className="mt-6 text-center text-[11px]" style={{ color: C.textMuted }}>
-            หน้าจอจริงจากระบบ · iframe scale ลงเพื่อพรีวิว · ขอ Demo เต็มจอได้จากปุ่ม "ขอใบเสนอราคา"
-          </div>
-        </div>
-      </Section>
-
-      {/* ════════════════════ CONCERNS / FAQ ════════════════════ */}
-      <Section bg="white">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="text-center mb-10">
-            <Eyebrow>ข้อกังวลที่นายก/ปลัดมักยก</Eyebrow>
-            <h2 className="font-semibold leading-tight" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', color: C.text }}>
-              เรามีคำตอบให้ทุกข้อ
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { q: '"ขึ้นราคาประชาชนจะโกรธ"', a: 'กทม. ขึ้น 20 → 60 ฿ ใน 5 เดือน มีคนลงทะเบียนลดเหลือ 20 ฿ เกือบ 800,000 หลัง — ประชาชนเลือกได้ + อยากประหยัด' },
-              { q: '"หน่วยงานเล็กลงทุนแล้วคุ้มไหม?"', a: 'อบต. / เทศบาลตำบลขนาดใกล้เคียงกันขาดทุนประมาณการ 3M/ปีกับขยะ — ระบบช่วยให้กลับมาเก็บได้ครบ + ลดต้นทุนกำจัด → คืนทุนได้ในปีแรก (ตัวเลขขึ้นกับขนาดของหน่วยงาน)' },
-              { q: '"ไม่มีพนักงาน IT"', a: 'เป็นระบบ SaaS — ไม่ต้องติดตั้ง server · ทีม support พูดไทย · ทีมงานและตัวแทนในพื้นที่ดูแลให้ตลอด' },
-              { q: '"ประชาชนไม่มี smartphone"', a: 'LIFF ใช้บน LINE ที่เกือบทุกบ้านมี · กลุ่มไม่มีมือถือ → เคาน์เตอร์ + counter receipt ปกติ' },
-              { q: '"พนง.เก็บขยะถ่ายรูปทุกบ้านช้า"', a: 'Sampling 33% — ถ่ายแค่บ้านที่สุ่ม → ประมาณการทำงานเร็วขึ้น 3 เท่า · storage saving −67%' },
-              { q: '"กฎหมายยังไม่บังคับ"', a: 'ใช่ — แต่ window 16 พ.ย. 2569 ใกล้แล้ว · early mover ได้เปรียบทั้ง award + showcase + เวลาทดสอบระบบ' },
-            ].map((item, i) => (
-              <div key={i} className="rounded-2xl p-5" style={{ background: C.surface, border: `1px solid ${C.surfaceSoft}` }}>
-                <div className="text-[14px] font-semibold mb-2" style={{ color: C.text }}>{item.q}</div>
-                <div className="text-[13px] leading-relaxed" style={{ color: C.textMuted }}>{item.a}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      {/* ════════════════════ CTA ════════════════════ */}
-      <Section bg="deep">
-        <div className="max-w-[800px] mx-auto text-center">
-          <Eyebrow color="#9FE1CB">ขั้นตอนต่อไป</Eyebrow>
-          <h2 className="font-semibold leading-tight mb-5 text-white" style={{ fontSize: 'clamp(28px, 3.5vw, 40px)' }}>
-            หน่วยงานของท่าน — เก็บได้กี่ % ?
-          </h2>
-          <p className="text-[17px] leading-relaxed mb-10 text-white/70">
-            เราสำรวจให้ฟรี ภายใน 2 สัปดาห์ — ดูว่าตัวเลขจริงของหน่วยงานท่านห่างจาก 15:1 เท่าไหร่ · ทั้ง อบต., เทศบาลตำบล, เทศบาลเมือง, เทศบาลนคร เลือกขอบเขตที่เหมาะกับขนาดของท่านได้
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-            <div className="rounded-2xl p-6 text-left" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
-              <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#9FE1CB' }}>Lite · หน่วยงานเล็ก</div>
-              <div className="text-[28px] font-semibold text-white mb-1">≤ 1,500</div>
-              <div className="text-[12px] text-white/60 mb-3">ครัวเรือน</div>
-              <div className="text-[12px] text-white/70 leading-relaxed">Core + Sticker + Photo evidence — เริ่มทดลองได้เร็ว</div>
-            </div>
-            <div className="rounded-2xl p-6 text-left" style={{ background: 'rgba(255,255,255,0.10)', border: `2px solid ${C.primaryHover}` }}>
-              <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#9FE1CB' }}>Standard · หน่วยงานกลาง ⭐</div>
-              <div className="text-[28px] font-semibold text-white mb-1">1,500–4,000</div>
-              <div className="text-[12px] text-white/60 mb-3">ครัวเรือน</div>
-              <div className="text-[12px] text-white/70 leading-relaxed">+ Sorting verification + Cost Dashboard + LINE Mini App</div>
-            </div>
-            <div className="rounded-2xl p-6 text-left" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
-              <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#9FE1CB' }}>Plus · หน่วยงานใหญ่ / ทน.</div>
-              <div className="text-[28px] font-semibold text-white mb-1">&gt; 4,000</div>
-              <div className="text-[12px] text-white/60 mb-3">ครัวเรือน</div>
-              <div className="text-[12px] text-white/70 leading-relaxed">+ Custom Reports + บูรณาการระบบเดิม + Year 2 roadmap</div>
-            </div>
-          </div>
-
-          <div className="text-[13px] text-white/50 mb-8 italic">
-            * ราคาขึ้นกับขนาด/ขอบเขต — คุยปากเปล่าเพื่อหาจุดที่เหมาะกับงบประมาณของท่าน
-          </div>
-
-          <div className="flex flex-wrap gap-3 justify-center">
-            <a
-              href="mailto:mcctua2@gmail.com?subject=ขอสำรวจหน่วยงานของท่าน"
-              className="inline-block text-[15px] font-medium px-6 py-3 rounded-lg no-underline"
-              style={{ background: C.primaryHover, color: '#FFF' }}
-            >
-              ขอสำรวจฟรี
-            </a>
-            <a
-              href="mailto:mcctua2@gmail.com?subject=ขอใบเสนอราคา%20ระบบเก็บค่าธรรมเนียมขยะ&body=สนใจขอใบเสนอราคาสำหรับหน่วยงานของท่าน%20%0A%0Aชื่อหน่วยงาน:%20%0Aจำนวนครัวเรือนโดยประมาณ:%20%0Aผู้ติดต่อ:%20%0Aเบอร์โทรศัพท์:%20"
-              className="inline-block text-[15px] font-medium px-6 py-3 rounded-lg no-underline"
-              style={{ background: 'transparent', color: '#FFF', border: '1px solid rgba(255,255,255,0.3)' }}
-            >
-              ขอใบเสนอราคา
-            </a>
-          </div>
-
-          <div className="mt-8 text-[12px] text-white/40 leading-relaxed">
-            ตัวเลขประมาณการในหน้านี้อ้างจาก: กฎกระทรวง 2567 · BKK WASTE PAY (ก.พ. 2569) · อบต.ดอนแก้ว เชียงใหม่ (Thai PBS) · เทศบาลนครรังสิต (มติชน/สยามรัฐ 2565) · บ้านดอนกลอย ด่านขุนทด (กรมทรัพยากรทางทะเลและชายฝั่ง 2562-2563) · เทศบาลนครนครราชสีมา (ไทยรัฐ) · กระทรวงมหาดไทย ธนาคารขยะ (มติชนสุดสัปดาห์/dla.go.th ม.ค. 2567) · จังหวัดอุบลราชธานี ชนะจังหวัดสะอาด (มติชน 2567) · NEA Singapore (ก.ค. 2024) · Yokohama G30 (2003-2013) · Kamikatsu Frontiers Review (2023) — ดูรายละเอียด source ใน Research Brief
-          </div>
-        </div>
-      </Section>
-
-    </div>
+        ))}
+      </div>
+    </>
   );
 }

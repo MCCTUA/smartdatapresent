@@ -1,0 +1,226 @@
+/* =====================================================
+   utilitfeeapp Design System — Colors & Typography
+   Airtable-inspired | DM Sans + Plus Jakarta Sans
+   ===================================================== */
+
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@100;200;300;400;500;600;700;800;900&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+/* =====================================================
+   BASE COLOR TOKENS
+   ===================================================== */
+:root {
+  /* Primary */
+  --color-navy:          #181d26;   /* Primary text */
+  --color-blue:          #1b61c9;   /* CTA, links, primary action */
+  --color-blue-mid:      #254fad;   /* Link/accent blue variant */
+  --color-blue-dark:     #1550b0;   /* Button hover */
+  --color-white:         #ffffff;   /* Primary surface */
+  --color-spotlight:     rgba(249,252,255,0.97);  /* Spotlight button text bg */
+
+  /* Neutral */
+  --color-gray-900:      #111827;
+  --color-gray-800:      #1f2937;
+  --color-gray-700:      #333333;   /* Secondary text */
+  --color-gray-600:      #4b5563;
+  --color-gray-500:      #6b7280;
+  --color-gray-400:      #9ca3af;
+  --color-gray-300:      #d1d5db;
+  --color-gray-200:      #e0e2e6;   /* Borders */
+  --color-gray-100:      #f3f4f6;
+  --color-gray-50:       #f8fafc;   /* Subtle surface */
+
+  /* Semantic */
+  --color-success:       #006400;   /* --theme_success-text */
+  --color-success-bg:    #f0fdf4;
+  --color-success-mid:   #16a34a;
+  --color-warning:       #b45309;
+  --color-warning-bg:    #fffbeb;
+  --color-warning-mid:   #d97706;
+  --color-danger:        #b91c1c;
+  --color-danger-bg:     #fef2f2;
+  --color-danger-mid:    #dc2626;
+  --color-info:          #1b61c9;
+  --color-info-bg:       #eff6ff;
+  --color-info-mid:      #3b82f6;
+
+  /* Text semantic */
+  --color-text-primary:  #181d26;
+  --color-text-secondary: #333333;
+  --color-text-weak:     rgba(4,14,32,0.69);
+  --color-text-placeholder: rgba(4,14,32,0.38);
+  --color-text-inverse:  #ffffff;
+  --color-text-link:     #1b61c9;
+  --color-text-link-hover: #1550b0;
+
+  /* Surfaces */
+  --color-surface-primary:   #ffffff;
+  --color-surface-subtle:    #f8fafc;
+  --color-surface-hover:     #f0f4ff;
+  --color-border:            #e0e2e6;
+  --color-border-strong:     #c7cad2;
+  --color-border-focus:      #1b61c9;
+
+  /* =====================================================
+     ORG THEMING — Override these per org
+     ===================================================== */
+  --org-primary:         #1b61c9;   /* Org's brand color */
+  --org-primary-dark:    #1550b0;
+  --org-primary-light:   #dbeafe;
+  --org-primary-text:    #ffffff;   /* Text on primary bg */
+
+  /* =====================================================
+     SHADOWS
+     ===================================================== */
+  --shadow-blue:     rgba(0,0,0,0.32) 0px 0px 1px,
+                     rgba(0,0,0,0.08) 0px 0px 2px,
+                     rgba(45,127,249,0.28) 0px 1px 3px,
+                     rgba(0,0,0,0.06) 0px 0px 0px 0.5px inset;
+  --shadow-soft:     rgba(15,48,106,0.05) 0px 0px 20px;
+  --shadow-card:     0px 1px 3px rgba(0,0,0,0.08), 0px 0px 1px rgba(0,0,0,0.16);
+  --shadow-modal:    rgba(15,48,106,0.05) 0px 0px 20px,
+                     rgba(0,0,0,0.12) 0px 4px 16px;
+  --shadow-focus:    0 0 0 3px rgba(27,97,201,0.25);
+
+  /* =====================================================
+     BORDER RADIUS
+     ===================================================== */
+  --radius-xs:   2px;    /* Badges, inline chips */
+  --radius-sm:   4px;    /* Small elements */
+  --radius-md:   8px;    /* Medium components */
+  --radius-btn:  12px;   /* Buttons */
+  --radius-card: 16px;   /* Cards */
+  --radius-lg:   24px;   /* Modals, large containers */
+  --radius-xl:   32px;   /* Large sections */
+  --radius-full: 9999px; /* Pills */
+  --radius-circle: 50%;  /* Avatars */
+
+  /* =====================================================
+     SPACING (8px base grid)
+     ===================================================== */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   28px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+
+  /* =====================================================
+     TYPOGRAPHY
+     Note: Haas / Neue Haas Grotesk substituted with
+     DM Sans (body) + Plus Jakarta Sans (display)
+     ===================================================== */
+  --font-body:    'Prompt', 'Inter', -apple-system, system-ui, sans-serif;
+  --font-display: 'Prompt', 'Inter', -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
+
+/* =====================================================
+   SEMANTIC TYPOGRAPHY VARIABLES
+   ===================================================== */
+:root {
+  /* Display Hero — large marketing/header text */
+  --type-display-hero-size:     48px;
+  --type-display-hero-weight:   400;
+  --type-display-hero-lh:       1.15;
+  --type-display-hero-family:   var(--font-body);
+
+  /* Display Bold — heavy display, section titles */
+  --type-display-bold-size:     48px;
+  --type-display-bold-weight:   900;
+  --type-display-bold-lh:       1.50;
+  --type-display-bold-family:   var(--font-display);
+
+  /* Section Heading — h1 equivalent */
+  --type-h1-size:    40px;
+  --type-h1-weight:  400;
+  --type-h1-lh:      1.25;
+  --type-h1-family:  var(--font-body);
+
+  /* Sub-heading — h2 */
+  --type-h2-size:    32px;
+  --type-h2-weight:  500;
+  --type-h2-lh:      1.20;
+  --type-h2-family:  var(--font-body);
+
+  /* Card Title — h3 */
+  --type-h3-size:        24px;
+  --type-h3-weight:      400;
+  --type-h3-lh:          1.25;
+  --type-h3-ls:          0.12px;
+  --type-h3-family:      var(--font-body);
+
+  /* Feature text — h4 */
+  --type-h4-size:        20px;
+  --type-h4-weight:      400;
+  --type-h4-lh:          1.35;
+  --type-h4-ls:          0.1px;
+  --type-h4-family:      var(--font-body);
+
+  /* Body — standard content */
+  --type-body-size:      18px;
+  --type-body-weight:    400;
+  --type-body-lh:        1.35;
+  --type-body-ls:        0.18px;
+  --type-body-family:    var(--font-body);
+
+  /* Body Medium — 16px standard UI */
+  --type-body-md-size:   16px;
+  --type-body-md-weight: 500;
+  --type-body-md-lh:     1.30;
+  --type-body-md-ls:     0.12px;
+  --type-body-md-family: var(--font-body);
+
+  /* Button */
+  --type-btn-size:       16px;
+  --type-btn-weight:     500;
+  --type-btn-lh:         1.25;
+  --type-btn-ls:         0.08px;
+  --type-btn-family:     var(--font-body);
+
+  /* Caption / Label */
+  --type-caption-size:   14px;
+  --type-caption-weight: 400;
+  --type-caption-lh:     1.30;
+  --type-caption-ls:     0.14px;
+  --type-caption-family: var(--font-body);
+
+  /* Micro / Tag */
+  --type-micro-size:     12px;
+  --type-micro-weight:   500;
+  --type-micro-lh:       1.25;
+  --type-micro-ls:       0.28px;
+  --type-micro-family:   var(--font-body);
+}
+
+/* =====================================================
+   UTILITY CLASSES
+   ===================================================== */
+
+/* Typography */
+.t-display-hero  { font-family: var(--type-display-hero-family); font-size: var(--type-display-hero-size); font-weight: var(--type-display-hero-weight); line-height: var(--type-display-hero-lh); }
+.t-display-bold  { font-family: var(--type-display-bold-family); font-size: var(--type-display-bold-size); font-weight: var(--type-display-bold-weight); line-height: var(--type-display-bold-lh); }
+.t-h1            { font-family: var(--type-h1-family); font-size: var(--type-h1-size); font-weight: var(--type-h1-weight); line-height: var(--type-h1-lh); }
+.t-h2            { font-family: var(--type-h2-family); font-size: var(--type-h2-size); font-weight: var(--type-h2-weight); line-height: var(--type-h2-lh); }
+.t-h3            { font-family: var(--type-h3-family); font-size: var(--type-h3-size); font-weight: var(--type-h3-weight); line-height: var(--type-h3-lh); letter-spacing: var(--type-h3-ls); }
+.t-h4            { font-family: var(--type-h4-family); font-size: var(--type-h4-size); font-weight: var(--type-h4-weight); line-height: var(--type-h4-lh); letter-spacing: var(--type-h4-ls); }
+.t-body          { font-family: var(--type-body-family); font-size: var(--type-body-size); font-weight: var(--type-body-weight); line-height: var(--type-body-lh); letter-spacing: var(--type-body-ls); }
+.t-body-md       { font-family: var(--type-body-md-family); font-size: var(--type-body-md-size); font-weight: var(--type-body-md-weight); line-height: var(--type-body-md-lh); letter-spacing: var(--type-body-md-ls); }
+.t-btn           { font-family: var(--type-btn-family); font-size: var(--type-btn-size); font-weight: var(--type-btn-weight); line-height: var(--type-btn-lh); letter-spacing: var(--type-btn-ls); }
+.t-caption       { font-family: var(--type-caption-family); font-size: var(--type-caption-size); font-weight: var(--type-caption-weight); line-height: var(--type-caption-lh); letter-spacing: var(--type-caption-ls); }
+.t-micro         { font-family: var(--type-micro-family); font-size: var(--type-micro-size); font-weight: var(--type-micro-weight); line-height: var(--type-micro-lh); letter-spacing: var(--type-micro-ls); }
+
+/* Colors */
+.text-primary    { color: var(--color-text-primary); }
+.text-secondary  { color: var(--color-text-secondary); }
+.text-weak       { color: var(--color-text-weak); }
+.text-link       { color: var(--color-text-link); }
+.text-inverse    { color: var(--color-text-inverse); }
+.bg-surface      { background: var(--color-surface-primary); }
+.bg-subtle       { background: var(--color-surface-subtle); }
+.border-default  { border: 1px solid var(--color-border); }

@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-02 — Dashboard · Resident Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="../ios-frame.jsx"></script>
+<script type="text/babel" src="../design-canvas.jsx"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0eee9; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeSlideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse2 { 0%,100% { opacity:0.4; transform:scale(1); } 50% { opacity:1; transform:scale(1.15); } }
+  @keyframes shimmer { 0% { background-position: -300px 0; } 100% { background-position: 300px 0; } }
+</style>
+</head>
+<body>
+<script type="text/babel">
+
+/* ─────────────────────────────────────────────
+   Design Tokens — match R-01 exactly
+───────────────────────────────────────────── */
+const T = {
+  primary:      '#1b61c9',
+  primaryLight: '#e8f0fd',
+  primaryDark:  '#144fa8',
+  primaryMid:   '#2d6ed4',
+  navy:         '#181d26',
+  navyWeak:     'rgba(4,14,32,0.50)',
+  navyFaint:    'rgba(4,14,32,0.07)',
+  border:       '#e0e2e6',
+  surface:      '#f8fafc',
+  white:        '#ffffff',
+  success:      '#166534',
+  successBg:    '#f0fdf4',
+  successMid:   '#16a34a',
+  warning:      '#b45309',
+  warningBg:    '#fffbeb',
+  warningMid:   '#d97706',
+  danger:       '#b91c1c',
+  dangerBg:     '#fef2f2',
+  dangerMid:    '#dc2626',
+  font:         "'Sarabun', -apple-system, sans-serif",
+  radius:       { sm: 8, md: 14, lg: 20, xl: 28 },
+};
+
+/* ─────────────────────────────────────────────
+   Shared micro-components
+───────────────────────────────────────────── */
+
+/* Org badge — top of app (compact for dashboard) */
+const TopBar = ({ name, addr, notifCount = 2 }) => (
+  <div style={{
+    background: T.primary,
+    padding: '14px 20px 18px',
+    position: 'relative',
+  }}>
+    {/* greeting row */}
+    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+      <div>
+        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.72)', fontFamily: T.font, marginBottom: 3 }}>
+          สวัสดี 👋
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 700, color: '#fff', fontFamily: T.font, lineHeight: 1.25 }}>
+          {name}
+        </div>
+        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.72)', fontFamily: T.font, marginTop: 3 }}>
+          {addr}
+        </div>
+      </div>
+      {/* notification */}
+      <div style={{ position:'relative', marginTop: 2 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 12,
+          background: 'rgba(255,255,255,0.18)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          {notifCount > 0 && (
+            <span style={{
+              position:'absolute', top: 7, right: 7, width: 9, height: 9,
+              background: '#fde68a', borderRadius: '50%', border: '2px solid '+T.primary,
+            }}/>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* Large primary CTA button */
+const BigBtn = ({ children, color, onClick, icon }) => (
+  <button onClick={onClick} style={{
+    width: '100%', height: 62, borderRadius: T.radius.md,
+    background: color || T.primary,
+    border: 'none', cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+    boxShadow: `0 4px 16px ${color ? color+'55' : 'rgba(27,97,201,0.32)'}`,
+    fontFamily: T.font,
+  }}>
+    {icon}
+    <span style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{children}</span>
+  </button>
+);
+
+/* Status pill */
+const Pill = ({ status }) => {
+  const map = {
+    overdue:     { label: 'ค้างชำระ',   bg: T.dangerBg,  color: T.danger },
+    issued:      { label: 'รอชำระ',     bg: T.primaryLight, color: T.primary },
+    partial:     { label: 'ชำระบางส่วน', bg: T.warningBg, color: T.warning },
+    paid:        { label: 'ชำระแล้ว',   bg: T.successBg, color: T.success },
+  };
+  const c = map[status] || map.issued;
+  return (
+    <span style={{
+      background: c.bg, color: c.color,
+      borderRadius: 6, padding: '4px 10px',
+      fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
+      fontFamily: T.font,
+    }}>{c.label}</span>
+  );
+};
+
+/* Section heading */
+const SecHead = ({ children, action, onAction }) => (
+  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 12 }}>
+    <span style={{ fontSize: 18, fontWeight: 700, color: T.navy, fontFamily: T.font }}>{children}</span>
+    {action && (
+      <button onClick={onAction} style={{ background:'none', border:'none', fontSize: 15, color: T.primary, fontWeight: 600, cursor:'pointer', fontFamily: T.font }}>
+        {action} →
+      </button>
+    )}
+  </div>
+);
+
+/* Bill row card */
+const BillCard = ({ bill, onPress }) => (
+  <div onClick={onPress} style={{
+    background: T.white,
+    border: `1.5px solid ${bill.status === 'overdue' ? '#fca5a5' : T.border}`,
+    borderRadius: T.radius.md,
+    padding: '16px',
+    marginBottom: 10,
+    display: 'flex', alignItems: 'center', gap: 14,
+    cursor: 'pointer',
+    boxShadow: bill.status === 'overdue'
+      ? '0 2px 8px rgba(185,28,28,0.10)'
+      : '0 1px 3px rgba(0,0,0,0.05)',
+  }}>
+    {/* icon */}
+    <div style={{
+      width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+      background: bill.status === 'overdue' ? T.dangerBg : T.primaryLight,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: 24,
+    }}>
+      {bill.icon}
+    </div>
+    {/* text */}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ fontSize: 18, fontWeight: 700, color: T.navy, fontFamily: T.font, lineHeight: 1.2 }}>
+        {bill.type}
+      </div>
+      <div style={{ fontSize: 14, color: T.navyWeak, fontFamily: T.font, marginTop: 3 }}>
+        {bill.period}
+      </div>
+    </div>
+    {/* amount + status */}
+    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+      <div style={{ fontSize: 20, fontWeight: 700, color: bill.status === 'overdue' ? T.danger : T.navy, fontFamily: T.font, lineHeight: 1.2 }}>
+        ฿{bill.amount}
+      </div>
+      <div style={{ marginTop: 4 }}>
+        <Pill status={bill.status} />
+      </div>
+    </div>
+  </div>
+);
+
+/* Bottom navigation */
+const BottomNav = ({ active }) => {
+  const tabs = [
+    { id:'home',    label:'หน้าหลัก', icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/>
+      </svg>
+    )},
+    { id:'bills',   label:'บิลของฉัน', icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/>
+      </svg>
+    )},
+    { id:'history', label:'ประวัติ', icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+    )},
+    { id:'contact', label:'ติดต่อ', icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.12 2.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.45-.45a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+      </svg>
+    )},
+  ];
+  return (
+    <div style={{
+      position: 'absolute', bottom: 0, left: 0, right: 0,
+      height: 80,
+      background: T.white,
+      borderTop: `1.5px solid ${T.border}`,
+      display: 'flex',
+      paddingBottom: 10,
+    }}>
+      {tabs.map(tab => {
+        const isActive = tab.id === active;
+        return (
+          <div key={tab.id} style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 4,
+            paddingTop: 8, cursor: 'pointer',
+            color: isActive ? T.primary : T.navyWeak,
+          }}>
+            {tab.icon}
+            <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, fontFamily: T.font }}>
+              {tab.label}
+            </span>
+            {isActive && (
+              <div style={{ position:'absolute', bottom: 0, width: 28, height: 3, background: T.primary, borderRadius: 2 }} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   SCREEN 1 — Main Dashboard (มีบิลค้างชำระ)
+───────────────────────────────────────────── */
+const ScreenDashboardUnpaid = () => {
+  const bills = [
+    { type: 'ค่าขยะ',    period: 'เม.ย. 2569',  amount: 60,  status: 'overdue', icon: '🗑️' },
+    { type: 'ค่าน้ำประปา', period: 'เม.ย. 2569', amount: 240, status: 'issued',  icon: '💧' },
+  ];
+  return (
+    <div style={{ background: T.surface, minHeight: '100%', position: 'relative', paddingBottom: 96 }}>
+      <TopBar name="นางสาวสมหญิง วงษ์ทอง" addr="บ้านเลขที่ 45/2 ม.3 ต.บ้านแป้ง" notifCount={2} />
+
+      {/* Outstanding summary card — hero */}
+      <div style={{ margin: '-1px 16px 0', position: 'relative', zIndex: 2 }}>
+        <div style={{
+          background: T.white,
+          borderRadius: T.radius.lg,
+          padding: '20px 20px 18px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
+          border: `1.5px solid #fca5a5`,
+        }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.danger, fontFamily: T.font, textTransform:'uppercase', letterSpacing: 0.5 }}>
+                ยอดค้างชำระทั้งหมด
+              </div>
+              <div style={{ fontSize: 38, fontWeight: 800, color: T.danger, fontFamily: T.font, lineHeight: 1.15, marginTop: 4 }}>
+                ฿300
+              </div>
+              <div style={{ fontSize: 14, color: T.navyWeak, fontFamily: T.font, marginTop: 4 }}>
+                2 รายการ · ครบกำหนด 30 เม.ย. 2569
+              </div>
+            </div>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: T.dangerBg,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={T.danger} strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+          </div>
+          <BigBtn color={T.dangerMid}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}>
+            จ่ายเดี๋ยวนี้
+          </BigBtn>
+        </div>
+      </div>
+
+      {/* Bills list */}
+      <div style={{ padding: '20px 16px 0' }}>
+        <SecHead action="ดูทั้งหมด">บิลเดือนนี้</SecHead>
+        {bills.map((b, i) => <BillCard key={i} bill={b} />)}
+      </div>
+
+      {/* Quick links */}
+      <div style={{ padding: '16px 16px 0' }}>
+        <SecHead>บริการด่วน</SecHead>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          {[
+            { label:'ประวัติการชำระ', icon:'🧾', color:'#eff6ff', tc: T.primary },
+            { label:'แจ้งปัญหา', icon:'📢', color:'#fffbeb', tc: T.warning },
+            { label:'ใช้น้ำเดือนนี้', icon:'📊', color:'#f0fdf4', tc: T.success },
+            { label:'ติดต่อ อบต.', icon:'📞', color:T.navyFaint, tc: T.navy },
+          ].map((q, i) => (
+            <div key={i} style={{
+              background: T.white, border:`1.5px solid ${T.border}`,
+              borderRadius: T.radius.md, padding:'16px 14px',
+              display:'flex', alignItems:'center', gap:12, cursor:'pointer',
+              boxShadow:'0 1px 3px rgba(0,0,0,0.05)',
+            }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: q.color,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize: 22, flexShrink: 0,
+              }}>{q.icon}</div>
+              <span style={{ fontSize: 15, fontWeight: 600, color: q.tc, fontFamily: T.font, lineHeight: 1.3 }}>{q.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <BottomNav active="home" />
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   SCREEN 2 — All Paid (ชำระครบแล้ว)
+───────────────────────────────────────────── */
+const ScreenDashboardAllPaid = () => (
+  <div style={{ background: T.surface, minHeight: '100%', position: 'relative', paddingBottom: 96 }}>
+    <TopBar name="นางสาวสมหญิง วงษ์ทอง" addr="บ้านเลขที่ 45/2 ม.3 ต.บ้านแป้ง" notifCount={0} />
+
+    {/* All good hero card */}
+    <div style={{ margin: '-1px 16px 0', position: 'relative', zIndex: 2 }}>
+      <div style={{
+        background: T.white,
+        borderRadius: T.radius.lg,
+        padding: '22px 20px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: `1.5px solid #bbf7d0`,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8,
+      }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: 20,
+          background: T.successBg,
+          display:'flex', alignItems:'center', justifyContent:'center', fontSize: 32,
+          marginBottom: 4,
+        }}>✅</div>
+        <div style={{ fontSize: 22, fontWeight: 700, color: T.success, fontFamily: T.font }}>
+          ชำระครบทุกรายการแล้ว!
+        </div>
+        <div style={{ fontSize: 16, color: T.navyWeak, fontFamily: T.font, lineHeight: 1.6 }}>
+          บิลเดือน เม.ย. 2569 ครบถ้วน<br/>ขอบคุณที่ชำระตรงเวลา 🙏
+        </div>
+        <div style={{
+          background: T.successBg, borderRadius: 10, padding:'10px 20px', marginTop: 4,
+          display:'flex', gap: 20,
+        }}>
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.success, fontFamily: T.font }}>฿300</div>
+            <div style={{ fontSize: 12, color: T.navyWeak, fontFamily: T.font }}>ชำระแล้วเดือนนี้</div>
+          </div>
+          <div style={{ width:1, background:'#bbf7d0' }}/>
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.success, fontFamily: T.font }}>2</div>
+            <div style={{ fontSize: 12, color: T.navyWeak, fontFamily: T.font }}>รายการ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Bills this month — all paid */}
+    <div style={{ padding: '20px 16px 0' }}>
+      <SecHead>บิลเดือนนี้</SecHead>
+      {[
+        { type:'ค่าขยะ', period:'เม.ย. 2569 · ชำระ 15 เม.ย.', amount: 60, status:'paid', icon:'🗑️' },
+        { type:'ค่าน้ำประปา', period:'เม.ย. 2569 · ชำระ 15 เม.ย.', amount: 240, status:'paid', icon:'💧' },
+      ].map((b, i) => <BillCard key={i} bill={b} />)}
+    </div>
+
+    {/* Quick links */}
+    <div style={{ padding: '8px 16px 0' }}>
+      <SecHead>บริการด่วน</SecHead>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+        {[
+          { label:'ประวัติการชำระ', icon:'🧾', color:'#eff6ff', tc: T.primary },
+          { label:'แจ้งปัญหา', icon:'📢', color:'#fffbeb', tc: T.warning },
+          { label:'ใช้น้ำเดือนนี้', icon:'📊', color:'#f0fdf4', tc: T.success },
+          { label:'ติดต่อ อบต.', icon:'📞', color:T.navyFaint, tc: T.navy },
+        ].map((q, i) => (
+          <div key={i} style={{
+            background: T.white, border:`1.5px solid ${T.border}`,
+            borderRadius: T.radius.md, padding:'16px 14px',
+            display:'flex', alignItems:'center', gap:12, cursor:'pointer',
+            boxShadow:'0 1px 3px rgba(0,0,0,0.05)',
+          }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 12,
+              background: q.color,
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontSize: 22, flexShrink: 0,
+            }}>{q.icon}</div>
+            <span style={{ fontSize: 15, fontWeight: 600, color: q.tc, fontFamily: T.font, lineHeight: 1.3 }}>{q.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <BottomNav active="home" />
+  </div>
+);
+
+/* ─────────────────────────────────────────────
+   SCREEN 3 — Bill Detail (bottom sheet style)
+───────────────────────────────────────────── */
+const ScreenBillDetail = () => (
+  <div style={{ background: T.surface, minHeight: '100%', position: 'relative', paddingBottom: 96 }}>
+    <TopBar name="นางสาวสมหญิง วงษ์ทอง" addr="บ้านเลขที่ 45/2 ม.3 ต.บ้านแป้ง" notifCount={2} />
+
+    {/* back + title */}
+    <div style={{ padding:'16px 20px 12px', display:'flex', alignItems:'center', gap:10 }}>
+      <div style={{
+        width: 40, height: 40, borderRadius: 10,
+        background: T.white, border:`1.5px solid ${T.border}`,
+        display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
+      }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={T.navy} strokeWidth="2.2" strokeLinecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </div>
+      <span style={{ fontSize: 20, fontWeight: 700, color: T.navy, fontFamily: T.font }}>รายละเอียดบิล</span>
+    </div>
+
+    {/* Bill detail card */}
+    <div style={{ padding:'0 16px' }}>
+      <div style={{
+        background: T.white, borderRadius: T.radius.lg,
+        border:`1.5px solid #fca5a5`,
+        boxShadow:'0 4px 16px rgba(185,28,28,0.10)',
+        overflow:'hidden',
+      }}>
+        {/* header stripe */}
+        <div style={{
+          background: T.dangerBg, padding:'18px 20px',
+          display:'flex', alignItems:'center', gap:14,
+          borderBottom:`1px solid #fca5a5`,
+        }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: 16,
+            background: '#fee2e2',
+            display:'flex', alignItems:'center', justifyContent:'center', fontSize: 28,
+          }}>🗑️</div>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: T.danger, fontFamily: T.font }}>ค่าขยะ</div>
+            <Pill status="overdue"/>
+          </div>
+        </div>
+        {/* detail rows */}
+        {[
+          { label:'ช่วงเวลา',       value:'เมษายน 2569' },
+          { label:'วันครบกำหนด',   value:'30 เม.ย. 2569', highlight: true },
+          { label:'ยอดเงิน',        value:'฿60', big: true },
+          { label:'เลขที่ใบแจ้งหนี้', value:'BL-2569-1240' },
+          { label:'บ้านเลขที่',     value:'45/2 ม.3 ต.บ้านแป้ง' },
+        ].map(r => (
+          <div key={r.label} style={{
+            padding:'14px 20px', borderBottom:`1px solid ${T.border}`,
+            display:'flex', justifyContent:'space-between', alignItems:'center',
+          }}>
+            <span style={{ fontSize: 15, color: T.navyWeak, fontFamily: T.font }}>{r.label}</span>
+            <span style={{
+              fontSize: r.big ? 24 : 16,
+              fontWeight: r.big ? 800 : 600,
+              color: r.highlight ? T.danger : T.navy,
+              fontFamily: T.font,
+            }}>{r.value}</span>
+          </div>
+        ))}
+        {/* pay button */}
+        <div style={{ padding:'18px 20px' }}>
+          <BigBtn color={T.dangerMid}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}>
+            ชำระ ฿60 เดี๋ยวนี้
+          </BigBtn>
+          <button style={{
+            width:'100%', height:52, background:'none', border:`1.5px solid ${T.border}`,
+            borderRadius: T.radius.md, cursor:'pointer', marginTop:10,
+            fontFamily: T.font, fontSize:16, fontWeight:600, color:T.navyWeak,
+          }}>
+            ขอผ่อนชำระ
+          </button>
+        </div>
+      </div>
+
+      {/* water bill below */}
+      <div style={{ marginTop:14 }}>
+        <SecHead>บิลอื่นในเดือนนี้</SecHead>
+        <BillCard bill={{ type:'ค่าน้ำประปา', period:'เม.ย. 2569', amount:240, status:'issued', icon:'💧' }} />
+      </div>
+    </div>
+
+    <BottomNav active="bills" />
+  </div>
+);
+
+/* ─────────────────────────────────────────────
+   SCREEN 4 — Payment History
+───────────────────────────────────────────── */
+const ScreenHistory = () => {
+  const items = [
+    { month:'เมษายน 2569',  entries: [
+      { type:'ค่าน้ำประปา', date:'15 เม.ย. 2569', amount:185, method:'QR', icon:'💧' },
+      { type:'ค่าขยะ',    date:'15 เม.ย. 2569', amount:60,  method:'โอนเงิน', icon:'🗑️' },
+    ]},
+    { month:'มีนาคม 2569', entries: [
+      { type:'ค่าน้ำประปา', date:'12 มี.ค. 2569', amount:210, method:'เงินสด', icon:'💧' },
+      { type:'ค่าขยะ',    date:'12 มี.ค. 2569', amount:60,  method:'เงินสด', icon:'🗑️' },
+    ]},
+    { month:'กุมภาพันธ์ 2569', entries: [
+      { type:'ค่าน้ำประปา', date:'8 ก.พ. 2569', amount:195, method:'QR', icon:'💧' },
+      { type:'ค่าขยะ',    date:'8 ก.พ. 2569', amount:60,  method:'QR', icon:'🗑️' },
+    ]},
+  ];
+  return (
+    <div style={{ background: T.surface, minHeight:'100%', position:'relative', paddingBottom:96 }}>
+      {/* header */}
+      <div style={{ background: T.primary, padding:'14px 20px 20px' }}>
+        <div style={{ fontSize:14, color:'rgba(255,255,255,0.7)', fontFamily:T.font, marginBottom:4 }}>
+          บ้านเลขที่ 45/2 ม.3
+        </div>
+        <div style={{ fontSize:22, fontWeight:700, color:'#fff', fontFamily:T.font }}>
+          ประวัติการชำระเงิน
+        </div>
+      </div>
+
+      {/* summary strip */}
+      <div style={{ margin:'-1px 16px 0', position:'relative', zIndex:2 }}>
+        <div style={{
+          background:T.white, borderRadius:T.radius.lg,
+          boxShadow:'0 4px 16px rgba(0,0,0,0.08)',
+          padding:'16px 20px',
+          display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:0,
+        }}>
+          {[
+            { label:'ชำระแล้วปีนี้', value:'฿1,560', color:T.success },
+            { label:'รายการทั้งหมด', value:'12', color:T.primary },
+            { label:'ตรงเวลา', value:'100%', color:T.success },
+          ].map((s,i) => (
+            <div key={i} style={{ textAlign:'center', borderRight: i<2 ? `1px solid ${T.border}` : 'none', padding:'0 8px' }}>
+              <div style={{ fontSize:20, fontWeight:800, color:s.color, fontFamily:T.font }}>{s.value}</div>
+              <div style={{ fontSize:12, color:T.navyWeak, fontFamily:T.font, marginTop:2 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* grouped history */}
+      <div style={{ padding:'20px 16px 0' }}>
+        {items.map(group => (
+          <div key={group.month} style={{ marginBottom:20 }}>
+            <div style={{
+              fontSize:13, fontWeight:700, color:T.navyWeak,
+              fontFamily:T.font, textTransform:'uppercase', letterSpacing:0.5,
+              marginBottom:10,
+            }}>{group.month}</div>
+            {group.entries.map((e,i) => (
+              <div key={i} style={{
+                background:T.white, border:`1.5px solid ${T.border}`,
+                borderRadius:T.radius.md, padding:'14px 16px',
+                marginBottom:8, display:'flex', alignItems:'center', gap:14,
+                boxShadow:'0 1px 3px rgba(0,0,0,0.05)',
+              }}>
+                <div style={{
+                  width:48, height:48, borderRadius:13, background:T.successBg,
+                  display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0,
+                }}>{e.icon}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:17, fontWeight:700, color:T.navy, fontFamily:T.font }}>{e.type}</div>
+                  <div style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font, marginTop:2 }}>
+                    {e.date} · {e.method}
+                  </div>
+                </div>
+                <div style={{ textAlign:'right' }}>
+                  <div style={{ fontSize:18, fontWeight:700, color:T.success, fontFamily:T.font }}>฿{e.amount}</div>
+                  <Pill status="paid"/>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <BottomNav active="history" />
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   SCREEN 5 — Water Usage Detail
+───────────────────────────────────────────── */
+const ScreenWaterUsage = () => {
+  const bars = [
+    { month:'ต.ค.', units:14, amount:140 },
+    { month:'พ.ย.', units:12, amount:118 },
+    { month:'ธ.ค.', units:16, amount:162 },
+    { month:'ม.ค.', units:11, amount:108 },
+    { month:'ก.พ.', units:13, amount:130 },
+    { month:'มี.ค.', units:15, amount:150 },
+    { month:'เม.ย.', units:18, amount:180, current:true },
+  ];
+  const maxUnits = Math.max(...bars.map(b=>b.units));
+  return (
+    <div style={{ background:T.surface, minHeight:'100%', position:'relative', paddingBottom:96 }}>
+      <div style={{ background:T.primary, padding:'14px 20px 20px' }}>
+        <div style={{ fontSize:14, color:'rgba(255,255,255,0.7)', fontFamily:T.font, marginBottom:4 }}>บ้านเลขที่ 45/2 ม.3</div>
+        <div style={{ fontSize:22, fontWeight:700, color:'#fff', fontFamily:T.font }}>การใช้น้ำประปา</div>
+      </div>
+
+      {/* current month hero */}
+      <div style={{ margin:'-1px 16px 0', position:'relative', zIndex:2 }}>
+        <div style={{
+          background:T.white, borderRadius:T.radius.lg,
+          boxShadow:'0 4px 16px rgba(0,0,0,0.08)',
+          padding:'18px 20px',
+          display:'flex', gap:20, alignItems:'center',
+        }}>
+          <div style={{
+            width:60, height:60, borderRadius:18,
+            background:'#eff6ff',
+            display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, flexShrink:0,
+          }}>💧</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:13, color:T.navyWeak, fontFamily:T.font }}>เดือนนี้ (เม.ย. 2569)</div>
+            <div style={{ fontSize:32, fontWeight:800, color:T.primary, fontFamily:T.font, lineHeight:1.15 }}>18 หน่วย</div>
+            <div style={{ fontSize:14, color:T.navyWeak, fontFamily:T.font, marginTop:2 }}>มิเตอร์: 00183 → 00201</div>
+          </div>
+          <div style={{ textAlign:'right' }}>
+            <div style={{ fontSize:22, fontWeight:700, color:T.navy, fontFamily:T.font }}>฿180</div>
+            <div style={{ fontSize:13, color:T.warning, fontFamily:T.font }}>+3 จากเดือนก่อน</div>
+          </div>
+        </div>
+      </div>
+
+      {/* bar chart */}
+      <div style={{ padding:'20px 16px 0' }}>
+        <SecHead>การใช้น้ำ 7 เดือนล่าสุด</SecHead>
+        <div style={{
+          background:T.white, borderRadius:T.radius.md,
+          border:`1.5px solid ${T.border}`,
+          padding:'18px 16px',
+          boxShadow:'0 1px 3px rgba(0,0,0,0.05)',
+        }}>
+          <div style={{ display:'flex', alignItems:'flex-end', gap:8, height:100, marginBottom:8 }}>
+            {bars.map((b,i) => (
+              <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+                <div style={{ fontSize:10, fontWeight:700, color: b.current ? T.primary : T.navyWeak, fontFamily:T.font }}>
+                  {b.units}
+                </div>
+                <div style={{
+                  width:'100%', borderRadius:'4px 4px 0 0',
+                  height: `${(b.units/maxUnits)*72}px`,
+                  background: b.current ? T.primary : T.primaryLight,
+                  transition:'all 0.3s',
+                }}/>
+              </div>
+            ))}
+          </div>
+          <div style={{ display:'flex', gap:8 }}>
+            {bars.map((b,i) => (
+              <div key={i} style={{ flex:1, textAlign:'center', fontSize:11, color: b.current ? T.primary : T.navyWeak, fontFamily:T.font, fontWeight: b.current ? 700 : 400 }}>
+                {b.month}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* meter reading */}
+      <div style={{ padding:'16px 16px 0' }}>
+        <SecHead>บันทึกมิเตอร์</SecHead>
+        {[
+          { label:'มิเตอร์ต้นเดือน', value:'00183 หน่วย', icon:'📟' },
+          { label:'มิเตอร์ปลายเดือน', value:'00201 หน่วย', icon:'📟' },
+          { label:'หน่วยที่ใช้', value:'18 หน่วย', icon:'💧' },
+          { label:'ราคาต่อหน่วย', value:'฿10/หน่วย', icon:'💰' },
+        ].map((r,i) => (
+          <div key={i} style={{
+            background:T.white, border:`1.5px solid ${T.border}`,
+            borderRadius:T.radius.md, padding:'14px 16px',
+            marginBottom:8, display:'flex', alignItems:'center', gap:14,
+          }}>
+            <span style={{ fontSize:20 }}>{r.icon}</span>
+            <span style={{ flex:1, fontSize:16, color:T.navyWeak, fontFamily:T.font }}>{r.label}</span>
+            <span style={{ fontSize:16, fontWeight:700, color:T.navy, fontFamily:T.font }}>{r.value}</span>
+          </div>
+        ))}
+      </div>
+
+      <BottomNav active="home" />
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   Main App
+───────────────────────────────────────────── */
+const W = 390, H = 844;
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="r02" title="R-02 — หน้าหลัก (Resident Dashboard)" subtitle="Resident Portal · ออกแบบสำหรับผู้สูงอายุ · Mobile First · ตัวอักษรใหญ่ · ปุ่มใหญ่">
+
+        <DCArtboard id="s1" label="1 · Dashboard — มีบิลค้างชำระ" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenDashboardUnpaid />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s2" label="2 · Dashboard — ชำระครบแล้ว" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenDashboardAllPaid />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s3" label="3 · รายละเอียดบิล (Bill Detail)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenBillDetail />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s4" label="4 · ประวัติการชำระ (Payment History)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenHistory />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+        <DCArtboard id="s5" label="5 · การใช้น้ำ (Water Usage)" width={W} height={H}>
+          <IOSDevice width={W} height={H} dark={false}>
+            <div style={{ paddingTop:90, height:'100%', overflowY:'auto' }}>
+              <ScreenWaterUsage />
+            </div>
+          </IOSDevice>
+        </DCArtboard>
+
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<div id="root"></div>
+</body>
+</html>
