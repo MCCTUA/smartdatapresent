@@ -306,13 +306,16 @@ function DeckStyles() {
       .deck-toolbar button:hover { background: rgba(255,255,255,.28); }
       .deck-toolbar .note { opacity: .75; font-size: 12px; }
 
-      .slide-wrapper { display: flex; justify-content: center; margin: 0 auto 24px; }
+      /* margin:auto centres the wrapper; the inner .slide-scale must sit at top-left (its
+         layout box stays 1280px wide even when transform-scaled) — DO NOT flex-center it,
+         or the oversized box overflows left and the slide renders off the left edge */
+      .slide-wrapper { margin: 0 auto 24px; overflow: hidden; }
 
       /* Mobile — keep right-edge nav dots from overlapping the slide on narrow screens,
          and let the dot column scroll instead of overflowing when there are many slides */
       .scroll-dots { right: max(14px, env(safe-area-inset-right, 14px)) !important; max-height: calc(100dvh - 120px); overflow-y: auto; scrollbar-width: none; }
       .scroll-dots::-webkit-scrollbar { display: none; }
-      @media (max-width: 700px) { .scroll-dots { display: none !important; } }
+      @media (max-width: 932px) { .scroll-dots { display: none !important; } }
       .slide-scale { transform-origin: top left; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
 
       @media print {
