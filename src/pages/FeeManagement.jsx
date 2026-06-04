@@ -1,9 +1,43 @@
-import React from 'react';
+import React, { useRef, useState, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const fadeUp = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.55 } } };
 const stagger = { show: { transition: { staggerChildren: 0.1 } } };
+
+// Renders an HTML mockup in an iframe scaled to *exactly* fill its container width on
+// every screen. designW/designH are the mockup's natural canvas; the visible box height
+// derives from the live width, so the content never sits smaller than its frame.
+function ScaledFrame({ src, title, designW, designH }) {
+  const boxRef = useRef(null);
+  const [scale, setScale] = useState(0);
+
+  useLayoutEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const update = () => setScale(el.clientWidth / designW);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [designW]);
+
+  return (
+    <div ref={boxRef} style={{ position: 'relative', width: '100%', height: designH * scale, overflow: 'hidden' }}>
+      <iframe
+        src={src}
+        title={title}
+        loading="lazy"
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          width: designW, height: designH,
+          transform: `scale(${scale})`, transformOrigin: 'top left',
+          border: 'none', pointerEvents: 'none',
+        }}
+      />
+    </div>
+  );
+}
 
 function Section({ dark, children, id = '' }) {
   return (
@@ -490,13 +524,7 @@ export default function FeeManagement() {
               <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
               <span className="text-black/40 text-[11px] ml-2 font-medium">แผงควบคุมผู้ดูแลระบบ — The Digital Ledger</span>
             </div>
-            <div style={{ height: 559, overflow: 'hidden', position: 'relative' }}>
-              <iframe
-                src="ui/main_screen.html"
-                title="Main Dashboard"
-                style={{ position: 'absolute', top: 0, left: 0, width: 1440, height: 860, transform: 'scale(0.65)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
-              />
-            </div>
+            <ScaledFrame src="ui/main_screen.html" title="Main Dashboard" designW={1440} designH={860} />
           </div>
 
           {/* 3-col Desktop Screens */}
@@ -513,13 +541,7 @@ export default function FeeManagement() {
                   <div className="w-2 h-2 rounded-full bg-[#27c93f]" />
                   <span className="text-black/35 text-[10px] ml-1">{s.label}</span>
                 </div>
-                <div style={{ height: 258, overflow: 'hidden', position: 'relative' }}>
-                  <iframe
-                    src={s.src}
-                    title={s.label}
-                    style={{ position: 'absolute', top: 0, left: 0, width: 1024, height: 860, transform: 'scale(0.30)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
-                  />
-                </div>
+                <ScaledFrame src={s.src} title={s.label} designW={1024} designH={860} />
                 <div className="bg-[#fafafa] px-3 py-2 border-t border-black/6">
                   <p className="text-[11px] text-black/45 leading-tight">{s.desc}</p>
                 </div>
@@ -535,16 +557,9 @@ export default function FeeManagement() {
               { src: 'ui/line_mini_app_notification_fee.html', label: 'LINE Mini App' },
               { src: 'ui/phase_6_mobile.html', label: 'รถเก็บขยะ (GPS)' },
             ].map((s, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div className="rounded-[22px] overflow-hidden border-[3px] border-[#1d1d1f] shadow-[rgba(0,0,0,0.3)_0px_10px_24px]"
-                  style={{ width: 214, height: 463 }}>
-                  <div style={{ height: 463, overflow: 'hidden', position: 'relative' }}>
-                    <iframe
-                      src={s.src}
-                      title={s.label}
-                      style={{ position: 'absolute', top: 0, left: 0, width: 390, height: 844, transform: 'scale(0.549)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
-                    />
-                  </div>
+              <div key={i} className="flex flex-col items-center w-full">
+                <div className="w-full max-w-[214px] rounded-[22px] overflow-hidden border-[3px] border-[#1d1d1f] shadow-[rgba(0,0,0,0.3)_0px_10px_24px]">
+                  <ScaledFrame src={s.src} title={s.label} designW={390} designH={884} />
                 </div>
                 <p className="text-[12px] text-black/50 mt-3 text-center font-medium">{s.label}</p>
               </div>
@@ -564,13 +579,7 @@ export default function FeeManagement() {
                   <div className="w-2 h-2 rounded-full bg-[#27c93f]" />
                   <span className="text-black/35 text-[10px] ml-1">{s.label}</span>
                 </div>
-                <div style={{ height: 388, overflow: 'hidden', position: 'relative' }}>
-                  <iframe
-                    src={s.src}
-                    title={s.label}
-                    style={{ position: 'absolute', top: 0, left: 0, width: 1024, height: 860, transform: 'scale(0.451)', transformOrigin: 'top left', border: 'none', pointerEvents: 'none' }}
-                  />
-                </div>
+                <ScaledFrame src={s.src} title={s.label} designW={1024} designH={860} />
                 <div className="bg-[#fafafa] px-3 py-2 border-t border-black/6">
                   <p className="text-[11px] text-black/45">{s.desc}</p>
                 </div>
