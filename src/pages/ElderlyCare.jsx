@@ -29,7 +29,7 @@ const C = {
 };
 
 const IMG = 'images/elderly-care';
-const TOTAL_SLIDES = 22;
+const TOTAL_SLIDES = 24;
 
 // ---------------------------------------------------------------------------
 // Slide shell — fixed 1280×720, scaled to viewport (screen) and 1:1 (print)
@@ -670,6 +670,51 @@ function AnalysisLayerCard({ badge, badgeBg, title, sub, rows }) {
   );
 }
 
+// Certification strip — drop real logo files into public/images/elderly-care/
+// (either one combined strip `cert-logos.png`, OR separate cert-fda/ce/tga/iso/medsafe.png)
+// and swap the pill fallback below for <img>. Until the files exist we render text pills.
+const CERTS = [
+  { short: 'FDA', alt: 'US FDA cleared' },
+  { short: 'CE · MDR 2797', alt: 'CE / EU MDR 2797' },
+  { short: 'TGA', alt: 'TGA Australia' },
+  { short: 'ISO', alt: 'ISO' },
+  { short: 'MEDSAFE', alt: 'MEDSAFE' },
+];
+let certLogoWarned = false;
+
+function CertStrip() {
+  useEffect(() => {
+    if (certLogoWarned) return;
+    certLogoWarned = true;
+    console.warn('[elderly-care] ยังไม่มีไฟล์โลโก้รับรอง (cert-logos.png หรือ cert-fda/ce/tga/iso/medsafe.png) ใน public/images/elderly-care/ — แสดงป้ายตัวอักษรแทนชั่วคราว');
+  }, []);
+  return (
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+      {CERTS.map((c, i) => (
+        <span
+          key={i}
+          title={c.alt}
+          aria-label={c.alt}
+          style={{
+            height: 40,
+            display: 'inline-flex',
+            alignItems: 'center',
+            fontSize: 12.5,
+            fontWeight: 700,
+            color: C.primaryDeep,
+            background: C.surfaceSoft,
+            border: `1px solid ${C.primarySoft}`,
+            borderRadius: 8,
+            padding: '0 14px',
+          }}
+        >
+          {c.short}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function Slide08Analysis() {
   const legend = [
     { c: C.success, l: 'เขียว · ปกติ' },
@@ -679,9 +724,10 @@ function Slide08Analysis() {
   return (
     <Slide num={8}>
       <Eyebrow>เบื้องหลังที่เชื่อถือได้</Eyebrow>
-      <Title size={32}>วัดครั้งเดียว ~2 นาที ได้บทวิเคราะห์ 3 ชั้น</Title>
-      <Lead style={{ marginTop: 4, marginBottom: 2, fontSize: 15.5, maxWidth: 1080 }}>
-        นาฬิกาทั่วไปบอกแค่ “หัวใจเต้นกี่ครั้ง” — อุปกรณ์นี้ให้ผลวิเคราะห์ 3 ชั้น พร้อมระบบไฟ เขียว/เหลือง/แดง ที่ อสม. และครอบครัวอ่านได้ทันที
+      <Title size={30}>วัดครั้งเดียว ~2 นาที ได้บทวิเคราะห์ 3 ชั้น</Title>
+      <Lead style={{ marginTop: 4, marginBottom: 2, fontSize: 15, maxWidth: 1080 }}>
+        นาฬิกาทั่วไปบอกแค่ “หัวใจเต้นกี่ครั้ง” — อุปกรณ์นี้ให้ผลวิเคราะห์ 3 ชั้น พร้อมระบบไฟ เขียว/เหลือง/แดง ที่ อสม. และครอบครัวอ่านได้ทันที ·
+        ระบบ <strong style={{ color: C.primaryDeep }}>“อ่านผลให้” เป็นข้อความ</strong> และทุกดัชนีมีนิยามคลินิกรองรับ
       </Lead>
       <div style={{ display: 'flex', gap: 10, margin: '10px 0' }}>
         {legend.map((g, i) => (
@@ -727,14 +773,17 @@ function Slide08Analysis() {
           ]}
         />
       </div>
-      <div style={{ marginTop: 12, background: C.primarySoft, borderRadius: 14, padding: '12px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
-        <div style={{ fontSize: 30, lineHeight: 1, flexShrink: 0 }}>🩺</div>
-        <p style={{ fontSize: 13, color: C.text, lineHeight: 1.5, flex: 1 }}>
-          <strong style={{ color: C.primaryDeep }}>ระบบ “อ่านผลให้” เป็นข้อความ</strong> ไม่ใช่โยนตัวเลขดิบ — แปลผลและแนะนำการติดตามให้เอง ·
-          ทุกดัชนีมี <strong style={{ color: C.primaryDeep }}>นิยามทางคลินิกรองรับ</strong> · อุปกรณ์ระดับการแพทย์ รับรอง FDA &amp; CE
+      <p style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.45, marginTop: 10 }}>
+        <strong style={{ color: C.text }}>อ่านค่าเร็ว:</strong> กล้ามเนื้อหัวใจ = ความแข็งแรงของหัวใจ · SDNN = ความยืดหยุ่น/การปรับตัว · RMSSD = การผ่อนคลาย · Stress index = ความเครียดสรีรวิทยา · LF/HF = สมดุลประสาทเร่ง/ผ่อน
+      </p>
+      <div style={{ marginTop: 10, background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 14, padding: '10px 18px' }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.primary, textAlign: 'center', marginBottom: 8 }}>การรับรองมาตรฐานระดับสากล (ตัวเครื่อง)</div>
+        <CertStrip />
+        <p style={{ fontSize: 11, color: C.textMuted, fontStyle: 'italic', textAlign: 'center', marginTop: 8 }}>
+          ความแม่นยำตรวจ AFib &gt;99% เทียบ Holter · ควรตรวจสอบสถานะขึ้นทะเบียน อย. ไทยก่อนใช้เชิงสัญญา
         </p>
       </div>
-      <p style={{ fontSize: 11.5, color: C.textMuted, fontStyle: 'italic', marginTop: 8 }}>
+      <p style={{ fontSize: 11, color: C.textMuted, fontStyle: 'italic', marginTop: 8 }}>
         ค่าดัชนีเป็นเชิงสุขภาวะ (Wellbeing · Non-medical) สำหรับเฝ้าระวัง/คัดกรองเบื้องต้น ไม่ใช่การวินิจฉัย — ตรวจสถานะขึ้นทะเบียนในไทยก่อนใช้เชิงสัญญา
       </p>
     </Slide>
@@ -742,12 +791,94 @@ function Slide08Analysis() {
 }
 
 // ---------------------------------------------------------------------------
-// SLIDE 9 — ป้องกันถูกกว่ารักษา
+// SLIDE 9–10 — อธิบายศัพท์ + สัญญาณเตือน (glossary)
+// ---------------------------------------------------------------------------
+
+function GlossaryTable({ rows }) {
+  return (
+    <div style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 16, overflow: 'hidden', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr 1.85fr', background: C.primary }}>
+        {['ตัวย่อ', 'ความหมายภาษาคน', 'ถ้าผิดปกติ อาจเป็นสัญญาณเตือนของ'].map((h, i) => (
+          <div key={i} style={{ padding: '10px 16px', color: '#FFF', fontWeight: 700, fontSize: 13.5 }}>{h}</div>
+        ))}
+      </div>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr 1.85fr', borderTop: `1px solid ${C.surfaceSoft}`, flex: 1, alignItems: 'center' }}>
+            <div style={{ padding: '7px 16px' }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: C.primary, lineHeight: 1.25 }}>{r.abbr}</div>
+              {r.th && <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.25 }}>{r.th}</div>}
+            </div>
+            <div style={{ padding: '7px 16px', fontSize: 13, color: C.text, lineHeight: 1.35 }}>{r.mean}</div>
+            <div style={{ padding: '7px 16px', fontSize: 13, color: C.text, lineHeight: 1.35 }}>{r.signal}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const GLOSSARY_DISCLAIMER = 'ค่าผิดปกติเป็นเพียงสัญญาณให้ไปพบแพทย์ ไม่ใช่การวินิจฉัยว่าเป็นโรค · ระบบทำหน้าที่เฝ้าระวัง/คัดกรองเบื้องต้นเท่านั้น';
+
+function Slide08bGlossary() {
+  const rows = [
+    { abbr: 'AFib', th: 'หัวใจห้องบนสั่นพลิ้ว', mean: 'หัวใจห้องบนเต้นรัว ไม่เป็นจังหวะ', signal: 'ลิ่มเลือด → โรคหลอดเลือดสมอง/อัมพาต, หัวใจล้มเหลว' },
+    { abbr: 'HR', th: 'อัตราการเต้นหัวใจ', mean: 'จำนวนครั้งหัวใจเต้นต่อนาที', signal: 'เต้นเร็ว/ช้าผิดปกติ, หัวใจเต้นผิดจังหวะ, ไทรอยด์' },
+    { abbr: 'ECG', th: 'คลื่นไฟฟ้าหัวใจ', mean: 'สัญญาณไฟฟ้าของหัวใจ', signal: 'จังหวะ/การนำไฟฟ้าหัวใจผิดปกติ' },
+    { abbr: 'SpO₂', th: 'ออกซิเจนในเลือด', mean: '% ออกซิเจนในเลือด', signal: 'ต่ำ → โรคปอด, ภาวะหยุดหายใจขณะหลับ' },
+    { abbr: 'QT / QTc', th: '', mean: 'ระยะบีบ–คลายหัวใจห้องล่าง', signal: 'ยาวผิดปกติ → หัวใจเต้นผิดจังหวะชนิดอันตราย (เสี่ยงหัวใจหยุดเต้น)' },
+    { abbr: 'PR', th: '', mean: 'เวลานำสัญญาณ ห้องบน→ห้องล่าง', signal: 'ยาว → หัวใจนำไฟฟ้าช้า/บล็อก (AV block)' },
+    { abbr: 'QRS', th: '', mean: 'เวลาสัญญาณวิ่งในห้องล่าง', signal: 'กว้าง → การนำไฟฟ้าห้องล่างผิดปกติ (bundle branch block)' },
+  ];
+  return (
+    <Slide num={9}>
+      <Eyebrow>เข้าใจค่าต่าง ๆ แบบง่าย ๆ</Eyebrow>
+      <Title size={27}>ค่าที่วัดได้ บอกอะไร และถ้าผิดปกติ = สัญญาณเตือนของอะไร</Title>
+      <div style={{ marginTop: 10, marginBottom: 10, background: C.primarySoft, borderRadius: 12, padding: '10px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
+        <span style={{ fontSize: 13, fontWeight: 800, color: C.primaryDeep, background: '#FFF', border: `1px solid ${C.primary}`, padding: '4px 12px', borderRadius: 100, flexShrink: 0 }}>AFib &gt;99%</span>
+        <p style={{ fontSize: 12.5, color: C.text, lineHeight: 1.45, flex: 1 }}>
+          ในการทดสอบทางคลินิก เครื่องตรวจจับภาวะหัวใจห้องบนสั่นพลิ้วได้ถูกต้องเกิน 99% เทียบเครื่องมาตรฐาน (Holter) — จาก 100 ครั้งจับถูกเกิน 99 ครั้ง
+        </p>
+      </div>
+      <GlossaryTable rows={rows} />
+      <p style={{ fontSize: 11.5, color: C.textMuted, fontStyle: 'italic', marginTop: 10 }}>
+        {GLOSSARY_DISCLAIMER}
+      </p>
+    </Slide>
+  );
+}
+
+function Slide08cGlossary() {
+  const rows = [
+    { abbr: 'Myocardium', th: 'กล้ามเนื้อหัวใจ', mean: 'ความแข็งแรงกล้ามเนื้อ+ระบบนำไฟฟ้าหัวใจ', signal: 'ต่ำ → กล้ามเนื้อหัวใจอ่อนแรง' },
+    { abbr: 'SDNN', th: '', mean: 'ความยืดหยุ่น/การปรับตัวของหัวใจ', signal: 'ต่ำ → ความเครียดสะสม, เสี่ยงหัวใจ–หลอดเลือดสูงขึ้น' },
+    { abbr: 'RMSSD', th: '', mean: 'ระดับการผ่อนคลายของระบบประสาท', signal: 'ต่ำ → พักผ่อน/ฟื้นตัวไม่ดี, เครียด' },
+    { abbr: 'Stress index', th: '', mean: 'ความเครียดทางสรีรวิทยา', signal: 'สูง → เครียดเรื้อรัง เสี่ยงความดัน/หัวใจ' },
+    { abbr: 'LF/HF', th: '', mean: 'สมดุลระบบประสาท “เร่ง vs ผ่อน”', signal: 'เสียสมดุล → ระบบประสาทอัตโนมัติผิดปกติ' },
+    { abbr: 'PWV', th: 'ความเร็วคลื่นชีพจร', mean: 'บอกความแข็งตัวของหลอดเลือด', signal: 'สูง → หลอดเลือดแข็ง เสี่ยงความดัน/หัวใจ–หลอดเลือด' },
+  ];
+  return (
+    <Slide num={10}>
+      <Eyebrow>เข้าใจค่าต่าง ๆ แบบง่าย ๆ (ต่อ)</Eyebrow>
+      <Title size={27}>ความแปรปรวนหัวใจ &amp; หลอดเลือด — บอกอะไร และสัญญาณเตือน</Title>
+      <Lead style={{ marginTop: 8, marginBottom: 10, fontSize: 15, maxWidth: 1080 }}>
+        ค่ากลุ่มนี้คือ “สัญญาณเตือนล่วงหน้า” — สะท้อนความเครียดสะสมและสุขภาพหลอดเลือด ก่อนที่จะกลายเป็นอาการชัดเจน
+      </Lead>
+      <GlossaryTable rows={rows} />
+      <p style={{ fontSize: 11.5, color: C.textMuted, fontStyle: 'italic', marginTop: 10 }}>
+        {GLOSSARY_DISCLAIMER}
+      </p>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 11 — ป้องกันถูกกว่ารักษา
 // ---------------------------------------------------------------------------
 
 function Slide07() {
   return (
-    <Slide num={9} dark>
+    <Slide num={11} dark>
       <Eyebrow dark>ทำไมคุ้มกว่า</Eyebrow>
       <Title dark>ป้องกันไว้ก่อน คุ้มกว่ารักษาปลายทาง</Title>
       <Lead dark style={{ marginTop: 10, maxWidth: 1040 }}>
@@ -801,7 +932,7 @@ function Slide08() {
     { ic: '🏆', t: 'เทศบาลได้ข้อมูล และได้ภาพลักษณ์', d: 'มีข้อมูลสุขภาพผู้สูงอายุทั้งตำบล ใช้ตอบสภาฯ และต่อยอดสมัครรางวัล อปท. ดีเด่นได้' },
   ];
   return (
-    <Slide num={10} dark>
+    <Slide num={12} dark>
       <Eyebrow dark>ทำไมต้องแบบนี้</Eyebrow>
       <Title dark>3 เรื่องที่ทำให้ท่านมั่นใจได้</Title>
       <Lead dark style={{ marginTop: 12, maxWidth: 1000 }}>
@@ -870,7 +1001,7 @@ function Slide09() {
     },
   ];
   return (
-    <Slide num={11} dark>
+    <Slide num={13} dark>
       <Eyebrow dark>ครอบคลุมทุกที่ที่ผู้สูงอายุไป</Eyebrow>
       <Title dark size={32}>3 พื้นที่ · 3 เซนเซอร์ ที่เหมาะกับแต่ละจุด</Title>
       <Lead dark style={{ marginTop: 6, marginBottom: 4, fontSize: 16 }}>
@@ -906,7 +1037,7 @@ function Slide09() {
 
 function Slide10() {
   return (
-    <Slide num={12}>
+    <Slide num={14}>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
         <Eyebrow accent>เลือกได้ตามความพร้อม</Eyebrow>
         <Title size={42}>ท่านไม่ต้องลงทุนทั้งตำบลในครั้งเดียว</Title>
@@ -980,7 +1111,7 @@ function Slide11() {
     },
   ];
   return (
-    <Slide num={13}>
+    <Slide num={15}>
       <Eyebrow accent>เมนูโครงการ</Eyebrow>
       <Title>เลือกแบบที่เหมาะกับเทศบาลของท่าน</Title>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginTop: 18, flex: 1 }}>
@@ -1023,7 +1154,7 @@ function FlowBox({ alert, success, children }) {
 
 function Slide12() {
   return (
-    <Slide num={14}>
+    <Slide num={16}>
       <Eyebrow>คำถามสำคัญที่สุด</Eyebrow>
       <Title>เตือนแล้ว... ใครรับสาย?</Title>
       <Lead style={{ marginTop: 10, maxWidth: 1040 }}>
@@ -1075,7 +1206,7 @@ function Slide13() {
     { who: 'สายด่วน 1669 / รพ.', do: 'วินิจฉัยและรักษา ตามมาตรฐานการแพทย์ — เหมือนที่ทำอยู่ทุกวันนี้' },
   ];
   return (
-    <Slide num={15}>
+    <Slide num={17}>
       <Eyebrow>ความรับผิดชอบชัดเจน</Eyebrow>
       <Title>ใครทำหน้าที่อะไร — ไม่มีภาระลอยๆ</Title>
       <Lead style={{ marginTop: 10, maxWidth: 1040 }}>
@@ -1102,7 +1233,7 @@ function Slide13() {
 
 function Slide14() {
   return (
-    <Slide num={16}>
+    <Slide num={18}>
       <Eyebrow>เบาแรง อสม. และเจ้าหน้าที่</Eyebrow>
       <Title>ระบบนี้ช่วยลดงาน ไม่ใช่เพิ่มงาน</Title>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginTop: 20, flex: 1, alignContent: 'center' }}>
@@ -1142,7 +1273,7 @@ function Slide15() {
     { n: 4, t: 'งบกองทุนที่ท่านมีสิทธิใช้', d: 'เริ่มได้ด้วยงบที่หน่วยงานมีอยู่ ไม่ต้องรองบก้อนใหม่' },
   ];
   return (
-    <Slide num={17}>
+    <Slide num={19}>
       <Eyebrow accent>ไม่ต้องเริ่มจากศูนย์</Eyebrow>
       <Title>ต่อยอดจากสิ่งที่เทศบาลมีอยู่แล้ว</Title>
       <Lead style={{ marginTop: 12, maxWidth: 1020 }}>
@@ -1193,7 +1324,7 @@ function Slide16() {
     { c: '#5DCAA5', l: 'ครอบคลุมดี' },
   ];
   return (
-    <Slide num={18}>
+    <Slide num={20}>
       <Eyebrow accent>หน้าจอศูนย์เทศบาล</Eyebrow>
       <Title size={28}>Dashboard ภาพรวมสุขภาพชุมชน · GIS · PDPA-safe</Title>
       <p style={{ fontSize: 13.5, color: C.textMuted, marginTop: 2, marginBottom: 8 }}>
@@ -1347,7 +1478,7 @@ function Slide17App() {
     { n: 3, t: 'วัด → ระบบบันทึกอัตโนมัติ', d: 'ค่าวัดเข้าประวัติของยายบุญมาทันที — ไม่ต้องคีย์ ไม่ผิดคน' },
   ];
   return (
-    <Slide num={19}>
+    <Slide num={21}>
       <Eyebrow accent>เครื่องมือสำหรับ อสม. ภาคสนาม</Eyebrow>
       <Title size={30}>วัดแล้ว ระบบจดให้ — ไม่ต้องคีย์มือ ไม่ผิดคน</Title>
       <p style={{ fontSize: 14, color: C.textMuted, marginTop: 2, marginBottom: 8 }}>
@@ -1468,7 +1599,7 @@ function Slide17() {
     { ic: '🏆', t: 'ภาพลักษณ์ผู้นำที่ใส่ใจ', d: 'มีข้อมูลและกรณีศึกษาเพื่อต่อยอดสมัครรางวัล อปท. ดีเด่น' },
   ];
   return (
-    <Slide num={20}>
+    <Slide num={22}>
       <Eyebrow>สิ่งที่เทศบาลและประชาชนได้</Eyebrow>
       <Title size={36}>ผลที่ท่านนำไปตอบสภาฯ ได้</Title>
       <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 18, marginTop: 14, flex: 1, minHeight: 0, alignItems: 'stretch' }}>
@@ -1500,7 +1631,7 @@ function Slide17() {
 
 function Slide18() {
   return (
-    <Slide num={21}>
+    <Slide num={23}>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
         <Eyebrow>เราอยู่ดูแลต่อเนื่อง</Eyebrow>
         <Title size={42}>ไม่ได้แค่ติดตั้งแล้วจากไป</Title>
@@ -1532,7 +1663,7 @@ function Slide18() {
 
 function Slide19() {
   return (
-    <Slide num={22} dark>
+    <Slide num={24} dark>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
         <Eyebrow dark>ขั้นต่อไป</Eyebrow>
         <Title dark size={44}>
@@ -1570,21 +1701,23 @@ function Toolbar() {
     '5 · 📦 Hardware · ชุดดูแลสุขภาพให้ผู้สูงอายุ',
     '6 · 🩺 Benefit · แพทย์เห็นแนวโน้มล่วงหน้า',
     '7 · ❤️ Proof · เห็นคลื่นหัวใจจริงทุกจังหวะ',
-    '8 · 🔬 Proof · วิเคราะห์ 3 ชั้น + ไฟสถานะ',
-    '9 · 💰 ROI · ป้องกันถูกกว่ารักษาปลายทาง',
-    '10 · 🏆 Why us · 3 จุดต่างที่มั่นใจได้',
-    '11 · 🛡️ Coverage · 3 พื้นที่ ไม่ติดกล้องในห้อง',
-    '12 · 🌱 Choice · ไม่ต้องลงทุนทั้งตำบลทีเดียว',
-    '13 · 💵 Plans · 3 แบบ + แหล่งงบที่ใช้ได้',
-    '14 · 📞 Trust · เตือนแล้วใครรับสาย',
-    '15 · 🎯 Roles · ใครทำหน้าที่อะไร · ไม่มีภาระลอย',
-    '16 · 💪 Win · ระบบช่วยลดงาน อสม.',
-    '17 · 🔁 Reuse · ต่อยอดของที่เทศบาลมี',
-    '18 · 📊 Demo · Dashboard ภาพรวมตำบล',
-    '19 · 📱 Demo · แอป อสม. · บันทึกถูกคน',
-    '20 · 🏛️ Outcome · KPI ตอบสภาฯ ได้',
-    '21 · 🛠️ Support · เราอยู่ดูแลต่อเนื่อง',
-    '22 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
+    '8 · 🔬 Proof · วิเคราะห์ 3 ชั้น + ไฟสถานะ + รับรอง',
+    '9 · 📖 Glossary · ศัพท์ ECG/จังหวะหัวใจ + สัญญาณเตือน',
+    '10 · 📖 Glossary · ศัพท์ HRV/หลอดเลือด + สัญญาณเตือน',
+    '11 · 💰 ROI · ป้องกันถูกกว่ารักษาปลายทาง',
+    '12 · 🏆 Why us · 3 จุดต่างที่มั่นใจได้',
+    '13 · 🛡️ Coverage · 3 พื้นที่ ไม่ติดกล้องในห้อง',
+    '14 · 🌱 Choice · ไม่ต้องลงทุนทั้งตำบลทีเดียว',
+    '15 · 💵 Plans · 3 แบบ + แหล่งงบที่ใช้ได้',
+    '16 · 📞 Trust · เตือนแล้วใครรับสาย',
+    '17 · 🎯 Roles · ใครทำหน้าที่อะไร · ไม่มีภาระลอย',
+    '18 · 💪 Win · ระบบช่วยลดงาน อสม.',
+    '19 · 🔁 Reuse · ต่อยอดของที่เทศบาลมี',
+    '20 · 📊 Demo · Dashboard ภาพรวมตำบล',
+    '21 · 📱 Demo · แอป อสม. · บันทึกถูกคน',
+    '22 · 🏛️ Outcome · KPI ตอบสภาฯ ได้',
+    '23 · 🛠️ Support · เราอยู่ดูแลต่อเนื่อง',
+    '24 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
   ];
   const goTo = (i) => {
     const el = document.getElementById(`slide-${i + 1}`);
@@ -1701,7 +1834,7 @@ function ScrollDots({ count }) {
 // ---------------------------------------------------------------------------
 
 export default function ElderlyCare() {
-  const slides = [Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07Evidence, Slide08Analysis, Slide07, Slide08, Slide09, Slide10, Slide11, Slide12, Slide13, Slide14, Slide15, Slide16, Slide17App, Slide17, Slide18, Slide19];
+  const slides = [Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07Evidence, Slide08Analysis, Slide08bGlossary, Slide08cGlossary, Slide07, Slide08, Slide09, Slide10, Slide11, Slide12, Slide13, Slide14, Slide15, Slide16, Slide17App, Slide17, Slide18, Slide19];
   return (
     <>
       <DeckStyles />
