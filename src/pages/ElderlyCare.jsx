@@ -29,7 +29,7 @@ const C = {
 };
 
 const IMG = 'images/elderly-care';
-const TOTAL_SLIDES = 20;
+const TOTAL_SLIDES = 22;
 
 // ---------------------------------------------------------------------------
 // Slide shell — fixed 1280×720, scaled to viewport (screen) and 1:1 (print)
@@ -590,12 +590,164 @@ function Slide06() {
 }
 
 // ---------------------------------------------------------------------------
-// SLIDE 7 — ป้องกันถูกกว่ารักษา
+// SLIDE 7 — หลักฐานจริง: เห็นทุกจังหวะหัวใจ (real ECG + HR trend)
+// ---------------------------------------------------------------------------
+
+function EvidenceCard({ img, alt, badge, title, caption, flex }) {
+  return (
+    <div style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 16, padding: '12px 16px', display: 'flex', flexDirection: 'column', minHeight: 0, flex }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexShrink: 0 }}>
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: C.primary, background: C.primarySoft, padding: '4px 11px', borderRadius: 100 }}>{badge}</span>
+        <h3 style={{ fontSize: 15.5, fontWeight: 700, color: C.primaryDeep, lineHeight: 1.3 }}>{title}</h3>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, background: '#FCFBF6', border: `1px solid ${C.surfaceSoft}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 6 }}>
+        <img src={img} alt={alt} style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }} />
+      </div>
+      <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.45, marginTop: 8, flexShrink: 0 }}>{caption}</p>
+    </div>
+  );
+}
+
+function Slide07Evidence() {
+  return (
+    <Slide num={7} footer="ตัวอย่างจากการตรวจวัดจริง (สาธิต) · ตัดเฉพาะกราฟ ไม่มีข้อมูลส่วนบุคคล (PDPA-safe)">
+      <Eyebrow accent>หลักฐานจากการตรวจวัดจริง</Eyebrow>
+      <Title size={34}>ไม่ใช่แค่บอกว่าดี — เห็นคลื่นหัวใจจริงทุกจังหวะ</Title>
+      <Lead style={{ marginTop: 8, fontSize: 16.5, maxWidth: 1060 }}>
+        นาฬิกาเฝ้าระวังหัวใจบันทึกคลื่นไฟฟ้าหัวใจ <strong style={{ color: C.primary }}>ระดับการแพทย์</strong> ในการวัด
+        ~2 นาทีครั้งเดียว — ภาพข้างล่างคือกราฟจริงที่ตัดมาจากรายงานการตรวจวัด
+      </Lead>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 14, flex: 1, minHeight: 0 }}>
+        <EvidenceCard
+          flex={1.5}
+          img={`${IMG}/real_ecg_strip.png`}
+          alt="คลื่นไฟฟ้าหัวใจจริง Lead I มาตรฐาน 25 mm/s, 10 mm/mV"
+          badge="คลื่นไฟฟ้าหัวใจ (ECG)"
+          title="บันทึกทุกจังหวะ พร้อมจัดประเภทการเต้น"
+          caption="คลื่นไฟฟ้าหัวใจ Lead I มาตรฐานคลินิก 25 mm/s · 10 mm/mV — จัดประเภทการเต้นให้อัตโนมัติ (N = ปกติ) เป็นภาพที่ “ดูแล้วเชื่อ” ที่สุด"
+        />
+        <EvidenceCard
+          flex={1}
+          img={`${IMG}/real_hr_trend.png`}
+          alt="อัตราการเต้นหัวใจต่อเนื่อง 153 ครั้งใน 2 นาที เฉลี่ย 82"
+          badge="อัตราการเต้นหัวใจ"
+          title="เห็นทุกจังหวะ ไม่ใช่ค่าเฉลี่ยรายชั่วโมง"
+          caption="บันทึกการเต้นหัวใจต่อเนื่อง 153 ครั้งใน ~2 นาที (เฉลี่ย 82 · ช่วง 76–89) ยืนยันจังหวะปกติแบบจังหวะต่อจังหวะ"
+        />
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 8 — เบื้องหลังการวิเคราะห์ 3 ชั้น + ไฟสถานะ (credibility)
+// ---------------------------------------------------------------------------
+
+function StatusDot({ color }) {
+  return <span style={{ width: 11, height: 11, borderRadius: '50%', background: color, display: 'inline-block', flexShrink: 0 }} />;
+}
+
+function MetricRow({ label, value, status }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderTop: `1px solid ${C.surfaceSoft}` }}>
+      {status ? <StatusDot color={status} /> : <span style={{ width: 11, flexShrink: 0 }} />}
+      <span style={{ fontSize: 13, color: C.text, flex: 1, lineHeight: 1.3 }}>{label}</span>
+      <span style={{ fontSize: 13.5, fontWeight: 700, color: C.primaryDeep, flexShrink: 0 }}>{value}</span>
+    </div>
+  );
+}
+
+function AnalysisLayerCard({ badge, badgeBg, title, sub, rows }) {
+  return (
+    <div style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 16, padding: '16px 18px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <span style={{ alignSelf: 'flex-start', fontSize: 11.5, fontWeight: 700, color: '#FFF', background: badgeBg, padding: '4px 12px', borderRadius: 100, marginBottom: 8 }}>{badge}</span>
+      <h3 style={{ fontSize: 16.5, fontWeight: 800, color: C.primaryDeep, lineHeight: 1.3 }}>{title}</h3>
+      <p style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.4, marginBottom: 6 }}>{sub}</p>
+      <div style={{ marginTop: 'auto' }}>
+        {rows.map((r, i) => <MetricRow key={i} {...r} />)}
+      </div>
+    </div>
+  );
+}
+
+function Slide08Analysis() {
+  const legend = [
+    { c: C.success, l: 'เขียว · ปกติ' },
+    { c: C.accent, l: 'เหลือง · เฝ้าดู' },
+    { c: C.alert, l: 'แดง · ควรติดตาม' },
+  ];
+  return (
+    <Slide num={8}>
+      <Eyebrow>เบื้องหลังที่เชื่อถือได้</Eyebrow>
+      <Title size={32}>วัดครั้งเดียว ~2 นาที ได้บทวิเคราะห์ 3 ชั้น</Title>
+      <Lead style={{ marginTop: 4, marginBottom: 2, fontSize: 15.5, maxWidth: 1080 }}>
+        นาฬิกาทั่วไปบอกแค่ “หัวใจเต้นกี่ครั้ง” — อุปกรณ์นี้ให้ผลวิเคราะห์ 3 ชั้น พร้อมระบบไฟ เขียว/เหลือง/แดง ที่ อสม. และครอบครัวอ่านได้ทันที
+      </Lead>
+      <div style={{ display: 'flex', gap: 10, margin: '10px 0' }}>
+        {legend.map((g, i) => (
+          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, color: C.text }}>
+            <StatusDot color={g.c} />{g.l}
+          </span>
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, flex: 1, minHeight: 0 }}>
+        <AnalysisLayerCard
+          badge="ชั้นที่ 1"
+          badgeBg={C.primary}
+          title="ค่าคลื่นไฟฟ้าหัวใจ (ECG)"
+          sub="ภาษาเดียวกับที่แพทย์โรคหัวใจใช้"
+          rows={[
+            { label: 'QT / QTc', value: '402 / 471 ms' },
+            { label: 'PR interval', value: '145 ms' },
+            { label: 'QRS', value: '117 ms' },
+          ]}
+        />
+        <AnalysisLayerCard
+          badge="ชั้นที่ 2"
+          badgeBg="#4A7C59"
+          title="ดัชนีสุขภาวะหัวใจ"
+          sub="สรุปรวม พร้อมไฟสถานะ"
+          rows={[
+            { label: 'จังหวะการเต้น (Rhythm)', value: '100', status: C.success },
+            { label: 'สภาพกล้ามเนื้อหัวใจ', value: '74%', status: C.accent },
+            { label: 'ความเสี่ยงภาวะหัวใจ', value: '58', status: C.accent },
+            { label: 'ระดับความเครียด', value: 'ปกติ', status: C.success },
+          ]}
+        />
+        <AnalysisLayerCard
+          badge="ชั้นที่ 3"
+          badgeBg={C.accent}
+          title="ความแปรปรวนหัวใจ (HRV)"
+          sub="สัญญาณเตือนล่วงหน้า"
+          rows={[
+            { label: 'อัตราการเต้นหัวใจ', value: '82 bpm', status: C.success },
+            { label: 'SDNN / RMSSD', value: '24 / 19 ms', status: C.alert },
+            { label: 'Stress index', value: '470', status: C.alert },
+            { label: 'สมดุลประสาท (LF/HF)', value: '0.33', status: C.alert },
+          ]}
+        />
+      </div>
+      <div style={{ marginTop: 12, background: C.primarySoft, borderRadius: 14, padding: '12px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
+        <div style={{ fontSize: 30, lineHeight: 1, flexShrink: 0 }}>🩺</div>
+        <p style={{ fontSize: 13, color: C.text, lineHeight: 1.5, flex: 1 }}>
+          <strong style={{ color: C.primaryDeep }}>ระบบ “อ่านผลให้” เป็นข้อความ</strong> ไม่ใช่โยนตัวเลขดิบ — แปลผลและแนะนำการติดตามให้เอง ·
+          ทุกดัชนีมี <strong style={{ color: C.primaryDeep }}>นิยามทางคลินิกรองรับ</strong> · อุปกรณ์ระดับการแพทย์ รับรอง FDA &amp; CE
+        </p>
+      </div>
+      <p style={{ fontSize: 11.5, color: C.textMuted, fontStyle: 'italic', marginTop: 8 }}>
+        ค่าดัชนีเป็นเชิงสุขภาวะ (Wellbeing · Non-medical) สำหรับเฝ้าระวัง/คัดกรองเบื้องต้น ไม่ใช่การวินิจฉัย — ตรวจสถานะขึ้นทะเบียนในไทยก่อนใช้เชิงสัญญา
+      </p>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 9 — ป้องกันถูกกว่ารักษา
 // ---------------------------------------------------------------------------
 
 function Slide07() {
   return (
-    <Slide num={7} dark>
+    <Slide num={9} dark>
       <Eyebrow dark>ทำไมคุ้มกว่า</Eyebrow>
       <Title dark>ป้องกันไว้ก่อน คุ้มกว่ารักษาปลายทาง</Title>
       <Lead dark style={{ marginTop: 10, maxWidth: 1040 }}>
@@ -649,7 +801,7 @@ function Slide08() {
     { ic: '🏆', t: 'เทศบาลได้ข้อมูล และได้ภาพลักษณ์', d: 'มีข้อมูลสุขภาพผู้สูงอายุทั้งตำบล ใช้ตอบสภาฯ และต่อยอดสมัครรางวัล อปท. ดีเด่นได้' },
   ];
   return (
-    <Slide num={8} dark>
+    <Slide num={10} dark>
       <Eyebrow dark>ทำไมต้องแบบนี้</Eyebrow>
       <Title dark>3 เรื่องที่ทำให้ท่านมั่นใจได้</Title>
       <Lead dark style={{ marginTop: 12, maxWidth: 1000 }}>
@@ -718,7 +870,7 @@ function Slide09() {
     },
   ];
   return (
-    <Slide num={9} dark>
+    <Slide num={11} dark>
       <Eyebrow dark>ครอบคลุมทุกที่ที่ผู้สูงอายุไป</Eyebrow>
       <Title dark size={32}>3 พื้นที่ · 3 เซนเซอร์ ที่เหมาะกับแต่ละจุด</Title>
       <Lead dark style={{ marginTop: 6, marginBottom: 4, fontSize: 16 }}>
@@ -754,7 +906,7 @@ function Slide09() {
 
 function Slide10() {
   return (
-    <Slide num={10}>
+    <Slide num={12}>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
         <Eyebrow accent>เลือกได้ตามความพร้อม</Eyebrow>
         <Title size={42}>ท่านไม่ต้องลงทุนทั้งตำบลในครั้งเดียว</Title>
@@ -828,7 +980,7 @@ function Slide11() {
     },
   ];
   return (
-    <Slide num={11}>
+    <Slide num={13}>
       <Eyebrow accent>เมนูโครงการ</Eyebrow>
       <Title>เลือกแบบที่เหมาะกับเทศบาลของท่าน</Title>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginTop: 18, flex: 1 }}>
@@ -871,7 +1023,7 @@ function FlowBox({ alert, success, children }) {
 
 function Slide12() {
   return (
-    <Slide num={12}>
+    <Slide num={14}>
       <Eyebrow>คำถามสำคัญที่สุด</Eyebrow>
       <Title>เตือนแล้ว... ใครรับสาย?</Title>
       <Lead style={{ marginTop: 10, maxWidth: 1040 }}>
@@ -923,7 +1075,7 @@ function Slide13() {
     { who: 'สายด่วน 1669 / รพ.', do: 'วินิจฉัยและรักษา ตามมาตรฐานการแพทย์ — เหมือนที่ทำอยู่ทุกวันนี้' },
   ];
   return (
-    <Slide num={13}>
+    <Slide num={15}>
       <Eyebrow>ความรับผิดชอบชัดเจน</Eyebrow>
       <Title>ใครทำหน้าที่อะไร — ไม่มีภาระลอยๆ</Title>
       <Lead style={{ marginTop: 10, maxWidth: 1040 }}>
@@ -950,7 +1102,7 @@ function Slide13() {
 
 function Slide14() {
   return (
-    <Slide num={14}>
+    <Slide num={16}>
       <Eyebrow>เบาแรง อสม. และเจ้าหน้าที่</Eyebrow>
       <Title>ระบบนี้ช่วยลดงาน ไม่ใช่เพิ่มงาน</Title>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginTop: 20, flex: 1, alignContent: 'center' }}>
@@ -990,7 +1142,7 @@ function Slide15() {
     { n: 4, t: 'งบกองทุนที่ท่านมีสิทธิใช้', d: 'เริ่มได้ด้วยงบที่หน่วยงานมีอยู่ ไม่ต้องรองบก้อนใหม่' },
   ];
   return (
-    <Slide num={15}>
+    <Slide num={17}>
       <Eyebrow accent>ไม่ต้องเริ่มจากศูนย์</Eyebrow>
       <Title>ต่อยอดจากสิ่งที่เทศบาลมีอยู่แล้ว</Title>
       <Lead style={{ marginTop: 12, maxWidth: 1020 }}>
@@ -1041,7 +1193,7 @@ function Slide16() {
     { c: '#5DCAA5', l: 'ครอบคลุมดี' },
   ];
   return (
-    <Slide num={16}>
+    <Slide num={18}>
       <Eyebrow accent>หน้าจอศูนย์เทศบาล</Eyebrow>
       <Title size={28}>Dashboard ภาพรวมสุขภาพชุมชน · GIS · PDPA-safe</Title>
       <p style={{ fontSize: 13.5, color: C.textMuted, marginTop: 2, marginBottom: 8 }}>
@@ -1195,7 +1347,7 @@ function Slide17App() {
     { n: 3, t: 'วัด → ระบบบันทึกอัตโนมัติ', d: 'ค่าวัดเข้าประวัติของยายบุญมาทันที — ไม่ต้องคีย์ ไม่ผิดคน' },
   ];
   return (
-    <Slide num={17}>
+    <Slide num={19}>
       <Eyebrow accent>เครื่องมือสำหรับ อสม. ภาคสนาม</Eyebrow>
       <Title size={30}>วัดแล้ว ระบบจดให้ — ไม่ต้องคีย์มือ ไม่ผิดคน</Title>
       <p style={{ fontSize: 14, color: C.textMuted, marginTop: 2, marginBottom: 8 }}>
@@ -1316,7 +1468,7 @@ function Slide17() {
     { ic: '🏆', t: 'ภาพลักษณ์ผู้นำที่ใส่ใจ', d: 'มีข้อมูลและกรณีศึกษาเพื่อต่อยอดสมัครรางวัล อปท. ดีเด่น' },
   ];
   return (
-    <Slide num={18}>
+    <Slide num={20}>
       <Eyebrow>สิ่งที่เทศบาลและประชาชนได้</Eyebrow>
       <Title size={36}>ผลที่ท่านนำไปตอบสภาฯ ได้</Title>
       <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 18, marginTop: 14, flex: 1, minHeight: 0, alignItems: 'stretch' }}>
@@ -1348,7 +1500,7 @@ function Slide17() {
 
 function Slide18() {
   return (
-    <Slide num={19}>
+    <Slide num={21}>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
         <Eyebrow>เราอยู่ดูแลต่อเนื่อง</Eyebrow>
         <Title size={42}>ไม่ได้แค่ติดตั้งแล้วจากไป</Title>
@@ -1380,7 +1532,7 @@ function Slide18() {
 
 function Slide19() {
   return (
-    <Slide num={20} dark>
+    <Slide num={22} dark>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
         <Eyebrow dark>ขั้นต่อไป</Eyebrow>
         <Title dark size={44}>
@@ -1417,20 +1569,22 @@ function Toolbar() {
     '4 · 🔧 How · 3 จุดข้อมูล สู่ศูนย์ใน 1 นาที',
     '5 · 📦 Hardware · ชุดดูแลสุขภาพให้ผู้สูงอายุ',
     '6 · 🩺 Benefit · แพทย์เห็นแนวโน้มล่วงหน้า',
-    '7 · 💰 ROI · ป้องกันถูกกว่ารักษาปลายทาง',
-    '8 · 🏆 Why us · 3 จุดต่างที่มั่นใจได้',
-    '9 · 🛡️ Coverage · 3 พื้นที่ ไม่ติดกล้องในห้อง',
-    '10 · 🌱 Choice · ไม่ต้องลงทุนทั้งตำบลทีเดียว',
-    '11 · 💵 Plans · 3 แบบ + แหล่งงบที่ใช้ได้',
-    '12 · 📞 Trust · เตือนแล้วใครรับสาย',
-    '13 · 🎯 Roles · ใครทำหน้าที่อะไร · ไม่มีภาระลอย',
-    '14 · 💪 Win · ระบบช่วยลดงาน อสม.',
-    '15 · 🔁 Reuse · ต่อยอดของที่เทศบาลมี',
-    '16 · 📊 Demo · Dashboard ภาพรวมตำบล',
-    '17 · 📱 Demo · แอป อสม. · บันทึกถูกคน',
-    '18 · 🏛️ Outcome · KPI ตอบสภาฯ ได้',
-    '19 · 🛠️ Support · เราอยู่ดูแลต่อเนื่อง',
-    '20 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
+    '7 · ❤️ Proof · เห็นคลื่นหัวใจจริงทุกจังหวะ',
+    '8 · 🔬 Proof · วิเคราะห์ 3 ชั้น + ไฟสถานะ',
+    '9 · 💰 ROI · ป้องกันถูกกว่ารักษาปลายทาง',
+    '10 · 🏆 Why us · 3 จุดต่างที่มั่นใจได้',
+    '11 · 🛡️ Coverage · 3 พื้นที่ ไม่ติดกล้องในห้อง',
+    '12 · 🌱 Choice · ไม่ต้องลงทุนทั้งตำบลทีเดียว',
+    '13 · 💵 Plans · 3 แบบ + แหล่งงบที่ใช้ได้',
+    '14 · 📞 Trust · เตือนแล้วใครรับสาย',
+    '15 · 🎯 Roles · ใครทำหน้าที่อะไร · ไม่มีภาระลอย',
+    '16 · 💪 Win · ระบบช่วยลดงาน อสม.',
+    '17 · 🔁 Reuse · ต่อยอดของที่เทศบาลมี',
+    '18 · 📊 Demo · Dashboard ภาพรวมตำบล',
+    '19 · 📱 Demo · แอป อสม. · บันทึกถูกคน',
+    '20 · 🏛️ Outcome · KPI ตอบสภาฯ ได้',
+    '21 · 🛠️ Support · เราอยู่ดูแลต่อเนื่อง',
+    '22 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
   ];
   const goTo = (i) => {
     const el = document.getElementById(`slide-${i + 1}`);
@@ -1547,7 +1701,7 @@ function ScrollDots({ count }) {
 // ---------------------------------------------------------------------------
 
 export default function ElderlyCare() {
-  const slides = [Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07, Slide08, Slide09, Slide10, Slide11, Slide12, Slide13, Slide14, Slide15, Slide16, Slide17App, Slide17, Slide18, Slide19];
+  const slides = [Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07Evidence, Slide08Analysis, Slide07, Slide08, Slide09, Slide10, Slide11, Slide12, Slide13, Slide14, Slide15, Slide16, Slide17App, Slide17, Slide18, Slide19];
   return (
     <>
       <DeckStyles />
