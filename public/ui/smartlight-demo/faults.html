@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SmartPole Faults & Maintenance Workspace</title>
+  <title>ระบบบริหารงานแจ้งซ่อม / งานกองช่าง</title>
   <style>
     :root {
       --bg: #071014;
@@ -1177,82 +1177,82 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"></span>
         <div>
-          <h1>⚠ Faults & Maintenance <span class="connection-badge"><span class="status-dot"></span>Live connected</span></h1>
+          <h1>⚠ งานแจ้งซ่อม / ใบงานกองช่าง <span class="connection-badge"><span class="status-dot"></span>เชื่อมต่อระบบแล้ว</span></h1>
           <div class="brand-meta">
-            <p class="subtitle">/faults/ · issue queue · maintenance command center</p>
+            <p class="subtitle">ศูนย์รวมงานแจ้งซ่อม · เปิดใบงาน · มอบหมาย · ติดตาม · ปิดงาน</p>
           </div>
         </div>
       </div>
       <div class="actions top-actions">
-        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
-        <span class="chip">▣ Portfolio UI · Platform/Dealer</span>
-        <a class="critical-error-badge" href="/faults/?state=active">⚠ 37 active issues · 12 P1</a>
+        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ โหมดมืด</button>
+        <span class="chip">▣ มุมมองผู้ดูแลระบบ</span>
+        <a class="critical-error-badge" href="/faults/?state=active">⚠ 37 งานค้าง · 12 เร่งด่วน</a>
         <div class="profile-menu" data-profile-menu>
-          <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+          <button class="button" type="button" data-profile-toggle>◉ ผู้ใช้</button>
           <div class="profile-popover" aria-label="Profile controls">
             <div class="profile-popover-head">
-              <strong>◉ Manager Profile</strong>
-              <span>goodten</span>
+              <strong>◉ หัวหน้ากองช่าง</strong>
+              <span>เทศบาลตำบลสาธิต</span>
             </div>
             <div class="profile-actions">
-              <a class="profile-action" href="/profile/">◉ Profile <span>name, email, language</span></a>
-              <a class="profile-action" href="/password_change/">◆ Password <span>change password</span></a>
-              <a class="profile-action" href="/settings/">⚙ Preferences <span>timezone, layout</span></a>
-              <a class="profile-action" href="/logout/">↪ Sign out <span>end session</span></a>
+              <a class="profile-action" href="#">◉ ข้อมูลผู้ใช้ <span>ชื่อ อีเมล ภาษา</span></a>
+              <a class="profile-action" href="#">◆ รหัสผ่าน <span>เปลี่ยนรหัสผ่าน</span></a>
+              <a class="profile-action" href="#">⚙ ตั้งค่า <span>เขตเวลา หน้าจอ</span></a>
+              <a class="profile-action" href="#">↪ ออกจากระบบ <span>จบการใช้งาน</span></a>
             </div>
           </div>
         </div>
         <div class="widget-menu" data-widget-menu>
-          <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+          <button class="button" type="button" data-widget-toggle>▦ การ์ด</button>
           <div class="widget-popover" aria-label="Widget visibility controls">
             <div class="widget-popover-head">
-              <strong>▦ Widget visibility</strong>
-              <span>Show or hide cards in this command center.</span>
+              <strong>▦ แสดง/ซ่อนการ์ด</strong>
+              <span>เลือกการ์ดที่จะแสดงในหน้านี้</span>
             </div>
             <div class="card-library">
-              <div class="library-card"><label><input type="checkbox" checked> ▤ Issue Queue</label><p>System-detected active issues only.</p></div>
-              <div class="library-card"><label><input type="checkbox" checked> ▤ Maintenance Records</label><p>Fault-linked, manual, and preventive work orders.</p></div>
-              <div class="library-card"><label><input type="checkbox" checked> ▣ Maintenance Drawer</label><p>Shared repair form, QR, owner, timeline.</p></div>
-              <div class="library-card"><label><input type="checkbox" checked> ⎇ Operating Process</label><p>State machine and cross-page effects.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▤ คิวงานเข้าใหม่</label><p>งานที่เข้ามาใหม่ ทั้งระบบจับเองและประชาชนแจ้ง</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▤ ทะเบียนใบงาน</label><p>ใบงานทุกประเภท ทั้งงานด่วน งานตามแผน และที่ปิดแล้ว</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▣ แบบฟอร์มใบงาน</label><p>ฟอร์มซ่อมร่วม QR ผู้รับผิดชอบ ไทม์ไลน์</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ⎇ ขั้นตอนการทำงาน</label><p>ลำดับสถานะงานและผลข้ามหน้า</p></div>
             </div>
           </div>
         </div>
-        <span class="button primary">✓ Save layout</span>
+        <span class="button primary">✓ บันทึกหน้าจอ</span>
       </div>
     </header>
 
     <section class="panel filter-panel" aria-label="Fault filters">
       <div class="filter-head">
         <div>
-          <h2>⌕ Fault / Maintenance Filters</h2>
-          <p class="subtitle">This page is the operational continuation from dashboard Top Issues. It is not only broken lamps; it also manages repair, planned maintenance, suppressed faults, and completion history.</p>
+          <h2>⌕ ค้นหา / กรองใบงาน</h2>
+          <p class="subtitle">หน้านี้รับงานแจ้งซ่อมทุกประเภทของกองช่าง — ไม่ใช่แค่ไฟถนน แต่รวมงานประปา · ถนน/ฝาท่อ · ครุภัณฑ์/รถ · เรื่องร้องเรียน · งานซ่อมบำรุงตามแผน และประวัติงานที่ปิดแล้ว</p>
         </div>
         <div class="chip-row">
-          <span class="button primary">✓ Apply</span>
-          <span class="button">× Reset</span>
-          <span class="button rose">+ Create work order</span>
+          <span class="button primary">✓ ค้นหา</span>
+          <span class="button">× ล้าง</span>
+          <span class="button rose">+ เปิดใบงานใหม่</span>
         </div>
       </div>
       <div class="filter-grid">
         
-        <div class="field"><label>UI mode</label><select><option>Portfolio UI · Platform/Dealer</option><option>Customer UI · Site operation</option></select></div>
-        <div class="field"><label>Search device_id</label><input value="SP-088" aria-label="Search device ID"></div>
-        <div class="field"><label>Account scope</label><select><option>All visible accounts</option><option>Dealer A subtree</option><option>Customer Factory AA</option></select></div>
-        <div class="field"><label>Site / zone</label><select><option>All sites/zones</option><option>Main campus / Road B</option><option>Factory AA / Warehouse</option></select></div>
-        <div class="field"><label>Status</label><select><option>Active + acknowledged</option><option>Open work orders</option><option>In progress</option><option>Completed</option><option>Suppressed</option></select></div>
-        <div class="field"><label>Severity / Priority</label><select><option>All</option><option>Critical / P1</option><option>Warning / P2</option><option>Connectivity</option></select></div>
-        <div class="field"><label>Issue type</label><select><option>All system issues</option><option>Fault Alert</option><option>Power Issue</option><option>Hardware Failure</option><option>Connectivity</option><option>Command timeout</option></select></div>
-        <div class="field"><label>Time range</label><select><option>Today</option><option>Last 7 days</option><option>This month</option><option>Custom range</option></select></div>
+        <div class="field"><label>มุมมอง</label><select><option>มุมมองผู้ดูแลระบบ</option><option>มุมมองหน่วยงาน · หน้างาน</option></select></div>
+        <div class="field"><label>ค้นหาเลขใบงาน / รหัสจุด</label><input value="WO-2026-0042" aria-label="ค้นหาเลขใบงาน"></div>
+        <div class="field"><label>หน่วยงาน</label><select><option>ทุกหน่วยงาน</option><option>กองช่าง</option><option>กองสาธารณสุข</option></select></div>
+        <div class="field"><label>พื้นที่ / โซน</label><select><option>ทุกพื้นที่</option><option>ถนนสายหลัก / หมู่ 3</option><option>ตลาดสด / ชุมชน</option></select></div>
+        <div class="field"><label>สถานะงาน</label><select><option>กำลังดำเนินการ + รับเรื่องแล้ว</option><option>ใบงานที่เปิดอยู่</option><option>กำลังซ่อม</option><option>ปิดงานแล้ว</option><option>พักไว้</option></select></div>
+        <div class="field"><label>ความเร่งด่วน</label><select><option>ทั้งหมด</option><option>วิกฤต / เร่งด่วน</option><option>เฝ้าระวัง</option><option>ขาดการเชื่อมต่อ</option></select></div>
+        <div class="field"><label>ประเภทงาน</label><select><option>ทุกประเภทงาน</option><option>ไฟถนน</option><option>ประปา / ท่อแตก-รั่ว</option><option>ถนน / ฝาท่อ / ป้าย</option><option>ครุภัณฑ์ / รถ / เครื่องจักร</option><option>เรื่องร้องเรียน</option><option>ซ่อมบำรุงตามแผน</option></select></div>
+        <div class="field"><label>ช่วงเวลา</label><select><option>วันนี้</option><option>7 วันล่าสุด</option><option>เดือนนี้</option><option>กำหนดเอง</option></select></div>
       </div>
     </section>
 
     <section class="stats-grid" aria-label="Fault summary">
-      <div class="stat"><span>Critical</span><strong class="rose">12</strong></div>
-      <div class="stat"><span>Warning</span><strong class="amber">25</strong></div>
-      <div class="stat"><span>Maintenance</span><strong class="blue">9</strong></div>
-      <div class="stat"><span>In progress</span><strong style="color:var(--violet)">7</strong></div>
-      <div class="stat"><span>Resolved today</span><strong class="green">18</strong></div>
-      <div class="stat"><span>SLA risk</span><strong class="rose">4</strong></div>
+      <div class="stat"><span>วิกฤต</span><strong class="rose">12</strong></div>
+      <div class="stat"><span>เฝ้าระวัง</span><strong class="amber">25</strong></div>
+      <div class="stat"><span>ซ่อมบำรุงตามแผน</span><strong class="blue">9</strong></div>
+      <div class="stat"><span>กำลังซ่อม</span><strong style="color:var(--violet)">7</strong></div>
+      <div class="stat"><span>ปิดงานวันนี้</span><strong class="green">18</strong></div>
+      <div class="stat"><span>ใกล้เกินกำหนด</span><strong class="rose">4</strong></div>
     </section>
 
     
@@ -1260,44 +1260,44 @@
       <article class="card queue-card">
         <div class="card-head">
           <div>
-            <h2>▤ Issue Queue</h2>
-            <p class="subtitle">System-detected issues only. Manual or preventive maintenance belongs in Maintenance Records after a WorkOrder exists.</p>
+            <h2>▤ คิวงานเข้าใหม่</h2>
+            <p class="subtitle">งานที่เข้ามาใหม่ — ทั้งที่ระบบจับได้เอง และที่ประชาชน/เจ้าหน้าที่แจ้งเข้ามา · กดเปิดเพื่อรับเรื่อง มอบหมายช่าง และเปิดใบงาน</p>
           </div>
           <div class="chip-row">
-            <span class="chip rose">4 system issues</span>
-            <span class="chip amber">3 SLA warning</span>
+            <span class="chip rose">4 งานรอรับ</span>
+            <span class="chip amber">3 ใกล้เกินกำหนด</span>
           </div>
         </div>
         <div class="queue-list">
           <div class="queue-row">
-            <span class="priority p1">P1</span>
+            <span class="priority p1">เร่งด่วน</span>
             <div class="queue-main">
-              <strong>SP-088 · Promoted lamp-state fault</strong>
-              <span>Fault Alert · Road B · command ON unconfirmed after debounce · open 18m</span>
-              <p>Clicking this opens the shared maintenance drawer with QR, timeline, fault context, and maintenance actions.</p>
-              <div class="mini-meta"><span>Detected: 2026-06-03 08:42</span><span>SLA: 42m left</span><span>FaultOccurrence</span></div>
+              <strong>ไฟถนนดับ · ถนนสายหลัก หมู่ 3</strong>
+              <span>ไฟถนน · ระบบแจ้งอัตโนมัติ · ไฟไม่ติดหลังสั่งเปิด · ค้าง 18 นาที</span>
+              <p>กดเปิดเพื่อดูใบงาน QR ไทม์ไลน์ รายละเอียดปัญหา และมอบหมายช่างไปซ่อม</p>
+              <div class="mini-meta"><span>รับแจ้ง: 2026-06-03 08:42</span><span>เหลือเวลา 42 นาที</span><span>ระบบจับได้เอง</span></div>
             </div>
-            <div class="row-actions"><button class="button rose" type="button" data-open-maintenance>Open maintenance</button><span class="button">▦ QR</span><span class="button">⌖ Map</span></div>
+            <div class="row-actions"><button class="button rose" type="button" data-open-maintenance>เปิดใบงาน</button><span class="button">▦ QR</span><span class="button">⌖ แผนที่</span></div>
           </div>
           <div class="queue-row">
-            <span class="priority p1">P1</span>
+            <span class="priority p1">เร่งด่วน</span>
             <div class="queue-main">
-              <strong>SP-103 · Offline timeout</strong>
-              <span>Connectivity · no telemetry for 32m · last command status unknown</span>
-              <p>System detected a delayed/offline device state. User can acknowledge, inspect on map, or convert to maintenance work order.</p>
-              <div class="mini-meta"><span>Detected: 2026-06-03 08:55</span><span>Not acknowledged</span><span>FaultOccurrence</span></div>
+              <strong>ท่อประปารั่ว · หน้าตลาดสด</strong>
+              <span>งานประปา · ประชาชนแจ้งผ่าน LINE · น้ำไหลนองถนน · ค้าง 32 นาที</span>
+              <p>เรื่องร้องเรียนจากประชาชน — เจ้าหน้าที่สามารถรับเรื่อง ดูตำแหน่งบนแผนที่ และเปิดใบงานมอบหมายช่างประปา</p>
+              <div class="mini-meta"><span>รับแจ้ง: 2026-06-03 08:55</span><span>ยังไม่รับเรื่อง</span><span>แจ้งผ่าน LINE</span></div>
             </div>
-            <div class="row-actions"><button class="button rose" type="button" data-open-maintenance>Open issue</button><span class="button">▦ QR</span><span class="button">⌖ Map</span></div>
+            <div class="row-actions"><button class="button rose" type="button" data-open-maintenance>รับเรื่อง</button><span class="button">▦ QR</span><span class="button">⌖ แผนที่</span></div>
           </div>
           <div class="queue-row">
-            <span class="priority p2">P2</span>
+            <span class="priority p2">เฝ้าระวัง</span>
             <div class="queue-main">
-              <strong>SP-144 · Voltage sag</strong>
-              <span>Power Issue · Parking · min 188V · open 2h</span>
-              <p>Open maintenance overlay to acknowledge, create work order, or compare affected zone on the map.</p>
-              <div class="mini-meta"><span>Detected: 2026-06-03 07:35</span><span>Response overdue</span><span>FaultOccurrence</span></div>
+              <strong>ฝาท่อระบายน้ำชำรุด · ซอยชุมชน 4</strong>
+              <span>งานถนน/ฝาท่อ · ประชาชนแจ้งด้วยตนเอง · เสี่ยงอุบัติเหตุ · ค้าง 2 ชม.</span>
+              <p>กดเปิดเพื่อรับเรื่อง เปิดใบงาน หรือดูจุดที่แจ้งบนแผนที่</p>
+              <div class="mini-meta"><span>รับแจ้ง: 2026-06-03 07:35</span><span>เกินกำหนดตอบกลับ</span><span>ประชาชนแจ้ง</span></div>
             </div>
-            <div class="row-actions"><span class="button warn">Acknowledge</span><span class="button rose">Create WO</span></div>
+            <div class="row-actions"><span class="button warn">รับเรื่อง</span><span class="button rose">เปิดใบงาน</span></div>
           </div>
         </div>
       </article>
@@ -1305,12 +1305,12 @@
       <article class="card map-card">
         <div class="card-head">
           <div>
-            <h2>🗺 Fault / Maintenance Map Status</h2>
-            <p class="subtitle">Map uses the larger 7-column space. Marker color reflects current repair/fault state across dashboard, map, and device-list.</p>
+            <h2>🗺 แผนที่สถานะงานในพื้นที่</h2>
+            <p class="subtitle">เห็นทุกจุดที่มีงานบนแผนที่เดียว — สีหมุดบอกสถานะงาน ช่วยให้หัวหน้ากองช่างจัดลำดับและส่งช่างไปตรงจุด</p>
           </div>
           <div class="chip-row">
-            <span class="button">↻ Fit affected</span>
-            <span class="button">⛶ Fullscreen</span>
+            <span class="button">↻ ปรับให้พอดี</span>
+            <span class="button">⛶ เต็มจอ</span>
           </div>
         </div>
         <div class="map-stage" aria-label="Fault maintenance map">
@@ -1319,30 +1319,31 @@
           <div class="map-road r3"></div>
           <div class="map-road r4"></div>
           <div class="map-legend">
-            <h3>Status Color</h3>
-            <div class="legend-row"><span class="legend-dot critical"></span><span>Critical fault</span></div>
-            <div class="legend-row"><span class="legend-dot warning"></span><span>Warning fault</span></div>
-            <div class="legend-row"><span class="legend-dot maintenance"></span><span>Maintenance</span></div>
-            <div class="legend-row"><span class="legend-dot progress"></span><span>Repair in progress</span></div>
-            <div class="legend-row"><span class="legend-dot completed"></span><span>Resolved/completed</span></div>
+            <h3>สีบอกสถานะ</h3>
+            <div class="legend-row"><span class="legend-dot critical"></span><span>งานวิกฤต</span></div>
+            <div class="legend-row"><span class="legend-dot warning"></span><span>งานเฝ้าระวัง</span></div>
+            <div class="legend-row"><span class="legend-dot maintenance"></span><span>ซ่อมบำรุงตามแผน</span></div>
+            <div class="legend-row"><span class="legend-dot progress"></span><span>กำลังซ่อม</span></div>
+            <div class="legend-row"><span class="legend-dot completed"></span><span>ปิดงานแล้ว</span></div>
           </div>
-          <button class="marker critical" style="left:48%;top:42%" data-device="SP-088"><i></i><small>SP-088</small></button>
-          <button class="marker maintenance" style="left:72%;top:62%" data-device="SP-117"><i></i><small>SP-117</small></button>
-          <button class="marker warning" style="left:78%;top:78%" data-device="SP-144"><i></i><small>SP-144</small></button>
-          <button class="marker progress" style="left:62%;top:34%" data-device="SP-103"><i></i><small>SP-103</small></button>
-          <button class="marker completed" style="left:22%;top:36%" data-device="SP-041"><i></i><small>SP-041</small></button>
+          <button class="marker critical" style="left:48%;top:42%" data-device="ไฟถนน หมู่ 3"><i></i><small>ไฟถนน ม.3</small></button>
+          <button class="marker maintenance" style="left:72%;top:62%" data-device="ไฟถนน ลานจอด"><i></i><small>ไฟถนน ลานจอด</small></button>
+          <button class="marker warning" style="left:78%;top:78%" data-device="ครุภัณฑ์ 089"><i></i><small>ครุภัณฑ์</small></button>
+          <button class="marker progress" style="left:62%;top:34%" data-device="ท่อประปา ตลาดสด"><i></i><small>ประปา ตลาด</small></button>
+          <button class="marker completed" style="left:22%;top:36%" data-device="ไฟถนน หมู่ 5"><i></i><small>ไฟถนน ม.5</small></button>
           <div class="map-popup">
-            <h3>SP-088 · P1 Fault</h3>
-            <p class="subtitle">Promoted lamp-state fault · Road B · created 2026-06-03 08:42</p>
+            <img src="../../images/smartlight/installation/IMG_5887.jpeg" alt="รูปหน้างานจริง · จุดไฟถนน หมู่ 3" loading="lazy" style="width:100%;height:120px;object-fit:cover;border-radius:10px;margin-bottom:10px;display:block" />
+            <h3>ไฟถนน หมู่ 3 · งานเร่งด่วน</h3>
+            <p class="subtitle">ไฟไม่ติดหลังสั่งเปิด · ถนนสายหลัก · รับแจ้ง 2026-06-03 08:42</p>
             <div class="mini-meta">
-              <span>Color: critical red</span>
-              <span>Repair: not started</span>
-              <span>QR available</span>
+              <span>สถานะ: วิกฤต</span>
+              <span>การซ่อม: ยังไม่เริ่ม</span>
+              <span>มี QR</span>
             </div>
             <div class="chip-row" style="justify-content:flex-start;margin-top:10px">
-              <button class="button rose" type="button" data-open-maintenance>Open maintenance</button>
+              <button class="button rose" type="button" data-open-maintenance>เปิดใบงาน</button>
               <span class="button">▦ QR</span>
-              <span class="button">Device history</span>
+              <span class="button">ประวัติจุดนี้</span>
             </div>
           </div>
         </div>
@@ -1358,107 +1359,107 @@
     <section class="card table-card" aria-label="Fault and maintenance records">
       <div class="card-head">
         <div>
-          <h2>▤ Fault / Maintenance Records</h2>
-          <p class="subtitle">Combined operational view. FaultOccurrence rows and WorkOrder maintenance rows should be visually distinct but searchable together by device_id.</p>
+          <h2>▤ ทะเบียนใบงาน / ประวัติการซ่อม</h2>
+          <p class="subtitle">รวมงานทุกประเภทของกองช่างไว้ที่เดียว — ไฟถนน ประปา ถนน/ฝาท่อ ครุภัณฑ์ และเรื่องร้องเรียน · ค้นหา กรอง และออกรายงานตอบสภาฯ ได้</p>
         </div>
         <div class="chip-row">
-          <span class="chip">46 records</span>
-          <span class="button">↓ CSV</span>
+          <span class="chip">46 ใบงาน</span>
+          <span class="button">↓ ดาวน์โหลด CSV</span>
         </div>
       </div>
       <div class="table-scroll">
         <table class="fault-table" data-sortable>
           <thead>
             <tr data-open-maintenance>
-              <th>Record</th>
-              <th>Device / Scope</th>
-              <th>Type</th>
-              <th>Status color</th>
-              <th>Ack / Owner</th>
-              <th>Created / Detected</th>
-              <th>Completed / Resolved</th>
-              <th>Repair detail</th>
-              <th>Actions</th>
+              <th>เลขใบงาน</th>
+              <th>จุด / พื้นที่</th>
+              <th>ประเภทงาน</th>
+              <th>สถานะ</th>
+              <th>ผู้รับเรื่อง / ผู้รับผิดชอบ</th>
+              <th>รับแจ้ง / เปิดงาน</th>
+              <th>ปิดงาน</th>
+              <th>รายละเอียดการซ่อม</th>
+              <th>การดำเนินการ</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><strong>WO-2026-0042</strong><span>From fault SP-088</span></td>
-              <td><strong>SP-088</strong><span>Factory AA · Road B</span></td>
-              <td><span class="status-pill critical">Fault Alert</span><span>Promoted lamp-state fault after debounce</span></td>
-              <td><span class="status-pill critical">critical red</span><span>map/device/dashboard</span></td>
-              <td><strong>Operator A ack</strong><span>Owner: Technician A</span></td>
-              <td><strong>2026-06-03 08:42</strong><span>created by fault engine</span></td>
-              <td><strong>-</strong><span>not completed</span></td>
-              <td><span>Master: Promoted lamp-state fault</span><span>Custom: inspect driver/wiring</span></td>
-              <td><div class="row-actions"><button class="button rose" type="button" data-open-maintenance>Open</button><span class="button">▦ QR</span><span class="button">⌖ Map</span></div></td>
+              <td><strong>WO-2026-0042</strong><span>จากงานไฟถนนดับ</span></td>
+              <td><strong>ไฟถนน หมู่ 3</strong><span>ถนนสายหลัก · ต้นที่ 12</span></td>
+              <td><span class="status-pill critical">ไฟถนน</span><span>ไฟไม่ติดหลังสั่งเปิด</span></td>
+              <td><span class="status-pill critical">วิกฤต</span><span>แสดงบนแผนที่/ทะเบียน</span></td>
+              <td><strong>เจ้าหน้าที่ ก. รับเรื่อง</strong><span>ผู้รับผิดชอบ: ช่าง ก.</span></td>
+              <td><strong>2026-06-03 08:42</strong><span>ระบบจับได้เอง</span></td>
+              <td><strong>-</strong><span>ยังไม่ปิดงาน</span></td>
+              <td><span>อาการ: ไฟดับ สั่งเปิดไม่ติด</span><span>สั่งการ: ตรวจ Driver/สายไฟ</span></td>
+              <td><div class="row-actions"><button class="button rose" type="button" data-open-maintenance>เปิด</button><span class="button">▦ QR</span><span class="button">⌖ แผนที่</span></div></td>
             </tr>
             <tr data-open-maintenance>
-              <td><strong>WO-2026-0039</strong><span>Planned maintenance</span></td>
-              <td><strong>SP-117</strong><span>Factory AA · Parking</span></td>
-              <td><span class="status-pill maintenance">Preventive</span><span>Scheduled inspection</span></td>
-              <td><span class="status-pill maintenance">maintenance blue</span><span>fault suppression optional</span></td>
-              <td><strong>Manager B</strong><span>Assigned: Technician C</span></td>
-              <td><strong>2026-06-03 09:10</strong><span>created manually</span></td>
-              <td><strong>-</strong><span>active maintenance</span></td>
-              <td><span>Master: Preventive inspection</span><span>Technician assigned</span></td>
-              <td><div class="row-actions"><button class="button primary" type="button" data-open-maintenance>Update</button><span class="button">History</span><span class="button">⌖ Map</span></div></td>
+              <td><strong>WO-2026-0045</strong><span>ประชาชนแจ้งผ่าน LINE</span></td>
+              <td><strong>ท่อประปา หน้าตลาดสด</strong><span>ชุมชนตลาด · ริมถนนเทศบาล 2</span></td>
+              <td><span class="status-pill critical">ประปา / ท่อรั่ว</span><span>น้ำไหลนองถนน</span></td>
+              <td><span class="status-pill critical">วิกฤต</span><span>เสี่ยงน้ำท่วมขัง</span></td>
+              <td><strong>เจ้าหน้าที่ ข. รับเรื่อง</strong><span>ผู้รับผิดชอบ: ช่างประปา ค.</span></td>
+              <td><strong>2026-06-03 08:55</strong><span>รับแจ้งจากประชาชน</span></td>
+              <td><strong>-</strong><span>กำลังดำเนินการ</span></td>
+              <td><span>อาการ: ท่อเมนรั่ว แรงดันตก</span><span>สั่งการ: ปิดวาล์ว เปลี่ยนข้อต่อ</span></td>
+              <td><div class="row-actions"><button class="button warn" type="button" data-open-maintenance>อัปเดต</button><span class="button">▦ QR</span><span class="button">⌖ แผนที่</span></div></td>
             </tr>
             <tr data-open-maintenance>
-              <td><strong>FO-Voltage-144</strong><span>FaultOccurrence</span></td>
-              <td><strong>SP-144</strong><span>Factory AA · Parking</span></td>
-              <td><span class="status-pill warning">Power Issue</span><span>Voltage sag</span></td>
-              <td><span class="status-pill warning">warning amber</span><span>requires review</span></td>
-              <td><strong>Not acked</strong><span>Owner: unassigned</span></td>
-              <td><strong>2026-06-03 07:35</strong><span>first detected</span></td>
-              <td><strong>-</strong><span>acknowledged only</span></td>
-              <td><span>Master: Low voltage supply</span><span>Check feeder and load</span></td>
-              <td><div class="row-actions"><button class="button warn" type="button" data-open-maintenance>Acknowledge</button><button class="button rose" type="button" data-open-maintenance>Create WO</button></div></td>
+              <td><strong>WO-2026-0039</strong><span>งานตามแผน</span></td>
+              <td><strong>ไฟถนน ลานจอดรถ</strong><span>สำนักงานเทศบาล · 8 ต้น</span></td>
+              <td><span class="status-pill maintenance">ซ่อมบำรุงตามแผน</span><span>ตรวจเช็กตามรอบ</span></td>
+              <td><span class="status-pill maintenance">ตามแผน</span><span>งานป้องกัน</span></td>
+              <td><strong>หัวหน้ากองช่าง</strong><span>มอบหมาย: ช่าง ค.</span></td>
+              <td><strong>2026-06-03 09:10</strong><span>เปิดงานด้วยตนเอง</span></td>
+              <td><strong>-</strong><span>กำลังดำเนินการ</span></td>
+              <td><span>งาน: ตรวจเช็กป้องกันตามรอบ</span><span>มอบหมายช่างแล้ว</span></td>
+              <td><div class="row-actions"><button class="button primary" type="button" data-open-maintenance>อัปเดต</button><span class="button">ประวัติ</span><span class="button">⌖ แผนที่</span></div></td>
             </tr>
             <tr data-open-maintenance>
-              <td><strong>WO-2026-0031</strong><span>Completed repair</span></td>
-              <td><strong>SP-041</strong><span>Factory AA · Road B</span></td>
-              <td><span class="status-pill completed">Completed</span><span>Driver replacement</span></td>
-              <td><span class="status-pill completed">green resolved</span><span>no active fault</span></td>
-              <td><strong>Technician A</strong><span>Verified: Manager B</span></td>
-              <td><strong>2026-06-02 15:12</strong><span>created manually</span></td>
-              <td><strong>2026-06-03 10:05</strong><span>repair completed</span></td>
-              <td><span>Resolution: replaced LED driver</span><span>Verified current and power normal</span></td>
-              <td><div class="row-actions"><button class="button" type="button" data-open-maintenance>Open</button><span class="button">Report</span></div></td>
-            </tr>
-          
-            <tr data-open-maintenance>
-              <td><strong>WO-2026-0048</strong><span>Fault-linked repair</span></td>
-              <td><strong>SP-177</strong><span>Factory Delta · Road C</span></td>
-              <td><span class="status-pill warning">Electrical</span><span>Over voltage</span></td>
-              <td><span class="status-pill warning">warning amber</span><span>map overlay</span></td>
-              <td><strong>Operator B ack</strong><span>Owner: Technician D</span></td>
-              <td><strong>2026-06-03 10:18</strong><span>created by anomaly engine</span></td>
-              <td><strong>-</strong><span>investigating</span></td>
-              <td><span>Master: Over voltage</span><span>Check feeder regulator and neutral</span></td>
-              <td><div class="row-actions"><button class="button warn" type="button" data-open-maintenance>Update</button><span class="button">▦ QR</span><span class="button">⌖ Map</span></div></td>
+              <td><strong>WO-2026-0044</strong><span>ซ่อมบำรุงครุภัณฑ์</span></td>
+              <td><strong>เครื่องตัดหญ้า ทะเบียน 089</strong><span>กองช่าง · คลังเครื่องมือ</span></td>
+              <td><span class="status-pill maintenance">ครุภัณฑ์ / เครื่องจักร</span><span>เครื่องสตาร์ทไม่ติด</span></td>
+              <td><span class="status-pill warning">เฝ้าระวัง</span><span>รอตรวจสอบ</span></td>
+              <td><strong>ยังไม่รับเรื่อง</strong><span>ผู้รับผิดชอบ: รอมอบหมาย</span></td>
+              <td><strong>2026-06-03 07:35</strong><span>เจ้าหน้าที่แจ้งเอง</span></td>
+              <td><strong>-</strong><span>รับเรื่องแล้ว</span></td>
+              <td><span>อาการ: สตาร์ทไม่ติด เสียงผิดปกติ</span><span>สั่งการ: ตรวจหัวเทียน/คาร์บูเรเตอร์</span></td>
+              <td><div class="row-actions"><button class="button warn" type="button" data-open-maintenance>รับเรื่อง</button><button class="button rose" type="button" data-open-maintenance>เปิดใบงาน</button></div></td>
             </tr>
             <tr data-open-maintenance>
-              <td><strong>FO-SCHED-205</strong><span>FaultOccurrence</span></td>
-              <td><strong>SP-205</strong><span>School Lighting E · Front Gate</span></td>
-              <td><span class="status-pill warning">Schedule</span><span>Runtime mismatch</span></td>
-              <td><span class="status-pill warning">warning amber</span><span>schedule overlay</span></td>
-              <td><strong>Not acked</strong><span>Owner: unassigned</span></td>
-              <td><strong>2026-06-03 10:07</strong><span>detected by schedule engine</span></td>
-              <td><strong>-</strong><span>open</span></td>
-              <td><span>Master: Schedule mismatch</span><span>Verify timezone and override state</span></td>
-              <td><div class="row-actions"><button class="button warn" type="button" data-open-maintenance>Acknowledge</button><button class="button rose" type="button" data-open-maintenance>Create WO</button></div></td>
+              <td><strong>WO-2026-0031</strong><span>ปิดงานแล้ว</span></td>
+              <td><strong>ไฟถนน หมู่ 5</strong><span>ถนนเลียบคลอง · ต้นที่ 7</span></td>
+              <td><span class="status-pill completed">ไฟถนน</span><span>เปลี่ยน Driver</span></td>
+              <td><span class="status-pill completed">ปิดงานแล้ว</span><span>ไม่มีปัญหาค้าง</span></td>
+              <td><strong>ช่าง ก.</strong><span>ตรวจรับ: หัวหน้ากองช่าง</span></td>
+              <td><strong>2026-06-02 15:12</strong><span>เปิดงานด้วยตนเอง</span></td>
+              <td><strong>2026-06-03 10:05</strong><span>ซ่อมเสร็จ</span></td>
+              <td><span>ผลการซ่อม: เปลี่ยน LED Driver</span><span>ตรวจสอบไฟปกติแล้ว</span></td>
+              <td><div class="row-actions"><button class="button" type="button" data-open-maintenance>เปิด</button><span class="button">รายงาน</span></div></td>
+            </tr>
+
+            <tr data-open-maintenance>
+              <td><strong>WO-2026-0048</strong><span>เรื่องร้องเรียน</span></td>
+              <td><strong>ถนน/ป้ายชำรุด ซอย 4</strong><span>ชุมชนหมู่ 4 · ปากซอย</span></td>
+              <td><span class="status-pill warning">ถนน / ป้าย</span><span>ป้ายจราจรล้ม</span></td>
+              <td><span class="status-pill warning">เฝ้าระวัง</span><span>แสดงบนแผนที่</span></td>
+              <td><strong>เจ้าหน้าที่ ข. รับเรื่อง</strong><span>ผู้รับผิดชอบ: ช่าง ง.</span></td>
+              <td><strong>2026-06-03 10:18</strong><span>ประชาชนแจ้ง</span></td>
+              <td><strong>-</strong><span>กำลังดำเนินการ</span></td>
+              <td><span>อาการ: ป้ายจราจรล้ม กีดขวาง</span><span>สั่งการ: ตั้งป้ายใหม่ ยึดฐาน</span></td>
+              <td><div class="row-actions"><button class="button warn" type="button" data-open-maintenance>อัปเดต</button><span class="button">▦ QR</span><span class="button">⌖ แผนที่</span></div></td>
             </tr>
             <tr data-open-maintenance>
-              <td><strong>WO-2026-0046</strong><span>Preventive maintenance</span></td>
-              <td><strong>Road B zone</strong><span>48 devices · Pole line</span></td>
-              <td><span class="status-pill maintenance">Preventive</span><span>Quarterly inspection</span></td>
-              <td><span class="status-pill maintenance">maintenance blue</span><span>not active issue</span></td>
-              <td><strong>Manager B</strong><span>Owner: Technician Team 2</span></td>
-              <td><strong>2026-06-04 09:00</strong><span>planned start</span></td>
-              <td><strong>-</strong><span>scheduled</span></td>
-              <td><span>Master: Preventive inspection</span><span>Thermal check and terminal torque</span></td>
-              <td><div class="row-actions"><button class="button primary" type="button" data-open-maintenance>Open</button><span class="button">Plan</span></div></td>
+              <td><strong>WO-2026-0046</strong><span>ซ่อมบำรุงตามแผน</span></td>
+              <td><strong>ไฟถนน หมู่ 3 (ทั้งโซน)</strong><span>48 ต้น · แนวเสาริมถนน</span></td>
+              <td><span class="status-pill maintenance">ซ่อมบำรุงตามแผน</span><span>ตรวจรายไตรมาส</span></td>
+              <td><span class="status-pill maintenance">ตามแผน</span><span>งานป้องกัน</span></td>
+              <td><strong>หัวหน้ากองช่าง</strong><span>ผู้รับผิดชอบ: ทีมช่าง 2</span></td>
+              <td><strong>2026-06-04 09:00</strong><span>กำหนดเริ่ม</span></td>
+              <td><strong>-</strong><span>นัดหมายแล้ว</span></td>
+              <td><span>งาน: ตรวจเช็กป้องกันตามรอบ</span><span>ตรวจความร้อน ขันแน่นขั้วต่อ</span></td>
+              <td><div class="row-actions"><button class="button primary" type="button" data-open-maintenance>เปิด</button><span class="button">แผนงาน</span></div></td>
             </tr>
 </tbody>
         </table>
@@ -1468,26 +1469,26 @@
     <section class="grid-12" aria-label="Predictive maintenance and MTBF workspace">
       <article class="card span-6">
         <div class="card-inner">
-          <div class="section-title"><div><h2>◷ Predictive Maintenance</h2><p>7-day maintenance risk from repeated faults, runtime hours, electrical anomaly trend, weather context, and last repair result.</p></div><span class="chip amber">package gated</span></div>
-          
+          <div class="section-title"><div><h2>◷ คาดการณ์งานซ่อมล่วงหน้า</h2><p>ประเมินความเสี่ยงใน 7 วันข้างหน้าจากงานที่ซ้ำบ่อย ชั่วโมงใช้งาน และประวัติการซ่อม — ช่วยวางแผนซ่อมก่อนเสียจริง</p></div><span class="chip amber">แพ็กเกจเสริม</span></div>
+
           <div class="issue-queue">
-            <div class="issue-row"><span class="issue-priority p2">RISK</span><div class="issue-main"><strong>SP-221 · Poor PF pattern</strong><span>PF below 0.75 on 4 nights · recommend inspection within 7d.</span><div class="issue-meta"><span class="delta warn">confidence 78%</span><span class="delta">not active issue</span></div></div><div class="issue-actions"><a class="button" href="/device-list/?search=SP-221">Device</a><span class="button warn">Create PM</span></div></div>
-            <div class="issue-row"><span class="issue-priority p2">RISK</span><div class="issue-main"><strong>Road B feeder group</strong><span>Repeat voltage sag after rain windows; check weather/electrical correlation.</span><div class="issue-meta"><span class="delta warn">weather linked</span><span class="delta">zone scope</span></div></div><div class="issue-actions"><a class="button" href="/map/?zone=road-b">Map</a><span class="button warn">Plan work</span></div></div>
+            <div class="issue-row"><span class="issue-priority p2">เสี่ยง</span><div class="issue-main"><strong>ไฟถนน หมู่ 7 · ดับซ้ำ</strong><span>ต้นนี้แจ้งดับ 4 ครั้งใน 1 เดือน · แนะนำให้เข้าตรวจภายใน 7 วัน</span><div class="issue-meta"><span class="delta warn">ความมั่นใจ 78%</span><span class="delta">ยังไม่เป็นปัญหา</span></div></div><div class="issue-actions"><a class="button" href="#">ดูจุดนี้</a><span class="button warn">เปิดงานตามแผน</span></div></div>
+            <div class="issue-row"><span class="issue-priority p2">เสี่ยง</span><div class="issue-main"><strong>ท่อประปา โซนตลาด</strong><span>แจ้งรั่วซ้ำหลังฝนตก · ควรตรวจแนวท่อทั้งโซน</span><div class="issue-meta"><span class="delta warn">สัมพันธ์กับฝน</span><span class="delta">ทั้งโซน</span></div></div><div class="issue-actions"><a class="button" href="#">แผนที่</a><span class="button warn">วางแผนงาน</span></div></div>
           </div>
         </div>
       </article>
 
       <article class="card span-6">
         <div class="card-inner">
-          <div class="section-title"><div><h2>⌁ MTBF / Recurrence</h2><p>Mean time between failures by device, zone, model, and customer. Used for warranty, replacement, and maintenance planning.</p></div><span class="chip blue">analysis</span></div>
-          
+          <div class="section-title"><div><h2>⌁ สถิติงานซ้ำ / ความถี่การเสีย</h2><p>สรุปงานที่เกิดซ้ำรายจุด รายโซน และรายประเภท — ใช้วางแผนเปลี่ยนทดแทน เคลมประกัน และจัดงบซ่อมบำรุง</p></div><span class="chip blue">รายงานวิเคราะห์</span></div>
+
           <div class="table-scroll">
             <table data-sortable>
-              <thead><tr><th>Scope</th><th>Failures</th><th>MTBF</th><th>Last fault</th><th>Recommendation</th></tr></thead>
+              <thead><tr><th>จุด / โซน</th><th>จำนวนครั้ง</th><th>เฉลี่ยห่างกัน</th><th>งานล่าสุด</th><th>ข้อเสนอแนะ</th></tr></thead>
               <tbody>
-                <tr><td>SP-088<span>Street light V2</span></td><td>4</td><td>41 days</td><td>Lamp telemetry mismatch</td><td><span class="status-pill critical">replace driver if repeat</span></td></tr>
-                <tr><td>Road B<span>126 lamps</span></td><td>19</td><td>22 days</td><td>Multiple devices offline too long</td><td><span class="status-pill warning">inspect network/power</span></td></tr>
-                <tr><td>Factory Delta<span>92 lamps</span></td><td>6</td><td>78 days</td><td>Over voltage</td><td><span class="status-pill info">monitor</span></td></tr>
+                <tr><td>ไฟถนน หมู่ 7<span>ต้นที่ 5</span></td><td>4</td><td>41 วัน</td><td>ไฟดับซ้ำ</td><td><span class="status-pill critical">ควรเปลี่ยน Driver ถ้าเกิดอีก</span></td></tr>
+                <tr><td>ถนนสายหลัก ม.3<span>ไฟถนน 126 ต้น</span></td><td>19</td><td>22 วัน</td><td>หลายจุดดับนานเกินไป</td><td><span class="status-pill warning">ตรวจระบบไฟ/สายเมน</span></td></tr>
+                <tr><td>โซนตลาดสด<span>ท่อประปา</span></td><td>6</td><td>78 วัน</td><td>ท่อรั่วหลังฝน</td><td><span class="status-pill info">เฝ้าระวัง</span></td></tr>
               </tbody>
             </table>
           </div>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SmartPole Device Management - Device List Placement</title>
+  <title>ทะเบียนอุปกรณ์ / ตำแหน่งบนแผนที่</title>
   <style>
     :root {
       --bg: #071014;
@@ -1119,61 +1119,61 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"></span>
         <div>
-          <h1>▣ SmartPole Devices <span class="connection-badge"><span class="status-dot"></span>Live connected</span></h1>
+          <h1>▣ ทะเบียนอุปกรณ์ในพื้นที่ <span class="connection-badge"><span class="status-dot"></span>เชื่อมต่อระบบแล้ว</span></h1>
           <div class="brand-meta">
-            <p class="subtitle">/device-list/ · device inventory · map placement · drag marker</p>
+            <p class="subtitle">ทะเบียนสินทรัพย์ · ตำแหน่งบนแผนที่ · ลากหมุดปรับจุด</p>
           </div>
         </div>
       </div>
       <div class="actions top-actions">
-        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
-        <span class="chip">▣ Portfolio UI · Platform/Dealer</span>
-        <a class="critical-error-badge" href="/faults/?source=device-list">⚠ 2 unacknowledged · 12 timeout</a>
+        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ โหมดมืด</button>
+        <span class="chip">▣ มุมมองผู้ดูแลระบบ</span>
+        <a class="critical-error-badge" href="#">⚠ 2 ยังไม่รับเรื่อง · 12 ขาดการเชื่อมต่อ</a>
         <div class="profile-menu" data-profile-menu>
-          <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+          <button class="button" type="button" data-profile-toggle>◉ ผู้ใช้</button>
           <div class="profile-popover" aria-label="Profile controls">
             <div class="profile-popover-head">
-              <strong>◉ Manager Profile</strong>
-              <span>goodten</span>
+              <strong>◉ หัวหน้ากองช่าง</strong>
+              <span>เทศบาลตำบลสาธิต</span>
             </div>
             <div class="profile-actions">
-              <a class="profile-action" href="/profile/">◉ Profile <span>name, email, language</span></a>
-              <a class="profile-action" href="/password_change/">◆ Password <span>change password</span></a>
-              <a class="profile-action" href="/settings/">⚙ Preferences <span>timezone, layout</span></a>
-              <a class="profile-action" href="/logout/">↪ Sign out <span>end session</span></a>
+              <a class="profile-action" href="#">◉ ข้อมูลผู้ใช้ <span>ชื่อ อีเมล ภาษา</span></a>
+              <a class="profile-action" href="#">◆ รหัสผ่าน <span>เปลี่ยนรหัสผ่าน</span></a>
+              <a class="profile-action" href="#">⚙ ตั้งค่า <span>เขตเวลา หน้าจอ</span></a>
+              <a class="profile-action" href="#">↪ ออกจากระบบ <span>จบการใช้งาน</span></a>
             </div>
           </div>
         </div>
         <div class="widget-menu" data-widget-menu>
-          <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+          <button class="button" type="button" data-widget-toggle>▦ การ์ด</button>
           <div class="widget-popover" aria-label="Widget visibility controls">
             <div class="widget-popover-head">
-              <strong>▦ Widget visibility</strong>
-              <span>Show or hide cards in this device workspace.</span>
+              <strong>▦ แสดง/ซ่อนการ์ด</strong>
+              <span>เลือกการ์ดที่จะแสดงในหน้านี้</span>
             </div>
             <div class="card-library">
-              <div class="library-card"><label><input type="checkbox" checked> ⌖ Placement Map</label><p>Leaflet/OpenStreetMap drag marker workspace.</p></div>
-              <div class="library-card"><label><input type="checkbox" checked> ▤ Device Table</label><p>Inventory rows, QR, ping, and command-center links.</p></div>
-              <div class="library-card"><label><input type="checkbox" checked> ⚠ Unacknowledged Issues</label><p>System issues with no ack_by/ack_at only.</p></div>
-              <div class="library-card"><label><input type="checkbox" checked> ▦ QR Popup</label><p>Shared device QR and detail popup.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ⌖ แผนที่ตำแหน่ง</label><p>แผนที่ลากหมุดปรับตำแหน่งอุปกรณ์</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▤ ทะเบียนอุปกรณ์</label><p>รายการสินทรัพย์ QR และลิงก์ไปงานแจ้งซ่อม</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ⚠ งานที่ยังไม่รับเรื่อง</label><p>เฉพาะงานที่ยังไม่มีผู้รับเรื่อง</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▦ QR อุปกรณ์</label><p>QR และรายละเอียดอุปกรณ์</p></div>
             </div>
           </div>
         </div>
-        <span class="button primary">✓ Save layout</span>
+        <span class="button primary">✓ บันทึกหน้าจอ</span>
       </div>
     </header>
 
     <section class="panel filter-panel" aria-label="Device filters">
       <div class="filter-head">
         <div>
-          <h2>⌕ Device Filters</h2>
-          <p class="subtitle">Device list should filter inventory and placement together. Search device_id first, then narrow by account, layout mode, floor/site, zone/tag, lot, placement, marker state, and ping result.</p>
+          <h2>⌕ ค้นหา / กรองอุปกรณ์</h2>
+          <p class="subtitle">ค้นหาด้วยรหัสอุปกรณ์ แล้วกรองตามหน่วยงาน พื้นที่/ชั้น โซน ล็อต สถานะหมุด และผลการเชื่อมต่อ</p>
         </div>
         <div class="chip-row">
-          <span class="button primary">✓ Apply</span>
-          <span class="button">× Reset</span>
-          <span class="button">↻ Fit markers</span>
-          <span class="button" data-fullscreen-map>⛶ Fullscreen map</span>
+          <span class="button primary">✓ ค้นหา</span>
+          <span class="button">× ล้าง</span>
+          <span class="button">↻ ปรับหมุดให้พอดี</span>
+          <span class="button" data-fullscreen-map>⛶ แผนที่เต็มจอ</span>
         </div>
       </div>
       <div class="filter-grid">
@@ -1206,21 +1206,21 @@
       <article class="card map-card">
         <div class="card-head">
           <div>
-            <h2>⌖ Device Placement Map</h2>
-            <p class="subtitle">Leaflet + OpenStreetMap map for placement management. Operators can enable drag mode, drag markers, review pending coordinates, then save location changes.</p>
+            <h2>⌖ แผนที่ตำแหน่งอุปกรณ์</h2>
+            <p class="subtitle">วางและปรับตำแหน่งอุปกรณ์บนแผนที่ — เปิดโหมดลากหมุด ลากปรับจุด ตรวจพิกัดที่รอบันทึก แล้วกดบันทึก</p>
           </div>
           <div class="chip-row">
-            <label class="button warn"><input id="drag-toggle" type="checkbox"> Enable drag mode</label>
-            <span class="button primary">✓ Save 3 changes</span>
-            <span class="button">↩ Discard</span>
+            <label class="button warn"><input id="drag-toggle" type="checkbox"> เปิดโหมดลากหมุด</label>
+            <span class="button primary">✓ บันทึก 3 รายการ</span>
+            <span class="button">↩ ยกเลิก</span>
           </div>
         </div>
 
         <div id="device-map-stage" class="map-stage" aria-label="Device placement map">
-          <div class="map-badge">Leaflet 1.9.4 · OpenStreetMap · draggable markers</div>
-          <div class="zone z1">Zone: Road B</div>
-          <div class="zone z2">Zone: Warehouse</div>
-          <div class="zone z3">Zone: Parking</div>
+          <div class="map-badge">แผนที่ · ลากหมุดปรับตำแหน่งได้</div>
+          <div class="zone z1">โซน: ถนนสายหลัก ม.3</div>
+          <div class="zone z2">โซน: ตลาดสด</div>
+          <div class="zone z3">โซน: ลานจอดรถ</div>
           <div class="road r1"></div>
           <div class="road r2"></div>
           <div class="road r3"></div>
@@ -1246,61 +1246,61 @@
 
           <div class="map-tooltip">
             <div class="device-title">
-              <strong>⚠ SP-088 · selected device</strong>
-              <span class="status-pill bad">online-fault</span>
+              <strong>⚠ SP-088 · อุปกรณ์ที่เลือก</strong>
+              <span class="status-pill bad">ออนไลน์ · มีปัญหา</span>
             </div>
             <div class="metric-grid">
-              <div class="metric"><span>Current lat/lng</span><strong>13.756300</strong></div>
-              <div class="metric"><span>New lat/lng</span><strong class="amber">13.756510</strong></div>
-              <div class="metric"><span>Placement</span><strong class="amber">pending</strong></div>
-              <div class="metric"><span>Ping</span><strong class="green">ACK 420ms</strong></div>
-              <div class="metric"><span>Zone</span><strong>Road B</strong></div>
-              <div class="metric"><span>Last seen</span><strong>8s ago</strong></div>
+              <div class="metric"><span>พิกัดปัจจุบัน</span><strong>13.756300</strong></div>
+              <div class="metric"><span>พิกัดใหม่</span><strong class="amber">13.756510</strong></div>
+              <div class="metric"><span>ตำแหน่ง</span><strong class="amber">รอบันทึก</strong></div>
+              <div class="metric"><span>การเชื่อมต่อ</span><strong class="green">ตอบกลับ 420ms</strong></div>
+              <div class="metric"><span>โซน</span><strong>ถนนสายหลัก ม.3</strong></div>
+              <div class="metric"><span>เห็นล่าสุด</span><strong>8 วินาทีที่แล้ว</strong></div>
             </div>
             <div class="device-qr-card compact">
               <div class="qr-code" aria-label="QR code for SP-088"></div>
               <div class="qr-detail">
                 <h3>QR · SP-088</h3>
-                <p>Device click opens QR + details. Use compact popup when the table/map layout has no spare space.</p>
+                <p>กดที่อุปกรณ์เพื่อดู QR และรายละเอียด — แสกน QR ที่หน้างานเพื่อเปิดข้อมูลจุดนี้ได้ทันที</p>
                 <div class="qr-meta-grid">
-                  <div class="qr-meta"><span>Serial</span><strong>SL-088</strong></div>
-                  <div class="qr-meta"><span>Payload</span><strong>smartpole://device/SP-088</strong></div>
+                  <div class="qr-meta"><span>หมายเลขเครื่อง</span><strong>SL-088</strong></div>
+                  <div class="qr-meta"><span>รหัสจุด</span><strong>ไฟถนน หมู่ 3 · ต้น 12</strong></div>
                 </div>
               </div>
             </div>
             <div class="chip-row" style="justify-content:flex-start;margin-top:12px">
-              <span class="button primary">✓ Save location</span>
-              <span class="button">↯ Ping node</span>
+              <span class="button primary">✓ บันทึกตำแหน่ง</span>
+              <span class="button">↯ ทดสอบการเชื่อมต่อ</span>
               <span class="button">▦ QR</span>
-              <span class="button warn">↩ Revert marker</span>
+              <span class="button warn">↩ คืนค่าหมุด</span>
             </div>
           </div>
 
-          <div class="drag-badge">Drag mode ON · marker movement is staged until Save</div>
-          <div class="osm-attribution">Leaflet | © OpenStreetMap contributors</div>
+          <div class="drag-badge">โหมดลากหมุดเปิดอยู่ · การย้ายหมุดจะรอจนกดบันทึก</div>
+          <div class="osm-attribution">แผนที่ | © OpenStreetMap contributors</div>
         </div>
       </article>
 
       <aside class="side-stack">
         <section class="card side-card placement-queue-card">
           
-          <h2>⌖ Placement Queue</h2>
-          <p class="subtitle">Right rail stays the same height as the map. It tracks staged marker edits and unacknowledged issues that need action from this device workspace.</p>
-          <div class="queue-group-label"><span>Staged location changes</span><span>3</span></div>
+          <h2>⌖ รายการรอดำเนินการ</h2>
+          <p class="subtitle">ติดตามการปรับตำแหน่งที่รอบันทึก และงานที่ยังไม่มีผู้รับเรื่อง ซึ่งต้องดำเนินการจากหน้านี้</p>
+          <div class="queue-group-label"><span>ตำแหน่งที่รอบันทึก</span><span>3</span></div>
           <div class="action-list">
-            <div class="action-row"><div><strong>SP-088</strong><span>moved 23m · 13.756300 -> 13.756510</span></div><span class="status-pill warn">pending</span></div>
-            <div class="action-row"><div><strong>SP-117</strong><span>new location from technician map click</span></div><span class="status-pill warn">pending</span></div>
-            <div class="action-row"><div><strong>SP-131</strong><span>zone changed Parking -> Road B</span></div><span class="status-pill warn">review</span></div>
+            <div class="action-row"><div><strong>SP-088</strong><span>ย้าย 23 ม. · 13.756300 → 13.756510</span></div><span class="status-pill warn">รอบันทึก</span></div>
+            <div class="action-row"><div><strong>SP-117</strong><span>ตำแหน่งใหม่จากช่างปักหมุด</span></div><span class="status-pill warn">รอบันทึก</span></div>
+            <div class="action-row"><div><strong>SP-131</strong><span>เปลี่ยนโซน ลานจอด → ถนนสายหลัก</span></div><span class="status-pill warn">ตรวจสอบ</span></div>
           </div>
-          <div class="queue-group-label"><span>Unacknowledged issues</span><span>2</span></div>
+          <div class="queue-group-label"><span>งานที่ยังไม่รับเรื่อง</span><span>2</span></div>
           <div class="action-list">
-            <div class="action-row"><div><strong>SP-103 · offline timeout</strong><span>not acknowledged · no telemetry 32m · click opens maintenance drawer</span></div><span class="status-pill bad">P1</span></div>
-            <div class="action-row"><div><strong>SP-144 · voltage sag</strong><span>not acknowledged · min 188V · Warehouse feeder review</span></div><span class="status-pill bad">P1</span></div>
+            <div class="action-row"><div><strong>SP-103 · ขาดการเชื่อมต่อ</strong><span>ยังไม่รับเรื่อง · ไม่มีสัญญาณ 32 นาที · กดเพื่อเปิดใบงาน</span></div><span class="status-pill bad">เร่งด่วน</span></div>
+            <div class="action-row"><div><strong>SP-144 · แรงดันตก</strong><span>ยังไม่รับเรื่อง · ต่ำสุด 188V · ตรวจสายเมนโซนตลาด</span></div><span class="status-pill bad">เร่งด่วน</span></div>
           </div>
           <div class="chip-row" style="justify-content:flex-start;margin-top:auto;padding-top:14px">
-            <span class="button primary">✓ Save 3 locations</span>
-            <span class="button rose">Open maintenance</span>
-            <a class="button" href="/faults/">Command center</a>
+            <span class="button primary">✓ บันทึก 3 ตำแหน่ง</span>
+            <span class="button rose">เปิดใบงาน</span>
+            <a class="button" href="#">ไปหน้างานแจ้งซ่อม</a>
           </div>
         </section>
       </aside>
@@ -1309,130 +1309,130 @@
     <section class="card table-card" aria-label="Device list table">
       <div class="card-head">
         <div>
-          <h2>▤ Device Inventory Table</h2>
-          <p class="subtitle">This table should drive the map. Selecting a row centers the marker, ping updates row status, and drag edits update location state.</p>
+          <h2>▤ ทะเบียนอุปกรณ์ทั้งหมด</h2>
+          <p class="subtitle">เลือกแถวเพื่อเลื่อนแผนที่ไปที่จุดนั้น · ทดสอบการเชื่อมต่อเพื่ออัปเดตสถานะ · ลากหมุดเพื่อปรับตำแหน่ง</p>
         </div>
         <div class="chip-row">
-          <span class="chip">7 visible</span>
-          <span class="chip amber">3 pending location</span>
-          <span class="button">↓ CSV</span>
+          <span class="chip">7 รายการ</span>
+          <span class="chip amber">3 ตำแหน่งรอบันทึก</span>
+          <span class="button">↓ ดาวน์โหลด CSV</span>
         </div>
       </div>
       <div class="table-scroll">
         <table class="device-table" data-sortable>
           <thead>
             <tr>
-              <th>Device ID</th>
-              <th>Account / Zone</th>
-              <th>Connection</th>
-              <th>Lamp / Marker</th>
-              <th>Location</th>
-              <th>Ping</th>
-              <th>Placement state</th>
-              <th>Actions</th>
+              <th>รหัสอุปกรณ์</th>
+              <th>หน่วยงาน / โซน</th>
+              <th>การเชื่อมต่อ</th>
+              <th>สถานะโคม</th>
+              <th>ตำแหน่ง</th>
+              <th>ทดสอบสัญญาณ</th>
+              <th>สถานะตำแหน่ง</th>
+              <th>การดำเนินการ</th>
             </tr>
           </thead>
           <tbody>
             <tr data-row-device="SP-041">
-              <td><a class="device-link" href="#">SP-041</a><span>Street light V2 · serial SL-041</span></td>
-              <td><strong>Factory AA</strong><span>Road B · North row · LOT-2026-001</span></td>
-              <td><span class="status-pill ok">online</span><span>last seen 5s ago</span></td>
-              <td><span class="status-pill ok">ON</span><span>online-normal-on</span></td>
-              <td><strong>13.756900, 100.501100</strong><span>MAP · source: manual map pin</span></td>
-              <td><span class="status-pill ok">ACK 310ms</span><span>tested 1m ago</span></td>
-              <td><span class="status-pill ok">mapped</span><span>no pending change</span></td>
-              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><span class="button">↗ Open</span></div></td>
+              <td><a class="device-link" href="#">SP-041</a><span>โคมไฟ LED รุ่น 2 · SL-041</span></td>
+              <td><strong>กองช่าง</strong><span>ถนนสายหลัก ม.3 · แถวเหนือ · ล็อต 2026-001</span></td>
+              <td><span class="status-pill ok">ออนไลน์</span><span>เห็นล่าสุด 5 วินาที</span></td>
+              <td><span class="status-pill ok">ติด</span><span>ทำงานปกติ</span></td>
+              <td><strong>13.756900, 100.501100</strong><span>ปักหมุดเอง</span></td>
+              <td><span class="status-pill ok">ตอบกลับ 310ms</span><span>ทดสอบ 1 นาทีที่แล้ว</span></td>
+              <td><span class="status-pill ok">มีตำแหน่งแล้ว</span><span>ไม่มีรายการค้าง</span></td>
+              <td><div class="row-actions"><span class="button">⌖ เลื่อนไปจุดนี้</span><span class="button">↯ ทดสอบ</span><span class="button">▦ QR</span><span class="button">↗ เปิด</span></div></td>
             </tr>
             <tr data-row-device="SP-052">
-              <td><a class="device-link" href="#">SP-052</a><span>Street light V2 · serial SL-052</span></td>
-              <td><strong>Factory AA</strong><span>Road B · North row · LOT-2026-001</span></td>
-              <td><span class="status-pill ok">online</span><span>last seen 12s ago</span></td>
-              <td><span class="status-pill off">OFF</span><span>online-normal-off</span></td>
-              <td><strong>13.756600, 100.501600</strong><span>MAP · source: import CSV</span></td>
-              <td><span class="status-pill">not tested</span><span>available</span></td>
-              <td><span class="status-pill ok">mapped</span><span>no pending change</span></td>
-              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><span class="button">✎ Edit</span></div></td>
+              <td><a class="device-link" href="#">SP-052</a><span>โคมไฟ LED รุ่น 2 · SL-052</span></td>
+              <td><strong>กองช่าง</strong><span>ถนนสายหลัก ม.3 · แถวเหนือ · ล็อต 2026-001</span></td>
+              <td><span class="status-pill ok">ออนไลน์</span><span>เห็นล่าสุด 12 วินาที</span></td>
+              <td><span class="status-pill off">ดับ</span><span>ปิดตามปกติ</span></td>
+              <td><strong>13.756600, 100.501600</strong><span>นำเข้าจาก CSV</span></td>
+              <td><span class="status-pill">ยังไม่ทดสอบ</span><span>พร้อมทดสอบ</span></td>
+              <td><span class="status-pill ok">มีตำแหน่งแล้ว</span><span>ไม่มีรายการค้าง</span></td>
+              <td><div class="row-actions"><span class="button">⌖ เลื่อนไปจุดนี้</span><span class="button">↯ ทดสอบ</span><span class="button">▦ QR</span><span class="button">✎ แก้ไข</span></div></td>
             </tr>
             <tr data-row-device="SP-088">
-              <td><a class="device-link" href="#">SP-088</a><span>Street light V2 · serial SL-088</span></td>
-              <td><strong>Factory AA</strong><span>Road B · Critical segment · LOT-2026-001</span></td>
-              <td><span class="status-pill ok">online</span><span>last seen 8s ago</span></td>
-              <td><span class="status-pill bad">fault</span><span>Promoted lamp-state fault · ack Operator A · owner Technician A</span></td>
-              <td><strong>13.756300 -> 13.756510</strong><span>MAP · pending drag move · 23m</span></td>
-              <td><span class="status-pill ok">ACK 420ms</span><span>command channel OK</span></td>
-              <td><span class="status-pill warn">pending save</span><span>requires commit</span></td>
-              <td><div class="row-actions"><span class="button primary">✓ Save</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><span class="button rose">Open maintenance</span><a class="button" href="/faults/?device_id=SP-088">Command center</a><span class="button warn">↩ Revert</span></div></td>
+              <td><a class="device-link" href="#">SP-088</a><span>โคมไฟ LED รุ่น 2 · SL-088</span></td>
+              <td><strong>กองช่าง</strong><span>ถนนสายหลัก ม.3 · จุดวิกฤต · ล็อต 2026-001</span></td>
+              <td><span class="status-pill ok">ออนไลน์</span><span>เห็นล่าสุด 8 วินาที</span></td>
+              <td><span class="status-pill bad">มีปัญหา</span><span>ไฟดับ · รับเรื่องโดย จนท. ก. · ช่าง ก. รับผิดชอบ</span></td>
+              <td><strong>13.756300 → 13.756510</strong><span>รอบันทึกการย้ายหมุด · 23 ม.</span></td>
+              <td><span class="status-pill ok">ตอบกลับ 420ms</span><span>ช่องสั่งการปกติ</span></td>
+              <td><span class="status-pill warn">รอบันทึก</span><span>ต้องยืนยัน</span></td>
+              <td><div class="row-actions"><span class="button primary">✓ บันทึก</span><span class="button">↯ ทดสอบ</span><span class="button">▦ QR</span><span class="button rose">เปิดใบงาน</span><a class="button" href="#">ไปงานแจ้งซ่อม</a><span class="button warn">↩ คืนค่า</span></div></td>
             </tr>
             <tr data-row-device="SP-103">
-              <td><a class="device-link" href="#">SP-103</a><span>Street light V2 · serial SL-103</span></td>
-              <td><strong>Factory AA</strong><span>Warehouse · Multiple devices offline too long · LOT-2026-002</span></td>
-              <td><span class="status-pill bad">offline</span><span>last seen 32m ago</span></td>
-              <td><span class="status-pill bad">unknown</span><span>offline-unreachable</span></td>
-              <td><strong>13.757100, 100.502700</strong><span>MAP · source: device import</span></td>
-              <td><span class="status-pill bad">timeout</span><span>no response</span></td>
-              <td><span class="status-pill ok">mapped</span><span>location is present</span></td>
-              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button rose">⚠ Ticket</span><span class="button">▦ QR</span><span class="button">↯ Retry</span></div></td>
+              <td><a class="device-link" href="#">SP-103</a><span>โคมไฟ LED รุ่น 2 · SL-103</span></td>
+              <td><strong>กองช่าง</strong><span>โซนตลาดสด · หลายจุดขาดสัญญาณนานเกินไป · ล็อต 2026-002</span></td>
+              <td><span class="status-pill bad">ขาดการเชื่อมต่อ</span><span>เห็นล่าสุด 32 นาที</span></td>
+              <td><span class="status-pill bad">ไม่ทราบสถานะ</span><span>ติดต่อไม่ได้</span></td>
+              <td><strong>13.757100, 100.502700</strong><span>นำเข้าจากระบบ</span></td>
+              <td><span class="status-pill bad">หมดเวลา</span><span>ไม่ตอบสนอง</span></td>
+              <td><span class="status-pill ok">มีตำแหน่งแล้ว</span><span>มีพิกัด</span></td>
+              <td><div class="row-actions"><span class="button">⌖ เลื่อนไปจุดนี้</span><span class="button rose">⚠ เปิดใบงาน</span><span class="button">▦ QR</span><span class="button">↯ ลองใหม่</span></div></td>
             </tr>
             <tr data-row-device="SP-117">
-              <td><a class="device-link" href="#">SP-117</a><span>Street light V2 · serial SL-117</span></td>
-              <td><strong>Factory AA</strong><span>Floor 1 · Parking · MA lane · LOT-2026-002</span></td>
-              <td><span class="status-pill ok">online</span><span>last seen 2m ago</span></td>
-              <td><span class="status-pill warn">maintenance</span><span>dimmed 55%</span></td>
-              <td><strong>x 64%, y 72%</strong><span>FLOOR_PLAN · pending technician update</span></td>
-              <td><span class="status-pill warn">pending</span><span>waiting ACK</span></td>
-              <td><span class="status-pill warn">pending save</span><span>needs review</span></td>
-              <td><div class="row-actions"><span class="button primary">✓ Save</span><span class="button">▣ Work order</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              <td><a class="device-link" href="#">SP-117</a><span>โคมไฟ LED รุ่น 2 · SL-117</span></td>
+              <td><strong>กองช่าง</strong><span>ลานจอดรถ · ล็อต 2026-002</span></td>
+              <td><span class="status-pill ok">ออนไลน์</span><span>เห็นล่าสุด 2 นาที</span></td>
+              <td><span class="status-pill warn">ซ่อมบำรุง</span><span>หรี่แสง 55%</span></td>
+              <td><strong>x 64%, y 72%</strong><span>ผังพื้นที่ · รอช่างอัปเดต</span></td>
+              <td><span class="status-pill warn">รอตอบกลับ</span><span>กำลังรอ</span></td>
+              <td><span class="status-pill warn">รอบันทึก</span><span>ต้องตรวจสอบ</span></td>
+              <td><div class="row-actions"><span class="button primary">✓ บันทึก</span><span class="button">▣ ใบงาน</span><span class="button">▦ QR</span><span class="button">⌖ เลื่อนไปจุดนี้</span></div></td>
             </tr>
             <tr data-row-device="SP-131">
-              <td><a class="device-link" href="#">SP-131</a><span>Street light V2 · serial SL-131</span></td>
-              <td><strong>Factory AA</strong><span>Floor 1 · Parking · LOT-2026-001</span></td>
-              <td><span class="status-pill violet">disabled</span><span>admin disabled</span></td>
-              <td><span class="status-pill violet">disabled</span><span>control not allowed</span></td>
-              <td><strong>auto layout</strong><span>FLOOR_PLAN · no x/y · pending zone review</span></td>
-              <td><span class="status-pill off">blocked</span><span>disabled device</span></td>
-              <td><span class="status-pill warn">review</span><span>zone changed</span></td>
-              <td><div class="row-actions"><span class="button">✎ Edit</span><span class="button warn">↩ Revert</span><span class="button">▦ QR</span><span class="button">↗ Open</span></div></td>
+              <td><a class="device-link" href="#">SP-131</a><span>โคมไฟ LED รุ่น 2 · SL-131</span></td>
+              <td><strong>กองช่าง</strong><span>ลานจอดรถ · ล็อต 2026-001</span></td>
+              <td><span class="status-pill violet">ปิดใช้งาน</span><span>ผู้ดูแลปิดไว้</span></td>
+              <td><span class="status-pill violet">ปิดใช้งาน</span><span>สั่งการไม่ได้</span></td>
+              <td><strong>จัดวางอัตโนมัติ</strong><span>ผังพื้นที่ · ยังไม่ระบุพิกัด · รอตรวจโซน</span></td>
+              <td><span class="status-pill off">ระงับ</span><span>อุปกรณ์ถูกปิด</span></td>
+              <td><span class="status-pill warn">ตรวจสอบ</span><span>เปลี่ยนโซน</span></td>
+              <td><div class="row-actions"><span class="button">✎ แก้ไข</span><span class="button warn">↩ คืนค่า</span><span class="button">▦ QR</span><span class="button">↗ เปิด</span></div></td>
             </tr>
             <tr data-row-device="SP-151">
-              <td><a class="device-link" href="#">SP-151</a><span>Street light V2 · serial SL-151</span></td>
-              <td><strong>Factory AA</strong><span>Parking · South row · LOT-2026-001</span></td>
-              <td><span class="status-pill ok">online</span><span>last seen 6s ago</span></td>
-              <td><span class="status-pill ok">ON</span><span>online-normal-on</span></td>
-              <td><strong>13.754800, 100.500900</strong><span>MAP · source: map pin</span></td>
-              <td><span class="status-pill ok">ACK 290ms</span><span>tested 3m ago</span></td>
-              <td><span class="status-pill ok">mapped</span><span>no pending change</span></td>
-              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><span class="button">↗ Open</span></div></td>
+              <td><a class="device-link" href="#">SP-151</a><span>โคมไฟ LED รุ่น 2 · SL-151</span></td>
+              <td><strong>กองช่าง</strong><span>ลานจอดรถ · แถวใต้ · ล็อต 2026-001</span></td>
+              <td><span class="status-pill ok">ออนไลน์</span><span>เห็นล่าสุด 6 วินาที</span></td>
+              <td><span class="status-pill ok">ติด</span><span>ทำงานปกติ</span></td>
+              <td><strong>13.754800, 100.500900</strong><span>ปักหมุดบนแผนที่</span></td>
+              <td><span class="status-pill ok">ตอบกลับ 290ms</span><span>ทดสอบ 3 นาทีที่แล้ว</span></td>
+              <td><span class="status-pill ok">มีตำแหน่งแล้ว</span><span>ไม่มีรายการค้าง</span></td>
+              <td><div class="row-actions"><span class="button">⌖ เลื่อนไปจุดนี้</span><span class="button">↯ ทดสอบ</span><span class="button">▦ QR</span><span class="button">↗ เปิด</span></div></td>
             </tr>
-          
+
             <tr data-row-device="SP-177">
-              <td><a class="device-link" href="#">SP-177</a><span>Street light V2 · serial SL-177</span></td>
-              <td><strong>Factory Delta</strong><span>Road C · Feeder 3 · LOT-2026-003</span></td>
-              <td><span class="status-pill ok">online</span><span>last seen 16s ago</span></td>
-              <td><span class="status-pill warn">warning</span><span>over-voltage candidate</span></td>
-              <td><strong>13.758000, 100.504100</strong><span>MAP · source: technician placement</span></td>
-              <td><span class="status-pill ok">ACK 285ms</span><span>tested 4m ago</span></td>
-              <td><span class="status-pill warn">review</span><span>moved 9m from import</span></td>
-              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><a class="button warn" href="/faults/?device_id=SP-177">Inspect</a></div></td>
+              <td><a class="device-link" href="#">SP-177</a><span>โคมไฟ LED รุ่น 2 · SL-177</span></td>
+              <td><strong>ถนนเลียบคลอง</strong><span>หมู่ 5 · สายป้อน 3 · ล็อต 2026-003</span></td>
+              <td><span class="status-pill ok">ออนไลน์</span><span>เห็นล่าสุด 16 วินาที</span></td>
+              <td><span class="status-pill warn">เฝ้าระวัง</span><span>แรงดันอาจสูงเกิน</span></td>
+              <td><strong>13.758000, 100.504100</strong><span>ช่างปักหมุด</span></td>
+              <td><span class="status-pill ok">ตอบกลับ 285ms</span><span>ทดสอบ 4 นาทีที่แล้ว</span></td>
+              <td><span class="status-pill warn">ตรวจสอบ</span><span>ย้าย 9 ม. จากที่นำเข้า</span></td>
+              <td><div class="row-actions"><span class="button">⌖ เลื่อนไปจุดนี้</span><span class="button">↯ ทดสอบ</span><span class="button">▦ QR</span><a class="button warn" href="#">ตรวจสอบ</a></div></td>
             </tr>
             <tr data-row-device="SP-205">
-              <td><a class="device-link" href="#">SP-205</a><span>Street light V1 · serial SL-205</span></td>
-              <td><strong>School Lighting E</strong><span>Front Gate · Main entry</span></td>
-              <td><span class="status-pill ok">online</span><span>last seen 21s ago</span></td>
-              <td><span class="status-pill warn">schedule mismatch</span><span>actual ON outside schedule</span></td>
-              <td><strong>13.754200, 100.499700</strong><span>source: map drag staged</span></td>
-              <td><span class="status-pill ok">ACK 344ms</span><span>tested 7m ago</span></td>
-              <td><span class="status-pill warn">pending save</span><span>new gate marker</span></td>
-              <td><div class="row-actions"><span class="button primary">✓ Save</span><span class="button">▦ QR</span><a class="button" href="/map/?device_id=SP-205">Map</a></div></td>
+              <td><a class="device-link" href="#">SP-205</a><span>โคมไฟ LED รุ่น 1 · SL-205</span></td>
+              <td><strong>หน้าโรงเรียน</strong><span>ประตูหน้า · ทางเข้าหลัก</span></td>
+              <td><span class="status-pill ok">ออนไลน์</span><span>เห็นล่าสุด 21 วินาที</span></td>
+              <td><span class="status-pill warn">เวลาไม่ตรง</span><span>ติดนอกเวลาที่ตั้งไว้</span></td>
+              <td><strong>13.754200, 100.499700</strong><span>รอบันทึกจากลากหมุด</span></td>
+              <td><span class="status-pill ok">ตอบกลับ 344ms</span><span>ทดสอบ 7 นาทีที่แล้ว</span></td>
+              <td><span class="status-pill warn">รอบันทึก</span><span>หมุดใหม่หน้าประตู</span></td>
+              <td><div class="row-actions"><span class="button primary">✓ บันทึก</span><span class="button">▦ QR</span><a class="button" href="#">แผนที่</a></div></td>
             </tr>
             <tr data-row-device="SP-221">
-              <td><a class="device-link" href="#">SP-221</a><span>Street light V2 · serial SL-221</span></td>
-              <td><strong>Depot F</strong><span>Loading · Dock 2</span></td>
-              <td><span class="status-pill ok">online</span><span>last seen 42s ago</span></td>
-              <td><span class="status-pill warn">poor PF</span><span>PF 0.71 · load review</span></td>
-              <td><strong>13.759300, 100.506200</strong><span>source: CSV import</span></td>
-              <td><span class="status-pill">pending</span><span>queued ping</span></td>
-              <td><span class="status-pill ok">mapped</span><span>no pending change</span></td>
-              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><a class="button warn" href="/faults/?device_id=SP-221">Inspect</a></div></td>
+              <td><a class="device-link" href="#">SP-221</a><span>โคมไฟ LED รุ่น 2 · SL-221</span></td>
+              <td><strong>ตลาดสด</strong><span>ลานขนถ่าย · จุด 2</span></td>
+              <td><span class="status-pill ok">ออนไลน์</span><span>เห็นล่าสุด 42 วินาที</span></td>
+              <td><span class="status-pill warn">ค่าไฟผิดปกติ</span><span>ค่ากำลังไฟต่ำ · ควรตรวจโหลด</span></td>
+              <td><strong>13.759300, 100.506200</strong><span>นำเข้าจาก CSV</span></td>
+              <td><span class="status-pill">รอทดสอบ</span><span>เข้าคิวแล้ว</span></td>
+              <td><span class="status-pill ok">มีตำแหน่งแล้ว</span><span>ไม่มีรายการค้าง</span></td>
+              <td><div class="row-actions"><span class="button">⌖ เลื่อนไปจุดนี้</span><span class="button">↯ ทดสอบ</span><span class="button">▦ QR</span><a class="button warn" href="#">ตรวจสอบ</a></div></td>
             </tr>
 </tbody>
         </table>

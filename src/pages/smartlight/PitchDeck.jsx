@@ -29,7 +29,7 @@ const C = {
 const IMG = 'images/smartlight';
 const VIDEO_SRC = 'videos/0518.mp4';
 const VIDEO_POSTER = 'videos/0518_poster.jpg';
-const TOTAL_SLIDES = 19;
+const TOTAL_SLIDES = 21;
 
 // ---------------------------------------------------------------------------
 // Slide shell — fixed 1280×720
@@ -695,8 +695,8 @@ const DEMO_TABS = [
   { id: 'device', label: '💡 รายการโคม', file: 'device.html' },
 ];
 
-function SmartLightDemoModal({ onClose }) {
-  const [tab, setTab] = useState('dashboard');
+function SmartLightDemoModal({ onClose, initialTab = 'dashboard' }) {
+  const [tab, setTab] = useState(initialTab);
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -1293,27 +1293,131 @@ function Slide18() {
 }
 
 // ---------------------------------------------------------------------------
-// SLIDE 20 — CTA · 3 คำถาม
+// SLIDE 19 — Pain งานกองช่าง (ต่อยอด: ระบบเดียวเริ่มจากงานแจ้งซ่อม)
+// Pain-first · ผู้ฟังผสม หัวหน้ากองช่าง + ผู้บริหาร
+// ---------------------------------------------------------------------------
+
+function Slide19a() {
+  const channels = [
+    { ic: '📞', t: 'โทรเข้ามา', d: 'รับสายแล้วจดใส่กระดาษ — หายบ้าง ลืมบ้าง' },
+    { ic: '💬', t: 'แจ้งผ่าน LINE', d: 'เด้งในกลุ่ม เลื่อนหาย ไม่รู้ใครรับไปทำ' },
+    { ic: '🚶', t: 'เดินมาบอกที่ออฟฟิศ', d: 'บอกปากเปล่า ไม่มีหลักฐานว่ารับเรื่องแล้ว' },
+    { ic: '📋', t: 'หัวหน้าสั่งงาน', d: 'มอบหมายด้วยวาจา ตามงานไม่ได้ว่าถึงไหน' },
+  ];
+  return (
+    <Slide num={19}>
+      <Eyebrow alert>ปัญหาที่กองช่างเจอทุกวัน</Eyebrow>
+      <Title size={34}>งานแจ้งซ่อมเข้ามาหลายทาง — แล้วตกหล่นไม่รู้ตัว</Title>
+      <Lead style={{ marginTop: 8, maxWidth: 1080 }}>
+        ไม่ใช่แค่ไฟถนน — ท่อประปารั่ว ถนนเป็นหลุม ฝาท่อหาย ครุภัณฑ์เสีย เรื่องร้องเรียนของประชาชน
+        ล้วนเข้ามาคนละช่องทาง พอไม่มีระบบกลาง งานก็ <strong style={{ color: C.alert }}>ตกหล่น · ซ้ำซ้อน · ตอบสภาฯ ไม่ได้ว่าทำอะไรไปบ้าง</strong>
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginTop: 20, flexShrink: 0 }}>
+        {channels.map((c, i) => (
+          <Card key={i} style={{ padding: '18px 18px' }}>
+            <CardIcon>{c.ic}</CardIcon>
+            <CardTitle style={{ fontSize: 17, marginBottom: 5 }}>{c.t}</CardTitle>
+            <CardBody style={{ fontSize: 13.5 }}>{c.d}</CardBody>
+          </Card>
+        ))}
+      </div>
+      <div style={{ marginTop: 18, background: C.primarySoft, border: `1px solid ${C.primary}33`, borderRadius: 18, padding: '20px 26px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: C.primaryDeep, letterSpacing: 1, marginBottom: 10 }}>ทางออก — รวมทุกงานไว้ที่ระบบเดียว</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          {['รับแจ้ง', 'เปิดใบงาน', 'มอบหมายช่าง', 'ติดตามสถานะ', 'ปิดงาน', 'ออกรายงานตอบสภาฯ'].map((step, i, arr) => (
+            <React.Fragment key={i}>
+              <span style={{ background: '#FFF', border: `1px solid ${C.primary}`, color: C.primaryDeep, borderRadius: 100, padding: '9px 16px', fontSize: 15, fontWeight: 700 }}>{step}</span>
+              {i < arr.length - 1 && <span style={{ color: C.primary, fontSize: 18, fontWeight: 800 }}>→</span>}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 20 — ระบบเดียว ขยายงานกองช่างได้ + ปุ่มเปิด demo (tab faults)
+// "เริ่มจากงานที่ปวดหัวที่สุดก่อน — ไฟถนนเป็นโมดูลแรก ต่อยอดงานอื่นได้"
+// ---------------------------------------------------------------------------
+
+function Slide19b() {
+  const [showDemo, setShowDemo] = useState(false);
+  const modules = [
+    { ic: '💡', t: 'ไฟถนน', d: 'โมดูลแรก — ไฟดับ/ชำรุด แจ้งซ่อมตรงจุด' },
+    { ic: '🚰', t: 'ประปา / ท่อแตก-รั่ว', d: 'รับแจ้งจุดรั่ว มอบหมายช่างประปา' },
+    { ic: '🛣️', t: 'ถนน / ฝาท่อ / ป้าย', d: 'ประชาชนแจ้ง → เปิดใบงาน → ปิดงาน' },
+    { ic: '🚜', t: 'ครุภัณฑ์ / รถ / เครื่องจักร', d: 'ซ่อมบำรุงตามแผน ลดเครื่องจอดเสีย' },
+    { ic: '📨', t: 'เรื่องร้องเรียนทั่วไป', d: 'รับเรื่อง → ติดตาม → รายงานผล' },
+  ];
+  return (
+    <Slide num={20}>
+      {showDemo && <SmartLightDemoModal onClose={() => setShowDemo(false)} initialTab="faults" />}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <Eyebrow accent>ระบบบริหารงานซ่อมบำรุง · เริ่มเล็ก ต่อยอดได้</Eyebrow>
+          <Title size={33}>ระบบเดียว — เริ่มจากงานที่ปวดหัวที่สุดก่อน</Title>
+        </div>
+        <button
+          onClick={() => setShowDemo(true)}
+          style={{ flexShrink: 0, marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, background: C.primary, color: '#FFF', border: 'none', borderRadius: 12, padding: '11px 18px', fontFamily: 'inherit', fontSize: 14.5, fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 8px rgba(15,110,86,0.28)' }}
+        >
+          🖥️ เปิดดูหน้างานแจ้งซ่อมจริง (กดเล่นได้)
+        </button>
+      </div>
+      <Lead style={{ marginTop: 8, maxWidth: 1080 }}>
+        ไม่ต้องลงทุนใหญ่ทีเดียว — เลือกงานที่กองช่างปวดหัวที่สุดมาเริ่มก่อน (ส่วนใหญ่คือ <strong style={{ color: C.primary }}>ไฟถนน</strong>)
+        เมื่อทีมคุ้นระบบแล้ว ค่อยเปิดงานอื่นบนระบบเดิม — ใบงาน · แผนที่ · แจ้งเตือน LINE ชุดเดียวกัน
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 1fr', gap: 18, marginTop: 16, flex: 1, minHeight: 0 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridAutoRows: '1fr', gap: 12, minHeight: 0 }}>
+          {modules.map((m, i) => (
+            <Card key={i} style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', minHeight: 0, ...(i === 0 ? { border: `2px solid ${C.primary}`, background: C.primarySoft } : {}) }}>
+              <span style={{ fontSize: 26, lineHeight: 1, marginBottom: 6 }}>{m.ic}</span>
+              <CardTitle style={{ fontSize: 16, marginBottom: 3 }}>{m.t}{i === 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#FFF', background: C.primary, borderRadius: 100, padding: '2px 9px', marginLeft: 8, verticalAlign: 'middle' }}>เริ่มที่นี่</span>}</CardTitle>
+              <CardBody style={{ fontSize: 12.5 }}>{m.d}</CardBody>
+            </Card>
+          ))}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 4px' }}>
+            <p style={{ fontSize: 13, color: C.textMuted, lineHeight: 1.6 }}>
+              เพิ่มงานใหม่ = เพิ่มประเภทในระบบ <strong style={{ color: C.primary }}>ไม่ต้องเปลี่ยนเครื่องมือ</strong> ทีมไม่ต้องเรียนรู้ใหม่
+            </p>
+          </div>
+        </div>
+        <div style={{ borderRadius: 18, overflow: 'hidden', background: C.primarySoft, minHeight: 0 }}>
+          <img src={`${IMG}/installation/IMG_6040.jpeg`} alt="ทีมช่างกองช่างปฏิบัติงานภาคสนาม" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        </div>
+      </div>
+      <p style={{ fontSize: 12.5, color: C.text, marginTop: 10 }}>
+        <strong style={{ color: C.primary }}>สำหรับหัวหน้ากองช่าง:</strong> งานไม่ตกหล่น ช่างไปตรงจุด ·
+        <strong style={{ color: C.primary }}> สำหรับผู้บริหาร:</strong> เห็นภาพรวมทุกงาน มีตัวเลขตอบสภาฯ ลดภาระงานเอกสาร
+      </p>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 21 — CTA · 3 คำถาม
 // ---------------------------------------------------------------------------
 
 function Slide20() {
   return (
-    <Slide num={19} dark>
+    <Slide num={21} dark>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
         <Eyebrow dark>ขั้นต่อไป</Eyebrow>
         <Title dark size={44}>
-          ขอเวลาท่านสักครู่<br />คุยเรื่องไฟถนนในเขตของท่าน
+          ขอเวลาท่านสักครู่<br />คุยเรื่องงานซ่อมบำรุงในเขตของท่าน
         </Title>
         <Lead dark style={{ marginTop: 20, maxWidth: 940 }}>
-          ท่านไม่ต้องตัดสินใจอะไรในวันนี้ — เราอยากฟังก่อนว่าเทศบาลของท่านเจอปัญหาอะไร
-          มีโคมกี่ดวงในเขต พื้นที่ลักษณะไหน แล้วจึงเสนอแบบที่เหมาะกับงบและบริบทจริง ไม่ใช่ขายแพ็กเกจสำเร็จรูป
+          ท่านไม่ต้องตัดสินใจอะไรในวันนี้ — เราอยากฟังก่อนว่ากองช่างของท่านเจอปัญหาอะไรหนักที่สุด
+          (ไฟถนน · ประปา · ถนน · ครุภัณฑ์ · เรื่องร้องเรียน) แล้วจึงเสนอแบบที่เหมาะกับงบและบริบทจริง ไม่ใช่ขายแพ็กเกจสำเร็จรูป
         </Lead>
         <div style={{ marginTop: 30, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 18, padding: '24px 28px', maxWidth: 980 }}>
           <h3 style={{ color: '#FFF', fontSize: 20, fontWeight: 700, marginBottom: 14 }}>3 คำถามที่อยากฟังจากท่าน</h3>
           <p style={{ color: 'rgba(255,255,255,.9)', fontSize: 17, lineHeight: 1.9 }}>
-            1. ปัญหาเรื่องไฟถนนที่หนักที่สุดในเขตของท่าน คืออะไร?<br />
-            2. งบที่มีอยู่ตอนนี้สำหรับไฟถนน รายปีอยู่ที่เท่าไหร่?<br />
-            3. ถ้าจะเริ่มทดลอง — เริ่มที่ถนนสายไหน หรือหมู่ไหนก่อนดี?
+            1. งานแจ้งซ่อมเรื่องไหนที่ตกหล่นหรือปวดหัวที่สุดในเขตของท่าน?<br />
+            2. ตอนนี้รับแจ้งและติดตามงานกันอย่างไร (โทร / LINE / กระดาษ)?<br />
+            3. ถ้าจะเริ่มทดลอง — อยากเริ่มจากงานประเภทไหน หรือพื้นที่ไหนก่อนดี?
           </p>
         </div>
       </div>
@@ -1346,7 +1450,9 @@ function Toolbar() {
     '16 · 💪 Win · ระบบช่วยลดงานช่างไฟ',
     '17 · 🏛️ Outcome · KPI ตอบสภาฯ ได้',
     '18 · 🏗️ Track Record · LED ติดตั้งจริง 50+ แห่ง',
-    '19 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
+    '19 · 🛠️ Pain · งานแจ้งซ่อมกองช่างตกหล่น',
+    '20 · 🧩 ต่อยอด · ระบบเดียว เริ่มเล็ก ขยายงานอื่น (+ demo)',
+    '21 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
   ];
   const goTo = (i) => {
     const el = document.getElementById(`slide-${i + 1}`);
@@ -1463,7 +1569,7 @@ function ScrollDots({ count }) {
 // ---------------------------------------------------------------------------
 
 export default function SmartLightPitchDeck() {
-  const slides = [Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07, Slide08, Slide09, Slide10, Slide11, Slide12, Slide13, Slide14, Slide15, Slide16, Slide17, Slide18, Slide20];
+  const slides = [Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07, Slide08, Slide09, Slide10, Slide11, Slide12, Slide13, Slide14, Slide15, Slide16, Slide17, Slide18, Slide19a, Slide19b, Slide20];
   return (
     <>
       <DeckStyles />
