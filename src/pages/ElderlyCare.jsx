@@ -883,7 +883,63 @@ function Slide27Dash() {
 // SLIDE — แอป OCR "ถ่ายไม่ต้องจด" (was OSM field app) — image + workflow
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// App Demo Modal — เปิด mockup ระบบจริง (public/ui/elderly_app.html) ทับสไลด์
+// ปิดด้วยปุ่ม X / ESC / คลิกพื้นหลัง → กลับมาที่สไลด์เดิม (ไม่หลุดจาก present)
+// ---------------------------------------------------------------------------
+function AppDemoModal({ onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prevOverflow; };
+  }, [onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 10000,
+        background: 'rgba(20,22,20,0.62)', backdropFilter: 'blur(3px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 'clamp(12px, 3vw, 36px)', animation: 'ecFade .2s ease',
+      }}
+    >
+      <style>{`@keyframes ecFade{from{opacity:0}to{opacity:1}}`}</style>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: 'min(1280px, 100%)', height: 'min(800px, 100%)',
+          background: '#F7F4EC', borderRadius: 16, overflow: 'hidden',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column',
+        }}
+      >
+        <div style={{ flexShrink: 0, height: 52, background: '#1F6B4C', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, fontWeight: 700 }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#9FE3C0' }} />
+            ตัวอย่างระบบจริง — ElderlyCare 360° (กดปุ่มในระบบเพื่อทดลองได้)
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="ปิด"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.16)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
+          >
+            ✕ ปิด · กลับสู่การนำเสนอ
+          </button>
+        </div>
+        <iframe
+          src={`${import.meta.env.BASE_URL}ui/elderly_app.html`}
+          title="ElderlyCare 360° — ตัวอย่างระบบ"
+          style={{ flex: 1, width: '100%', border: 'none', display: 'block' }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function Slide21App() {
+  const [showDemo, setShowDemo] = useState(false);
   const steps = [
     { n: 1, t: 'เปิดหน้าผู้สูงอายุที่เยี่ยม', d: 'ระบบรู้ว่ากำลังดูแลใคร (ยายบุญมา · บ้าน 42)' },
     { n: 2, t: 'ถ่ายรูปหน้าจอเครื่องวัด', d: 'ระบบอ่านค่าจากภาพให้อัตโนมัติ (OCR) — ความดัน · น้ำตาล · ออกซิเจน' },
@@ -891,6 +947,7 @@ function Slide21App() {
   ];
   return (
     <Slide num={21}>
+      {showDemo && <AppDemoModal onClose={() => setShowDemo(false)} />}
       <Eyebrow accent>เครื่องมือสำหรับ อสม. ภาคสนาม</Eyebrow>
       <Title size={32}>ทำงานสะดวก แค่ถ่ายไม่ต้องจด</Title>
       <p style={{ fontSize: 14, color: C.textMuted, marginTop: 2, marginBottom: 8 }}>
@@ -942,6 +999,13 @@ function Slide21App() {
               </div>
             ))}
           </div>
+
+          <button
+            onClick={() => setShowDemo(true)}
+            style={{ marginTop: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%', background: C.primary, color: '#FFF', border: 'none', borderRadius: 12, padding: '13px 18px', fontFamily: 'inherit', fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 8px rgba(31,107,76,0.28)' }}
+          >
+            🖥️ เปิดดูระบบจริง (กดเล่นได้)
+          </button>
         </div>
       </div>
     </Slide>

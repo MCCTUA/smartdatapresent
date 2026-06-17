@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ElderlyCare 360° — ตัวอย่างระบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body { font-family: 'Sarabun','Noto Sans Thai',system-ui,sans-serif; color:#2B2B2B; background:#F7F4EC; -webkit-font-smoothing:antialiased; }
+  ::selection { background:#1F6B4C; color:#fff; }
+  button { font-family: inherit; }
+  @keyframes ec-toastIn { from { opacity:0; transform:translate(-50%,-14px);} to { opacity:1; transform:translate(-50%,0);} }
+  @keyframes ec-pulseRed { 0%,100% { box-shadow:0 0 0 0 rgba(192,73,47,0.45);} 50% { box-shadow:0 0 0 14px rgba(192,73,47,0);} }
+  @keyframes ec-glow { 0%,100% { box-shadow:0 0 0 0 rgba(224,165,38,0.5);} 50% { box-shadow:0 0 0 10px rgba(224,165,38,0);} }
+  @keyframes ec-fadeUp { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:translateY(0);} }
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb { background:#D8D0BE; border-radius:8px; border:2px solid #F7F4EC; }
+  .navbtn:hover { background:#F0F4F1 !important; }
+  .alertrow:hover { background:#FBF5EE !important; }
+  .pribtn:hover { background:#185A40 !important; }
+  .pribtn:active { transform:scale(0.98); }
+  .ghostbtn:hover { background:#F0F7F3 !important; }
+  #screen { animation: ec-fadeUp .25s ease; }
+</style>
+</head>
+<body>
+<div id="app" style="display:flex; height:100vh; width:100%; overflow:hidden; background:#F7F4EC;"></div>
+
+<script>
+// ============================================================
+// ElderlyCare 360° — standalone demo (vanilla JS)
+// แปลงจาก Claude Design (.dc.html) → ฝัง iframe ได้ · ไม่ต้องพึ่ง runtime
+// คง logic เดิมทุกจุด: GPS mask ±1km, openMaps (anchor-click _blank),
+// simulate measurement/fall/no-response, module toggle + RBAC
+// ============================================================
+
+const COLORS = { green:'#1F6B4C', greenDk:'#185A40', cream:'#F7F4EC', ink:'#2B2B2B', amber:'#E0A526', amberTx:'#B5851A', red:'#C0492F' };
+const DEVICE_GPS = { lat: 13.9123, lng: 100.6087 }; // พิกัด GPS ของอุปกรณ์ที่ลงทะเบียน (mock)
+
+const state = {
+  page: 'dashboard',
+  hintOpen: true,
+  toast: null, toastType: 'success', _t: null,
+  step: 2,
+  patientName: 'นางบุญมา ศรีสุข',
+  patientMeta: 'อายุ 72 · หมู่ 4',
+  measurements: [
+    { time:'08:12', hr:'78',  bp:'128/82', glu:'104', spo2:'97', wt:'58.4', afib:false, fresh:false },
+    { time:'12:30', hr:'112', bp:'138/88', glu:'142', spo2:'95', wt:'58.3', afib:true,  fresh:false },
+  ],
+  responders: [
+    { role:'อสม. ',             name:'สมหญิง พุ่มพวง',   line:'Uxxxx…2071', status:'pending', time:'' },
+    { role:'เจ้าหน้าที่เทศบาล ', name:'ประสงค์ ใจดี',     line:'Uxxxx…4410', status:'pending', time:'' },
+    { role:'หน่วยกู้ชีพ ',       name:'ทีมกู้ชีพสาธิต',    line:'Uxxxx…9920', status:'pending', time:'' },
+    { role:'ครอบครัว ',         name:'น.ส.มะลิ (บุตรสาว)', line:'Uxxxx…3185', status:'pending', time:'' },
+  ],
+  navUnlocked: false,
+  escalateIdx: -1,
+  auditLog: [
+    { time:'14:32:04', text:'รับสัญญาณฉุกเฉินจากอุปกรณ์ #LR-2071 ผ่าน LoRa' },
+    { time:'14:32:05', text:'ระบุพิกัด GPS ที่ลงทะเบียนไว้ของอุปกรณ์' },
+  ],
+  fallActive: false,
+  modules: { health:true, fall:true, emergency:true, report:true, msg:true, ai:false },
+};
+
+// ---------- helpers ----------
+const pad = n => String(n).padStart(2,'0');
+function now(){ const d=new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+function nowHM(){ const d=new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// กลบพิกัดจริง: สุ่ม offset ภายในรัศมี ~1 กม. (กันเปิดเผยพิกัดบ้านตอนสาธิต)
+// ระบบจริงนำทางไปพิกัดจริงของอุปกรณ์ — โหมดสาธิตนี้เท่านั้นที่กลบ
+function maskedCoords(lat, lng){
+  try {
+    const r = 0.009 * Math.sqrt(Math.random());      // ~1 กม.
+    const theta = Math.random() * 2 * Math.PI;
+    const dLat = r * Math.cos(theta);
+    const dLng = (r * Math.sin(theta)) / Math.cos(lat * Math.PI/180);
+    const mlat = lat + dLat, mlng = lng + dLng;
+    if (!isFinite(mlat) || !isFinite(mlng)) throw new Error('calc failed');
+    return [mlat, mlng];
+  } catch(e){
+    return [13.7563, 100.5018]; // fallback: ศาลาว่าการกรุงเทพมหานคร
+  }
+}
+
+function showToast(msg, type='success'){
+  clearTimeout(state._t);
+  state.toast = msg; state.toastType = type;
+  render();
+  state._t = setTimeout(()=>{ state.toast = null; render(); }, 3600);
+}
+
+// ---------- actions ----------
+function go(page){ state.page = page; state.hintOpen = true; render(); }
+
+function simulateMeasurement(){
+  const ri = (a,b)=>Math.round(a+Math.random()*(b-a));
+  const sys=ri(118,142), dia=ri(74,92), afib=Math.random()<0.22;
+  state.measurements.push({ time:nowHM(), hr:String(ri(68,99)), bp:`${sys}/${dia}`, glu:String(ri(96,150)), spo2:String(ri(94,99)), wt:'58.'+ri(2,6), afib, fresh:true });
+  showToast('รับค่าจากอุปกรณ์ #CS-014 เรียบร้อย (แก้ไขไม่ได้)','success');
+  setTimeout(()=>{ state.measurements = state.measurements.map(m=>({...m,fresh:false})); render(); }, 1600);
+}
+
+function returnDevice(){
+  state.step = 4; render();
+  showToast('คืนอุปกรณ์ #CS-014 · ส่งต่อผู้รับบริการรายถัดไป · ขอความยินยอม (consent) ใหม่เรียบร้อย','success');
+  setTimeout(()=>{
+    state.step = 2;
+    state.patientName = 'นายทองดี แก้วมณี';
+    state.patientMeta = 'อายุ 69 · หมู่ 7';
+    state.measurements = [{ time:nowHM(), hr:'74', bp:'124/80', glu:'108', spo2:'98', wt:'63.0', afib:false, fresh:false }];
+    render();
+  }, 1500);
+}
+
+function acceptResponder(i){
+  const r0 = state.responders[i];
+  state.responders = state.responders.map((x,idx)=> idx===i ? {...x, status:'accepted', time:now()} : x);
+  state.auditLog.push({ time:now(), text:`บันทึกผู้ปฏิบัติงาน: ${r0.role}${r0.name} (LINE: ${r0.line}) — รับเรื่อง` });
+  state.navUnlocked = true; state.escalateIdx = -1;
+  showToast(`บันทึกผู้ปฏิบัติงาน: ${r0.role.trim()} ${r0.name} (LINE: ${r0.line})`,'success');
+}
+
+function openMaps(){
+  if (!state.navUnlocked){ showToast('กรุณากด “รับเรื่อง” ก่อน จึงจะเปิดการนำทางได้','warn'); return; }
+  const [lat,lng] = maskedCoords(DEVICE_GPS.lat, DEVICE_GPS.lng);
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${lat.toFixed(6)},${lng.toFixed(6)}`;
+  // เปิดผ่าน anchor-click ภายใน user gesture (ฝัง iframe ได้ — _blank เปิดแท็บ/หน้าต่างใหม่ ไม่โดน X-Frame-Options)
+  try {
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch(e){ try { window.open(url,'_blank'); } catch(e2){} }
+  state.auditLog.push({ time:now(), text:'กดนำทางไปจุดเกิดเหตุ (Google Maps · โหมดสาธิตกลบพิกัด ±1 กม.)' });
+  showToast('เปิด Google Maps นำทาง — พิกัดถูกกลบ ±1 กม. ในโหมดสาธิต','success');
+}
+
+function simulateNoResponse(){
+  const idx = state.responders.findIndex(r=>r.status==='pending');
+  if (idx<0){ showToast('ทุกชั้นรับเรื่องเรียบร้อยแล้ว','success'); return; }
+  const nextIdx = Math.min(idx+1, state.responders.length-1);
+  const nextRole = state.responders[nextIdx].role.trim();
+  state.responders = state.responders.map((x,i)=> i===idx ? {...x, status:'timeout'} : x);
+  state.auditLog.push({ time:now(), text:`ไม่มีผู้รับเรื่องภายใน 5 นาที — เลื่อนขั้นอัตโนมัติไปยัง: ${nextRole}` });
+  state.escalateIdx = nextIdx;
+  showToast('ไม่มีผู้รับเรื่องใน 5 นาที — ระบบเลื่อนขั้น (escalation) อัตโนมัติ','warn');
+}
+
+function resetEmergency(){
+  state.responders = state.responders.map(r=>({...r, status:'pending', time:''}));
+  state.navUnlocked = false; state.escalateIdx = -1;
+  state.auditLog = [
+    { time:now(), text:'รับสัญญาณฉุกเฉินจากอุปกรณ์ #LR-2071 ผ่าน LoRa' },
+    { time:now(), text:'ระบุพิกัด GPS ที่ลงทะเบียนไว้ของอุปกรณ์' },
+  ];
+  showToast('รีเซ็ตเคสสาธิตเรียบร้อย','success');
+}
+
+function simulateFall(){
+  state.fallActive = true; render();
+  showToast('ตรวจพบการล้มในห้องน้ำ · อุปกรณ์ #LR-2071 ส่งสัญญาณผ่าน LoRa · ระบุพิกัด GPS ที่ลงทะเบียน','danger');
+  setTimeout(()=>{ state.page='emergency'; state.fallActive=false; state.hintOpen=true; render(); }, 2800);
+}
+
+function exportReport(){ showToast('สร้างรายงานสำหรับเบิกงบเรียบร้อย · พร้อมส่งกองคลังและ JHCIS','success'); }
+
+function toggleModule(key){
+  const turningOff = state.modules[key];
+  state.modules = { ...state.modules, [key]: !state.modules[key] };
+  const map = { health:'screening', emergency:'emergency', fall:'fall', report:'report' };
+  if (map[key] && !state.modules[key] && state.page===map[key]) state.page='dashboard';
+  showToast(turningOff ? 'ปิดโมดูลแล้ว — เมนูที่เกี่ยวข้องถูกซ่อนจาก sidebar' : 'เปิดใช้งานโมดูลเรียบร้อย', turningOff ? 'warn':'success');
+}
+function tog(key){ const on=state.modules[key]; return { trackBg: on?'#1F6B4C':'#D8D0BE', knobX: on?'20px':'2px' }; }
+
+// expose for inline onclick
+window.EC = { go, simulateMeasurement, returnDevice, acceptResponder, openMaps, simulateNoResponse, resetEmergency, simulateFall, exportReport, toggleModule, toggleHint:()=>{ state.hintOpen=!state.hintOpen; render(); } };
+
+// ---------- view fragments ----------
+const ic = {
+  dash:'<rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect>',
+  screen:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>',
+  alert:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>',
+  home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>',
+  doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line>',
+  gear:'<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>',
+};
+function svg(path, stroke='currentColor', size=19, sw=1.7){ return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`; }
+
+function navBtn(page, label, iconPath, enabled){
+  if (!enabled) return '';
+  const active = state.page===page;
+  const bg = active ? 'background:#DCEDE3;border-left:3px solid #1F6B4C;' : 'background:transparent;';
+  return `<button class="navbtn" onclick="EC.go('${page}')" style="position:relative; display:flex; align-items:center; gap:12px; width:100%; padding:11px 13px; border:none; border-radius:10px; font-size:14.5px; font-weight:500; cursor:pointer; text-align:left; color:#3A3631; ${bg}">
+    ${svg(iconPath,'#3A3631')}<span>${label}</span></button>`;
+}
+
+function sidebar(){
+  const m = state.modules;
+  return `<aside style="width:266px; flex-shrink:0; background:#fff; border-right:1px solid #E8E1D2; display:flex; flex-direction:column; height:100%;">
+    <div style="padding:22px 20px 18px; border-bottom:1px solid #EFE9DC; display:flex; align-items:center; gap:12px;">
+      <div style="width:42px; height:42px; border-radius:12px; background:#1F6B4C; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${svg('<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>','#fff',24,1.8)}</div>
+      <div style="line-height:1.15;"><div style="font-size:17px; font-weight:700; color:#1F6B4C;">ElderlyCare 360°</div><div style="font-size:11.5px; color:#8C8576;">ระบบดูแลผู้สูงอายุ · เทศบาล</div></div>
+    </div>
+    <nav style="padding:14px 12px; display:flex; flex-direction:column; gap:3px; flex:1; overflow-y:auto;">
+      <div style="font-size:11px; font-weight:600; color:#A89F8C; letter-spacing:.5px; padding:6px 10px 4px;">เมนูหลัก</div>
+      ${navBtn('dashboard','แดชบอร์ดภาพรวม',ic.dash,true)}
+      ${navBtn('screening','คัดกรองสุขภาพ + ยืม-คืน',ic.screen,m.health)}
+      ${navBtn('emergency','แจ้งเหตุฉุกเฉิน',ic.alert,m.emergency)}
+      ${navBtn('fall','เฝ้าระวังการล้ม',ic.home,m.fall)}
+      ${navBtn('report','รายงานเบิกงบ',ic.doc,m.report)}
+      <div style="font-size:11px; font-weight:600; color:#A89F8C; letter-spacing:.5px; padding:14px 10px 4px;">ระบบ</div>
+      ${navBtn('settings','ตั้งค่าระบบ',ic.gear,true)}
+    </nav>
+    <div style="padding:14px; border-top:1px solid #EFE9DC;">
+      <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#F4F0E6; border-radius:10px;">
+        <div style="width:9px; height:9px; border-radius:50%; background:#1F6B4C; flex-shrink:0;"></div>
+        <div style="font-size:12px; color:#6E6757;">ระบบออนไลน์ · เชื่อมต่อ JHCIS แล้ว</div></div>
+    </div>
+  </aside>`;
+}
+
+const TITLES = {
+  dashboard:['แดชบอร์ดภาพรวม','สรุปสถานการณ์การดูแลผู้สูงอายุในพื้นที่'],
+  screening:['คัดกรองสุขภาพ + วงจรยืม-คืน','เฝ้าระวัง · บันทึก · คัดกรอง ด้วยอุปกรณ์สวมใส่'],
+  emergency:['แจ้งเหตุฉุกเฉิน','ห่วงโซ่ผู้ตอบสนอง · บันทึกการดำเนินการ'],
+  fall:['เฝ้าระวังการล้ม ตามโซน','ดูแลด้วยความเคารพความเป็นส่วนตัว'],
+  report:['รายงานเบิกงบ ADL/LTC + JHCIS','สำหรับกองคลังและการตรวจรับ'],
+  settings:['ตั้งค่าระบบ','โมดูลที่เปิดใช้งาน · สิทธิ์ผู้ใช้'],
+};
+const HINTS = {
+  dashboard:'ภาพรวมสำหรับนายก/ปลัด — ตัวเลขสรุปและแจ้งเตือนล่าสุด คลิกที่แถวแจ้งเตือนเพื่อเจาะลงไปยังเคสที่เกี่ยวข้องได้ทันที จุดเน้น: ระบบเป็น “ซอฟต์แวร์” ที่รวมข้อมูลทุกอย่างไว้ที่เดียว',
+  screening:'จุดขาย D1 (ข้อมูลเชื่อถือได้): ค่าวัดเข้าระบบเองจากอุปกรณ์ แก้ไม่ได้ → แก้ปัญหา analog จดมือผิด/มั่วตัวเลข กดปุ่ม “จำลองการวัดใหม่จากนาฬิกา” ให้ผู้ชมเห็นค่าใหม่ไหลเข้ากับตา',
+  emergency:'จุดขาย D3 (accountability): รู้ว่าเครื่องไหน · อยู่ที่ไหน · ใครรับเคส — ครบในคลิกเดียว กด “รับเรื่อง” เพื่อปลดล็อกปุ่มนำทาง · พิกัดถูกกลบ ±1 กม. ในโหมดสาธิตเพื่อความเป็นส่วนตัว',
+  fall:'จุดเน้น: ดูแล ไม่ใช่จับตา — ห้องน้ำใช้เรดาร์ ไม่มีกล้อง เก็บเฉพาะเหตุการณ์ ไม่บันทึกภาพบุคคล กด “จำลองเหตุล้ม” เพื่อโชว์ flow ล้ม → แจ้งเหตุ → นำทาง',
+  report:'ปิดการขายกับกองคลัง — เชื่อม JHCIS ส่งออกรายงานเบิกงบ LTC/กปท. ได้ตามรูปแบบราชการ ตรวจรับได้ กองคลังยอมรับ',
+  settings:'ขายแบบ “ซื้อเท่าที่ต้องการ” — ปิดโมดูลแล้วเมนูใน sidebar หายจริง และโปร่งใสเรื่องต้นทุนค่าส่งข้อความ LINE/SMS ให้เทศบาลเห็นค่าใช้จ่ายของตัวเอง',
+};
+
+function statCard(label, value, unit, sub, subColor, iconBg, iconStroke, iconPath){
+  return `<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(43,43,43,0.05);">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+      <span style="font-size:13px; color:#8C8576; font-weight:500;">${label}</span>
+      <div style="width:34px; height:34px; border-radius:9px; background:${iconBg}; display:flex; align-items:center; justify-content:center;">${svg(iconPath,iconStroke,18,1.8)}</div></div>
+    <div style="font-size:30px; font-weight:700; color:#2B2B2B; line-height:1;">${value} <span style="font-size:15px; font-weight:500; color:#9A927F;">${unit}</span></div>
+    <div style="font-size:12px; color:${subColor}; margin-top:8px;">${sub}</div></div>`;
+}
+
+function screenDashboard(){
+  const alerts = [
+    ['emergency','#C0492F','นายสมชาย กดปุ่มฉุกเฉิน','หมู่ 2 · อุปกรณ์ #LR-2071','ฉุกเฉิน','#C0492F','#F8E5DF','14:32'],
+    ['fall','#E0A526','ตรวจพบการเคลื่อนไหวผิดปกติ ห้องน้ำ','นางบุญมา · หมู่ 4','เฝ้าระวัง','#B5851A','#FBEFD6','13:08'],
+    ['screening','#E0A526','พบจังหวะหัวใจผิดปกติ (AFib)','นางบุญมา · นาฬิกา #CS-014','เฝ้าระวัง','#B5851A','#FBEFD6','12:30'],
+    ['screening','#E0A526','ความดันสูงกว่าเกณฑ์ 2 ครั้งติดต่อกัน','นายทองดี · หมู่ 7','เฝ้าระวัง','#B5851A','#FBEFD6','10:15'],
+    ['fall','#E0A526','อุปกรณ์ถอดออกนานเกิน 6 ชม.','นางสมพร · นาฬิกา #CS-009','เฝ้าระวัง','#B5851A','#FBEFD6','09:40'],
+  ];
+  const rows = alerts.map((a,i)=>`<div class="alertrow" onclick="EC.go('${a[0]}')" style="display:flex; align-items:center; gap:13px; padding:14px 20px; ${i<alerts.length-1?'border-bottom:1px solid #F4F0E6;':''} cursor:pointer;">
+    <div style="width:8px; height:8px; border-radius:50%; background:${a[1]}; flex-shrink:0;"></div>
+    <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:600; color:#2B2B2B;">${a[2]}</div><div style="font-size:12.5px; color:#9A927F;">${a[3]}</div></div>
+    <span style="font-size:11.5px; font-weight:600; color:${a[5]}; background:${a[6]}; padding:4px 10px; border-radius:999px;">${a[4]}</span>
+    <span style="font-size:12px; color:#B0A892;">${a[7]}</span></div>`).join('');
+  return `<div>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:22px;">
+      ${statCard('ผู้สูงอายุในความดูแล','248','คน','▲ เพิ่ม 12 คนเดือนนี้','#1F6B4C','#E8F1EC','#1F6B4C','<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>')}
+      ${statCard('กลุ่มเสี่ยงสูง','32','คน','ติดตามใกล้ชิด · ADL ต่ำ','#B5851A','#FBEFD6','#E0A526','<path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>')}
+      ${statCard('แจ้งเตือนวันนี้','5','ครั้ง','ฉุกเฉิน 1 · เฝ้าระวัง 4','#C0492F','#F6DFD9','#C0492F','<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>')}
+      ${statCard('อุปกรณ์ที่กำลังยืม','18<span style="font-size:16px;font-weight:500;color:#9A927F">/25</span>','เครื่อง','ว่างพร้อมจ่าย 7 เครื่อง','#8C8576','#E8F1EC','#1F6B4C','<circle cx="12" cy="12" r="7"></circle><polyline points="12 9 12 12 13.5 13.5"></polyline>')}
+    </div>
+    <div style="display:grid; grid-template-columns:1.15fr 1fr; gap:16px;">
+      <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between;"><span style="font-size:15px; font-weight:700;">แจ้งเตือนล่าสุด</span><span style="font-size:12px; color:#9A927F;">คลิกเพื่อเปิดเคส</span></div>
+        ${rows}
+      </div>
+      <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;"><span style="font-size:15px; font-weight:700;">แนวโน้มการคัดกรองรายเดือน</span><span style="font-size:12px; color:#9A927F;">ครั้ง</span></div>
+        <div style="font-size:12.5px; color:#9A927F; margin-bottom:14px;">8 เดือนล่าสุด · รวม 1,507 ครั้ง</div>
+        <svg viewBox="0 0 540 220" style="width:100%; height:auto; display:block;">
+          <line x1="40" y1="180" x2="525" y2="180" stroke="#EDE7DA"></line>
+          <line x1="40" y1="100" x2="525" y2="100" stroke="#F2EEE2" stroke-dasharray="3 4"></line>
+          <line x1="40" y1="60" x2="525" y2="60" stroke="#F2EEE2" stroke-dasharray="3 4"></line>
+          <g fill="#CFE3D8"><rect x="52" y="88" width="38" height="92" rx="4"></rect><rect x="112" y="71" width="38" height="109" rx="4"></rect><rect x="172" y="80" width="38" height="100" rx="4"></rect><rect x="232" y="58" width="38" height="122" rx="4"></rect><rect x="292" y="66" width="38" height="114" rx="4"></rect><rect x="352" y="47" width="38" height="133" rx="4"></rect><rect x="412" y="35" width="38" height="145" rx="4"></rect><rect x="472" y="20" width="38" height="160" rx="4" fill="#1F6B4C"></rect></g>
+          <polyline points="71,84 131,67 191,76 251,54 311,62 371,43 431,31 491,16" fill="none" stroke="#15543B" stroke-width="2.5"></polyline>
+          <g fill="#9A927F" font-size="11" text-anchor="middle"><text x="71" y="196">ต.ค.</text><text x="131" y="196">พ.ย.</text><text x="191" y="196">ธ.ค.</text><text x="251" y="196">ม.ค.</text><text x="311" y="196">ก.พ.</text><text x="371" y="196">มี.ค.</text><text x="431" y="196">เม.ย.</text><text x="491" y="196">พ.ค.</text></g>
+        </svg>
+      </div>
+    </div></div>`;
+}
+
+function screenScreening(){
+  const stepDone='#1F6B4C', stepIdle='#E3DDCE';
+  const st = n => state.step>n ? {bg:stepDone,fg:'#fff',tx:'#1F6B4C'} : state.step===n ? {bg:'#1F6B4C',fg:'#fff',tx:'#1F6B4C'} : {bg:stepIdle,fg:'#9A927F',tx:'#9A927F'};
+  const line = n => state.step>=n ? '#1F6B4C' : '#E3DDCE';
+  const steps = [['1','คัดเลือก',st(1)],['2','คัดกรอง (สวม 7 วัน)',st(2)],['3','ตัดสินใจ',st(3)],['4','หมุนเวียนคืน',st(4)]];
+  let stepper = '';
+  steps.forEach((s,i)=>{
+    if(i>0) stepper += `<div style="flex:1; height:2px; background:${line(i+1)}; margin:0 6px 22px;"></div>`;
+    stepper += `<div style="display:flex; flex-direction:column; align-items:center; gap:8px; flex:0 0 auto;"><div style="width:38px; height:38px; border-radius:50%; background:${s[2].bg}; color:${s[2].fg}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px;">${s[0]}</div><span style="font-size:12.5px; font-weight:600; color:${s[2].tx};">${s[1]}</span></div>`;
+  });
+  const rows = state.measurements.map(r=>{
+    const rowBg = r.fresh ? '#FBF3DA' : (r.afib ? '#FBF1D5' : '#fff');
+    const note = r.afib ? 'พบจังหวะหัวใจผิดปกติ (AFib)' : (r.fresh ? 'ค่าใหม่จากอุปกรณ์' : '');
+    const noteColor = r.afib ? '#B5851A' : '#1F6B4C';
+    return `<tr style="border-top:1px solid #F2EEE2; background:${rowBg};">
+      <td style="padding:13px 16px; font-size:13.5px; font-weight:600; white-space:nowrap;">${r.time}<div style="font-size:11px; font-weight:400; color:${noteColor};">${note}</div></td>
+      <td style="padding:13px 12px; font-size:14px; text-align:right;">${r.hr}</td>
+      <td style="padding:13px 12px; font-size:14px; text-align:right;">${r.bp}</td>
+      <td style="padding:13px 12px; font-size:14px; text-align:right;">${r.glu}</td>
+      <td style="padding:13px 12px; font-size:14px; text-align:right;">${r.spo2}%</td>
+      <td style="padding:13px 12px; font-size:14px; text-align:right;">${r.wt}</td>
+      <td style="padding:13px 16px; text-align:center; white-space:nowrap;"><span style="display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:#1F6B4C; background:#E5F0EA; padding:4px 9px; border-radius:999px;">${svg('<rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>','#1F6B4C',11,2.2)}บันทึกอัตโนมัติ</span></td></tr>`;
+  }).join('');
+  return `<div>
+    <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:20px 24px; margin-bottom:18px;"><div style="display:flex; align-items:center;">${stepper}</div></div>
+    <div style="display:grid; grid-template-columns:300px 1fr; gap:16px; align-items:start;">
+      <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:20px;">
+        <div style="display:flex; align-items:center; gap:13px; margin-bottom:16px;"><div style="width:52px; height:52px; border-radius:50%; background:#E8F1EC; color:#1F6B4C; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px;">บ</div><div><div style="font-size:16px; font-weight:700;">${esc(state.patientName)}</div><div style="font-size:12.5px; color:#9A927F;">${esc(state.patientMeta)}</div></div></div>
+        <div style="height:1px; background:#F0EBDE; margin:4px 0 14px;"></div>
+        <div style="display:flex; align-items:center; gap:11px; padding:12px; background:#F4F0E6; border-radius:10px; margin-bottom:12px;">${svg('<rect x="5" y="2" width="14" height="20" rx="2"></rect><path d="M12 6v4"></path><circle cx="12" cy="14" r="3"></circle>','#1F6B4C',22,1.7)}<div style="flex:1;"><div style="font-size:12px; color:#8C8576;">นาฬิกาที่ผูก</div><div style="font-size:14.5px; font-weight:700; color:#1F6B4C;">#CS-014</div></div><span style="font-size:11px; font-weight:600; color:#1F6B4C; background:#E1EFE7; padding:4px 9px; border-radius:999px;">สวมอยู่</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"><div style="padding:10px; background:#F8F5EE; border-radius:9px; text-align:center;"><div style="font-size:11px; color:#9A927F;">วันที่สวม</div><div style="font-size:15px; font-weight:700;">5 / 7</div></div><div style="padding:10px; background:#F8F5EE; border-radius:9px; text-align:center;"><div style="font-size:11px; color:#9A927F;">แบตเตอรี่</div><div style="font-size:15px; font-weight:700; color:#1F6B4C;">82%</div></div></div>
+        <div style="margin-top:14px; padding:11px 12px; background:#E1EFE7; border-radius:10px; display:flex; align-items:center; gap:9px;">${svg('<path d="M20 6 9 17l-5-5"></path>','#1F6B4C',16,2)}<span style="font-size:12.5px; color:#1F6B4C; font-weight:500;">ได้รับความยินยอม (consent) แล้ว</span></div>
+      </div>
+      <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:15px; font-weight:700;">ผลการวัดอัตโนมัติ</span><span style="display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; color:#6E6757; background:#F1ECDF; padding:4px 10px; border-radius:999px;">${svg('<rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>','#6E6757',12,2)}แก้ไขไม่ได้</span></div>
+          <button class="pribtn" onclick="EC.simulateMeasurement()" style="display:inline-flex; align-items:center; gap:8px; background:#1F6B4C; color:#fff; border:none; border-radius:10px; padding:10px 16px; font-size:13.5px; font-weight:600; cursor:pointer;">${svg('<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path>','#fff',16,2)}จำลองการวัดใหม่จากนาฬิกา</button>
+        </div>
+        <div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; min-width:640px;"><thead><tr style="background:#FAF7F0;"><th style="text-align:left; padding:11px 16px; font-size:12px; font-weight:600; color:#8C8576;">เวลา</th><th style="text-align:right; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">ชีพจร</th><th style="text-align:right; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">ความดัน</th><th style="text-align:right; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">น้ำตาล</th><th style="text-align:right; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">ออกซิเจน</th><th style="text-align:right; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">น้ำหนัก</th><th style="text-align:center; padding:11px 16px; font-size:12px; font-weight:600; color:#8C8576;">ที่มา</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div style="padding:13px 20px; border-top:1px solid #F2EEE2; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:#FBF9F3;"><span style="font-size:12.5px; color:#9A927F; display:flex; align-items:center; gap:7px;">${svg('<circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path>','#9A927F',14,2)}ค่าทุกแถวมาจากอุปกรณ์โดยตรง · ไม่ผ่านการกรอกมือ จึงแก้ไขไม่ได้</span><button class="ghostbtn" onclick="EC.returnDevice()" style="display:inline-flex; align-items:center; gap:8px; background:#fff; color:#1F6B4C; border:1.5px solid #1F6B4C; border-radius:10px; padding:9px 16px; font-size:13.5px; font-weight:600; cursor:pointer;">${svg('<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M3 21v-5h5"></path>','#1F6B4C',16,2)}คืนอุปกรณ์ + ส่งต่อคนถัดไป</button></div>
+      </div>
+    </div></div>`;
+}
+
+function screenEmergency(){
+  const resp = state.responders.map((r,i)=>{
+    const dotBg = r.status==='accepted' ? '#1F6B4C' : (r.status==='timeout' ? '#C0492F' : '#D8D0BE');
+    const cardBg = r.status==='accepted' ? '#EAF3EE' : (i===state.escalateIdx ? '#FBF1D5' : '#fff');
+    const cardBorder = r.status==='accepted' ? '#BFE0CD' : (i===state.escalateIdx ? '#EAD9A6' : '#ECE7DB');
+    const statusText = r.status==='accepted' ? ('รับเรื่องแล้ว · '+r.time+' น.') : (r.status==='timeout' ? 'หมดเวลา — เลื่อนขั้นอัตโนมัติ' : 'รอผู้รับเรื่อง');
+    const statusColor = r.status==='accepted' ? '#1F6B4C' : (r.status==='timeout' ? '#C0492F' : '#9A927F');
+    const btnDisplay = r.status==='accepted' ? 'none' : 'inline-flex';
+    const glow = i===state.escalateIdx ? 'animation:ec-glow 1.2s ease infinite;' : '';
+    const lineTag = r.status==='accepted' ? ` <span style="font-size:11px; color:#1F6B4C;">· LINE: ${r.line}</span>` : '';
+    return `<div style="display:flex; gap:14px; align-items:stretch;">
+      <div style="display:flex; flex-direction:column; align-items:center; width:24px;"><div style="width:16px; height:16px; border-radius:50%; background:${dotBg}; margin-top:14px; border:3px solid #fff; box-shadow:0 0 0 1px ${dotBg};"></div><div style="width:2px; flex:1; background:#EFE9DC; margin:4px 0;"></div></div>
+      <div style="flex:1; margin-bottom:10px; background:${cardBg}; border:1px solid ${cardBorder}; border-radius:11px; padding:13px 15px; ${glow}">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <div style="min-width:0;"><div style="font-size:14.5px; font-weight:700;">${r.role}<span style="font-weight:500; color:#5C564B;">${r.name}</span></div><div style="font-size:12px; color:${statusColor}; margin-top:2px; font-weight:500;">${statusText}${lineTag}</div></div>
+          <button class="pribtn" onclick="EC.acceptResponder(${i})" style="display:${btnDisplay}; align-items:center; gap:6px; background:#1F6B4C; color:#fff; border:none; border-radius:9px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">${svg('<path d="M20 6 9 17l-5-5"></path>','#fff',14,2.2)}รับเรื่อง</button>
+        </div></div></div>`;
+  }).join('');
+  const audit = state.auditLog.map(l=>`<div style="display:flex; gap:11px; padding:11px 20px; border-top:1px solid #F4F0E6;"><span style="font-size:12px; color:#B0A892; font-family:monospace; flex-shrink:0; padding-top:1px;">${l.time}</span><span style="font-size:13px; color:#3A3631; line-height:1.45;">${esc(l.text)}</span></div>`).join('');
+  const mapsDisplay = state.navUnlocked ? 'inline-flex':'none';
+  const mapsHint = state.navUnlocked ? 'none':'block';
+  return `<div>
+    <div style="background:#C0492F; border-radius:14px; padding:18px 22px; margin-bottom:18px; display:flex; align-items:center; gap:16px; box-shadow:0 4px 16px rgba(192,73,47,0.28); animation:ec-pulseRed 1.6s ease infinite;">
+      <div style="width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">${svg('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>','#fff',26,2)}</div>
+      <div style="flex:1;"><div style="font-size:19px; font-weight:700; color:#fff;">นายสมชาย กดปุ่มฉุกเฉิน</div><div style="font-size:13.5px; color:rgba(255,255,255,0.9); margin-top:2px;">หมู่ 2 · เวลา 14:32 น. · ระบบกำลังประสานผู้ตอบสนอง</div></div>
+      <span style="font-size:12.5px; font-weight:700; color:#C0492F; background:#fff; padding:7px 14px; border-radius:999px;">ฉุกเฉิน</span></div>
+    <div style="display:grid; grid-template-columns:1.25fr 1fr; gap:16px; align-items:start;">
+      <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;"><span style="font-size:15px; font-weight:700;">ห่วงโซ่ผู้ตอบสนอง (Responder Chain)</span><button onclick="EC.resetEmergency()" style="font-size:12px; color:#9A927F; background:transparent; border:none; cursor:pointer; text-decoration:underline;">รีเซ็ตเดโม</button></div>
+        ${resp}
+        <div style="display:flex; gap:12px; margin-top:6px; flex-wrap:wrap;">
+          <button class="pribtn" onclick="EC.openMaps()" style="display:${mapsDisplay}; align-items:center; gap:8px; background:#1F6B4C; color:#fff; border:none; border-radius:10px; padding:11px 18px; font-size:14px; font-weight:600; cursor:pointer;">${svg('<path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0z"></path><path d="M17.657 16.657 13.414 20.9a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"></path>','#fff',17,1.9)}นำทางไปจุดเกิดเหตุ (Google Maps)</button>
+          <button class="ghostbtn" onclick="EC.simulateNoResponse()" style="display:inline-flex; align-items:center; gap:8px; background:#fff; color:#B5851A; border:1.5px solid #E0A526; border-radius:10px; padding:11px 18px; font-size:14px; font-weight:600; cursor:pointer;">${svg('<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>','#B5851A',17,1.9)}จำลองไม่มีคนรับใน 5 นาที</button>
+        </div>
+        <div style="display:${mapsHint}; font-size:12px; color:#9A927F; margin-top:10px; padding:9px 12px; background:#F8F5EE; border-radius:9px;">ปุ่มนำทางจะแสดงหลังมีผู้ “รับเรื่อง” แล้ว เพื่อบันทึกว่าใครเป็นผู้เข้าจุดเกิดเหตุ</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">
+          <div style="font-size:14px; font-weight:700; margin-bottom:13px;">ข้อมูลอุปกรณ์ที่แจ้งเหตุ</div>
+          <div style="display:flex; flex-direction:column; gap:11px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:13px; color:#8C8576;">รหัสอุปกรณ์</span><span style="font-size:14px; font-weight:700; color:#1F6B4C;">#LR-2071</span></div>
+            <div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:13px; color:#8C8576;">ช่องสัญญาณ</span><span style="font-size:13.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">${svg('<path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M6.34 6.34 4.93 4.93"></path><path d="M19.07 19.07l-1.41-1.41"></path><circle cx="12" cy="12" r="3"></circle>','#1F6B4C',14,1.8)}LoRa · ปกติ</span></div>
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; padding-top:11px; border-top:1px solid #F2EEE2;"><span style="font-size:13px; color:#8C8576;">พิกัด GPS ที่ลงทะเบียน</span><span style="font-size:13px; font-weight:600; font-family:monospace; text-align:right;">13.9123, 100.6087</span></div>
+            <div style="font-size:11.5px; color:#9A927F; line-height:1.5; background:#F8F5EE; padding:9px 11px; border-radius:9px;">ระบบรู้ทันทีว่า “เครื่องไหน + อยู่ที่ไหน” จากรหัสอุปกรณ์ · พิกัดในโหมดสาธิตถูกกลบ ±1 กม. เพื่อความเป็นส่วนตัว — ระบบจริงนำทางไปพิกัดจริงของอุปกรณ์</div>
+          </div></div>
+        <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">
+          <div style="font-size:14px; font-weight:700; margin-bottom:13px;">สถานะอุปกรณ์</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;"><div style="padding:12px 10px; background:#F0F7F3; border-radius:10px; text-align:center;"><div style="font-size:18px; font-weight:700; color:#1F6B4C;">78%</div><div style="font-size:11.5px; color:#6E6757; margin-top:2px;">แบตเตอรี่</div></div><div style="padding:12px 10px; background:#F0F7F3; border-radius:10px; text-align:center;"><div style="font-size:14px; font-weight:700; color:#1F6B4C; margin-top:3px;">ปกติ</div><div style="font-size:11.5px; color:#6E6757; margin-top:3px;">สัญญาณ LoRa</div></div><div style="padding:12px 10px; background:#F0F7F3; border-radius:10px; text-align:center;"><div style="font-size:18px; font-weight:700; color:#1F6B4C;">✓</div><div style="font-size:11.5px; color:#6E6757; margin-top:2px;">สวมอยู่</div></div></div></div>
+        <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">
+          <div style="padding:14px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; gap:9px;">${svg('<rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>','#6E6757',16,1.9)}<span style="font-size:14px; font-weight:700;">บันทึกการดำเนินการ (แก้ไขไม่ได้)</span></div>
+          <div style="max-height:220px; overflow-y:auto;">${audit}</div></div>
+      </div>
+    </div></div>`;
+}
+
+function screenFall(){
+  const bathBg = state.fallActive ? '#C0492F' : '#EFF4F0';
+  const bathBorder = state.fallActive ? '#C0492F' : '#CFE0D5';
+  const bathFg = state.fallActive ? '#fff' : '#2B2B2B';
+  const bathAnim = state.fallActive ? 'animation:ec-pulseRed 1s ease infinite;' : '';
+  const alertDisplay = state.fallActive ? 'flex':'none';
+  return `<div>
+    <div style="display:flex; align-items:center; gap:13px; background:#EAF3EE; border:1px solid #C7E0D2; border-radius:12px; padding:14px 18px; margin-bottom:18px;">${svg('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path>','#1F6B4C',22,1.8)}<div style="font-size:13.5px; color:#1A5A3F; line-height:1.5;"><b>ดูแล ไม่ใช่จับตา</b> — ห้องน้ำใช้เรดาร์ ไม่มีกล้อง · เก็บเฉพาะเหตุการณ์ (เช่น การล้ม) ไม่บันทึกภาพบุคคล</div></div>
+    <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:16px; align-items:start;">
+      <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;"><span style="font-size:15px; font-weight:700;">ผังบ้าน · เซ็นเซอร์ตามโซน</span><span style="font-size:12.5px; color:#9A927F;">บ้านนางบุญมา · หมู่ 4</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div style="background:#EFF4F0; border:1.5px solid #CFE0D5; border-radius:12px; padding:18px; min-height:130px; display:flex; flex-direction:column; justify-content:space-between;"><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:14px; font-weight:700;">ห้องนอน</span><span style="font-size:10.5px; font-weight:600; color:#1F6B4C; background:#DCEDE3; padding:3px 8px; border-radius:999px;">เรดาร์</span></div><div style="display:flex; align-items:center; gap:8px; margin-top:auto;"><span style="width:8px; height:8px; border-radius:50%; background:#1F6B4C;"></span><span style="font-size:12.5px; color:#5C564B;">ปกติ · หายใจสม่ำเสมอ</span></div></div>
+          <div style="background:${bathBg}; border:1.5px solid ${bathBorder}; border-radius:12px; padding:18px; min-height:130px; display:flex; flex-direction:column; justify-content:space-between; transition:background .3s; ${bathAnim}"><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:14px; font-weight:700; color:${bathFg};">ห้องน้ำ</span><span style="font-size:10.5px; font-weight:600; color:#1F6B4C; background:#DCEDE3; padding:3px 8px; border-radius:999px;">เรดาร์ · ไม่มีกล้อง</span></div><div style="display:flex; align-items:center; gap:8px; margin-top:auto;"><span style="width:8px; height:8px; border-radius:50%; background:${bathFg};"></span><span style="font-size:12.5px; color:${bathFg};">เฝ้าระวังการล้ม</span></div></div>
+          <div style="background:#EFF4F0; border:1.5px solid #CFE0D5; border-radius:12px; padding:18px; min-height:130px; display:flex; flex-direction:column; justify-content:space-between;"><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:14px; font-weight:700;">ห้องนั่งเล่น</span><span style="font-size:10.5px; font-weight:600; color:#1F6B4C; background:#DCEDE3; padding:3px 8px; border-radius:999px;">ตรวจท่าทาง</span></div><div style="font-size:11px; color:#6E6757; margin-top:auto; line-height:1.4;">กล้องตรวจท่าทาง — เก็บเฉพาะข้อมูลท่าทาง <b>ไม่บันทึกภาพ</b></div></div>
+          <div style="background:#F8F5EE; border:1.5px solid #E8E1D2; border-radius:12px; padding:18px; min-height:130px; display:flex; flex-direction:column; justify-content:space-between;"><span style="font-size:14px; font-weight:700; color:#8C8576;">ทางเข้า / ครัว</span><div style="font-size:12px; color:#A89F8C; margin-top:auto;">ไม่มีเซ็นเซอร์เฝ้าระวัง</div></div>
+        </div>
+        <div style="display:${alertDisplay}; align-items:center; gap:12px; margin-top:14px; background:#F8E5DF; border:1px solid #E5B5A8; border-radius:11px; padding:13px 16px;">${svg('<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>','#C0492F',20,2)}<div style="font-size:13px; color:#9C3A24; line-height:1.45;"><b>ตรวจพบการล้มในห้องน้ำ!</b> อุปกรณ์ #LR-2071 ส่งสัญญาณผ่าน LoRa · ระบุพิกัด GPS ที่ลงทะเบียน · กำลังเปิดเคสแจ้งเหตุ…</div></div>
+        <button class="pribtn" onclick="EC.simulateFall()" style="display:inline-flex; align-items:center; gap:8px; margin-top:16px; background:#C0492F; color:#fff; border:none; border-radius:10px; padding:11px 18px; font-size:14px; font-weight:600; cursor:pointer;">${svg('<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path>','#fff',17,1.9)}จำลองเหตุการล้มในห้องน้ำ</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;"><div style="font-size:14px; font-weight:700; margin-bottom:13px;">หลักความเป็นส่วนตัว</div><div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; gap:10px;">${svg('<path d="M20 6 9 17l-5-5"></path>','#1F6B4C',17,2)}<span style="font-size:13px; color:#3A3631; line-height:1.45;">ห้องน้ำใช้เรดาร์ตรวจการล้ม ไม่มีกล้อง</span></div>
+          <div style="display:flex; gap:10px;">${svg('<path d="M20 6 9 17l-5-5"></path>','#1F6B4C',17,2)}<span style="font-size:13px; color:#3A3631; line-height:1.45;">เก็บเฉพาะ “เหตุการณ์” ไม่บันทึกภาพบุคคล</span></div>
+          <div style="display:flex; gap:10px;">${svg('<path d="M20 6 9 17l-5-5"></path>','#1F6B4C',17,2)}<span style="font-size:13px; color:#3A3631; line-height:1.45;">ข้อมูลเข้าถึงได้เฉพาะเจ้าหน้าที่ที่ลงทะเบียน</span></div>
+        </div></div>
+        <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;"><div style="font-size:14px; font-weight:700; margin-bottom:13px;">เหตุการณ์ล่าสุด</div><div style="display:flex; flex-direction:column; gap:10px;"><div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#FBEFD6; border-radius:9px;"><span style="font-size:11px; color:#B0A892; font-family:monospace;">13:08</span><span style="font-size:12.5px; color:#3A3631;">เคลื่อนไหวผิดปกติ ห้องน้ำ · เฝ้าระวัง</span></div><div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#F0F7F3; border-radius:9px;"><span style="font-size:11px; color:#B0A892; font-family:monospace;">07:20</span><span style="font-size:12.5px; color:#3A3631;">ลุกจากเตียงปกติ ห้องนอน</span></div><div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#F0F7F3; border-radius:9px;"><span style="font-size:11px; color:#B0A892; font-family:monospace;">22:40</span><span style="font-size:12.5px; color:#3A3631;">เข้านอนปกติ ห้องนอน</span></div></div></div>
+      </div>
+    </div></div>`;
+}
+
+function screenReport(){
+  const data = [
+    ['นางบุญมา ศรีสุข','14','ติดบ้าน','#B5851A','#FBEFD6','18','ส่งแล้ว','#1F6B4C','#E5F0EA'],
+    ['นายสมชาย รุ่งเรือง','6','ติดเตียง','#C0492F','#F8E5DF','24','ส่งแล้ว','#1F6B4C','#E5F0EA'],
+    ['นายทองดี แก้วมณี','19','ติดสังคม','#1F6B4C','#E5F0EA','12','ส่งแล้ว','#1F6B4C','#E5F0EA'],
+    ['นางสมพร ทองคำ','11','ติดบ้าน','#B5851A','#FBEFD6','16','รอส่ง','#9A927F','#F1ECDF'],
+    ['นายประสิทธิ์ ดีงาม','17','ติดสังคม','#1F6B4C','#E5F0EA','9','ส่งแล้ว','#1F6B4C','#E5F0EA'],
+  ];
+  const rows = data.map(d=>`<tr style="border-top:1px solid #F2EEE2;"><td style="padding:13px 20px; font-size:13.5px;">${d[0]}</td><td style="padding:13px 12px; text-align:center; font-size:14px; font-weight:600;">${d[1]}</td><td style="padding:13px 12px;"><span style="font-size:12px; font-weight:600; color:${d[3]}; background:${d[4]}; padding:3px 10px; border-radius:999px;">${d[2]}</span></td><td style="padding:13px 12px; text-align:center; font-size:14px;">${d[5]}</td><td style="padding:13px 20px; text-align:center;"><span style="font-size:12px; font-weight:600; color:${d[7]}; background:${d[8]}; padding:3px 10px; border-radius:999px;">${d[6]}</span></td></tr>`).join('');
+  return `<div>
+    <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:16px 20px; margin-bottom:16px; display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+      <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:12px; font-weight:600; color:#8C8576;">ปีงบประมาณ</span><select style="font-family:inherit; font-size:14px; padding:9px 13px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3; min-width:130px;"><option>พ.ศ. 2569</option><option>พ.ศ. 2568</option></select></div>
+      <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:12px; font-weight:600; color:#8C8576;">กองทุน</span><select style="font-family:inherit; font-size:14px; padding:9px 13px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3; min-width:150px;"><option>LTC (ดูแลระยะยาว)</option><option>กปท. (กองทุนสุขภาพ)</option></select></div>
+      <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:12px; font-weight:600; color:#8C8576;">หมู่บ้าน</span><select style="font-family:inherit; font-size:14px; padding:9px 13px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3; min-width:130px;"><option>ทุกหมู่บ้าน</option><option>หมู่ 4</option><option>หมู่ 7</option></select></div>
+      <div style="flex:1;"></div>
+      <button class="pribtn" onclick="EC.exportReport()" style="display:inline-flex; align-items:center; gap:8px; background:#1F6B4C; color:#fff; border:none; border-radius:10px; padding:11px 18px; font-size:14px; font-weight:600; cursor:pointer;">${svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>','#fff',16,1.9)}ส่งออกรายงาน</button>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 280px; gap:16px; align-items:start;">
+      <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">
+        <div style="padding:15px 20px; border-bottom:1px solid #F0EBDE; font-size:15px; font-weight:700;">รายงานคัดกรอง ADL / ระดับพึ่งพิง</div>
+        <div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; min-width:600px;"><thead><tr style="background:#FAF7F0;"><th style="text-align:left; padding:11px 20px; font-size:12px; font-weight:600; color:#8C8576;">ชื่อ-สกุล</th><th style="text-align:center; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">คะแนน ADL</th><th style="text-align:left; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">ระดับพึ่งพิง</th><th style="text-align:center; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">ครั้งคัดกรอง</th><th style="text-align:center; padding:11px 20px; font-size:12px; font-weight:600; color:#8C8576;">สถานะส่ง JHCIS</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div style="padding:13px 20px; border-top:1px solid #F2EEE2; background:#FBF9F3; font-size:12.5px; color:#9A927F;">รวม 248 ราย · แสดง 5 ราย · ติดสังคม 156 · ติดบ้าน 78 · ติดเตียง 14</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:#EAF3EE; border:1px solid #C7E0D2; border-radius:12px; padding:18px 20px;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">${svg('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>','#1F6B4C',20,2)}<span style="font-size:14.5px; font-weight:700; color:#1A5A3F;">เชื่อมต่อ JHCIS แล้ว</span></div><div style="font-size:12.5px; color:#3A6B53; line-height:1.5;">ซิงค์ข้อมูลคัดกรองอัตโนมัติเข้าระบบ JHCIS ของ รพ.สต. · อัปเดตล่าสุด 09:14 น.</div></div>
+        <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;"><div style="font-size:14px; font-weight:700; margin-bottom:13px;">สรุปเบิกงบปีนี้</div><div style="display:flex; flex-direction:column; gap:12px;"><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:13px; color:#8C8576;">เคสที่เบิกได้</span><span style="font-size:15px; font-weight:700; color:#1F6B4C;">214 ราย</span></div><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:13px; color:#8C8576;">วงเงินโดยประมาณ</span><span style="font-size:15px; font-weight:700;">฿ 1,284,000</span></div><div style="display:flex; align-items:center; justify-content:space-between; padding-top:11px; border-top:1px solid #F2EEE2;"><span style="font-size:13px; color:#8C8576;">สถานะกองคลัง</span><span style="font-size:12px; font-weight:600; color:#1F6B4C; background:#E5F0EA; padding:3px 10px; border-radius:999px;">ตรวจรับได้</span></div></div></div>
+      </div>
+    </div></div>`;
+}
+
+function toggleRow(label, sub, key, dim){
+  const t = tog(key);
+  const labelColor = dim ? '#9A927F':'#2B2B2B';
+  const badge = dim ? ' <span style="font-size:11px; font-weight:600; color:#B5851A; background:#FBEFD6; padding:2px 8px; border-radius:999px; margin-left:4px;">Phase 2</span>':'';
+  return `<div style="display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-top:1px solid #F2EEE2;"><div><div style="font-size:14px; font-weight:600; color:${labelColor};">${label}${badge}</div><div style="font-size:12px; color:#9A927F;">${sub}</div></div><button onclick="EC.toggleModule('${key}')" style="width:44px; height:26px; border-radius:999px; border:none; cursor:pointer; position:relative; flex-shrink:0; background:${t.trackBg}; transition:background .2s;"><span style="position:absolute; top:2px; left:${t.knobX}; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:left .2s;"></span></button></div>`;
+}
+
+function screenSettings(){
+  return `<div><div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;">
+    <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:20px;">
+      <div style="font-size:15px; font-weight:700; margin-bottom:4px;">โมดูลที่เปิดใช้งาน</div>
+      <div style="font-size:12.5px; color:#9A927F; margin-bottom:16px;">ปิดโมดูลที่ไม่ใช้ — เมนูใน sidebar จะถูกซ่อน · จ่ายเท่าที่ต้องการ</div>
+      ${toggleRow('คัดกรองสุขภาพ + ยืม-คืน','อุปกรณ์สวมใส่ · บันทึกค่าอัตโนมัติ','health',false)}
+      ${toggleRow('เฝ้าระวังการล้ม','เรดาร์ / ตรวจท่าทาง ตามโซน','fall',false)}
+      ${toggleRow('แจ้งเหตุฉุกเฉิน','ปุ่มฉุกเฉิน · ห่วงโซ่ผู้ตอบสนอง','emergency',false)}
+      ${toggleRow('รายงานเบิกงบ','ADL/LTC · เชื่อม JHCIS','report',false)}
+      ${toggleRow('แจ้งเตือน LINE / SMS','ส่งข้อความถึงครอบครัว/เจ้าหน้าที่','msg',false)}
+      ${toggleRow('วิเคราะห์แนวโน้ม AI','ทำนายความเสี่ยงล่วงหน้า','ai',true)}
+    </div>
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid #F0EBDE; font-size:15px; font-weight:700;">สิทธิ์ผู้ใช้งาน</div>
+        <table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#FAF7F0;"><th style="text-align:left; padding:10px 20px; font-size:12px; font-weight:600; color:#8C8576;">บทบาท</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">ขอบเขตการเข้าถึง</th></tr></thead><tbody>
+          <tr style="border-top:1px solid #F2EEE2;"><td style="padding:12px 20px; font-size:13.5px; font-weight:600;">ผู้ดูแลระบบ</td><td style="padding:12px 12px; font-size:12.5px; color:#5C564B;">ทุกโมดูล · ตั้งค่า · จัดการผู้ใช้</td></tr>
+          <tr style="border-top:1px solid #F2EEE2;"><td style="padding:12px 20px; font-size:13.5px; font-weight:600;">ปลัด / เจ้าหน้าที่</td><td style="padding:12px 12px; font-size:12.5px; color:#5C564B;">แดชบอร์ด · รายงาน · เฝ้าระวัง</td></tr>
+          <tr style="border-top:1px solid #F2EEE2;"><td style="padding:12px 20px; font-size:13.5px; font-weight:600;">อสม. / รพ.สต.</td><td style="padding:12px 12px; font-size:12.5px; color:#5C564B;">คัดกรอง · ยืม-คืน · รับเคสฉุกเฉิน</td></tr>
+          <tr style="border-top:1px solid #F2EEE2;"><td style="padding:12px 20px; font-size:13.5px; font-weight:600;">ครอบครัว</td><td style="padding:12px 12px; font-size:12.5px; color:#5C564B;">ดูข้อมูลญาติ · รับการแจ้งเตือน</td></tr>
+        </tbody></table>
+      </div>
+      <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;"><div style="font-size:14px; font-weight:700; margin-bottom:4px;">ค่าส่งข้อความเดือนนี้</div><div style="font-size:12px; color:#9A927F; margin-bottom:14px;">โปร่งใส · เทศบาลเห็นต้นทุนของตัวเอง</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"><div style="padding:14px; background:#F0F7F3; border-radius:10px;"><div style="font-size:24px; font-weight:700; color:#1F6B4C;">1,240</div><div style="font-size:12px; color:#6E6757; margin-top:2px;">LINE · ข้อความ</div></div><div style="padding:14px; background:#F8F5EE; border-radius:10px;"><div style="font-size:24px; font-weight:700;">86</div><div style="font-size:12px; color:#6E6757; margin-top:2px;">SMS · ข้อความ</div></div></div></div>
+    </div>
+  </div></div>`;
+}
+
+function currentScreen(){
+  switch(state.page){
+    case 'screening': return screenScreening();
+    case 'emergency': return screenEmergency();
+    case 'fall': return screenFall();
+    case 'report': return screenReport();
+    case 'settings': return screenSettings();
+    default: return screenDashboard();
+  }
+}
+
+// ---------- render ----------
+function render(){
+  const [title, sub] = TITLES[state.page] || TITLES.dashboard;
+  const toastBg = { success:'#1F6B4C', warn:'#E0A526', danger:'#C0492F' }[state.toastType] || '#1F6B4C';
+  const toastIcon = { success:'✓', warn:'!', danger:'⚠' }[state.toastType] || '✓';
+  const toastHtml = state.toast ? `<div style="position:fixed; top:22px; left:50%; z-index:9999; animation:ec-toastIn .25s ease; background:${toastBg}; color:#fff; padding:14px 22px; border-radius:12px; box-shadow:0 8px 28px rgba(43,43,43,0.22); font-size:14px; font-weight:500; max-width:560px; display:flex; align-items:center; gap:11px;"><span>${toastIcon}</span><span>${esc(state.toast)}</span></div>` : '';
+  const hintHtml = `<div style="margin-bottom:20px; background:#FBF6E7; border:1px solid #EAD9A6; border-radius:12px; overflow:hidden;">
+    <button onclick="EC.toggleHint()" style="width:100%; display:flex; align-items:center; gap:10px; padding:11px 16px; background:transparent; border:none; cursor:pointer; text-align:left;">${svg('<path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>','#B5851A',17,1.8)}<span style="font-size:13px; font-weight:700; color:#9A6F12; flex:1;">สำหรับผู้นำเสนอ — หน้านี้ขายอะไร</span><span style="font-size:12px; color:#B5851A;">${state.hintOpen?'ซ่อน':'แสดง'}</span></button>
+    ${state.hintOpen ? `<div style="padding:0 16px 13px 43px; font-size:13.5px; color:#7D5F12; line-height:1.55;">${HINTS[state.page]||''}</div>`:''}
+  </div>`;
+  document.getElementById('app').innerHTML = `
+    ${sidebar()}
+    <div style="flex:1; display:flex; flex-direction:column; height:100%; min-width:0;">
+      <header style="height:66px; flex-shrink:0; background:#fff; border-bottom:1px solid #E8E1D2; display:flex; align-items:center; justify-content:space-between; padding:0 28px;">
+        <div><div style="font-size:18px; font-weight:700; line-height:1.1;">${title}</div><div style="font-size:12.5px; color:#9A927F;">${sub}</div></div>
+        <div style="display:flex; align-items:center; gap:18px;">
+          <div style="display:flex; align-items:center; gap:10px; padding:7px 14px; background:#F1ECDF; border-radius:999px;">${svg('<path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path>','#1F6B4C',16,1.8)}<span style="font-size:13.5px; font-weight:600; color:#1F6B4C;">เทศบาลตำบลสาธิต</span></div>
+          <div style="display:flex; align-items:center; gap:11px;"><div style="text-align:right; line-height:1.2;"><div style="font-size:13.5px; font-weight:600;">สมศักดิ์ มั่นคง</div><div style="font-size:11.5px; color:#9A927F;">ปลัดเทศบาล</div></div><div style="width:38px; height:38px; border-radius:50%; background:#1F6B4C; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:15px;">ส</div></div>
+        </div>
+      </header>
+      <main style="flex:1; overflow-y:auto; padding:24px 28px 60px;">
+        ${hintHtml}
+        <div id="screen">${currentScreen()}</div>
+      </main>
+    </div>
+    ${toastHtml}
+    <div style="position:fixed; bottom:14px; right:16px; z-index:9000; background:rgba(43,43,43,0.86); color:#F7F4EC; font-size:11.5px; font-weight:500; padding:7px 14px; border-radius:999px; box-shadow:0 4px 14px rgba(0,0,0,0.2); display:flex; align-items:center; gap:8px;"><span style="width:7px; height:7px; border-radius:50%; background:#E0A526;"></span>ตัวอย่างสาธิต — ข้อมูลทั้งหมดเป็นตัวอย่าง (เทศบาลตำบลสาธิต)</div>`;
+}
+
+render();
+</script>
+</body>
+</html>
