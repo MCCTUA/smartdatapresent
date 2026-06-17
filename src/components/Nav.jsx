@@ -9,6 +9,7 @@ const links = [
   { to: '/cctv-ai', label: 'CCTV + AI' },
   { to: '/smart-traffic', label: 'Smart Traffic' },
   { to: '/elderly-care', label: 'ดูแลผู้สูงอายุ' },
+  { to: '/emergency-mgmt', label: 'บริหารเหตุฉุกเฉิน' },
 ];
 
 // Civic Trust palette (sync with index.css)

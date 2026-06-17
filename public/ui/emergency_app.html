@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Center Solution Platform — ตัวอย่างระบบบริหารเหตุฉุกเฉิน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body { font-family: 'Sarabun','Noto Sans Thai',system-ui,sans-serif; color:#2B2B2B; background:#F7F4EC; -webkit-font-smoothing:antialiased; }
+  ::selection { background:#1F6B4C; color:#fff; }
+  button { font-family: inherit; }
+  @keyframes em-toastIn { from { opacity:0; transform:translate(-50%,-14px);} to { opacity:1; transform:translate(-50%,0);} }
+  @keyframes em-pulseRed { 0%,100% { box-shadow:0 0 0 0 rgba(192,73,47,0.5);} 50% { box-shadow:0 0 0 16px rgba(192,73,47,0);} }
+  @keyframes em-pulseAmber { 0%,100% { box-shadow:0 0 0 0 rgba(224,165,38,0.5);} 50% { box-shadow:0 0 0 12px rgba(224,165,38,0);} }
+  @keyframes em-fadeUp { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:translateY(0);} }
+  @keyframes em-ping { 0%{transform:scale(1);opacity:.75;} 75%,100%{transform:scale(2.4);opacity:0;} }
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb { background:#D8D0BE; border-radius:8px; border:2px solid #F7F4EC; }
+  .navbtn:hover { background:#F0F4F1 !important; }
+  .alertrow:hover { background:#FBF5EE !important; }
+  .pribtn:hover { background:#185A40 !important; }
+  .pribtn:active { transform:scale(0.98); }
+  .ghostbtn:hover { background:#F0F7F3 !important; }
+  .chip-btn:hover { filter:brightness(0.97); }
+  .mappin:hover { transform:translate(-50%,-50%) scale(1.12); }
+  #screen { animation: em-fadeUp .25s ease; }
+</style>
+</head>
+<body>
+<div id="app" style="display:flex; height:100vh; width:100%; overflow:hidden; background:#F7F4EC;"></div>
+
+<script>
+// ============================================================
+// Smart Center Solution Platform — standalone interactive demo (vanilla JS)
+// ระบบบูรณาการข้อมูลเฝ้าระวังและบริหารจัดการเหตุฉุกเฉิน (APP-17)
+// public-safe: ไม่มี brand supplier · ไม่มีราคา · §12-§13 compliant
+// sample tenant: เทศบาลตำบลสาธิต · mock data ทั้งหมด
+// pattern เดียวกับ elderly_app.html + smartlight-demo
+// ============================================================
+
+const C = {
+  green:'#1F6B4C', greenDk:'#185A40', greenSoft:'#E8F1EC', greenLine:'#D6E6DC',
+  cream:'#F7F4EC', ink:'#2B2B2B', muted:'#8C8576', faint:'#A89F8C',
+  amber:'#E0A526', amberTx:'#B5851A', amberSoft:'#FBEFD6',
+  red:'#C0492F', redSoft:'#F6DFD9', blue:'#2563A8', blueSoft:'#E2ECF6',
+  violet:'#7C5CBF', violetSoft:'#EDE7F8', sky:'#2C9AB5', skySoft:'#DFF1F5',
+  card:'#FFFFFF', cardLine:'#ECE7DB',
+};
+
+// ประเภทเหตุการณ์ (taxonomy เดียวกับระบบจริง · KPI 6 ประเภท)
+const TYPES = {
+  accident:    { label:'อุบัติเหตุ/เหตุร้าย', color:C.red,    soft:C.redSoft,    tx:'#9A3520' },
+  nearmiss:    { label:'เกือบเกิดเหตุ',       color:C.amber,  soft:C.amberSoft,  tx:C.amberTx },
+  surveillance:{ label:'เฝ้าระวัง',            color:C.green,  soft:C.greenSoft,  tx:C.greenDk },
+  maintenance: { label:'ซ่อมบำรุง',            color:C.blue,   soft:C.blueSoft,   tx:'#1B4775' },
+  activities:  { label:'กิจกรรม',              color:C.violet, soft:C.violetSoft, tx:'#5A3F94' },
+  measurement: { label:'ตรวจวัด',              color:C.sky,    soft:C.skySoft,    tx:'#1E6E82' },
+};
+
+const TENANT = 'เทศบาลตำบลสาธิต';
+
+// ---------- state ----------
+const state = {
+  page: 'dashboard',
+  hintOpen: true,
+  toast: null, toastType: 'success', _t: null,
+
+  // KPI (ตัวอย่าง mock)
+  kpi: { accident:3, nearmiss:5, surveillance:7, maintenance:2, activities:4, measurement:6 },
+
+  // เหตุการณ์ที่เปิดอยู่ (active event drill-down)
+  activeEvent: 'EV-2042',
+  eventStep: 2,             // 1 รับแจ้ง · 2 ยืนยัน · 3 ต่อเนื่อง · 4 สิ้นสุด
+  dispatched: false,        // สั่งการหน่วยงานแล้วหรือยัง
+  notifiedPublic: false,    // แจ้งเตือนประชาชนแล้วหรือยัง (หลังคัดกรอง)
+
+  // ห่วงโซ่หน่วยงานที่รับผิดชอบ
+  units: [
+    { key:'pcd',  name:'งานป้องกันและบรรเทาสาธารณภัย (ปภ.)', status:'pending', time:'' },
+    { key:'pwd',  name:'กองช่าง/โยธา',                        status:'pending', time:'' },
+    { key:'env',  name:'งานสุขาภิบาลและสิ่งแวดล้อม',          status:'pending', time:'' },
+  ],
+
+  // audit log ของเหตุการณ์
+  log: [
+    { time:'04:07', text:'รับแจ้งเหตุเพลิงไหม้ผ่าน LINE OA · ผู้แจ้งส่งภาพประกอบ 2 รูป' },
+    { time:'04:07', text:'ระบบจับพิกัดจากผู้แจ้ง · สร้างหมุดบนแผนที่อัตโนมัติ' },
+  ],
+
+  // create-event form
+  form: { title:'', type:'accident', desc:'', located:false, photo:false },
+
+  // chemical DB
+  chemSel: 'chlorine',
+
+  // map filter
+  mapFilter: 'all',
+
+  // modules (ขายเท่าที่ต้องการ)
+  modules: { intake:true, dispatch:true, map:true, chemical:true, resource:true, alert:true },
+};
+
+// ---------- helpers ----------
+const pad = n => String(n).padStart(2,'0');
+function now(){ const d=new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function nowS(){ const d=new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function showToast(msg, type='success'){
+  clearTimeout(state._t);
+  state.toast = msg; state.toastType = type;
+  render();
+  state._t = setTimeout(()=>{ state.toast = null; render(); }, 3800);
+}
+
+// ---------- actions ----------
+function go(page){ state.page = page; state.hintOpen = true; render(); }
+
+function confirmEvent(){
+  if (state.eventStep < 2) state.eventStep = 2;
+  state.log.push({ time:now(), text:'เจ้าหน้าที่ตรวจสอบแล้ว — ยืนยันว่าเป็นเหตุจริง (ก่อนแจ้งผู้บริหาร/ประชาชน)' });
+  showToast('ยืนยันเหตุการณ์แล้ว · เจ้าหน้าที่ตรวจสอบก่อนเสมอ จึงค่อยส่งต่อ','success');
+}
+
+function dispatchUnit(i){
+  const u = state.units[i];
+  state.units = state.units.map((x,idx)=> idx===i ? {...x, status:'dispatched', time:now()} : x);
+  state.dispatched = true;
+  if (state.eventStep < 3) state.eventStep = 3;
+  state.log.push({ time:now(), text:`สั่งการหน่วยงาน: ${u.name} — รับเรื่องและกำลังเข้าจุดเกิดเหตุ` });
+  showToast(`ส่งต่อเหตุไปยัง ${u.name} แล้ว`,'success');
+}
+
+function notifyPublic(){
+  if (state.eventStep < 2){ showToast('ต้องยืนยันเหตุการณ์ก่อน จึงจะแจ้งเตือนประชาชนได้','warn'); return; }
+  state.notifiedPublic = true;
+  state.log.push({ time:now(), text:'แจ้งเตือนประชาชนในรัศมีพื้นที่ได้รับผลกระทบ (geo-fence) ผ่าน LINE OA + SMS' });
+  showToast('แจ้งเตือนประชาชนในพื้นที่รัศมีได้รับผลกระทบเรียบร้อย (ผ่านการคัดกรองแล้ว)','success');
+}
+
+function closeEvent(){
+  state.eventStep = 4;
+  state.log.push({ time:now(), text:'ปิดเหตุการณ์ · ข้อมูลถูกบันทึกเข้าฐานข้อมูลเหตุการณ์ (พร้อมใช้ทบทวน/ยื่นประเมิน)' });
+  showToast('ปิดเหตุการณ์เรียบร้อย · บันทึกครบ 4 ขั้น พร้อมเรียกดูย้อนหลัง','success');
+}
+
+function resetEvent(){
+  state.eventStep = 1; state.dispatched = false; state.notifiedPublic = false;
+  state.units = state.units.map(u=>({...u, status:'pending', time:''}));
+  state.log = [
+    { time:now(), text:'รับแจ้งเหตุเพลิงไหม้ผ่าน LINE OA · ผู้แจ้งส่งภาพประกอบ 2 รูป' },
+    { time:now(), text:'ระบบจับพิกัดจากผู้แจ้ง · สร้างหมุดบนแผนที่อัตโนมัติ' },
+  ];
+  showToast('รีเซ็ตเคสสาธิตเรียบร้อย','success');
+}
+
+function simulateIntake(){
+  // จำลองเหตุใหม่เข้าจากช่องทางต่าง ๆ
+  const ch = ['LINE OA','เว็บแจ้งเหตุ','สายด่วน','Sensor IoT'][Math.floor(Math.random()*4)];
+  state.kpi.surveillance += 1;
+  state.log.push({ time:now(), text:`มีเรื่องแจ้งเข้าใหม่ผ่าน ${ch} — เข้าคิวรอเจ้าหน้าที่คัดกรอง` });
+  showToast(`รับเรื่องใหม่จาก ${ch} · ทุกช่องทางรวมเข้าศูนย์เดียว`,'success');
+}
+
+function submitForm(){
+  if (!state.form.title.trim()){ showToast('กรุณากรอกชื่อเหตุการณ์ก่อน','warn'); return; }
+  state.kpi[state.form.type] = (state.kpi[state.form.type]||0) + 1;
+  const t = TYPES[state.form.type].label;
+  showToast(`สร้างเหตุการณ์ "${state.form.title}" (${t}) เข้าศูนย์ข้อมูลกลางแล้ว`,'success');
+  state.form = { title:'', type:'accident', desc:'', located:false, photo:false };
+  setTimeout(()=>{ state.page='dashboard'; render(); }, 900);
+}
+function setForm(k,v){ state.form[k]=v; render(); }
+function locateForm(){ state.form.located=true; render(); showToast('ปักหมุดพิกัดบนแผนที่แล้ว','success'); }
+function photoForm(){ state.form.photo=true; render(); showToast('แนบรูปหน้างาน 1 รูปแล้ว','success'); }
+
+function selChem(k){ state.chemSel=k; render(); }
+function setMapFilter(f){ state.mapFilter=f; render(); }
+
+function toggleModule(key){
+  const turningOff = state.modules[key];
+  state.modules = { ...state.modules, [key]: !state.modules[key] };
+  const map = { intake:'create', dispatch:'event', map:'map', chemical:'chemical', resource:'resource' };
+  if (map[key] && !state.modules[key] && state.page===map[key]) state.page='dashboard';
+  showToast(turningOff ? 'ปิดโมดูลแล้ว — เมนูที่เกี่ยวข้องถูกซ่อนจาก sidebar' : 'เปิดใช้งานโมดูลเรียบร้อย', turningOff ? 'warn':'success');
+}
+function tog(key){ const on=state.modules[key]; return { trackBg: on?C.green:'#D8D0BE', knobX: on?'20px':'2px' }; }
+
+window.EM = { go, confirmEvent, dispatchUnit, notifyPublic, closeEvent, resetEvent, simulateIntake, submitForm, setForm, locateForm, photoForm, selChem, setMapFilter, toggleModule, toggleHint:()=>{ state.hintOpen=!state.hintOpen; render(); } };
+
+// ---------- icons ----------
+const ic = {
+  dash:'<rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect>',
+  bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>',
+  map:'<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>',
+  flask:'<path d="M9 3h6"></path><path d="M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"></path><path d="M7.5 14h9"></path>',
+  truck:'<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>',
+  gear:'<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>',
+  check:'<path d="M20 6 9 17l-5-5"></path>',
+  clock:'<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>',
+  pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>',
+  info:'<circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path>',
+};
+function svg(path, stroke='currentColor', size=19, sw=1.7){ return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`; }
+
+// ---------- sidebar ----------
+function navBtn(page, label, iconPath, enabled){
+  if (!enabled) return '';
+  const active = state.page===page;
+  const bg = active ? `background:#DCEDE3;border-left:3px solid ${C.green};` : 'background:transparent;border-left:3px solid transparent;';
+  return `<button class="navbtn" onclick="EM.go('${page}')" style="position:relative; display:flex; align-items:center; gap:12px; width:100%; padding:11px 13px; border:none; border-radius:10px; font-size:14px; font-weight:500; cursor:pointer; text-align:left; color:#3A3631; ${bg}">
+    ${svg(iconPath,'#3A3631',18)}<span>${label}</span></button>`;
+}
+function sidebar(){
+  const m = state.modules;
+  return `<aside style="width:268px; flex-shrink:0; background:#fff; border-right:1px solid #E8E1D2; display:flex; flex-direction:column; height:100%;">
+    <div style="padding:20px 18px 16px; border-bottom:1px solid #EFE9DC; display:flex; align-items:center; gap:12px;">
+      <div style="width:42px; height:42px; border-radius:12px; background:${C.green}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${svg('<path d="M12 2 3 7v6c0 5 3.5 8 9 9 5.5-1 9-4 9-9V7z"></path><path d="M9 12l2 2 4-4"></path>','#fff',24,1.8)}</div>
+      <div style="line-height:1.18;"><div style="font-size:15.5px; font-weight:700; color:${C.green};">Smart Center</div><div style="font-size:11px; color:#8C8576;">ศูนย์บริหารเหตุฉุกเฉิน · ${TENANT}</div></div>
+    </div>
+    <nav style="padding:13px 12px; display:flex; flex-direction:column; gap:3px; flex:1; overflow-y:auto;">
+      <div style="font-size:10.5px; font-weight:600; color:#A89F8C; letter-spacing:.5px; padding:6px 10px 4px;">ศูนย์บัญชาการ</div>
+      ${navBtn('dashboard','ภาพรวมสถานการณ์',ic.dash,true)}
+      ${navBtn('event','เหตุการณ์ที่กำลังดำเนินการ',ic.bell,m.dispatch)}
+      ${navBtn('map','แผนที่เหตุการณ์',ic.map,m.map)}
+      ${navBtn('create','รับแจ้ง / สร้างเหตุการณ์',ic.plus,m.intake)}
+      <div style="font-size:10.5px; font-weight:600; color:#A89F8C; letter-spacing:.5px; padding:14px 10px 4px;">ฐานข้อมูล</div>
+      ${navBtn('chemical','ฐานข้อมูลสารเคมี',ic.flask,m.chemical)}
+      ${navBtn('resource','ทรัพยากร / อุปกรณ์',ic.truck,m.resource)}
+      <div style="font-size:10.5px; font-weight:600; color:#A89F8C; letter-spacing:.5px; padding:14px 10px 4px;">ระบบ</div>
+      ${navBtn('settings','ตั้งค่า / โมดูล',ic.gear,true)}
+    </nav>
+    <div style="padding:13px; border-top:1px solid #EFE9DC;">
+      <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#F4F0E6; border-radius:10px;">
+        <div style="width:9px; height:9px; border-radius:50%; background:${C.green}; flex-shrink:0;"></div>
+        <div style="font-size:11.5px; color:#6E6757;">ระบบออนไลน์ · รวมทุกช่องทางเข้าศูนย์เดียว</div></div>
+    </div>
+  </aside>`;
+}
+
+const TITLES = {
+  dashboard:['ภาพรวมสถานการณ์','สรุปเหตุการณ์ทั้งหมดในพื้นที่ · มุมมองสำหรับผู้บริหาร'],
+  event:['เหตุการณ์ที่กำลังดำเนินการ','ติดตามสถานะ · สั่งการหน่วยงาน · บันทึกการดำเนินการ'],
+  map:['แผนที่เหตุการณ์','ตำแหน่งเหตุ + รัศมีพื้นที่ได้รับผลกระทบ'],
+  create:['รับแจ้ง / สร้างเหตุการณ์','รวมการแจ้งจากทุกช่องทางเป็นเหตุการณ์เดียว'],
+  chemical:['ฐานข้อมูลสารเคมี','ข้อมูลความปลอดภัย · ชุดป้องกัน · รัศมีอพยพ'],
+  resource:['ทรัพยากร / อุปกรณ์','อุปกรณ์ระงับเหตุที่มี พร้อมจัดสรร'],
+  settings:['ตั้งค่า / โมดูล','เปิด-ปิดโมดูลตามที่หน่วยงานใช้จริง'],
+};
+const HINTS = {
+  dashboard:'เปิดด้วย pain ของผู้บริหาร — "มีเหตุอะไรบ้าง รู้ครบที่เดียว". การ์ด 6 ประเภทคือภาพรวม คลิกแถวแจ้งเตือนเพื่อเจาะเข้าเหตุการณ์. กดปุ่ม "จำลองเรื่องแจ้งเข้าใหม่" ให้ผู้ชมเห็นว่าทุกช่องทาง (LINE/เว็บ/สายด่วน/Sensor) ไหลเข้าศูนย์เดียว',
+  event:'จุดขายหลัก — accountability + ตามสถานะได้. แกนเรื่องคือ timeline 4 ขั้น: รับแจ้ง→ยืนยัน→สั่งการ→ปิดเหตุ. กด "ยืนยันเหตุการณ์" (เจ้าหน้าที่ตรวจก่อนเสมอ) → "สั่งการ" แต่ละหน่วย → "แจ้งเตือนประชาชน" (ปลดล็อกหลังยืนยัน = กลไกคัดกรอง) → "ปิดเหตุ"',
+  map:'pain-first ตรง ๆ: "เหตุอยู่ไหน ใครได้รับผลกระทบ". คลิก filter ประเภทเหตุเพื่อกรองหมุด · วงสีแดงคือรัศมีพื้นที่ได้รับผลกระทบที่ใช้กำหนดขอบเขตแจ้งเตือนประชาชน (geo-fence)',
+  create:'โชว์ว่าการแจ้งหลายช่องทางจบเป็น record เดียว มีพิกัด+รูป. กรอกชื่อเหตุ เลือกประเภท กดปักหมุด+แนบรูป แล้วกด "บันทึกเข้าศูนย์ข้อมูล" — ตัวเลขบนการ์ด dashboard จะเพิ่มจริง',
+  chemical:'จุดแข็งสำหรับนิคม/ปิโตรเคมี EEC — เจ้าหน้าที่หน้างานเปิดดูได้ทันทีว่าสารตัวนี้อันตรายอย่างไร ใส่ชุดอะไร อพยพรัศมีเท่าไร. คลิกเลือกสารด้านซ้ายเพื่อดูรายละเอียด NFPA + ชุดป้องกัน + การอพยพ',
+  resource:'ปิดช่องว่าง "รู้เหตุแล้วมีอะไรไปจัดการ" — ฐานข้อมูลรถดับเพลิง/โฟม/เรือ ที่หน่วยงานมี ใช้ตอนสั่งการได้ทันที (ตัวเลขเป็นตัวอย่าง)',
+  settings:'ขายแบบ "ซื้อเท่าที่ต้องการ" — ปิดโมดูลแล้วเมนูใน sidebar หายจริง. เริ่มจาก Pilot (รับแจ้ง+สั่งการ+แผนที่) แล้วค่อยเพิ่มสารเคมี/ทรัพยากร/แจ้งเตือนภายหลัง',
+};
+
+// ---------- screen: dashboard ----------
+function kpiCard(typeKey, value){
+  const t = TYPES[typeKey];
+  return `<button class="chip-btn" onclick="EM.go('${typeKey==='accident'?'event':'map'}')" style="text-align:left; background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; padding:15px 16px; box-shadow:0 1px 3px rgba(43,43,43,0.05); cursor:pointer;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;">
+      <span style="font-size:12.5px; color:#8C8576; font-weight:500;">${t.label}</span>
+      <span style="width:10px; height:10px; border-radius:50%; background:${t.color};"></span></div>
+    <div style="font-size:30px; font-weight:700; color:${C.ink}; line-height:1;">${value}<span style="font-size:14px; font-weight:500; color:#9A927F;"> ครั้ง</span></div>
+  </div></button>`;
+}
+function screenDashboard(){
+  const k = state.kpi;
+  const cards = ['accident','nearmiss','surveillance','maintenance','activities','measurement'].map(t=>kpiCard(t,k[t])).join('');
+  const alerts = [
+    ['event', C.red,   'เพลิงไหม้ อาคารพาณิชย์ ถ.สาธิต 4','รับแจ้งผ่าน LINE OA · กำลังดำเนินการ','อุบัติเหตุ/เหตุร้าย',C.red,C.redSoft,'04:07'],
+    ['map',   C.amber, 'น้ำเริ่มท่วมขังจุดเสี่ยง ซ.เทศบาล 7','Sensor วัดระดับน้ำเกินเกณฑ์','เฝ้าระวัง',C.amberTx,C.amberSoft,'05:12'],
+    ['map',   C.amber, 'ต้นไม้ใหญ่เอียงเสี่ยงล้ม ริมถนนเลียบคลอง','ประชาชนแจ้งผ่านเว็บ','เฝ้าระวัง',C.amberTx,C.amberSoft,'07:40'],
+    ['resource',C.blue,'ไฟส่องสว่างดับ 6 จุด เขตชุมชน 2','แจ้งซ่อมบำรุง · รอช่าง','ซ่อมบำรุง','#1B4775',C.blueSoft,'08:15'],
+    ['chemical',C.sky, 'ตรวจวัดคุณภาพอากาศประจำสัปดาห์','ค่าฝุ่นอยู่ในเกณฑ์','ตรวจวัด','#1E6E82',C.skySoft,'09:00'],
+  ];
+  const rows = alerts.map((a,i)=>`<div class="alertrow" onclick="EM.go('${a[0]}')" style="display:flex; align-items:center; gap:13px; padding:13px 20px; ${i<alerts.length-1?'border-bottom:1px solid #F4F0E6;':''} cursor:pointer;">
+    <div style="width:8px; height:8px; border-radius:50%; background:${a[1]}; flex-shrink:0;"></div>
+    <div style="flex:1; min-width:0;"><div style="font-size:13.5px; font-weight:600; color:${C.ink};">${a[2]}</div><div style="font-size:12px; color:#9A927F;">${a[3]}</div></div>
+    <span style="font-size:11px; font-weight:600; color:${a[5]}; background:${a[6]}; padding:4px 10px; border-radius:999px; white-space:nowrap;">${a[4]}</span>
+    <span style="font-size:12px; color:#B0A892;">${a[7]}</span></div>`).join('');
+  return `<div>
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+      <div style="font-size:13px; color:#8C8576;">ประเภทเหตุการณ์ · วันนี้ <span style="color:#B0A892;">(ตัวอย่างข้อมูล)</span></div>
+      <button class="pribtn" onclick="EM.simulateIntake()" style="display:inline-flex; align-items:center; gap:8px; background:${C.green}; color:#fff; border:none; border-radius:10px; padding:9px 15px; font-size:13px; font-weight:600; cursor:pointer;">${svg(ic.plus,'#fff',16,2.2)}จำลองเรื่องแจ้งเข้าใหม่</button>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:13px; margin-bottom:22px;">${cards}</div>
+    <div style="display:grid; grid-template-columns:1.25fr 1fr; gap:16px;">
+      <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">
+        <div style="padding:15px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between;"><span style="font-size:15px; font-weight:700;">เหตุการณ์ล่าสุด</span><span style="font-size:12px; color:#9A927F;">คลิกเพื่อเปิดเหตุการณ์</span></div>
+        ${rows}
+      </div>
+      <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px;"><span style="font-size:15px; font-weight:700;">เหตุการณ์รายเดือน</span><span style="font-size:12px; color:#9A927F;">ครั้ง</span></div>
+        <div style="font-size:12px; color:#9A927F; margin-bottom:14px;">8 เดือนล่าสุด · ตัวอย่างข้อมูล</div>
+        <svg viewBox="0 0 540 210" style="width:100%; height:auto; display:block;">
+          <line x1="36" y1="172" x2="525" y2="172" stroke="#EDE7DA"></line>
+          <line x1="36" y1="100" x2="525" y2="100" stroke="#F2EEE2" stroke-dasharray="3 4"></line>
+          <g fill="#CFE3D8"><rect x="48" y="92" width="40" height="80" rx="4"></rect><rect x="110" y="78" width="40" height="94" rx="4"></rect><rect x="172" y="100" width="40" height="72" rx="4"></rect><rect x="234" y="60" width="40" height="112" rx="4"></rect><rect x="296" y="70" width="40" height="102" rx="4"></rect><rect x="358" y="52" width="40" height="120" rx="4"></rect><rect x="420" y="64" width="40" height="108" rx="4"></rect><rect x="482" y="40" width="40" height="132" rx="4" fill="${C.green}"></rect></g>
+          <g fill="#9A927F" font-size="11" text-anchor="middle"><text x="68" y="188">พ.ย.</text><text x="130" y="188">ธ.ค.</text><text x="192" y="188">ม.ค.</text><text x="254" y="188">ก.พ.</text><text x="316" y="188">มี.ค.</text><text x="378" y="188">เม.ย.</text><text x="440" y="188">พ.ค.</text><text x="502" y="188">มิ.ย.</text></g>
+        </svg>
+        <div style="margin-top:12px; padding:11px 13px; background:${C.greenSoft}; border-radius:10px; font-size:12.5px; color:${C.greenDk};">มีฐานข้อมูลเหตุการณ์ครบ พร้อมใช้ทบทวนการทำงานและยื่นประเมิน</div>
+      </div>
+    </div></div>`;
+}
+
+// ---------- screen: event (4-step timeline) ----------
+function screenEvent(){
+  const s = state.eventStep;
+  const stepDone=C.green, stepIdle='#E3DDCE';
+  const st = n => s>n ? {bg:stepDone,fg:'#fff',tx:C.green} : s===n ? {bg:C.green,fg:'#fff',tx:C.green} : {bg:stepIdle,fg:'#9A927F',tx:'#9A927F'};
+  const line = n => s>=n ? C.green : '#E3DDCE';
+  const steps = [['1','รับแจ้งเหตุ',st(1)],['2','ยืนยันเหตุการณ์',st(2)],['3','สั่งการ/ดำเนินการ',st(3)],['4','ปิดเหตุการณ์',st(4)]];
+  let stepper='';
+  steps.forEach((x,i)=>{
+    if(i>0) stepper += `<div style="flex:1; height:2px; background:${line(i+1)}; margin:0 6px 22px;"></div>`;
+    stepper += `<div style="display:flex; flex-direction:column; align-items:center; gap:8px; flex:0 0 auto;"><div style="width:36px; height:36px; border-radius:50%; background:${x[2].bg}; color:${x[2].fg}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">${s>i+1?'✓':x[0]}</div><span style="font-size:12px; font-weight:600; color:${x[2].tx}; text-align:center;">${x[1]}</span></div>`;
+  });
+  const unitRow = (u,i) => {
+    const map = { pending:['รอสั่งการ','#9A927F','#F1ECDF'], dispatched:['สั่งการแล้ว · กำลังเข้าจุดเกิดเหตุ',C.greenDk,C.greenSoft] };
+    const m = map[u.status];
+    const btn = u.status==='pending'
+      ? `<button class="pribtn" onclick="EM.dispatchUnit(${i})" style="background:${C.green}; color:#fff; border:none; border-radius:9px; padding:8px 14px; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap;">สั่งการ</button>`
+      : `<span style="font-size:12px; color:${C.greenDk}; display:inline-flex; align-items:center; gap:5px;">${svg(ic.check,C.greenDk,15,2.2)} ${u.time}</span>`;
+    return `<div style="display:flex; align-items:center; gap:12px; padding:13px 16px; border:1px solid ${C.cardLine}; border-radius:11px; background:#fff;">
+      <div style="flex:1; min-width:0;"><div style="font-size:13.5px; font-weight:600; color:${C.ink};">${u.name}</div><div style="font-size:11.5px; color:${m[1]};">${m[0]}</div></div>${btn}</div>`;
+  };
+  const logRows = state.log.map(l=>`<div style="display:flex; gap:11px; padding:9px 0; border-bottom:1px dashed #EFE9DC;"><span style="font-size:11.5px; color:#B0A892; font-variant-numeric:tabular-nums; flex-shrink:0; width:42px;">${l.time}</span><span style="font-size:12.5px; color:#6E6757; line-height:1.45;">${esc(l.text)}</span></div>`).join('');
+  const t = TYPES.accident;
+  return `<div style="display:grid; grid-template-columns:1.4fr 1fr; gap:16px; align-items:start;">
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 22px;">
+        <div style="display:flex; align-items:center;">${stepper}</div>
+      </div>
+      <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">
+        <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:6px;">
+          <div style="width:46px; height:46px; border-radius:11px; background:${t.soft}; color:${t.color}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${svg('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>',t.color,24,1.7)}</div>
+          <div style="flex:1;"><div style="font-size:11px; font-weight:600; color:${t.tx}; background:${t.soft}; display:inline-block; padding:3px 10px; border-radius:999px; margin-bottom:5px;">${t.label}</div>
+            <div style="font-size:18px; font-weight:700; color:${C.ink};">เพลิงไหม้ อาคารพาณิชย์ ถ.สาธิต 4</div>
+            <div style="font-size:12.5px; color:#9A927F; margin-top:2px;">รับแจ้ง 04:07 · ผ่าน LINE OA · ${TENANT} · รหัส ${state.activeEvent}</div></div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">
+          <button class="pribtn" onclick="EM.confirmEvent()" ${s>=2?'disabled':''} style="background:${s>=2?'#CFE3D8':C.green}; color:#fff; border:none; border-radius:10px; padding:9px 15px; font-size:13px; font-weight:600; cursor:${s>=2?'default':'pointer'};">${s>=2?'✓ ยืนยันแล้ว':'ยืนยันเหตุการณ์'}</button>
+          <button class="ghostbtn" onclick="EM.notifyPublic()" style="background:#fff; color:${state.notifiedPublic?'#9A927F':C.green}; border:1.5px solid ${state.notifiedPublic?'#D8D0BE':C.green}; border-radius:10px; padding:9px 15px; font-size:13px; font-weight:600; cursor:pointer;">${state.notifiedPublic?'✓ แจ้งประชาชนแล้ว':'แจ้งเตือนประชาชน'}</button>
+          <button class="ghostbtn" onclick="EM.closeEvent()" style="background:#fff; color:${C.ink}; border:1.5px solid ${C.cardLine}; border-radius:10px; padding:9px 15px; font-size:13px; font-weight:600; cursor:pointer;">ปิดเหตุการณ์</button>
+          <button class="ghostbtn" onclick="EM.resetEvent()" style="background:#fff; color:#9A927F; border:1.5px solid ${C.cardLine}; border-radius:10px; padding:9px 13px; font-size:13px; font-weight:500; cursor:pointer;">รีเซ็ตสาธิต</button>
+        </div>
+        <div style="margin-top:14px; padding:11px 13px; background:#FBF9F3; border-radius:10px; font-size:12px; color:#8C8576; display:flex; gap:8px; align-items:flex-start;">${svg(ic.info,'#A89F8C',15,2)}<span>กลไกคัดกรอง: เจ้าหน้าที่ได้รับทุกเหตุและตรวจสอบก่อนเสมอ — ปุ่ม "แจ้งเตือนประชาชน" จะใช้ได้ก็ต่อเมื่อยืนยันเหตุการณ์แล้ว</span></div>
+      </div>
+      <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">
+        <div style="font-size:15px; font-weight:700; margin-bottom:12px;">ส่งต่อหน่วยงานรับผิดชอบ</div>
+        <div style="display:flex; flex-direction:column; gap:9px;">${state.units.map(unitRow).join('')}</div>
+      </div>
+    </div>
+    <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">
+      <div style="font-size:15px; font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:8px;">${svg(ic.clock,C.green,17,1.9)} บันทึกการดำเนินการ</div>
+      <div style="font-size:12px; color:#9A927F; margin-bottom:10px;">ทุกการกระทำถูกบันทึกตามเวลา · ตรวจสอบย้อนหลังได้</div>
+      <div style="max-height:380px; overflow-y:auto;">${logRows}</div>
+    </div></div>`;
+}
+
+// ---------- screen: map ----------
+function screenMap(){
+  const pins = [
+    { x:46, y:40, type:'accident', label:'เพลิงไหม้ ถ.สาธิต 4', big:true },
+    { x:62, y:58, type:'nearmiss', label:'น้ำท่วมขัง ซ.เทศบาล 7' },
+    { x:30, y:64, type:'nearmiss', label:'ต้นไม้เอียง ริมคลอง' },
+    { x:72, y:34, type:'maintenance', label:'ไฟดับ ชุมชน 2' },
+    { x:54, y:74, type:'measurement', label:'จุดตรวจวัดอากาศ' },
+    { x:38, y:28, type:'surveillance', label:'กล้องเฝ้าระวังสะพาน' },
+  ];
+  const f = state.mapFilter;
+  const shown = pins.filter(p=> f==='all' || p.type===f);
+  const filterChips = [['all','ทั้งหมด','#6E6757','#EFE9DC']].concat(
+    Object.entries(TYPES).map(([k,t])=>[k,t.label,t.color,t.soft])
+  ).map(([k,lab,col,soft])=>{
+    const active = f===k;
+    return `<button class="chip-btn" onclick="EM.setMapFilter('${k}')" style="display:inline-flex; align-items:center; gap:6px; border:1.5px solid ${active?col:'#E3DDCE'}; background:${active?soft:'#fff'}; color:${active?col:'#6E6757'}; border-radius:999px; padding:6px 13px; font-size:12px; font-weight:600; cursor:pointer;">${k==='all'?'':`<span style="width:8px;height:8px;border-radius:50%;background:${col};"></span>`}${lab}</button>`;
+  }).join('');
+  const pinEls = shown.map(p=>{
+    const t = TYPES[p.type];
+    const ring = p.big ? `<span style="position:absolute; inset:-6px; border-radius:50%; background:${t.color}; opacity:.4; animation:em-ping 1.8s ease-out infinite;"></span>` : '';
+    const radius = p.big ? `<span style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:190px; height:190px; border-radius:50%; background:rgba(192,73,47,0.10); border:2px dashed rgba(192,73,47,0.45); pointer-events:none;"></span>` : '';
+    return `<div class="mappin" title="${esc(p.label)}" style="position:absolute; left:${p.x}%; top:${p.y}%; transform:translate(-50%,-50%); transition:transform .15s; cursor:pointer; z-index:${p.big?5:3};">
+      ${radius}<span style="position:relative; display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); background:${t.color}; box-shadow:0 3px 8px rgba(0,0,0,0.28);">${ring}<span style="width:9px; height:9px; border-radius:50%; background:#fff; transform:rotate(45deg);"></span></span></div>`;
+  }).join('');
+  return `<div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;">${filterChips}</div>
+    <div style="position:relative; height:520px; border:1px solid ${C.cardLine}; border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(43,43,43,0.05); background:
+      linear-gradient(0deg, rgba(31,107,76,0.04), rgba(31,107,76,0.04)),
+      repeating-linear-gradient(0deg, #EEF2EC 0 1px, transparent 1px 46px),
+      repeating-linear-gradient(90deg, #EEF2EC 0 1px, transparent 1px 46px),
+      #F4F6F1;">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%;">
+        <path d="M0 38 L100 30" stroke="#D9D2C2" stroke-width="2.4" fill="none"/>
+        <path d="M44 0 L56 100" stroke="#D9D2C2" stroke-width="2.4" fill="none"/>
+        <path d="M0 70 L100 78" stroke="#CFE0D6" stroke-width="3.2" fill="none"/>
+        <path d="M20 0 L26 100" stroke="#E7E1D2" stroke-width="1.6" fill="none"/>
+      </svg>
+      <div style="position:absolute; left:71%; top:75%; transform:translate(-50%,-50%); font-size:11px; color:#9DB0A4; transform:rotate(4deg);">คลองสาธิต</div>
+      ${pinEls}
+      <div style="position:absolute; right:14px; bottom:14px; background:rgba(255,255,255,0.94); border:1px solid ${C.cardLine}; border-radius:10px; padding:10px 13px; font-size:11.5px; color:#6E6757; max-width:210px;">
+        <div style="font-weight:700; color:${C.ink}; margin-bottom:3px;">รัศมีพื้นที่ได้รับผลกระทบ</div>
+        วงประสีแดงรอบเหตุเพลิงไหม้ = ขอบเขตที่ใช้แจ้งเตือนประชาชน (geo-fence)
+      </div>
+      <div style="position:absolute; left:14px; top:14px; background:rgba(255,255,255,0.94); border:1px solid ${C.cardLine}; border-radius:10px; padding:8px 12px; font-size:12px; color:#6E6757;">แสดง ${shown.length} จุด · ${TENANT}</div>
+    </div></div>`;
+}
+
+// ---------- screen: create ----------
+function screenCreate(){
+  const f = state.form;
+  const typeOpts = Object.entries(TYPES).map(([k,t])=>{
+    const active = f.type===k;
+    return `<button class="chip-btn" onclick="EM.setForm('type','${k}')" style="display:inline-flex; align-items:center; gap:7px; border:1.5px solid ${active?t.color:'#E3DDCE'}; background:${active?t.soft:'#fff'}; color:${active?t.tx:'#6E6757'}; border-radius:10px; padding:8px 13px; font-size:12.5px; font-weight:600; cursor:pointer;"><span style="width:9px;height:9px;border-radius:50%;background:${t.color};"></span>${t.label}</button>`;
+  }).join('');
+  const channels = ['LINE OA','เว็บแจ้งเหตุ','สายด่วน','Mobile App','Sensor IoT'].map(c=>`<span style="font-size:11.5px; color:#6E6757; background:#F4F0E6; border-radius:999px; padding:4px 11px;">${c}</span>`).join('');
+  return `<div style="display:grid; grid-template-columns:1fr 320px; gap:16px; align-items:start;">
+    <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:22px 24px;">
+      <div style="font-size:12px; color:#8C8576; margin-bottom:6px;">รับการแจ้งจากช่องทาง</div>
+      <div style="display:flex; flex-wrap:wrap; gap:7px; margin-bottom:20px;">${channels}</div>
+
+      <label style="display:block; font-size:13px; font-weight:600; color:${C.ink}; margin-bottom:7px;">ชื่อเหตุการณ์</label>
+      <input value="${esc(f.title)}" oninput="EM.setForm('title', this.value)" placeholder="เช่น เพลิงไหม้ร้านค้า ถ.สาธิต 4" style="width:100%; border:1.5px solid ${C.cardLine}; border-radius:10px; padding:11px 13px; font-size:14px; outline:none; margin-bottom:18px;" onfocus="this.style.borderColor='${C.green}'" onblur="this.style.borderColor='${C.cardLine}'" />
+
+      <label style="display:block; font-size:13px; font-weight:600; color:${C.ink}; margin-bottom:9px;">ประเภทเหตุการณ์</label>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px;">${typeOpts}</div>
+
+      <label style="display:block; font-size:13px; font-weight:600; color:${C.ink}; margin-bottom:7px;">รายละเอียด</label>
+      <textarea oninput="EM.setForm('desc', this.value)" rows="3" placeholder="คำอธิบายสั้น ๆ ของเหตุการณ์" style="width:100%; border:1.5px solid ${C.cardLine}; border-radius:10px; padding:11px 13px; font-size:14px; outline:none; resize:vertical; font-family:inherit; margin-bottom:18px;" onfocus="this.style.borderColor='${C.green}'" onblur="this.style.borderColor='${C.cardLine}'">${esc(f.desc)}</textarea>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="ghostbtn" onclick="EM.locateForm()" style="display:inline-flex; align-items:center; gap:8px; background:${f.located?C.greenSoft:'#fff'}; color:${C.green}; border:1.5px solid ${C.green}; border-radius:10px; padding:10px 15px; font-size:13px; font-weight:600; cursor:pointer;">${svg(ic.pin,C.green,16,1.9)}${f.located?'ปักหมุดแล้ว ✓':'ปักหมุดบนแผนที่'}</button>
+        <button class="ghostbtn" onclick="EM.photoForm()" style="display:inline-flex; align-items:center; gap:8px; background:${f.photo?C.greenSoft:'#fff'}; color:${C.green}; border:1.5px solid ${C.green}; border-radius:10px; padding:10px 15px; font-size:13px; font-weight:600; cursor:pointer;">${svg('<rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path>',C.green,16,1.9)}${f.photo?'แนบรูปแล้ว ✓':'แนบรูปหน้างาน'}</button>
+      </div>
+      <button class="pribtn" onclick="EM.submitForm()" style="margin-top:20px; width:100%; background:${C.green}; color:#fff; border:none; border-radius:11px; padding:13px; font-size:14.5px; font-weight:700; cursor:pointer;">บันทึกเข้าศูนย์ข้อมูลกลาง</button>
+    </div>
+    <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">
+      <div style="font-size:14px; font-weight:700; margin-bottom:10px;">ตัวอย่างหมุดบนแผนที่</div>
+      <div style="position:relative; height:180px; border-radius:11px; overflow:hidden; background:repeating-linear-gradient(0deg,#EEF2EC 0 1px,transparent 1px 30px),repeating-linear-gradient(90deg,#EEF2EC 0 1px,transparent 1px 30px),#F4F6F1; border:1px solid ${C.cardLine};">
+        ${f.located ? `<div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><span style="display:flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); background:${TYPES[f.type].color}; box-shadow:0 3px 8px rgba(0,0,0,0.28);"><span style="width:8px;height:8px;border-radius:50%;background:#fff;transform:rotate(45deg);"></span></span></div>` : `<div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#A89F8C;">กดปักหมุดเพื่อแสดงตำแหน่ง</div>`}
+      </div>
+      <div style="margin-top:14px; font-size:12.5px; color:#6E6757; line-height:1.55;">การแจ้งจากหลายช่องทางถูกรวมเป็น <b>เหตุการณ์เดียว</b> มีพิกัด รูป และประเภท — เจ้าหน้าที่ทุกหน่วยเห็นข้อมูลชุดเดียวกัน</div>
+    </div></div>`;
+}
+
+// ---------- screen: chemical ----------
+const CHEMS = {
+  chlorine: { name:'คลอรีน', en:'Chlorine', cas:'7782-50-5', un:'1017', cls:'2.3', formula:'Cl₂', boil:'-34 °C', nfpa:{h:4,f:0,r:0}, aegl:'0.5 / 2 / 20 ppm',
+    ppe:'ชุดป้องกันสารเคมีระดับ A + เครื่องช่วยหายใจ SCBA', evac:'อพยพต้นลม รัศมีเบื้องต้น 300 ม. (รั่วมาก 500+ ม.)',
+    first:'นำออกจากพื้นที่สู่อากาศบริสุทธิ์ · ล้างตา/ผิวด้วยน้ำสะอาด · ให้ออกซิเจน · รีบนำส่งแพทย์' },
+  ammonia: { name:'แอมโมเนีย', en:'Ammonia (anhydrous)', cas:'7664-41-7', un:'1005', cls:'2.3', formula:'NH₃', boil:'-33 °C', nfpa:{h:3,f:1,r:0}, aegl:'30 / 160 / 1100 ppm',
+    ppe:'ชุดกันสารเคมี + SCBA · ระวังการกัดกร่อนผิว/ตา', evac:'อพยพต้นลม รัศมีเบื้องต้น 150 ม. (รั่วมาก 800+ ม.)',
+    first:'สูดอากาศบริสุทธิ์ · ล้างตา/ผิวด้วยน้ำมาก ๆ อย่างน้อย 15 นาที · นำส่งแพทย์' },
+  lpg: { name:'ก๊าซปิโตรเลียมเหลว (LPG)', en:'Liquefied Petroleum Gas', cas:'68476-85-7', un:'1075', cls:'2.1', formula:'C₃–C₄', boil:'-42 °C', nfpa:{h:1,f:4,r:0}, aegl:'ไวไฟสูง · เสี่ยงระเบิด',
+    ppe:'ชุดกันไฟ · ตัดแหล่งประกายไฟ · ห้ามดับเปลวก่อนปิดวาล์ว', evac:'กันพื้นที่ไฟ/ระเบิด รัศมีเบื้องต้น 100 ม. · ขยายตามถังที่เกี่ยวข้อง',
+    first:'นำผู้บาดเจ็บออกจากพื้นที่ · เฝ้าระวังภาวะขาดออกซิเจน/ไหม้ · นำส่งแพทย์' },
+  sulfuric: { name:'กรดกำมะถัน', en:'Sulfuric Acid', cas:'7664-93-9', un:'1830', cls:'8', formula:'H₂SO₄', boil:'337 °C', nfpa:{h:3,f:0,r:2}, aegl:'0.2 / 8.7 / 26 mg/m³',
+    ppe:'ชุดกันกรด + หน้ากาก · ระวังการกระเด็น', evac:'กั้นพื้นที่หกรั่ว · ป้องกันไหลลงท่อ/แหล่งน้ำ · รัศมี 50 ม.',
+    first:'ล้างผิว/ตาด้วยน้ำมากอย่างน้อย 15 นาที · ถอดเสื้อผ้าที่เปื้อน · นำส่งแพทย์' },
+};
+function nfpaDiamond(n){
+  const cell=(v,bg,tx,rot)=>`<div style="position:absolute; ${rot}; width:34px; height:34px; background:${bg}; display:flex; align-items:center; justify-content:center; transform:rotate(45deg); border:1px solid rgba(0,0,0,0.12);"><span style="transform:rotate(-45deg); font-weight:800; font-size:15px; color:${tx};">${v}</span></div>`;
+  return `<div style="position:relative; width:96px; height:96px; margin:6px auto;">
+    <div style="position:absolute; left:31px; top:0;">${cell(n.h,'#3B82C4','#fff','')}</div>
+    <div style="position:absolute; left:0; top:31px;">${cell(n.f,'#E0392B','#fff','')}</div>
+    <div style="position:absolute; left:62px; top:31px;">${cell(n.r,'#F2C200','#1a1a1a','')}</div>
+    <div style="position:absolute; left:31px; top:62px;">${cell('','#fff','#1a1a1a','')}</div>
+  </div>
+  <div style="display:flex; justify-content:center; gap:10px; font-size:10.5px; color:#8C8576; margin-top:4px;"><span><b style="color:#3B82C4;">●</b> สุขภาพ</span><span><b style="color:#E0392B;">●</b> ไวไฟ</span><span><b style="color:#C9A400;">●</b> ปฏิกิริยา</span></div>`;
+}
+function screenChemical(){
+  const list = Object.entries(CHEMS).map(([k,c])=>{
+    const active = state.chemSel===k;
+    return `<button class="navbtn" onclick="EM.selChem('${k}')" style="display:block; width:100%; text-align:left; border:none; border-left:3px solid ${active?C.green:'transparent'}; background:${active?'#DCEDE3':'transparent'}; border-radius:9px; padding:11px 13px; font-size:13.5px; font-weight:${active?'700':'500'}; color:${active?C.green:'#3A3631'}; cursor:pointer; margin-bottom:2px;">${c.name}<div style="font-size:11px; font-weight:400; color:#9A927F;">${c.en}</div></button>`;
+  }).join('');
+  const c = CHEMS[state.chemSel];
+  const specRow=(l,v)=>`<div style="display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid #F2EEE2; font-size:13px;"><span style="color:#8C8576;">${l}</span><span style="font-weight:600; color:${C.ink};">${v}</span></div>`;
+  const sect=(icon,title,body,bg)=>`<div style="background:${bg||'#FBF9F3'}; border:1px solid ${C.cardLine}; border-radius:11px; padding:14px 16px;"><div style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:${C.greenDk}; margin-bottom:6px;">${icon} ${title}</div><div style="font-size:12.5px; color:#5C5648; line-height:1.6;">${body}</div></div>`;
+  return `<div style="display:grid; grid-template-columns:230px 1fr; gap:16px; align-items:start;">
+    <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:13px;">
+      <div style="font-size:11px; font-weight:600; color:#A89F8C; letter-spacing:.5px; padding:4px 10px 8px;">เลือกสารเคมี</div>${list}</div>
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:20px 22px;">
+        <div style="display:grid; grid-template-columns:1fr 130px; gap:18px;">
+          <div>
+            <div style="font-size:20px; font-weight:700; color:${C.ink};">${c.name}</div>
+            <div style="font-size:13px; color:#9A927F; margin-bottom:12px;">${c.en}</div>
+            ${specRow('CAS', c.cas)}${specRow('UN', c.un)}${specRow('ประเภท (Class)', c.cls)}${specRow('สูตร', c.formula)}${specRow('จุดเดือด', c.boil)}${specRow('AEGL 1/2/3', c.aegl)}
+          </div>
+          <div style="text-align:center;"><div style="font-size:11px; font-weight:600; color:#8C8576; margin-bottom:4px;">NFPA 704</div>${nfpaDiamond(c.nfpa)}</div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        ${sect(svg('<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',C.greenDk,16,1.8),'ชุดป้องกัน', c.ppe)}
+        ${sect(svg(ic.pin,C.greenDk,16,1.9),'การอพยพ', c.evac, C.amberSoft)}
+        ${sect(svg('<path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>',C.greenDk,16,1.9),'ปฐมพยาบาล', c.first)}
+        ${sect(svg(ic.info,C.greenDk,16,2),'หมายเหตุ', 'ข้อมูลนี้เป็นตัวอย่างสำหรับสาธิต · ระบบจริงอ้างอิงฐานข้อมูลความปลอดภัยสากล เปิดดูได้ทันทีหน้างาน')}
+      </div>
+    </div></div>`;
+}
+
+// ---------- screen: resource ----------
+function screenResource(){
+  const items = [
+    ['รถดับเพลิง ความจุน้ำ 12,000 ลิตร', 5, 'คัน', C.green, 'พร้อมใช้'],
+    ['รถบรรทุกน้ำเอนกประสงค์', 3, 'คัน', C.green, 'พร้อมใช้'],
+    ['เรือท้องแบนกู้ภัย', 4, 'ลำ', C.green, 'พร้อมใช้'],
+    ['โฟมดับเพลิง (Mobile Foam)', 1000, 'ลิตร', C.amber, 'คงเหลือ 60%'],
+    ['เครื่องสูบน้ำเคลื่อนที่', 6, 'เครื่อง', C.green, 'พร้อมใช้'],
+    ['ชุดป้องกันสารเคมีระดับ A', 8, 'ชุด', C.amber, 'คงเหลือ 8'],
+  ];
+  const rows = items.map((it,i)=>`<div style="display:flex; align-items:center; gap:14px; padding:14px 20px; ${i<items.length-1?'border-bottom:1px solid #F4F0E6;':''}">
+    <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:600; color:${C.ink};">${it[0]}</div></div>
+    <div style="font-size:18px; font-weight:700; color:${C.ink}; white-space:nowrap;">${it[1]} <span style="font-size:12px; font-weight:500; color:#9A927F;">${it[2]}</span></div>
+    <span style="font-size:11.5px; font-weight:600; color:#fff; background:${it[3]}; padding:4px 11px; border-radius:999px; white-space:nowrap;">${it[4]}</span></div>`).join('');
+  return `<div style="display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;">
+    <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">
+      <div style="padding:15px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between;"><span style="font-size:15px; font-weight:700;">อุปกรณ์ระงับเหตุ · ${TENANT}</span><span style="font-size:12px; color:#9A927F;">ตัวอย่างข้อมูล</span></div>
+      ${rows}
+    </div>
+    <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">
+      <div style="font-size:14px; font-weight:700; margin-bottom:10px;">รู้เหตุ → รู้ว่ามีอะไรไปจัดการ</div>
+      <div style="font-size:12.5px; color:#6E6757; line-height:1.6;">เมื่อสั่งการ เจ้าหน้าที่เห็นทันทีว่าหน่วยงานมีรถ โฟม เรือ และชุดป้องกันเท่าไร พร้อมจัดสรรไปยังจุดเกิดเหตุได้โดยไม่ต้องโทรถามหลายต่อ</div>
+      <div style="margin-top:14px; padding:12px 14px; background:${C.greenSoft}; border-radius:10px; font-size:12.5px; color:${C.greenDk};">เชื่อมกับเหตุการณ์ที่กำลังดำเนินการได้โดยตรง</div>
+    </div></div>`;
+}
+
+// ---------- screen: settings ----------
+function screenSettings(){
+  const mods = [
+    ['intake','รับแจ้ง / สร้างเหตุการณ์','ช่องทาง LINE OA · เว็บ · สายด่วน · Mobile'],
+    ['dispatch','สั่งการหน่วยงาน + ติดตามสถานะ','timeline 4 ขั้น + บันทึกการดำเนินการ'],
+    ['map','แผนที่เหตุการณ์ + รัศมีพื้นที่','GIS + geo-fence แจ้งเตือน'],
+    ['chemical','ฐานข้อมูลสารเคมี','สำหรับนิคม/ปิโตรเคมี · NFPA + ชุดป้องกัน'],
+    ['resource','ทรัพยากร / อุปกรณ์','ฐานข้อมูลรถ/โฟม/เรือ/ชุดป้องกัน'],
+    ['alert','แจ้งเตือนหลายช่องทาง','LINE OA · SMS · เว็บ (มีค่าส่งตามจริง)'],
+  ];
+  const rows = mods.map(m=>{
+    const t = tog(m[0]);
+    return `<div style="display:flex; align-items:center; gap:14px; padding:15px 18px; border:1px solid ${C.cardLine}; border-radius:12px; background:#fff;">
+      <div style="flex:1;"><div style="font-size:14px; font-weight:600; color:${C.ink};">${m[1]}</div><div style="font-size:12px; color:#9A927F;">${m[2]}</div></div>
+      <button onclick="EM.toggleModule('${m[0]}')" style="width:44px; height:26px; border-radius:999px; border:none; background:${t.trackBg}; position:relative; cursor:pointer; transition:background .2s; flex-shrink:0;"><span style="position:absolute; top:2px; left:${t.knobX}; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.3); transition:left .2s;"></span></button>
+    </div>`;
+  }).join('');
+  return `<div style="max-width:680px;">
+    <div style="background:#fff; border:1px solid ${C.cardLine}; border-radius:13px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:20px 22px;">
+      <div style="font-size:15px; font-weight:700; margin-bottom:4px;">โมดูลที่เปิดใช้งาน</div>
+      <div style="font-size:12.5px; color:#9A927F; margin-bottom:16px;">เริ่มจากชุดพื้นฐาน แล้วเพิ่มทีหลังได้ — ปิดโมดูลแล้วเมนูใน sidebar จะหายจริง</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">${rows}</div>
+    </div></div>`;
+}
+
+const SCREENS = { dashboard:screenDashboard, event:screenEvent, map:screenMap, create:screenCreate, chemical:screenChemical, resource:screenResource, settings:screenSettings };
+
+// ---------- render ----------
+function render(){
+  const [title, sub] = TITLES[state.page] || ['',''];
+  const hint = HINTS[state.page] || '';
+  const body = (SCREENS[state.page] || screenDashboard)();
+  const toastColors = { success:[C.green,'#fff'], warn:[C.amber,'#3A2E08'], danger:[C.red,'#fff'] };
+  const tc = toastColors[state.toastType] || toastColors.success;
+  const toast = state.toast ? `<div style="position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:9999; background:${tc[0]}; color:${tc[1]}; padding:12px 20px; border-radius:12px; font-size:13.5px; font-weight:600; box-shadow:0 8px 26px rgba(0,0,0,0.22); animation:em-toastIn .25s ease; max-width:520px;">${esc(state.toast)}</div>` : '';
+
+  document.getElementById('app').innerHTML = `
+    ${sidebar()}
+    <main style="flex:1; display:flex; flex-direction:column; min-width:0; height:100%;">
+      <header style="flex-shrink:0; padding:18px 28px 14px; border-bottom:1px solid #ECE6D8; background:#FBFAF5;">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
+          <div><h1 style="margin:0; font-size:21px; font-weight:700; color:${C.ink};">${title}</h1><p style="margin:3px 0 0; font-size:13px; color:#8C8576;">${sub}</p></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button onclick="EM.toggleHint()" style="display:inline-flex; align-items:center; gap:7px; background:${state.hintOpen?C.greenSoft:'#fff'}; color:${C.green}; border:1.5px solid ${C.green}; border-radius:9px; padding:7px 13px; font-size:12.5px; font-weight:600; cursor:pointer;">${svg(ic.info,C.green,15,2)} ${state.hintOpen?'ซ่อนคำใบ้':'คำใบ้ผู้นำเสนอ'}</button>
+            <div style="display:flex; align-items:center; gap:9px; padding:6px 12px; background:#fff; border:1px solid ${C.cardLine}; border-radius:999px;"><div style="width:30px; height:30px; border-radius:50%; background:${C.greenSoft}; color:${C.green}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">จ</div><div style="line-height:1.1;"><div style="font-size:12.5px; font-weight:600; color:${C.ink};">เจ้าหน้าที่ศูนย์</div><div style="font-size:10.5px; color:#9A927F;">${TENANT}</div></div></div>
+          </div>
+        </div>
+        ${state.hintOpen && hint ? `<div style="margin-top:13px; padding:11px 15px; background:#FFF9E8; border:1px solid #F3E4B8; border-radius:11px; font-size:12.5px; color:#7A6515; line-height:1.55; display:flex; gap:9px; align-items:flex-start;">${svg('<path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>','#C9A227',16,1.8)}<span><b>คำใบ้ผู้นำเสนอ:</b> ${hint}</span></div>` : ''}
+      </header>
+      <div id="screen" style="flex:1; overflow-y:auto; padding:22px 28px 40px;">${body}</div>
+    </main>
+    ${toast}`;
+}
+
+render();
+// ---------- end ----------
+</script>
+</body>
+</html>

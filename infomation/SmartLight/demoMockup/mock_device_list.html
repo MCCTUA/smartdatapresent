@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock Device List — placement workspace (map / floor plan)</title>
+<style>
+:root{
+  --bg:#f4f6fb;--surface:#ffffff;--surface2:#f9fbff;--ink:#172033;--muted:#647187;--line:#dce3ef;
+  --device:#0f9aa8;--pole:#7c5cff;--group:#d9822b;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--blue:#2563eb;
+  --soft-device:#e7f7f9;--soft-pole:#f0edff;--soft-group:#fff4e6;--soft-bad:#fff1f2;--soft-ok:#eefbf2;
+  /* implemented device-status colors (device_status_service.py / material-theme.css) */
+  --st-online:#22c55e;--st-lamp-off:#6b7280;--st-fault:#f43f5e;--st-disabled:#a855f7;
+  --st-maint:#f59e0b;--st-offline:#ef4444;--st-unreach:#94a3b8;--st-manual:#64748b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Aptos","Segoe UI","Noto Sans Thai",system-ui,sans-serif;line-height:1.45}
+main{max-width:1320px;margin:0 auto;padding:20px 16px 56px}
+h1{font-size:24px;line-height:1.2;margin:0}.sub{color:var(--muted);font-size:13px}.small{font-size:12px;color:var(--muted)}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#eef3fb;color:#1d4ed8;padding:1px 5px;border-radius:5px;font-size:12px}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 11px;font-size:12px;font-weight:800;color:var(--ink);cursor:default}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.device{background:var(--soft-device);border-color:#a4dbe2;color:#075f69}.btn.pole{background:var(--soft-pole);border-color:#c9bdff;color:#4f38b7}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:0 8px 22px rgba(25,34,52,.05)}
+.panel h2,.panel h3{margin:0 0 9px;font-size:15px}.panel h2{font-size:16px}.muted{color:var(--muted)}
+.grid{display:grid;gap:12px}.grid12{grid-template-columns:repeat(12,1fr)}.span3{grid-column:span 3}.span4{grid-column:span 4}.span5{grid-column:span 5}.span6{grid-column:span 6}.span7{grid-column:span 7}.span8{grid-column:span 8}.span12{grid-column:span 12}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px;min-height:104px}.stat .k{font-size:11px;text-transform:uppercase;font-weight:900;color:var(--muted);letter-spacing:.04em}.stat .v{font-size:28px;font-weight:900;margin-top:6px}.stat.device{border-top:4px solid var(--device)}.stat.pole{border-top:4px solid var(--pole)}.stat.group{border-top:4px solid var(--group)}.stat.bad{border-top:4px solid var(--bad)}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:900;white-space:nowrap}.pill.device{background:var(--soft-device);color:#075f69}.pill.pole{background:var(--soft-pole);color:#4f38b7}.pill.group{background:var(--soft-group);color:#8a4b10}.pill.ok{background:var(--soft-ok);color:var(--ok)}.pill.warn{background:#fff7ed;color:var(--warn)}.pill.bad{background:var(--soft-bad);color:var(--bad)}.pill.dim{background:#eef2f7;color:#526074}
+.rule{border-left:4px solid var(--blue);background:#eef5ff;color:#1e3a8a;border-radius:0 8px 8px 0;padding:9px 12px;font-size:12.5px;margin:10px 0}.rule b{color:#172554}
+.kv{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding:6px 0;font-size:12.5px}.kv:last-child{border-bottom:0}.kv b{text-align:right}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}table{width:100%;border-collapse:collapse;min-width:960px;font-size:12.5px}th,td{padding:10px 11px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f0f4fa;color:#526074;font-size:11px;text-transform:uppercase;letter-spacing:.04em}tr:last-child td{border-bottom:0}.hideable{background:linear-gradient(90deg,#fff,#fbfcff)}tr.sel{background:#eef5ff}
+.idpair{display:grid;grid-template-columns:1fr 1fr;gap:8px}.idbox{border:1px solid var(--line);border-radius:8px;background:var(--surface2);padding:8px}.idbox .label{font-size:10.5px;text-transform:uppercase;font-weight:900;color:var(--muted)}.idbox b{display:block;margin-top:2px}
+@media(max-width:980px){.grid12{grid-template-columns:repeat(6,1fr)}.span3,.span4{grid-column:span 3}.span5,.span6,.span7,.span8,.span12{grid-column:span 6}.idpair{grid-template-columns:1fr}}
+@media(max-width:640px){main{padding:14px 10px 42px}.grid12{grid-template-columns:1fr}.span3,.span4,.span5,.span6,.span7,.span8,.span12{grid-column:span 1}.actions{width:100%}.btn{flex:1;text-align:center}}
+
+/* role switcher + scope tree */
+.rolebar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+.roleseg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.roleseg span{padding:8px 14px;font-size:12.5px;font-weight:900;color:var(--muted);border-right:1px solid var(--line)}.roleseg span:last-child{border-right:0}.roleseg span.on{background:var(--blue);color:#fff}
+.scopebar{margin-bottom:12px}
+.crumb{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:12.5px}
+.crumb .cr{font-weight:800;color:var(--muted)}.crumb .cr.active{color:#1d4ed8;background:#eef5ff;border:1px solid #b9cffb;border-radius:7px;padding:2px 8px}
+.crumb .sep{color:var(--muted)}
+.tree{font-size:12.5px}.tree .node{padding:6px 8px;border-radius:8px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.tree .lvl1{font-weight:900}.tree .lvl2{margin-left:14px}.tree .lvl3{margin-left:28px;color:var(--muted)}
+.tree .node.active{background:#eef5ff;color:#1d4ed8}.tree .node.warn{color:var(--warn)}
+.scopenote{border-left:4px solid var(--ok);background:var(--soft-ok);color:#14532d;border-radius:0 8px 8px 0;padding:10px 12px;font-size:12.5px}
+@media(max-width:980px){.scopebar{grid-template-columns:1fr}}
+
+/* placement wizard */
+.work{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:12px}@media(max-width:1080px){.work{grid-template-columns:1fr}}
+.wizard{display:grid;gap:12px;align-self:start;position:sticky;top:12px}
+.step{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px}
+.step .sh{display:flex;gap:8px;align-items:center;font-weight:900;font-size:13px;margin-bottom:8px}.step .sn{width:20px;height:20px;border-radius:999px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:11px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden}.seg span{padding:8px;text-align:center;font-size:12px;font-weight:900;background:var(--surface2);border-right:1px solid var(--line)}.seg span:last-child{border-right:0}.seg .on{background:var(--blue);color:#fff}
+.field{border:1px solid var(--line);border-radius:8px;background:var(--surface2);padding:8px;font-size:12.5px;margin-top:8px}.field label{display:flex;justify-content:space-between;font-size:10.5px;text-transform:uppercase;font-weight:900;color:var(--muted);margin-bottom:3px}.field .val{font-weight:700}
+.req{font-size:9.5px;font-weight:900;border-radius:999px;padding:1px 7px}.req.opt{background:#eef2f7;color:#526074}.req.must{background:var(--soft-bad);color:var(--bad)}
+.hidefield{opacity:.4;filter:grayscale(.5)}
+
+/* mini map with draggable markers */
+.mini{position:relative;height:300px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:linear-gradient(0deg,rgba(37,99,235,.05),rgba(37,99,235,.05)),repeating-linear-gradient(0deg,#e9eef7 0 1px,transparent 1px 40px),repeating-linear-gradient(90deg,#e9eef7 0 1px,transparent 1px 40px),#f9fbff;margin-top:8px}
+.zone{position:absolute;border:2px dashed var(--group);background:rgba(217,130,43,.10);border-radius:16px}.zone.bad{border-color:var(--bad);background:rgba(185,28,28,.07)}
+.mk{position:absolute;transform:translate(-50%,-50%);text-align:center;cursor:grab}.mk .lab{font-size:9.5px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:1px 6px;margin-top:2px;white-space:nowrap}
+/* device dot = two-tone (outer ring + inner) per implemented marker states */
+.dmk{width:18px;height:18px;border-radius:999px;margin:0 auto;border:3px solid var(--st-online);box-shadow:0 4px 12px rgba(30,41,59,.25);background:var(--st-online)}
+.dmk.on{border-color:var(--st-online);background:var(--st-online)}
+.dmk.off{border-color:var(--st-online);background:var(--st-lamp-off)}
+.dmk.fault{border-color:var(--st-online);background:var(--st-fault)}
+.dmk.disabled{border-color:var(--st-online);background:var(--st-disabled)}
+.dmk.maint{border-color:var(--st-maint);background:var(--st-maint)}
+.dmk.offline{border-color:var(--st-offline);background:var(--st-unreach)}
+.dmk.dragging{cursor:grabbing;outline:2px solid var(--blue);outline-offset:2px}
+/* pole / group marker = lamp-on-post, TWO-TONE เหมือน device (หัวโคม: วงแหวนนอก=connection + แกนใน=lamp/fault; ขาเสา=connection).
+   ต่างจาก device ตรงมี "ขาเสา" ต่อท้าย (device = วงกลมเปล่า). prod = Material Symbols 'location_on'. */
+.pin{position:relative;width:18px;height:27px;margin:0 auto;--o:var(--st-online);--i:var(--st-online);filter:drop-shadow(0 2px 3px rgba(30,41,59,.35))}
+.pin::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;border:3px solid var(--o);background:var(--i);box-sizing:border-box}/* หัวหมุด = ขนาดเท่า device .dmk */
+.pin::after{content:"";position:absolute;top:15px;left:50%;transform:translateX(-50%);width:4px;height:11px;background:var(--o);border-radius:0 0 2px 2px}/* เส้นเสาด้านล่าง */
+.pin.on{--o:var(--st-online);--i:var(--st-online)}
+.pin.off{--o:var(--st-online);--i:var(--st-lamp-off)}
+.pin.fault{--o:var(--st-online);--i:var(--st-fault)}
+.pin.disabled{--o:var(--st-online);--i:var(--st-disabled)}
+.pin.maint{--o:var(--st-maint);--i:var(--st-maint)}
+.pin.offline{--o:var(--st-offline);--i:var(--st-unreach)}
+.pin.manual{--o:var(--st-manual);--i:var(--st-manual)}/* node_kind=manual / unlinked = no telemetry → slate */
+.drag-hint{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:800;color:var(--blue)}
+/* placement editor popup anchored to selected marker on the map */
+.map-popup{position:absolute;width:264px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 16px 36px rgba(15,23,42,.22);padding:12px;z-index:6}
+.map-popup::after{content:"";position:absolute;left:50%;margin-left:-8px;bottom:-9px;width:16px;height:16px;background:var(--surface);border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
+.map-popup h4{margin:0 0 9px;font-size:13px;display:flex;align-items:center;gap:6px}.map-popup h4 .x{margin-left:auto;color:var(--muted);font-weight:900;cursor:pointer}
+/* placement modal — reusable component (Map / Floor plan) เรียกจากทุก row */
+.placebtn{color:#1d4ed8;font-weight:800;cursor:pointer}.placebtn:hover{text-decoration:underline}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:26px 16px;overflow:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 30px 80px rgba(15,23,42,.4);width:min(900px,100%)}
+.modal-head{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.modal-head h3{margin:0;font-size:15px}.modal-head .x{margin-left:auto;cursor:pointer;color:var(--muted);font-weight:900;font-size:18px;line-height:1}
+.modal-body{padding:16px}.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+.stabs{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:12px}
+.stabs span{padding:8px 16px;font-size:12.5px;font-weight:900;color:var(--muted);cursor:pointer;border-right:1px solid var(--line)}.stabs span:last-child{border-right:0}.stabs span.on{background:var(--blue);color:#fff}
+.place-grid{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:12px}@media(max-width:680px){.place-grid{grid-template-columns:1fr}}
+.floor-stage{position:relative;height:340px;border:1px solid var(--line);border-radius:10px;background:repeating-linear-gradient(0deg,#eef2f7 0 1px,transparent 1px 40px),repeating-linear-gradient(90deg,#eef2f7 0 1px,transparent 1px 40px),#fbfdff;overflow:hidden}
+.room{position:absolute;border:1px solid var(--line);border-radius:8px;background:rgba(37,99,235,.04);padding:6px;font-size:11px;color:var(--muted)}
+/* notifications + in-table connectivity/control/dim */
+.alertbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.ab{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:800;background:var(--surface)}.ab b{font-weight:900}
+.ab.bad{border-color:#f0b6bd;color:#7f1d1d;background:var(--soft-bad)}.ab.warn{border-color:#f0c38a;color:#8a4b10;background:#fff7ed}.ab.dim{color:#526074}
+.bell{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 11px;font-size:13px;font-weight:800}.bell b{color:var(--bad)}
+.cdot{width:8px;height:8px;border-radius:999px;display:inline-block;vertical-align:middle}.cdot.on{background:var(--st-online)}.cdot.off{background:var(--st-unreach)}
+.pingbtn{border:1px solid #b9cffb;background:#eef5ff;color:#1d4ed8;border-radius:7px;padding:3px 8px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+.ctrl{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.ctrl span{padding:4px 10px;font-size:11px;font-weight:900;cursor:pointer;color:var(--muted)}.ctrl span.act-on{background:var(--ok);color:#fff}.ctrl span.act-off{background:#64748b;color:#fff}
+.dimrow{display:flex;align-items:center;gap:7px;font-size:11px;color:#526074}.dimrow input[type=range]{width:64px;accent-color:var(--blue)}
+.nctrl{color:#94a3b8;font-size:11px}
+/* tidy device table: lifecycle stack + connectivity */
+#devTable{table-layout:fixed}#devTable td{vertical-align:middle;word-break:break-word}
+#lotTable td{vertical-align:middle}
+.lc{display:flex;gap:6px;align-items:center;margin-bottom:3px}.lc:last-child{margin-bottom:0}.lck{font-size:9.5px;font-weight:900;color:var(--muted);width:26px;flex:0 0 auto;text-transform:uppercase}
+.conn{margin-bottom:6px;font-size:12px;display:flex;align-items:center;gap:5px}
+#devTable .pingbtn,#devTable .ctrl{margin:0}
+/* Platform Owner / Dealer management layer (parent tree rollup) */
+.drill{border-left:4px solid var(--blue);background:#eef5ff;color:#1e3a8a;border-radius:0 8px 8px 0;padding:8px 12px;font-size:12.5px;font-weight:700;margin:0 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rollup{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
+.rollup .r{border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:12px;background:var(--surface2);min-width:96px}.rollup .r b{display:block;font-size:18px;font-weight:900;margin-top:2px}.rollup .r.bad b{color:var(--bad)}.rollup .r.warn b{color:var(--warn)}
+.subrow td:first-child{padding-left:26px}.mng-cur{background:#eef5ff}
+.manage{border:1px solid var(--blue);background:var(--blue);color:#fff;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap}
+.manage.ghost{background:var(--surface);color:#1d4ed8}
+/* table filter chips + sortable headers */
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.filter{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:800;color:#526074;cursor:pointer}.filter.on{background:#eef5ff;color:#1d4ed8;border-color:#b9cffb}
+th[data-key]{cursor:pointer;user-select:none;white-space:nowrap}th[data-key]:hover{color:#1d4ed8}th .arr{font-size:9px;color:#1d4ed8}
+/* lots + CSV download/import flow */
+.lots{display:grid;gap:10px}
+.lot{border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:10px;background:var(--surface2);padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}.lot .meta b{font-size:14px}.lot .acts{display:flex;gap:7px;flex-wrap:wrap}
+.lot.warn{border-left-color:var(--warn);background:#fff8ee}.lot.bad{border-left-color:var(--bad);background:#fff5f6}
+@media(max-width:640px){.lot{grid-template-columns:1fr}}
+.dl{border:1px solid var(--blue);background:var(--blue);color:#fff;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}.dl.ghost{background:var(--surface);color:#1d4ed8}
+.flowline{display:flex;flex-wrap:wrap;gap:7px;align-items:center;font-size:12px;color:#526074;margin:2px 0 10px}.flowline .stp{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-weight:800}.flowline .ar{color:var(--muted)}
+.codeblk{font-family:ui-monospace,Consolas,monospace;background:#0f172a;color:#e2e8f0;border-radius:8px;padding:9px 11px;font-size:12px;margin-top:8px;overflow:auto;white-space:nowrap}
+.drop{border:2px dashed #b9cffb;background:#f6f9ff;border-radius:10px;padding:22px;text-align:center;color:#1d4ed8;font-weight:800;font-size:13px;cursor:pointer}
+/* lots shown ON the map (unplaced) — click เพื่อดู ids · import แล้วย้ายเข้าตาราง */
+.lots-tray{position:absolute;top:10px;right:10px;width:248px;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 28px rgba(15,23,42,.16);padding:10px;z-index:4}
+.lots-tray h4{margin:0 0 8px;font-size:12px;display:flex;align-items:center;gap:6px}
+.lots-tray .lt{position:relative;border:1px solid var(--line);border-radius:8px;background:var(--surface2);padding:7px 26px 7px 9px;margin-bottom:6px;cursor:pointer;font-size:11.5px}.lots-tray .lt:last-child{margin-bottom:0}.lots-tray .lt b{font-size:12px}.lots-tray .lt:hover{border-color:#b9cffb;background:#f4f8ff}
+.lt-x{position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:11px;font-weight:900;line-height:1;display:grid;place-items:center;cursor:pointer}.lt-x:hover{border-color:var(--bad);color:var(--bad);background:var(--soft-bad)}
+/* ปุ่มกลม ✕ ปิดแจ้งเตือนล็อตหมดอายุ (inline ท้าย Action) — เหมือน dismiss notification, เฉพาะล็อตหมดอายุ */
+.rmx{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:11px;font-weight:900;line-height:1;cursor:pointer;vertical-align:middle}.rmx:hover{border-color:var(--bad);color:var(--bad);background:var(--soft-bad)}
+@media(max-width:640px){.lots-tray{position:static;width:auto;margin-bottom:8px}}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.lg{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:2px 0}
+.lgmk{width:14px;height:14px;border-radius:999px;flex:0 0 auto;border:2.5px solid var(--st-online)}
+.lgmk.on{background:var(--st-online)}.lgmk.off{background:var(--st-lamp-off)}.lgmk.fault{background:var(--st-fault)}.lgmk.disabled{background:var(--st-disabled)}
+.lgmk.maint{border-color:var(--st-maint);background:var(--st-maint)}.lgmk.offline{border-color:var(--st-offline);background:var(--st-unreach)}
+.lgpin{flex:0 0 auto;position:relative;width:14px;height:20px;--o:var(--st-online);--i:var(--st-online)}
+.lgpin::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;border:2.5px solid var(--o);background:var(--i);box-sizing:border-box}
+.lgpin::after{content:"";position:absolute;top:11px;left:50%;transform:translateX(-50%);width:3px;height:7px;background:var(--o);border-radius:0 0 2px 2px}
+.lgpin.on{--o:var(--st-online);--i:var(--st-online)}.lgpin.off{--o:var(--st-online);--i:var(--st-lamp-off)}.lgpin.fault{--o:var(--st-online);--i:var(--st-fault)}.lgpin.disabled{--o:var(--st-online);--i:var(--st-disabled)}
+.lgpin.maint{--o:var(--st-maint);--i:var(--st-maint)}.lgpin.offline{--o:var(--st-offline);--i:var(--st-unreach)}.lgpin.manual{--o:var(--st-manual);--i:var(--st-manual)}
+.lg b{font-weight:900}.lg .c{color:var(--muted);font-size:11px}
+
+.pagenav{display:flex;gap:6px;align-items:center;margin-bottom:14px;flex-wrap:wrap}.pagenav a{text-decoration:none;font-size:12.5px;font-weight:800;color:var(--muted);border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px}.pagenav a.on{background:var(--blue);color:#fff;border-color:var(--blue)}.pagenav a.home{color:var(--blue)}
+</style>
+</head>
+<body>
+<main>
+  <nav class="pagenav"><a class="home" href="mock_index.html">← Home</a><a href="mock_dashboard.html">Dashboard</a><a href="mock_map.html">Map</a><a class="on" href="mock_device_list.html">Devices</a></nav>
+  <div class="topbar">
+    <div>
+      <h1>Device / Pole placement workspace</h1>
+      <!-- <div class="sub"><code>/device-list/</code> · จัดตำแหน่ง <code>device_id</code> / <code>pole_id</code> ที่ platform owner add ให้ — เลือกพื้นผิว <b>Map</b> หรือ <b>Floor plan</b> แล้ว drag marker</div> -->
+    </div>
+    <div class="actions"><span class="bell">🔔 <b>4</b></span></div>
+  </div>
+
+  <!-- ROLE SWITCHER -->
+  <div class="rolebar">
+    <span class="small" style="font-weight:900">Viewing as:</span>
+    <div class="roleseg"><span id="role-po" class="on" onclick="setRole('po')">Platform Owner</span><span id="role-dealer" onclick="setRole('dealer')">Dealer</span><span id="role-customer" onclick="setRole('customer')">Customer</span></div>
+    <!-- <span class="pill dim">คลิกสลับ view — PO/Dealer = จัดการใต้ parent tree · Customer = เห็นเฉพาะข้อมูลตัวเอง</span> -->
+  </div>
+
+  <!-- SCOPE (PO / Dealer) — breadcrumb กระชับบรรทัดเดียว -->
+  <div class="scopebar po-only">
+    <div class="panel" style="padding:9px 14px">
+      <div class="crumb">
+        <span class="small" style="font-weight:900">Scope:</span>
+        <span class="cr">Platform Owner</span><span class="sep">›</span>
+        <span class="cr">Dealer North</span><span class="sep">›</span>
+        <span class="cr active">Customer A</span>
+        <span class="pill ok">acting-as ✓</span>
+        <span class="small">24 dev · 3 pole</span>
+        <span class="pill warn">Customer B ⚠ expiry</span>
+        <span class="btn" style="padding:5px 10px;margin-left:auto">เปลี่ยน scope ▾</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PO/Dealer tabs: สลับ Managed customers (overview) ↔ Devices (drill-in) -->
+  <div class="stabs po-only" style="margin-bottom:12px">
+    <span id="tab-devices" class="on" onclick="switchTab('devices')">📟 Devices · acting-as</span>
+    <span id="tab-managed" onclick="switchTab('managed')">👥 Managed customers</span>
+  </div>
+
+  <!-- PANE: Managed customers (parent tree rollup ข้ามลูกค้า) -->
+  <div id="pane-managed" style="display:none">
+  <div class="panel" style="margin-bottom:12px">
+    <h2>Managed customers</h2>
+    <div class="rollup">
+      <div class="r"><span class="small">Customers</span><b>32</b></div>
+      <div class="r"><span class="small">Devices</span><b>540</b></div>
+      <div class="r"><span class="small">Pole id</span><b>61</b></div>
+      <div class="r"><span class="small">Online</span><b>92%</b></div>
+      <div class="r warn"><span class="small">SIM ≤30d</span><b>14</b></div>
+      <div class="r bad"><span class="small">SIM expired</span><b>3</b></div>
+      <div class="r warn"><span class="small">SW ≤30d</span><b>6</b></div>
+      <div class="r bad"><span class="small">Faults</span><b>3</b></div>
+    </div>
+    <div class="filters" id="mngFilters">
+      <span class="filter on" data-f="all" onclick="filterMng('all')">ทั้งหมด</span>
+      <span class="filter" data-f="north" onclick="filterMng('north')">Dealer North</span>
+      <span class="filter" data-f="south" onclick="filterMng('south')">Dealer South</span>
+      <span class="filter" data-f="alert" onclick="filterMng('alert')">⚠ มีแจ้งเตือน</span>
+      <span class="filter" data-f="fault" onclick="filterMng('fault')">มี fault</span>
+    </div>
+    <div class="table-wrap">
+      <table id="mngTable" style="min-width:900px">
+        <thead><tr>
+          <th data-key="cust" onclick="sortMng('cust')">Customer <span class="arr"></span></th>
+          <th data-key="dealer" onclick="sortMng('dealer')">Dealer <span class="arr"></span></th>
+          <th data-key="dev" onclick="sortMng('dev')">Devices <span class="arr"></span></th>
+          <th data-key="online" onclick="sortMng('online')">Online <span class="arr"></span></th>
+          <th data-key="exp" onclick="sortMng('exp')">Expiry alerts <span class="arr"></span></th>
+          <th data-key="faults" onclick="sortMng('faults')">Faults <span class="arr"></span></th>
+          <th>Action</th>
+        </tr></thead>
+        <tbody id="mngTbody">
+          <tr class="mng-cur" data-cust="Customer A" data-dealer="north" data-dev="24" data-online="92" data-exp="-1" data-faults="1" data-alert="1" data-hasfault="1">
+            <td><b>Customer A</b><div class="small">acting-as ✓ (กำลังดูอยู่)</div></td>
+            <td>Dealer North</td><td>24 dev · 3 pole</td><td>92%</td>
+            <td><span class="pill warn">SIM 1</span> <span class="pill bad">exp 1</span> <span class="pill warn">SW 1</span></td>
+            <td><span class="pill bad">1</span></td>
+            <td><span class="manage">Managing ▸</span></td>
+          </tr>
+          <tr data-cust="Customer B" data-dealer="north" data-dev="18" data-online="88" data-exp="21" data-faults="0" data-alert="1" data-hasfault="0">
+            <td><b>Customer B</b><div class="small">software near expiry</div></td>
+            <td>Dealer North</td><td>18 dev · 0 pole</td><td>88%</td>
+            <td><span class="pill warn">SW ≤30d</span></td>
+            <td><span class="pill ok">0</span></td>
+            <td><span class="manage ghost" onclick="actAs('Customer B')">Manage ▸</span></td>
+          </tr>
+          <tr data-cust="Customer C" data-dealer="north" data-dev="31" data-online="97" data-exp="9999" data-faults="0" data-alert="0" data-hasfault="0">
+            <td><b>Customer C</b><div class="small">all healthy</div></td>
+            <td>Dealer North</td><td>31 dev · 8 pole</td><td>97%</td>
+            <td><span class="pill ok">none</span></td>
+            <td><span class="pill ok">0</span></td>
+            <td><span class="manage ghost" onclick="actAs('Customer C')">Manage ▸</span></td>
+          </tr>
+          <tr data-cust="Customer D" data-dealer="south" data-dev="12" data-online="90" data-exp="-1" data-faults="1" data-alert="1" data-hasfault="1">
+            <td><b>Customer D</b><div class="small">SIM expired</div></td>
+            <td>Dealer South</td><td>12 dev · 2 pole</td><td>90%</td>
+            <td><span class="pill bad">SIM expired</span></td>
+            <td><span class="pill bad">1</span></td>
+            <td><span class="manage ghost" onclick="actAs('Customer D')">Manage ▸</span></td>
+          </tr>
+          <tr data-cust="Customer E" data-dealer="south" data-dev="27" data-online="95" data-exp="9999" data-faults="0" data-alert="0" data-hasfault="0">
+            <td><b>Customer E</b><div class="small">all healthy</div></td>
+            <td>Dealer South</td><td>27 dev · 5 pole</td><td>95%</td>
+            <td><span class="pill ok">none</span></td>
+            <td><span class="pill ok">0</span></td>
+            <td><span class="manage ghost" onclick="actAs('Customer E')">Manage ▸</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- <div class="small" style="margin-top:8px">คลิกหัวคอลัมน์เพื่อ sort · ใช้ filter ด้านบน · กด <b>Manage ▸</b> เพื่อ acting-as ไปแท็บ Devices. Customer view จะไม่เห็นตารางนี้</div> -->
+  </div>
+  </div><!-- /pane-managed -->
+
+  <!-- PANE: Devices (drill-in ของลูกค้าที่ acting-as / หรือข้อมูลของ customer เอง) — default tab -->
+  <div id="pane-devices">
+  <!-- drill-in context: PO/Dealer = acting-as customer · Customer = own workspace -->
+  <div class="drill po-only">▸ กำลังจัดการ <b id="actName">Customer A</b> (acting-as) <span class="manage ghost" style="margin-left:auto" onclick="switchTab('managed')">↑ กลับภาพรวม</span></div>
+  <div class="drill cust-only" style="display:none">อุปกรณ์ของคุณ — Customer A workspace</div>
+
+  <!-- NOTIFICATIONS / แจ้งเตือน — เหมาะกับเมนูจัดการ device/pole (expiry, offline, fault) -->
+  <div class="alertbar">
+    <span class="small" style="font-weight:900">แจ้งเตือน:</span>
+    <span class="ab bad">SIM expired <b>1</b></span>
+    <span class="ab warn">SIM ≤30 วัน <b>1</b></span>
+    <span class="ab warn">Software ≤30 วัน <b>1</b></span>
+    <span class="ab dim">Offline <b>1</b></span>
+    <span class="ab bad">Fault / deficit <b>1</b></span>
+  </div>
+
+  <section class="grid grid12">
+    <div class="stat device span3"><div class="k">Device id</div><div class="v">24</div><div class="sub">telemetry · online 19</div></div>
+    <div class="stat group span3"><div class="k">Paired (meter+pole)</div><div class="v">2</div><div class="sub">device_id ของ meter + pole group</div></div>
+    <div class="stat pole span3"><div class="k">Pole id only</div><div class="v">3</div><div class="sub">placement/report ไม่มี telemetry</div></div>
+    <div class="stat bad span3"><div class="k">ยังไม่ placed (queue)</div><div class="v">4</div><div class="sub">รอจัดตำแหน่ง map/floor</div></div>
+  </section>
+
+  <!-- LOTS — CSV download template / import (อยู่ที่ระดับ customer · ต่อ lot ที่ platform owner ใส่มา) -->
+  <div class="panel" style="margin-top:12px">
+    <h2>Lots</h2>
+    <!-- <div class="flowline">
+      <span class="stp">1 · ⬇ Download template (Map / Floor)</span><span class="ar">→</span>
+      <span class="stp">2 · กรอกตำแหน่งในไฟล์</span><span class="ar">→</span>
+      <span class="stp">3 · ⬆ Import กลับมาที่ล็อตนี้</span>
+    </div> -->
+    <!-- <div class="small" style="margin:-2px 0 10px">⚠ ระบบ import/placement อยู่ที่ระดับ <b>customer เท่านั้น</b> — <span class="po-only">PO/Dealer ทำผ่าน <b>acting-as Customer A</b> (เรื่องเดียวกันกับ customer login เอง)</span><span class="cust-only" style="display:none">คุณกำลังจัดการล็อตของตัวเอง</span></div> -->
+    <div class="lots">
+      <!-- active -->
+      <div class="lot">
+        <div class="meta"><b>LOT-2026-01</b> · Package Pro <span class="pill ok">active</span><div class="small">24 device_id · 3 pole_id · placed 27/27 · software exp 2027-06-01 (เหลือ 350 วัน)</div></div>
+        <div class="acts">
+          <a class="dl ghost" href="mock_lot_detail.html?lot=LOT-2026-01" style="text-decoration:none">รายละเอียด · download/import ▸</a>
+        </div>
+      </div>
+      <!-- ใกล้หมดอายุ (≤30 วัน) -->
+      <div class="lot warn">
+        <div class="meta"><b>LOT-2026-02</b> · Package Lite <span class="pill warn">⚠ ใกล้หมดอายุ</span><div class="small">10 device_id · 0 pole_id · placed 4/10 · software exp <b>2026-07-04</b> · <b style="color:var(--warn)">เหลือ 18 วัน</b></div></div>
+        <div class="acts">
+          <a class="dl" href="mock_lot_detail.html?lot=LOT-2026-02" style="text-decoration:none;background:var(--warn);border-color:var(--warn)">⚠ id ที่จะหมดอายุ (3) ▸</a>
+          <span class="dl ghost" style="border-color:var(--warn);color:var(--warn)">ต่ออายุ</span>
+        </div>
+      </div>
+      <!-- หมดอายุแล้ว -->
+      <div class="lot bad">
+        <div class="meta"><b>LOT-2026-03</b> · Package Trial <span class="pill bad">🔴 หมดอายุแล้ว</span><div class="small">6 device_id · placed 0/6 · software exp <b>2026-03-01</b> · <b style="color:var(--bad)">หมดมาแล้ว 107 วัน</b></div></div>
+        <div class="acts">
+          <a class="dl" href="mock_lot_detail.html?lot=LOT-2026-03" style="text-decoration:none;background:var(--bad);border-color:var(--bad)">🔴 id ที่หมดอายุ (6) ▸</a>
+          <span class="dl" style="background:var(--bad);border-color:var(--bad)">ต่ออายุล็อต</span>
+          <span class="rmx" title="ปิดแจ้งเตือนล็อตหมดอายุ (ซ่อน · per-session ต่อ account · ยังต่ออายุได้)" onclick="dismissLotCard(event,this)">✕</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- <div class="rule"><b>Placement workflow:</b> 1) เลือก row (device_id / pole_id) → 2) เลือกพื้นผิว <b>Map</b> หรือ <b>Floor plan</b> → 3) Map = กรอก <code>lat/lng</code> (group zone optional) · Floor plan = <code>building, floor, zone, tag</code> → 4) drag marker ลงตำแหน่ง แล้ว Save. policy เดียว: <code>zone_required = (kind==pole) OR (placement==floor)</code> · <code>tag_required = (kind==pole)</code>.</div> -->
+
+  <section style="margin-top:12px">
+    <!-- Overview map — คลิก marker (หรือ placement ในตาราง) เพื่อเปิด popup แก้ตำแหน่ง -->
+    <div class="panel">
+      <h2>Placement map</h2>
+      <div class="mini" style="height:560px">
+        <!-- <div class="drag-hint">คลิก marker เพื่อเปิด popup แก้ตำแหน่ง</div> -->
+        <!-- lots ที่ยังไม่ placed แสดงบนแผนที่ — คลิกดู ids · import สำเร็จแล้วย้ายเข้าตาราง -->
+        <div class="lots-tray" id="lotsTray">
+          <h4>📦 Lots ยังไม่ placed <span class="pill warn" id="trayCount" style="margin-left:auto">2</span></h4>
+          <div class="lt" onclick="openLot('LOT-2026-02')"><b>LOT-2026-02</b> · 10 ids · <span class="pill warn">⚠ SW ≤30d</span></div>
+          <div class="lt" onclick="openLot('LOT-2026-03')"><span class="lt-x" title="นำล็อตหมดอายุออกจากแผนที่ (ซ่อน · ยังอยู่ในตาราง Lots)" onclick="dismissLot(event,this)">✕</span><b>LOT-2026-03</b> · 6 ids · <span class="pill bad">expired</span></div>
+          <!-- <div class="small" style="margin-top:6px">หายจากแผนที่เมื่อ: <b>import/วางครบ</b> (→ เข้าตาราง) · เฉพาะ<b>ล็อตหมดอายุ</b>กด <b>✕ นำออก</b>ได้ (ซ่อน · ยังอยู่ในตาราง Lots)</div> -->
+        </div>
+        <div class="zone" style="left:60%;top:48%;width:240px;height:150px"></div>
+        <div class="zone bad" style="left:14%;top:46%;width:200px;height:130px"></div>
+        <div class="mk" style="left:33%;top:50%" onclick="openPlace('LAMP-014','map')"><div class="dmk on"></div><div class="lab">LAMP-014</div></div>
+        <div class="mk" style="left:70%;top:56%" onclick="openPlace('METER-B','map')"><div class="pin fault"></div><div class="lab">METER-B + Zone B</div></div>
+        <div class="mk" style="left:82%;top:24%" onclick="openPlace('LAMP-099','map')"><div class="dmk fault"></div><div class="lab">LAMP-099 fault</div></div>
+        <div class="mk" style="left:24%;top:62%" onclick="openPlace('POLE-A-14','floor')"><div class="pin on"></div><div class="lab">POLE-A-14</div></div>
+        <div class="mk" style="left:62%;top:84%" onclick="openPlace('UNLINKED-07','map')"><div class="pin manual"></div><div class="lab">UNLINKED-07 draft</div></div>
+      </div>
+    </div>
+
+    <!-- inventory list (อยู่ใต้แผนที่) — สลับมุมมอง รายอุปกรณ์ ↔ รายล็อต -->
+    <div class="stabs" id="invTabs" style="margin-top:12px">
+      <span id="inv-devices" class="on" onclick="switchInv('devices')">📟 รายอุปกรณ์ · device/pole</span>
+      <span id="inv-lots" onclick="switchInv('lots')">📦 รายล็อต · lots</span>
+    </div>
+
+  <!-- VIEW: รายอุปกรณ์ (device / pole) -->
+  <div id="view-devices">
+    <!-- <div class="small">เลือก row หรือคลิก marker → popup แก้ตำแหน่ง · <b>คลิกหัวคอลัมน์เพื่อ sort</b> · ใช้ filter ด้านล่าง</div> -->
+    <div class="filters" id="devFilters">
+      <span class="filter on" data-f="all" onclick="filterDev('all')">ทั้งหมด</span>
+      <span class="filter" data-f="device" onclick="filterDev('device')">device_id</span>
+      <span class="filter" data-f="pole" onclick="filterDev('pole')">pole_id</span>
+      <span class="filter" data-f="paired" onclick="filterDev('paired')">paired</span>
+      <span class="filter" data-f="none" onclick="filterDev('none')">ยังไม่มี id</span>
+      <span class="filter" data-f="online" onclick="filterDev('online')">online</span>
+      <span class="filter" data-f="offline" onclick="filterDev('offline')">offline</span>
+      <span class="filter" data-f="alert" onclick="filterDev('alert')">⚠ มีแจ้งเตือน</span>
+    </div>
+    <div class="table-wrap" style="margin-top:6px">
+        <table id="devTable">
+          <colgroup><col style="width:14.28%"><col style="width:14.28%"><col style="width:14.28%"><col style="width:14.28%"><col style="width:14.28%"><col style="width:14.28%"><col style="width:14.32%"></colgroup>
+          <thead><tr>
+            <th data-key="type" onclick="sortDev('type')">Type <span class="arr"></span></th>
+            <th data-key="name" onclick="sortDev('name')">Identity <span class="arr"></span></th>
+            <th data-key="exp" onclick="sortDev('exp')">Lifecycle <span class="arr"></span></th>
+            <th data-key="connrank" onclick="sortDev('connrank')">Connectivity <span class="arr"></span></th>
+            <th>Control</th><th>Dim</th><th>Placement</th>
+          </tr></thead>
+          <tbody id="devTbody">
+            <!-- device_id · online · dimmable · ทุกอย่าง ok -->
+            <tr class="sel" data-type="device" data-name="LAMP-014" data-conn="online" data-connrank="0" data-alert="0" data-exp="180">
+              <td><span class="pill device">device_id</span></td>
+              <td><b>LAMP-014</b><div class="small">SIM 86054..014</div><div class="small">SN A14</div></td>
+              <td>
+                <div class="lc"><span class="lck">SIM</span><span class="pill ok">ok · 180d</span></div>
+                <div class="lc"><span class="lck">SW</span><span class="pill ok">ok</span></div>
+              </td>
+              <td>
+                <div class="conn"><span class="cdot on"></span> online <span class="small">· 2m</span></div>
+                <span class="pingbtn" onclick="event.stopPropagation()">⟳ Ping</span>
+              </td>
+              <td><span class="ctrl"><span class="act-on">ON</span><span>OFF</span></span></td>
+              <td><div class="dimrow"><input type="range" min="0" max="100" value="80"><span>80%</span></div></td>
+              <td class="placebtn" onclick="openPlace('LAMP-014','map')"><b>📍 Map</b><div class="small">Zone A · แก้</div></td>
+            </tr>
+            <!-- device_id · offline · SIM expired · software soon · non-dimmable -->
+            <tr class="hideable" data-type="device" data-name="LAMP-130" data-conn="offline" data-connrank="1" data-alert="1" data-exp="-1">
+              <td><span class="pill device">device_id</span></td>
+              <td><b>LAMP-130</b><div class="small">SIM 86054..130</div><div class="small">SN B30</div></td>
+              <td>
+                <div class="lc"><span class="lck">SIM</span><span class="pill bad">expired</span></div>
+                <div class="lc"><span class="lck">SW</span><span class="pill warn">≤30d · 21d</span></div>
+              </td>
+              <td>
+                <div class="conn"><span class="cdot off"></span> offline <span class="small">· 3d</span></div>
+                <span class="pingbtn" onclick="event.stopPropagation()">⟳ Ping</span>
+              </td>
+              <td><span class="ctrl"><span>ON</span><span class="act-off">OFF</span></span></td>
+              <td><span class="nctrl">ไม่รองรับ</span></td>
+              <td class="placebtn" onclick="openPlace('LAMP-130','map')"><span class="pill warn">➕ Add place</span></td>
+            </tr>
+            <!-- paired · group meter · SIM ≤30d -->
+            <tr style="background:var(--soft-group)" data-type="paired" data-name="METER-B" data-conn="online" data-connrank="0" data-alert="1" data-exp="20">
+              <td><span class="pill group">paired</span></td>
+              <td><b>METER-B</b><div class="small">meter device_id</div><div class="small">pole group: Zone B · 13 tag</div></td>
+              <td>
+                <div class="lc"><span class="lck">SIM</span><span class="pill warn">≤30d · 20d</span></div>
+                <div class="lc"><span class="lck">SW</span><span class="pill ok">ok</span></div>
+              </td>
+              <td>
+                <div class="conn"><span class="cdot on"></span> online <span class="small">· meter</span></div>
+                <span class="pingbtn" onclick="event.stopPropagation()">⟳ Ping</span>
+              </td>
+              <td><span class="nctrl">group meter</span></td>
+              <td><span class="nctrl">—</span></td>
+              <td class="placebtn" onclick="openPlace('METER-B','map')"><b>📍 Map · group</b><div class="small">Zone B · แก้</div></td>
+            </tr>
+            <!-- pole_id · no hardware → ไม่มี ping/control/dim -->
+            <tr data-type="pole" data-name="POLE-A-14" data-conn="na" data-connrank="2" data-alert="0" data-exp="9999">
+              <td><span class="pill pole">pole_id</span></td>
+              <td><b>POLE-A-14</b><div class="small">tag ในกลุ่ม</div><div class="small">ไม่มี hardware</div></td>
+              <td>
+                <div class="lc"><span class="lck">SIM</span><span class="nctrl">—</span></div>
+                <div class="lc"><span class="lck">SW</span><span class="pill ok">ok</span></div>
+              </td>
+              <td><span class="nctrl">—</span></td>
+              <td><span class="nctrl">—</span></td>
+              <td><span class="nctrl">—</span></td>
+              <td class="placebtn" onclick="openPlace('POLE-A-14','floor')"><b>🏢 Floor plan</b><div class="small">Bldg A / F2 / Zone East · แก้</div></td>
+            </tr>
+            <!-- no id queue -->
+            <tr class="hideable" data-type="none" data-name="UNLINKED-07" data-conn="na" data-connrank="2" data-alert="0" data-exp="9999">
+              <td><span class="pill dim">ยังไม่มี id</span></td>
+              <td><b>UNLINKED-07</b><div class="small">มีพิกัด</div><div class="small">ยังไม่ผูก id</div></td>
+              <td><span class="nctrl">—</span></td>
+              <td><span class="nctrl">—</span></td>
+              <td><span class="nctrl">—</span></td>
+              <td><span class="nctrl">—</span></td>
+              <td class="placebtn" onclick="openPlace('UNLINKED-07','map')"><span class="pill dim">➕ Add place</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  </div><!-- /view-devices -->
+
+  <!-- VIEW: รายล็อต (lots) — column ที่เกี่ยวกับล็อต · คลิกแถว → เปิดหน้า mock_lot_detail.html (เหมือนคลิก lot บนแผนที่) -->
+  <div id="view-lots" style="display:none">
+    <!-- <div class="small">คลิกแถวล็อต → เปิดหน้ารายละเอียด (id ในล็อต · download/import · ต่ออายุ) · <b>คลิกหัวคอลัมน์เพื่อ sort</b></div> -->
+    <div class="filters" id="lotFilters">
+      <span class="filter on" data-f="all" onclick="filterLot('all')">ทั้งหมด</span>
+      <span class="filter" data-f="active" onclick="filterLot('active')">active</span>
+      <span class="filter" data-f="warn" onclick="filterLot('warn')">⚠ ใกล้หมดอายุ</span>
+      <span class="filter" data-f="bad" onclick="filterLot('bad')">🔴 หมดอายุ</span>
+      <span class="filter" data-f="unplaced" onclick="filterLot('unplaced')">มี id ยังไม่ placed</span>
+    </div>
+    <div class="table-wrap" style="margin-top:6px">
+      <table id="lotTable" style="min-width:880px">
+        <thead><tr>
+          <th data-key="lot" onclick="sortLot('lot')">Lot · package <span class="arr"></span></th>
+          <th data-key="ids" onclick="sortLot('ids')">id ในล็อต <span class="arr"></span></th>
+          <th data-key="placed" onclick="sortLot('placed')">Placed <span class="arr"></span></th>
+          <th data-key="exp" onclick="sortLot('exp')">Software expiry <span class="arr"></span></th>
+          <th data-key="statusrank" onclick="sortLot('statusrank')">สถานะ <span class="arr"></span></th>
+          <th>Action</th>
+          <th style="width:42px"></th>
+        </tr></thead>
+        <tbody id="lotTbody">
+          <tr style="cursor:pointer" onclick="location.href='mock_lot_detail.html?lot=LOT-2026-01'" data-lot="LOT-2026-01" data-ids="27" data-placed="100" data-exp="350" data-statusrank="2" data-status="active" data-unplaced="0">
+            <td><b>LOT-2026-01</b><div class="small">Package Pro</div></td>
+            <td>24 device · 3 pole</td>
+            <td><span class="pill ok">27 / 27</span></td>
+            <td>2027-06-01<div class="small">เหลือ 350 วัน</div></td>
+            <td><span class="pill ok">active</span></td>
+            <td><span class="dl ghost">รายละเอียด ▸</span></td>
+          </tr>
+          <tr style="cursor:pointer" onclick="location.href='mock_lot_detail.html?lot=LOT-2026-02'" data-lot="LOT-2026-02" data-ids="10" data-placed="40" data-exp="18" data-statusrank="1" data-status="warn" data-unplaced="1">
+            <td><b>LOT-2026-02</b><div class="small">Package Lite</div></td>
+            <td>10 device · 0 pole</td>
+            <td><span class="pill warn">4 / 10</span></td>
+            <td>2026-07-04<div class="small" style="color:var(--warn);font-weight:800">เหลือ 18 วัน</div></td>
+            <td><span class="pill warn">⚠ ใกล้หมดอายุ</span></td>
+            <td><span class="dl" style="background:var(--warn);border-color:var(--warn)">id ที่จะหมด (3) ▸</span></td>
+          </tr>
+          <tr style="cursor:pointer" onclick="location.href='mock_lot_detail.html?lot=LOT-2026-03'" data-lot="LOT-2026-03" data-ids="6" data-placed="0" data-exp="-107" data-statusrank="0" data-status="bad" data-unplaced="1">
+            <td><b>LOT-2026-03</b><div class="small">Package Trial</div></td>
+            <td>6 device · 0 pole</td>
+            <td><span class="pill bad">0 / 6</span></td>
+            <td>2026-03-01<div class="small" style="color:var(--bad);font-weight:800">หมดมาแล้ว 107 วัน</div></td>
+            <td><span class="pill bad">🔴 หมดอายุแล้ว</span></td>
+            <td><span class="dl" style="background:var(--bad);border-color:var(--bad)">id ที่หมด (6) ▸</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- <div class="small" style="margin-top:8px">หมดอายุแล้วยัง <b>control สั่งได้</b> · data เห็นได้ถึงวันหมด · placement ใหม่ถูกบล็อกจนกว่าจะ <b>ต่ออายุ</b> · ปุ่ม <b>✕</b> ท้ายแถวล็อตหมดอายุ = ปิดแจ้งเตือน (ซ่อน <b>per-session ต่อ account</b> — ไม่ลบ ยังต่ออายุได้)</div> -->
+  </div><!-- /view-lots -->
+  </section>
+
+  <!-- LEGEND (device + pole รวมกัน: สีเดียวกันตามสถานะ, ต่างที่รูปทรง) -->
+  <section style="margin-top:12px">
+    <div class="panel">
+      <h2>Legend — สีตามสถานะ</h2>
+      <div class="legend" style="grid-template-columns:repeat(4,1fr)">
+        <div class="lg"><span class="lgmk on"></span><span class="lgpin on"></span><div><b>Online / Lamp ON</b></div></div>
+        <div class="lg"><span class="lgmk off"></span><span class="lgpin off"></span><div><b>Online / Lamp OFF</b></div></div>
+        <div class="lg"><span class="lgmk fault"></span><span class="lgpin fault"></span><div><b>Online / Fault · deficit</b></div></div>
+        <div class="lg"><span class="lgmk disabled"></span><span class="lgpin disabled"></span><div><b>Online / Disabled</b></div></div>
+        <div class="lg"><span class="lgmk maint"></span><span class="lgpin maint"></span><div><b>Maintenance</b></div></div>
+        <div class="lg"><span class="lgmk offline"></span><span class="lgpin offline"></span><div><b>Offline / Unreachable</b></div></div>
+        <div class="lg"><span class="lgpin manual"></span><div><b>Manual / unlinked <span class="small">(pole only)</span></b></div></div>
+      </div>
+    </div>
+  </section>
+  </div><!-- /pane-devices -->
+
+<!-- <footer class="small" style="margin-top:18px;border-top:1px solid var(--line);padding-top:10px">Mock · <code>docs/mock_device_list.html</code> · source: <code>device_flow.html</code>, <code>device_logic.html</code>, <code>device_menu.html</code>, <code>device_id_value.html</code> · marker colors จาก <code>device_status_service.py</code></footer> -->
+
+  <!-- ===== LOT DETAIL MODAL — คลิก lot บนแผนที่ → โชว์ ids ในล็อต + expiry + download/import ===== -->
+  <div class="modal-bg" id="lotModal">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="pill device" id="lotPkg">Package Lite</span>
+        <h3 id="lotName">LOT-2026-02</h3>
+        <span class="x" onclick="closeLot()">✕</span>
+      </div>
+      <div class="modal-body">
+        <div class="alertbar" style="margin-bottom:10px"><span class="ab warn">⚠ ใกล้หมดอายุ · exp 2026-07-04 · เหลือ 18 วัน</span><span class="ab dim">10 ids · placed 4 / unplaced 6</span></div>
+        <!-- <div class="small">id ที่ platform owner ใส่ในล็อตนี้ — <b>unplaced</b> = รอ import ตำแหน่ง · <b>placed</b> = ย้ายเข้าตารางจัดการแล้ว</div> -->
+        <div class="table-wrap" style="margin-top:8px"><table style="min-width:460px">
+          <thead><tr><th>id</th><th>type</th><th>placement</th></tr></thead>
+          <tbody>
+            <tr><td>LAMP-201</td><td>device_id</td><td><span class="pill ok">placed · Map</span></td></tr>
+            <tr><td>LAMP-202</td><td>device_id</td><td><span class="pill ok">placed · Map</span></td></tr>
+            <tr><td>LAMP-203</td><td>device_id</td><td><span class="pill warn">ยังไม่ placed</span></td></tr>
+            <tr><td>LAMP-204</td><td>device_id</td><td><span class="pill warn">ยังไม่ placed</span></td></tr>
+            <tr><td>POLE-Z-01</td><td>pole_id</td><td><span class="pill warn">ยังไม่ placed (req zone+tag)</span></td></tr>
+            <tr><td class="small" colspan="3">… อีก 5 ids</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="modal-foot">
+        <a class="dl ghost" href="mock_lot_detail.html?lot=LOT-2026-02" style="text-decoration:none">เปิดหน้ารายละเอียด (download / import) ▸</a>
+        <span class="dl" style="background:var(--warn);border-color:var(--warn)">ต่ออายุ</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CSV MODAL — download template (Map/Floor) / import — ต่อ lot (customer-level) ===== -->
+  <div class="modal-bg" id="csvModal">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="pill device" id="csvMode">Download template</span>
+        <h3 id="csvLot">LOT-2026-01</h3>
+        <span class="x" onclick="closeCsv()">✕</span>
+      </div>
+      <div class="modal-body">
+        <!-- surface choice (download เท่านั้น) -->
+        <div id="csv-surface">
+          <div class="stabs"><span id="csv-map" class="on" onclick="csvSurface('map')">🗺 Map template</span><span id="csv-floor" onclick="csvSurface('floor')">🏢 Floor plan template</span></div>
+        </div>
+
+        <!-- DOWNLOAD mode -->
+        <div id="csv-download">
+          <!-- <div class="small">เทมเพลตมี <b>id ที่ platform owner ใส่ในล็อตนี้</b> เติมมาให้แล้ว — กรอกเฉพาะคอลัมน์ตำแหน่ง แล้วนำกลับมา import ที่ล็อตเดิม</div> -->
+          <div class="codeblk" id="csvCols">id_type,id,latitude,longitude,zone,tag</div>
+          <div class="table-wrap" style="margin-top:8px"><table style="min-width:560px">
+            <thead><tr><th>id_type</th><th>id</th><th class="col-map">latitude</th><th class="col-map">longitude</th><th class="col-floor">building</th><th class="col-floor">floor</th><th>zone</th><th>tag</th><th class="col-floor">x,y</th></tr></thead>
+            <tbody>
+              <tr><td>device_id</td><td>LAMP-014</td><td class="col-map nctrl">‹กรอก›</td><td class="col-map nctrl">‹กรอก›</td><td class="col-floor nctrl">‹กรอก›</td><td class="col-floor nctrl">‹กรอก›</td><td class="nctrl">opt</td><td class="nctrl">opt</td><td class="col-floor nctrl">‹กรอก›</td></tr>
+              <tr><td>device_id</td><td>LAMP-130</td><td class="col-map nctrl">‹กรอก›</td><td class="col-map nctrl">‹กรอก›</td><td class="col-floor nctrl">‹กรอก›</td><td class="col-floor nctrl">‹กรอก›</td><td class="nctrl">opt</td><td class="nctrl">opt</td><td class="col-floor nctrl">‹กรอก›</td></tr>
+              <tr><td>pole_id</td><td>POLE-A-14</td><td class="col-map nctrl">‹กรอก›</td><td class="col-map nctrl">‹กรอก›</td><td class="col-floor nctrl">‹กรอก›</td><td class="col-floor nctrl">‹กรอก›</td><td class="req must" style="display:inline-block">req</td><td class="req must" style="display:inline-block">req</td><td class="col-floor nctrl">‹กรอก›</td></tr>
+            </tbody>
+          </table></div>
+          <!-- <div class="small" style="margin-top:6px">pole_id บังคับ zone+tag · floor plan บังคับ building/floor/zone/tag (+x,y)</div> -->
+        </div>
+
+        <!-- IMPORT mode -->
+        <div id="csv-import" style="display:none">
+          <div class="drop" onclick="fakeUpload()">⬆ ลาก/เลือกไฟล์ <b>.csv</b> ที่กรอกแล้ว (คลิกเพื่อจำลองการอัปโหลด)</div>
+          <div id="csvParsed" style="display:none">
+            <!-- <div class="small" style="margin-top:10px">อ่านไฟล์ <b>LOT-2026-01_placement.csv</b> — ตรวจ valid ก่อน apply:</div> -->
+            <div class="table-wrap" style="margin-top:8px"><table style="min-width:520px">
+              <thead><tr><th>id</th><th>surface</th><th>placement</th><th>status</th></tr></thead>
+              <tbody>
+                <tr><td>LAMP-014</td><td>Map</td><td>13.7563, 100.5018</td><td><span class="pill ok">ok</span></td></tr>
+                <tr><td>POLE-A-14</td><td>Floor</td><td>Bldg A / F2 / Zone East / A-14</td><td><span class="pill ok">ok</span></td></tr>
+                <tr><td>LAMP-099</td><td>Map</td><td>13.7570, 100.5031</td><td><span class="pill ok">ok</span></td></tr>
+                <tr><td>LAMP-130</td><td>Map</td><td>— (ไม่มี lat/lng)</td><td><span class="pill bad">error: ต้องมี lat/lng</span></td></tr>
+                <tr><td>POLE-Z-99</td><td>Floor</td><td>Bldg A / F2 / — / —</td><td><span class="pill bad">error: pole ต้องมี zone+tag</span></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot" id="csv-foot-download">
+        <span class="btn" onclick="closeCsv()">ปิด</span>
+        <span class="btn primary" onclick="closeCsv()">⬇ Download .csv</span>
+      </div>
+      <div class="modal-foot" id="csv-foot-import" style="display:none">
+        <span class="btn" onclick="closeCsv()">ยกเลิก</span>
+        <span class="btn primary" onclick="closeCsv()">✓ Apply import (3 ok · ข้าม 2 error)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PLACEMENT MODAL — reusable component (Map / Floor plan) เปิดจากช่อง placement หรือ marker ===== -->
+  <div class="modal-bg" id="placeModal">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="pill device" id="placeKind">device_id</span>
+        <h3 id="placeTitle">LAMP-014</h3>
+        <span class="x" onclick="closePlace()">✕</span>
+      </div>
+      <div class="modal-body">
+        <div class="stabs">
+          <span id="tab-map" class="on" onclick="surface('map')">🗺 Map</span>
+          <span id="tab-floor" onclick="surface('floor')">🏢 Floor plan</span>
+        </div>
+
+        <!-- MAP mode (ทำเต็ม) -->
+        <div id="pane-map" class="place-grid">
+          <div class="mini" style="height:360px">
+            <!-- <div class="drag-hint">↔ ลาก marker เพื่อปักตำแหน่ง</div> -->
+            <div class="zone" style="left:14%;top:16%;width:200px;height:120px"></div>
+            <div class="mk dragging" style="left:46%;top:54%"><div class="dmk on dragging"></div><div class="lab">วางที่นี่</div></div>
+          </div>
+          <div>
+            <div class="field"><label>Latitude</label><div class="val">13.7563</div></div>
+            <div class="field" style="margin-top:8px"><label>Longitude</label><div class="val">100.5018</div></div>
+            <div class="field" style="margin-top:8px"><label>Zone <span class="req opt">opt</span></label><div class="val">Zone A</div></div>
+            <div class="field" style="margin-top:8px"><label>Tag <span class="req opt">opt</span></label><div class="val">—</div></div>
+            <!-- <div class="small" style="margin-top:8px">pole_id: zone+tag = required แม้บน Map</div> -->
+          </div>
+        </div>
+
+        <!-- FLOOR PLAN mode (วางโครงไว้ก่อน — vis ละเอียดทีหลัง) -->
+        <div id="pane-floor" class="place-grid" style="display:none">
+          <div class="floor-stage">
+            <!-- <div class="drag-hint">floor-plan: อัปโหลดผังอาคาร แล้ววางหมุด x,y — ทำละเอียดทีหลัง</div> -->
+            <div class="room" style="left:6%;top:14%;width:40%;height:62%">Building A · Floor 2 · Zone East</div>
+            <div class="room" style="left:54%;top:14%;width:40%;height:62%">Zone West</div>
+            <div class="mk" style="left:24%;top:46%"><div class="pin on"></div><div class="lab">drop ที่นี่</div></div>
+          </div>
+          <div>
+            <div class="field"><label>Building name <span class="req must">must</span></label><div class="val">Building A</div></div>
+            <div class="field" style="margin-top:8px"><label>Floor <span class="req must">must</span></label><div class="val">F2</div></div>
+            <div class="field" style="margin-top:8px"><label>Zone <span class="req must">must</span></label><div class="val">Zone East</div></div>
+            <div class="field" style="margin-top:8px"><label>Tag <span class="req must">must</span></label><div class="val">A-14</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <span class="btn" onclick="closePlace()">Cancel</span>
+        <span class="btn primary" onclick="closePlace()">Save placement</span>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+function surface(w){var map=(w!=='floor');
+  document.getElementById('tab-map').classList.toggle('on',map);
+  document.getElementById('tab-floor').classList.toggle('on',!map);
+  document.getElementById('pane-map').style.display=map?'grid':'none';
+  document.getElementById('pane-floor').style.display=map?'none':'grid';}
+function openPlace(id,surf){if(id)document.getElementById('placeTitle').textContent=id;surface(surf||'map');document.getElementById('placeModal').classList.add('open');}
+function closePlace(){document.getElementById('placeModal').classList.remove('open');}
+document.getElementById('placeModal').addEventListener('click',function(e){if(e.target===this)closePlace();});
+/* CSV download-template / import flow (per lot, customer-level) */
+function openCsv(lot,mode){document.getElementById('csvLot').textContent=lot;setCsvMode(mode);document.getElementById('csvModal').classList.add('open');}
+function setCsvMode(mode){
+  var dl=(mode!=='import');
+  document.getElementById('csvMode').textContent=dl?'Download template':'Import placement CSV';
+  document.getElementById('csv-surface').style.display=dl?'':'none';
+  document.getElementById('csv-download').style.display=dl?'':'none';
+  document.getElementById('csv-import').style.display=dl?'none':'';
+  document.getElementById('csv-foot-download').style.display=dl?'flex':'none';
+  document.getElementById('csv-foot-import').style.display=dl?'none':'flex';
+  document.getElementById('csvParsed').style.display='none';
+  if(dl)csvSurface('map');
+}
+function csvSurface(w){
+  var map=(w!=='floor');
+  document.getElementById('csv-map').classList.toggle('on',map);
+  document.getElementById('csv-floor').classList.toggle('on',!map);
+  document.getElementById('csvCols').textContent=map?'id_type,id,latitude,longitude,zone,tag':'id_type,id,building,floor,zone,tag,x,y';
+  document.querySelectorAll('.col-map').forEach(function(e){e.style.display=map?'':'none';});
+  document.querySelectorAll('.col-floor').forEach(function(e){e.style.display=map?'none':'';});
+}
+function fakeUpload(){document.getElementById('csvParsed').style.display='';}
+function closeCsv(){document.getElementById('csvModal').classList.remove('open');}
+document.getElementById('csvModal').addEventListener('click',function(e){if(e.target===this)closeCsv();});
+/* นำ lot ออกจากแผนที่ (dismiss overlay เท่านั้น — ไม่ลบล็อต ยังอยู่ในตาราง Lots) */
+function dismissLot(ev,x){
+  ev.stopPropagation();
+  var card=x.closest('.lt');if(card)card.parentNode.removeChild(card);
+  var tray=document.getElementById('lotsTray');
+  var left=tray.querySelectorAll('.lt').length;
+  var c=document.getElementById('trayCount');if(c)c.textContent=left;
+  if(left===0)tray.style.display='none';
+}
+/* นำล็อตหมดอายุออกจากตาราง (ซ่อนแถว — ไม่ลบ ยังต่ออายุได้) */
+function removeLotRow(ev,btn){ev.stopPropagation();var tr=btn.closest('tr');if(tr)tr.parentNode.removeChild(tr);}
+/* ปิดแจ้งเตือนการ์ดล็อตหมดอายุใน Lots panel (ซ่อนการ์ด — ไม่ลบ ยังต่ออายุได้) */
+function dismissLotCard(ev,btn){ev.stopPropagation();var c=btn.closest('.lot');if(c)c.parentNode.removeChild(c);}
+/* lot detail (คลิก lot บนแผนที่ → ดู ids) */
+function openLot(name){document.getElementById('lotName').textContent=name;document.getElementById('lotModal').classList.add('open');}
+function closeLot(){document.getElementById('lotModal').classList.remove('open');}
+document.getElementById('lotModal').addEventListener('click',function(e){if(e.target===this)closeLot();});
+/* role view + PO/Dealer tabs (Managed customers ↔ Devices) */
+var curRole='po', curTab='devices';
+function setRole(r){curRole=r;render();}
+function switchTab(t){curTab=t;render();}
+function actAs(name){var n=document.getElementById('actName');if(n)n.textContent=name;switchTab('devices');}
+/* device table — filter + sort */
+function filterDev(key){
+  var tb=document.getElementById('devTbody');
+  [].slice.call(tb.children).forEach(function(r){
+    var show;
+    if(key==='all')show=true;
+    else if(key==='online'||key==='offline')show=r.getAttribute('data-conn')===key;
+    else if(key==='alert')show=r.getAttribute('data-alert')==='1';
+    else show=r.getAttribute('data-type')===key;
+    r.style.display=show?'':'none';
+  });
+  document.querySelectorAll('#devFilters .filter').forEach(function(c){c.classList.toggle('on',c.getAttribute('data-f')===key);});
+}
+var sortKey=null,sortDir=1;
+function sortDev(key){
+  if(sortKey===key)sortDir*=-1;else{sortKey=key;sortDir=1;}
+  var tb=document.getElementById('devTbody');
+  var rows=[].slice.call(tb.children);
+  rows.sort(function(a,b){
+    var av=a.getAttribute('data-'+key),bv=b.getAttribute('data-'+key);
+    var an=parseFloat(av),bn=parseFloat(bv),cmp;
+    if(!isNaN(an)&&!isNaN(bn))cmp=an-bn;else cmp=(av||'').localeCompare(bv||'');
+    return cmp*sortDir;
+  });
+  rows.forEach(function(r){tb.appendChild(r);});
+  document.querySelectorAll('#devTable th[data-key] .arr').forEach(function(s){
+    s.textContent=s.parentNode.getAttribute('data-key')===key?(sortDir>0?'▲':'▼'):'';
+  });
+}
+/* inventory view toggle — รายอุปกรณ์ ↔ รายล็อต */
+function switchInv(v){
+  var dev=(v!=='lots');
+  document.getElementById('inv-devices').classList.toggle('on',dev);
+  document.getElementById('inv-lots').classList.toggle('on',!dev);
+  document.getElementById('view-devices').style.display=dev?'':'none';
+  document.getElementById('view-lots').style.display=dev?'none':'';
+}
+/* lots table — filter + sort */
+function filterLot(key){
+  var tb=document.getElementById('lotTbody');
+  [].slice.call(tb.children).forEach(function(r){
+    var show;
+    if(key==='all')show=true;
+    else if(key==='unplaced')show=r.getAttribute('data-unplaced')==='1';
+    else show=r.getAttribute('data-status')===key;
+    r.style.display=show?'':'none';
+  });
+  document.querySelectorAll('#lotFilters .filter').forEach(function(c){c.classList.toggle('on',c.getAttribute('data-f')===key);});
+}
+var sortKeyL=null,sortDirL=1;
+function sortLot(key){
+  if(sortKeyL===key)sortDirL*=-1;else{sortKeyL=key;sortDirL=1;}
+  var tb=document.getElementById('lotTbody');
+  var rows=[].slice.call(tb.children);
+  rows.sort(function(a,b){
+    var av=a.getAttribute('data-'+key),bv=b.getAttribute('data-'+key);
+    var an=parseFloat(av),bn=parseFloat(bv),cmp;
+    if(!isNaN(an)&&!isNaN(bn))cmp=an-bn;else cmp=(av||'').localeCompare(bv||'');
+    return cmp*sortDirL;
+  });
+  rows.forEach(function(r){tb.appendChild(r);});
+  document.querySelectorAll('#lotTable th[data-key] .arr').forEach(function(s){
+    s.textContent=s.parentNode.getAttribute('data-key')===key?(sortDirL>0?'▲':'▼'):'';
+  });
+}
+/* managed-customers table — filter + sort */
+function filterMng(key){
+  var tb=document.getElementById('mngTbody');
+  [].slice.call(tb.children).forEach(function(r){
+    var show;
+    if(key==='all')show=true;
+    else if(key==='north'||key==='south')show=r.getAttribute('data-dealer')===key;
+    else if(key==='alert')show=r.getAttribute('data-alert')==='1';
+    else if(key==='fault')show=r.getAttribute('data-hasfault')==='1';
+    r.style.display=show?'':'none';
+  });
+  document.querySelectorAll('#mngFilters .filter').forEach(function(c){c.classList.toggle('on',c.getAttribute('data-f')===key);});
+}
+var sortKeyM=null,sortDirM=1;
+function sortMng(key){
+  if(sortKeyM===key)sortDirM*=-1;else{sortKeyM=key;sortDirM=1;}
+  var tb=document.getElementById('mngTbody');
+  var rows=[].slice.call(tb.children);
+  rows.sort(function(a,b){
+    var av=a.getAttribute('data-'+key),bv=b.getAttribute('data-'+key);
+    var an=parseFloat(av),bn=parseFloat(bv),cmp;
+    if(!isNaN(an)&&!isNaN(bn))cmp=an-bn;else cmp=(av||'').localeCompare(bv||'');
+    return cmp*sortDirM;
+  });
+  rows.forEach(function(r){tb.appendChild(r);});
+  document.querySelectorAll('#mngTable th[data-key] .arr').forEach(function(s){
+    s.textContent=s.parentNode.getAttribute('data-key')===key?(sortDirM>0?'▲':'▼'):'';
+  });
+}
+function render(){
+  ['po','dealer','customer'].forEach(function(x){var b=document.getElementById('role-'+x);if(b)b.classList.toggle('on',x===curRole);});
+  var cust=(curRole==='customer');
+  document.querySelectorAll('.po-only').forEach(function(el){el.style.display=cust?'none':'';});
+  document.querySelectorAll('.cust-only').forEach(function(el){el.style.display=cust?'':'none';});
+  document.getElementById('pane-managed').style.display=(!cust&&curTab==='managed')?'':'none';
+  document.getElementById('pane-devices').style.display=(cust||curTab==='devices')?'':'none';
+  var tm=document.getElementById('tab-managed'),td=document.getElementById('tab-devices');
+  if(tm)tm.classList.toggle('on',curTab==='managed');if(td)td.classList.toggle('on',curTab==='devices');
+}
+render();
+</script>
+</body>
+</html>

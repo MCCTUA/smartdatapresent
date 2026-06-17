@@ -1,0 +1,66 @@
+<svg viewBox="0 0 1180 460" xmlns="http://www.w3.org/2000/svg" font-family="'Sarabun','Tahoma',sans-serif" role="img" aria-labelledby="t6 d6">
+  <title id="t6">Workflow รวมทั้งระบบ — จากการแจ้งเหตุสู่การปิดเหตุ</title>
+  <desc id="d6">ช่องทางรับแจ้งหลายทางไหลเข้าศูนย์ข้อมูลกลาง ผ่านการคัดกรอง 3 รูปแบบ ส่งต่อหน่วยรับผิดชอบ แล้วแจ้งเตือนและอัปเดตสถานะ</desc>
+  <defs>
+    <marker id="a6" markerWidth="11" markerHeight="11" refX="8" refY="3.2" orient="auto"><path d="M0,0 L8,3.2 L0,6.4 Z" fill="#0F6E56"/></marker>
+  </defs>
+  <rect width="1180" height="460" fill="#FAF7EE"/>
+  <text x="40" y="44" font-size="23" font-weight="700" fill="#0B5544">ภาพรวมการทำงานทั้งระบบ</text>
+  <text x="40" y="68" font-size="13.5" fill="#5F6B65">ช่องทางรับแจ้ง → ศูนย์ข้อมูลกลาง → คัดกรอง → หน่วยรับผิดชอบ → แจ้งเตือน + อัปเดตสถานะ</text>
+
+  <!-- column headers row baseline y -->
+  <!-- 1. ช่องทางรับแจ้ง -->
+  <g>
+    <text x="120" y="104" font-size="13.5" font-weight="700" fill="#0B5544" text-anchor="middle">ช่องทางรับแจ้ง</text>
+    <rect x="40" y="118" width="160" height="44" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/><text x="120" y="145" font-size="13" fill="#1F2A24" text-anchor="middle">LINE OA</text>
+    <rect x="40" y="170" width="160" height="44" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/><text x="120" y="197" font-size="13" fill="#1F2A24" text-anchor="middle">เว็บ / Mobile App</text>
+    <rect x="40" y="222" width="160" height="44" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/><text x="120" y="249" font-size="13" fill="#1F2A24" text-anchor="middle">Call Center</text>
+    <rect x="40" y="274" width="160" height="44" rx="9" fill="#EAF3DE" stroke="#639922" stroke-width="1.4"/><text x="120" y="301" font-size="13" fill="#3d6b12" text-anchor="middle">Sensor + กล้อง AI</text>
+  </g>
+  <!-- arrows to hub -->
+  <path d="M200,140 C240,150 250,210 288,212" fill="none" stroke="#0F6E56" stroke-width="1.6" marker-end="url(#a6)"/>
+  <path d="M200,192 C245,200 250,212 288,218" fill="none" stroke="#0F6E56" stroke-width="1.6" marker-end="url(#a6)"/>
+  <path d="M200,244 C245,238 250,224 288,224" fill="none" stroke="#0F6E56" stroke-width="1.6" marker-end="url(#a6)"/>
+  <path d="M200,296 C245,280 250,236 288,230" fill="none" stroke="#639922" stroke-width="1.6" marker-end="url(#a6)"/>
+
+  <!-- 2. ศูนย์ข้อมูลกลาง -->
+  <rect x="292" y="170" width="170" height="100" rx="12" fill="#0F6E56"/>
+  <text x="377" y="206" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">ศูนย์ข้อมูลกลาง</text>
+  <text x="377" y="230" font-size="11.5" fill="#EAF3DE" text-anchor="middle">รวมเป็นข้อมูลชุดเดียว</text>
+  <text x="377" y="248" font-size="11.5" fill="#EAF3DE" text-anchor="middle">เห็นพร้อมกันทุกฝ่าย</text>
+  <path d="M462,220 L508,220" fill="none" stroke="#0F6E56" stroke-width="1.8" marker-end="url(#a6)"/>
+
+  <!-- 3. คัดกรอง -->
+  <rect x="512" y="170" width="150" height="100" rx="12" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.6"/>
+  <text x="587" y="208" font-size="14" font-weight="700" fill="#BA7517" text-anchor="middle">คัดกรอง</text>
+  <text x="587" y="230" font-size="12" fill="#1F2A24" text-anchor="middle">3 รูปแบบ</text>
+  <text x="587" y="248" font-size="10.5" fill="#5F6B65" text-anchor="middle">เลือกต่อประเภทเหตุ</text>
+  <path d="M662,220 L708,220" fill="none" stroke="#0F6E56" stroke-width="1.8" marker-end="url(#a6)"/>
+
+  <!-- 4. หน่วยรับผิดชอบ -->
+  <g>
+    <text x="792" y="104" font-size="13.5" font-weight="700" fill="#0B5544" text-anchor="middle">หน่วยรับผิดชอบ</text>
+    <rect x="712" y="118" width="160" height="40" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/><text x="792" y="143" font-size="12.5" fill="#1F2A24" text-anchor="middle">ปภ. (ป้องกันฯ)</text>
+    <rect x="712" y="166" width="160" height="40" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/><text x="792" y="191" font-size="12.5" fill="#1F2A24" text-anchor="middle">กองช่าง</text>
+    <rect x="712" y="214" width="160" height="40" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/><text x="792" y="239" font-size="12.5" fill="#1F2A24" text-anchor="middle">สาธารณสุข · กู้ชีพ</text>
+    <rect x="712" y="262" width="160" height="40" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/><text x="792" y="287" font-size="12.5" fill="#1F2A24" text-anchor="middle">ผู้บริหาร (นายก/ปลัด)</text>
+  </g>
+  <path d="M872,210 C905,200 905,200 938,200" fill="none" stroke="#0F6E56" stroke-width="1.6" marker-end="url(#a6)"/>
+
+  <!-- 5. แจ้งเตือน -->
+  <g>
+    <text x="1062" y="104" font-size="13.5" font-weight="700" fill="#0B5544" text-anchor="middle">แจ้งเตือน + อัปเดต</text>
+    <rect x="942" y="118" width="200" height="44" rx="9" fill="#EAF3DE" stroke="#639922" stroke-width="1.4"/><text x="1042" y="145" font-size="12.5" fill="#3d6b12" text-anchor="middle">Mass Notify หลายช่องทาง</text>
+    <rect x="942" y="170" width="200" height="44" rx="9" fill="#EAF3DE" stroke="#639922" stroke-width="1.4"/><text x="1042" y="197" font-size="12.5" fill="#3d6b12" text-anchor="middle">Geo-fencing เฉพาะพื้นที่</text>
+    <rect x="942" y="222" width="200" height="44" rx="9" fill="#EAF3DE" stroke="#639922" stroke-width="1.4"/><text x="1042" y="249" font-size="12.5" fill="#3d6b12" text-anchor="middle">สถานะ real-time</text>
+  </g>
+
+  <!-- status flow strip -->
+  <rect x="40" y="354" width="1100" height="58" rx="10" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/>
+  <text x="60" y="378" font-size="12.5" font-weight="700" fill="#0B5544">อัปเดตสถานะให้ทุกฝ่ายเห็นตรงกันบนแผนที่ GIS:</text>
+  <text x="60" y="400" font-size="13" fill="#1F2A24">รับเรื่อง  →  กำลังดำเนินการ  →  แก้ไขแล้ว  →  ปิดเหตุ + สรุปรายงานอัตโนมัติ (มีหลักฐานครบ)</text>
+
+  <!-- footer -->
+  <rect x="40" y="430" width="6" height="20" fill="#0F6E56"/>
+  <text x="56" y="445" font-size="11.5" font-weight="700" fill="#0B5544">Smart Center Solution Platform — ภาพรวมการทำงานทั้งระบบ</text>
+</svg>

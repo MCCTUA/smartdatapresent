@@ -29,7 +29,7 @@ const C = {
 };
 
 const IMG = 'images/solar';
-const TOTAL_SLIDES = 16;
+const TOTAL_SLIDES = 17;
 
 // ---------------------------------------------------------------------------
 // Slide shell — fixed 1280×720
@@ -529,7 +529,7 @@ function Slide05() {
   const products = [
     {
       img: `${IMG}/product_sa2a01.webp`,
-      badge: 'RSK · ALL-IN-ONE',
+      badge: 'ALL-IN-ONE',
       badgeBg: C.primary,
       title: 'SA-2A01',
       model: '60-120W · 6,000-15,000 LM',
@@ -538,7 +538,7 @@ function Slide05() {
     },
     {
       img: `${IMG}/product_sa2a02.webp`,
-      badge: 'RSA · ALL-IN-ONE',
+      badge: 'ALL-IN-ONE',
       badgeBg: '#B45309',
       title: 'SA-2A02',
       model: '40-160W · 4,000-18,000 LM',
@@ -547,7 +547,7 @@ function Slide05() {
     },
     {
       img: `${IMG}/product_sk7a13.webp`,
-      badge: 'YY · SPLIT TYPE',
+      badge: 'SPLIT TYPE',
       badgeBg: C.primaryDeep,
       title: 'SK-7A13',
       model: '60-85W · 3,400-4,800 LM',
@@ -556,7 +556,7 @@ function Slide05() {
     },
     {
       img: `${IMG}/product_sk7a14.webp`,
-      badge: 'SAILING DESIGN',
+      badge: 'INTEGRATED',
       badgeBg: C.accent,
       title: 'SK-7A14',
       model: '60-100W · 4,100-9,000 LM',
@@ -624,7 +624,7 @@ function Slide06() {
     <ProductDetailSlide
       num={6}
       img={`${IMG}/product_sa2a01.webp`}
-      badge="รุ่นที่ 1 · RSK Series · All-in-One"
+      badge="รุ่นที่ 1 · All-in-One"
       badgeBg={C.primary}
       title="SA-2A01"
       model="60W-120W"
@@ -650,7 +650,7 @@ function Slide07() {
     <ProductDetailSlide
       num={7}
       img={`${IMG}/product_sa2a02.webp`}
-      badge="รุ่นที่ 2 · RSA Series · All-in-One"
+      badge="รุ่นที่ 2 · All-in-One"
       badgeBg="#B45309"
       title="SA-2A02"
       model="40W-160W"
@@ -676,7 +676,7 @@ function Slide08() {
     <ProductDetailSlide
       num={8}
       img={`${IMG}/product_sk7a13.webp`}
-      badge="รุ่นที่ 3 · YY Series · Split Type"
+      badge="รุ่นที่ 3 · Split Type"
       badgeBg={C.primaryDeep}
       title="SK-7A13"
       model="60W-85W"
@@ -702,7 +702,7 @@ function Slide09() {
     <ProductDetailSlide
       num={9}
       img={`${IMG}/product_sk7a14.webp`}
-      badge="รุ่นที่ 4 · Sailing Design · Integrated"
+      badge="รุ่นที่ 4 · Integrated"
       badgeBg={C.accent}
       title="SK-7A14"
       model="60W-100W"
@@ -734,10 +734,10 @@ function Slide10() {
     { f: 'มาตรฐาน อบต.', a: '✓ ผ่าน', b: '✓ ผ่าน', c: '✓ ผ่าน', d: '✓ ผ่าน' },
   ];
   const headers = [
-    { sub: 'RSK Series', name: 'SA-2A01', bg: C.primary },
-    { sub: 'RSA Series', name: 'SA-2A02', bg: '#B45309' },
-    { sub: 'YY Series', name: 'SK-7A13', bg: C.primaryDeep },
-    { sub: 'Sailing Light', name: 'SK-7A14', bg: C.accent },
+    { sub: 'All in One', name: 'SA-2A01', bg: C.primary },
+    { sub: 'All in One', name: 'SA-2A02', bg: '#B45309' },
+    { sub: 'Split Type', name: 'SK-7A13', bg: C.primaryDeep },
+    { sub: 'Integrated', name: 'SK-7A14', bg: C.accent },
   ];
   return (
     <Slide num={10} dark>
@@ -838,7 +838,63 @@ function Slide12() {
 }
 
 // ---------------------------------------------------------------------------
-// SLIDE 13 — Why us (dark)
+// SLIDE 13 — Lighting design / DIALux calculation (we calculate to standard)
+// Links to the full plain-language report page (/#/solar-street-light/report)
+// ---------------------------------------------------------------------------
+
+function SlideReport() {
+  const results = [
+    { ic: '✓', t: 'ผ่านทุกเกณฑ์', d: 'ความสว่าง · จุดมืดสุด · ความสม่ำเสมอ — ผ่านครบตาม มอก. 2954–2562', col: C.success },
+    { ic: '☀️', t: 'สว่างเผื่อให้', d: 'ออกแบบช่วงหัวค่ำให้สว่างเกินเกณฑ์ขั้นต่ำของถนนประเภทนั้น', col: C.primary },
+    { ic: '📊', t: 'ไม่มีจุดมืด', d: 'แสงกระจายทั่วถึงทั้งเส้น จุดมืดสุดยังสูงกว่าเกณฑ์', col: C.accent },
+  ];
+  return (
+    <Slide num={13}>
+      <Eyebrow accent>เราไม่ได้แค่ขายโคม — เราออกแบบแสงให้</Eyebrow>
+      <Title size={34}>ทุกโครงการ เราคำนวณด้วย <span style={{ color: C.primary }}>DIALux</span> ตาม มอก. 2954–2562</Title>
+      <Lead style={{ marginTop: 8, maxWidth: 1040, fontSize: 17 }}>
+        ท่านไม่ต้องเดาว่าไฟจะสว่างพอหรือผ่านเกณฑ์ไหม — เราจำลองการกระจายแสงทั้งเส้นถนน
+        เทียบกับมาตรฐานให้ก่อนเสนอราคา พร้อมรายงานที่ผู้รับเหมายื่นต่อ อบต. ได้
+      </Lead>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 24, marginTop: 18, flex: 1, minHeight: 0, alignItems: 'stretch' }}>
+        {/* left — 3 results + CTA */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0 }}>
+          {results.map((r, i) => (
+            <div key={i} style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 14, padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
+              <div style={{ width: 46, height: 46, borderRadius: 12, background: `${r.col}18`, color: r.col, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, flexShrink: 0 }}>{r.ic}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: C.primaryDeep, marginBottom: 2 }}>{r.t}</div>
+                <div style={{ fontSize: 13.5, color: C.textMuted, lineHeight: 1.5 }}>{r.d}</div>
+              </div>
+            </div>
+          ))}
+          <div style={{ background: C.primaryDeep, borderRadius: 14, padding: '16px 20px', display: 'flex', gap: 14, alignItems: 'center', marginTop: 'auto' }}>
+            <span style={{ fontSize: 30, flexShrink: 0 }}>📄</span>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#FFF', marginBottom: 2 }}>มีรายงานออกแบบแสงให้ดูเป็นตัวอย่าง</div>
+              <a href="#/solar-street-light/report" target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 14, color: '#FDE68A', fontWeight: 600, textDecoration: 'underline' }}>
+                เปิดดูตัวอย่างรายงาน (อ่านง่าย) →
+              </a>
+            </div>
+          </div>
+        </div>
+        {/* right — sample document image */}
+        <div style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 18, padding: 14, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div style={{ flex: 1, minHeight: 0, borderRadius: 10, overflow: 'hidden', background: C.surfaceSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src={`${IMG}/report/recommended_design.png`} alt="ตัวอย่างรายงาน DIALux" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+          </div>
+          <div style={{ fontSize: 12.5, color: C.textMuted, textAlign: 'center', marginTop: 10, lineHeight: 1.5 }}>
+            ตัวอย่างหน้าจากรายงานจริง — ตารางผลเทียบเกณฑ์ ขึ้น ✓ ทุกแถว
+          </div>
+        </div>
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SLIDE 14 — Why us (dark)
 // ---------------------------------------------------------------------------
 
 function Slide13() {
@@ -849,7 +905,7 @@ function Slide13() {
     { ic: '🎓', t: 'มาตรฐานสากล + มอก.', d: 'ผ่าน LM-79 · LM-80 · มอก. 1955-2551 · เอกสารพร้อมส่งใช้ในงานราชการ' },
   ];
   return (
-    <Slide num={13} dark>
+    <Slide num={14} dark>
       <Eyebrow dark>ทำไมต้องเรา</Eyebrow>
       <Title dark>ลดความเสี่ยง · เพิ่มความมั่นใจ · ประหยัดต้นทุนรวม</Title>
       <Lead dark style={{ marginTop: 12, maxWidth: 1020 }}>
@@ -875,7 +931,7 @@ function Slide13() {
 
 function Slide14() {
   return (
-    <Slide num={14}>
+    <Slide num={15}>
       <Eyebrow>ROI · ทำไมคุ้มกว่า</Eyebrow>
       <Title size={36}>ลงทุนครั้งเดียว · ไม่มีค่าไฟ · ไม่ขุดสาย</Title>
       <Lead style={{ marginTop: 10, maxWidth: 1040 }}>
@@ -940,7 +996,7 @@ function Slide15() {
     { n: '07', t: 'ติดตามผล', d: 'ตรวจ KPI · ปรับปรุงการออกแบบ · สำรวจความพึงพอใจ' },
   ];
   return (
-    <Slide num={15}>
+    <Slide num={16}>
       <Eyebrow>บริการครบวงจร</Eyebrow>
       <Title size={36}>7 ขั้นตอน · ตั้งแต่ปรึกษาจนถึงดูแลต่อเนื่อง</Title>
       <Lead style={{ marginTop: 10, maxWidth: 1040 }}>
@@ -977,7 +1033,7 @@ function ProcessCard({ n, t, d }) {
 
 function Slide17() {
   return (
-    <Slide num={16} dark>
+    <Slide num={17} dark>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', maxWidth: 900, margin: '0 auto' }}>
         <Eyebrow dark>ขั้นต่อไป</Eyebrow>
         <Title dark size={46}>
@@ -1020,10 +1076,11 @@ function Toolbar() {
     '10 · 📊 Compare · เปรียบเทียบ 4 รุ่น',
     '11 · 🩺 Benefit · เกินมาตรฐานทุกตัวชี้วัด',
     '12 · 🛡️ Coverage · มาตรฐาน + มอก. + IP66',
-    '13 · 🏆 Why us · ผู้ผลิตเอง 15 ปี',
-    '14 · 💰 ROI · ลงทุนครั้งเดียว · ไม่มีค่าไฟ',
-    '15 · 🛠️ Process · 7 ขั้นตอน end-to-end',
-    '16 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
+    '13 · 📐 Design · คำนวณ DIALux ตาม มอก. 2954',
+    '14 · 🏆 Why us · ผู้ผลิตเอง 15 ปี',
+    '15 · 💰 ROI · ลงทุนครั้งเดียว · ไม่มีค่าไฟ',
+    '16 · 🛠️ Process · 7 ขั้นตอน end-to-end',
+    '17 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
   ];
   const goTo = (i) => {
     const el = document.getElementById(`slide-${i + 1}`);
@@ -1140,7 +1197,7 @@ function ScrollDots({ count }) {
 // ---------------------------------------------------------------------------
 
 export default function SolarPitchDeck() {
-  const slides = [Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07, Slide08, Slide09, Slide10, Slide11, Slide12, Slide13, Slide14, Slide15, Slide17];
+  const slides = [Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07, Slide08, Slide09, Slide10, Slide11, Slide12, SlideReport, Slide13, Slide14, Slide15, Slide17];
   return (
     <>
       <DeckStyles />

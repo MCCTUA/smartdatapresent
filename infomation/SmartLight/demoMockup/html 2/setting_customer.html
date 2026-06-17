@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartPole Customer Settings</title>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1117;
+      --panel: rgba(18, 24, 32, 0.92);
+      --panel-soft: rgba(28, 35, 44, 0.78);
+      --line: rgba(154, 166, 178, 0.2);
+      --line-strong: rgba(154, 166, 178, 0.34);
+      --text: #edf4f8;
+      --muted: #9aa6b2;
+      --teal: #2dd4bf;
+      --green: #70d27f;
+      --amber: #f0b84b;
+      --rose: #f07c8e;
+      --shadow: 0 20px 70px rgba(0, 0, 0, 0.36);
+      --container: min(100% - 32px, 1560px);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      min-height: 100%;
+      margin: 0;
+      color: var(--text);
+      background:
+        linear-gradient(145deg, rgba(11, 17, 23, 0.96), rgba(22, 30, 39, 0.96)),
+        radial-gradient(circle at 18% 7%, rgba(112, 210, 127, 0.12), transparent 28%),
+        radial-gradient(circle at 86% 6%, rgba(45, 212, 191, 0.12), transparent 24%);
+    }
+    body[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f4f7f8;
+      --panel: rgba(255, 255, 255, 0.94);
+      --panel-soft: rgba(247, 250, 250, 0.9);
+      --line: rgba(44, 55, 64, 0.14);
+      --line-strong: rgba(44, 55, 64, 0.24);
+      --text: #17212b;
+      --muted: #596775;
+      background: linear-gradient(145deg, #f4f7f8, #edf8f2 58%, #f8f5ec);
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+    .page { width: var(--container); margin: 0 auto; padding: 18px 0 56px; }
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(18, 24, 32, 0.82);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      padding: 14px;
+    }
+    body[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.86); }
+    .brand h1 { margin: 0; font-size: clamp(24px, 4vw, 40px); letter-spacing: -0.03em; line-height: 1; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .button, .chip, .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text);
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .button.primary, .chip.primary { border-color: rgba(45, 212, 191, 0.5); background: rgba(45, 212, 191, 0.13); }
+    .chip.good, .pill.good { border-color: rgba(112, 210, 127, 0.44); background: rgba(112, 210, 127, 0.12); color: #c9f7ce; }
+    .chip.warn, .pill.warn { border-color: rgba(240, 184, 75, 0.5); background: rgba(240, 184, 75, 0.14); color: #ffe2a5; }
+    body[data-theme="light"] .chip.good, body[data-theme="light"] .pill.good { color: #1b6e2b; }
+    body[data-theme="light"] .chip.warn, body[data-theme="light"] .pill.warn { color: #83520c; }
+    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+    .span-12 { grid-column: span 12; }
+    .span-8 { grid-column: span 8; }
+    .span-6 { grid-column: span 6; }
+    .span-4 { grid-column: span 4; }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      min-width: 0;
+      overflow: hidden;
+    }
+    .panel-inner { padding: 15px; }
+    .section-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .section-title h2 { margin: 0; font-size: 18px; letter-spacing: -0.02em; }
+    .section-title p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+    .tab {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted);
+      min-height: 36px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .tab[aria-selected="true"] { border-color: rgba(45, 212, 191, 0.52); background: rgba(45, 212, 191, 0.14); color: var(--text); }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .stat { border: 1px solid var(--line); border-radius: 12px; background: var(--panel-soft); min-height: 84px; padding: 12px; }
+    .stat span { display: block; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat strong { display: block; margin-top: 8px; font-size: 25px; letter-spacing: -0.04em; }
+    .stat small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .field label { display: block; margin: 0 0 5px; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .field input, .field select {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(8, 12, 18, 0.55);
+      color: var(--text);
+      padding: 9px 10px;
+      outline: none;
+    }
+    body[data-theme="light"] .field input, body[data-theme="light"] .field select { background: rgba(255, 255, 255, 0.82); }
+    .rule-list { display: grid; gap: 9px; }
+    .rule-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-soft); padding: 11px; }
+    .rule-row strong { display: block; font-size: 13px; }
+    .rule-row span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .switch { position: relative; width: 42px; height: 24px; border-radius: 999px; background: rgba(154, 166, 178, 0.28); flex: 0 0 auto; }
+    .switch:after { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #cbd5df; }
+    .switch.on { background: rgba(45, 212, 191, 0.34); }
+    .switch.on:after { transform: translateX(18px); background: var(--teal); }
+    .table-wrap { overflow: auto; max-height: min(58vh, 520px); border-radius: 12px; border: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 11px 12px; text-align: left; vertical-align: top; font-size: 12px; }
+    th { position: sticky; top: 0; z-index: 1; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(18, 24, 32, 0.96); }
+    body[data-theme="light"] th { background: rgba(247, 250, 250, 0.96); }
+    td span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .note { border: 1px dashed var(--line-strong); border-radius: 12px; background: rgba(255, 255, 255, 0.035); color: var(--muted); padding: 11px; font-size: 12px; line-height: 1.5; }
+    @media (max-width: 1040px) { .span-8, .span-6, .span-4 { grid-column: span 12; } .stat-grid, .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 720px) { .page { width: min(100% - 20px, 1560px); } .topbar, .stat-grid, .field-grid { grid-template-columns: 1fr; } .actions { justify-content: flex-start; } }
+  </style>
+</head>
+<body data-theme="dark">
+  <!-- LOGIC: setting_customer.html is Customer Settings. Customer scope is the authenticated current account; no account/dealer/customer selector is allowed. -->
+  <main class="page">
+    <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+      <div class="brand">
+        <h1>Customer Settings</h1>
+        <p class="subtitle">Own-account settings · no account filter · tabs stay focused on customer operations</p>
+      </div>
+      <div class="actions">
+        <button class="button" type="button" data-theme-toggle>Dark</button>
+        <span class="chip primary">Customer UI · บริษัท BB</span>
+        <a class="button" href="setting.html">Portfolio spec</a>
+        <a class="button" href="notifications_customer.html">Notifications</a>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="panel span-12">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Customer Tabs</h2>
+              <p>This page never renders a managed-account filter. Every form saves only to the resolved current customer account.</p>
+            </div>
+            <span class="chip good">scope: current account</span>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Customer settings tabs">
+            <button class="tab" role="tab" aria-selected="true">Profile</button>
+            <button class="tab" role="tab">Channels</button>
+            <button class="tab" role="tab">Recipients</button>
+            <button class="tab" role="tab">Notification Preferences</button>
+            <button class="tab" role="tab">Financial Baseline</button>
+            <button class="tab" role="tab">Automation</button>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel span-4">
+        <div class="panel-inner">
+          <div class="stat-grid" style="grid-template-columns:1fr">
+            <div class="stat"><span>Current account</span><strong>บริษัท BB</strong><small>Customer account</small></div>
+            <div class="stat"><span>Telegram</span><strong>Ready</strong><small>12 linked recipients</small></div>
+            <div class="stat"><span>Recovery</span><strong>On</strong><small>customer option enabled</small></div>
+            <div class="stat"><span>Baseline</span><strong>Ready</strong><small>tariff + kWh saved</small></div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel span-8">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Profile Tab</h2>
+              <p>Contact, logo, timezone, and control location for this customer account.</p>
+            </div>
+            <button class="button primary">Save profile</button>
+          </div>
+          <div class="field-grid">
+            <div class="field"><label>Display name</label><input value="บริษัท BB" /></div>
+            <div class="field"><label>Contact email</label><input value="ops.bb@example.com" /></div>
+            <div class="field"><label>Timezone</label><select><option>Asia/Bangkok</option><option>UTC</option></select></div>
+            <div class="field"><label>Control location</label><select><option>Bangkok (province)</option><option>Pathum Wan, Bangkok</option><option>Custom coordinate</option></select></div>
+          </div>
+          <div class="note" style="margin-top:12px">Implementation should ignore posted account IDs here. Customer users can only mutate their own account-level settings.</div>
+        </div>
+      </section>
+
+      <section class="panel span-6">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Channels Tab</h2>
+              <p>Customer-visible channel readiness. Secrets remain write-only.</p>
+            </div>
+          </div>
+          <div class="rule-list">
+            <div class="rule-row"><div><strong>Telegram</strong><span>Verified bot/webhook, inherited from platform default.</span></div><span class="pill good">Ready</span></div>
+            <div class="rule-row"><div><strong>Email</strong><span>Enabled for report and recovery messages.</span></div><span class="pill good">Ready</span></div>
+            <div class="rule-row"><div><strong>Line / SMS</strong><span>Available only when package includes this channel.</span></div><span class="pill warn">Optional</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel span-6">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Recipients Tab</h2>
+              <p>Customer account users and their notification preferences.</p>
+            </div>
+            <button class="button primary">Generate link code</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>User</th><th>Role</th><th>Preference</th><th>Binding</th></tr></thead>
+              <tbody>
+                <tr><td>ops.bb@example.com<span>Operator</span></td><td>Operator</td><td>Critical + warning</td><td><span class="pill good">Telegram linked</span></td></tr>
+                <tr><td>manager.bb@example.com<span>Manager</span></td><td>Manager</td><td>Critical only</td><td><span class="pill warn">Link code active</span></td></tr>
+                <tr><td>finance.bb@example.com<span>Finance</span></td><td>Viewer</td><td>Reports only</td><td><span class="pill good">Email ready</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel span-6">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Notification Preferences Tab</h2>
+              <p>Customer-owned options for alert, recovery, maintenance, and package messages.</p>
+            </div>
+          </div>
+          <div class="rule-list">
+            <div class="rule-row"><div><strong>Critical alert</strong><span>Send Telegram and in-app message when issue is promoted.</span></div><span class="switch on"></span></div>
+            <div class="rule-row"><div><strong>Recovery message</strong><span>Send message when telemetry returns to normal.</span></div><span class="switch on"></span></div>
+            <div class="rule-row"><div><strong>Maintenance lifecycle</strong><span>Notify create, update, and completion events.</span></div><span class="switch on"></span></div>
+            <div class="rule-row"><div><strong>Monthly report ready</strong><span>Notify only managers and finance viewers.</span></div><span class="switch on"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel span-6">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Financial Baseline Tab</h2>
+              <p>Setup values for Energy and Reports pages.</p>
+            </div>
+          </div>
+          <div class="field-grid">
+            <div class="field"><label>Baseline kWh</label><input value="12000" /></div>
+            <div class="field"><label>Tariff</label><input value="4.18" /></div>
+            <div class="field"><label>Hardware value</label><input value="850000" /></div>
+            <div class="field"><label>Target hours</label><input value="10.5" /></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel span-12">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Automation Tab</h2>
+              <p>Weather and sunrise/sunset settings use the same saved control location as schedules.</p>
+            </div>
+          </div>
+          <div class="rule-list">
+            <div class="rule-row"><div><strong>Weather source</strong><span>Open-Meteo cached by backend using the customer control location.</span></div><span class="pill good">Ready</span></div>
+            <div class="rule-row"><div><strong>Sun events</strong><span>Schedule preview and execution use customer timezone and coordinates.</span></div><span class="pill good">Ready</span></div>
+            <div class="rule-row"><div><strong>Command verification</strong><span>Automation must verify accepted command and telemetry state before marking success.</span></div><span class="pill warn">Guarded</span></div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+    themeToggle?.addEventListener('click', () => {
+      const light = body.dataset.theme === 'light';
+      body.dataset.theme = light ? 'dark' : 'light';
+      themeToggle.textContent = light ? 'Dark' : 'Light';
+    });
+  </script>
+</body>
+</html>

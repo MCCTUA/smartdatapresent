@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartPole Include & Header Refactor Plan</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --panel-soft: #f0f5fb;
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #d8e1ee;
+      --primary: #0f766e;
+      --primary-soft: #ccfbf1;
+      --accent: #f59e0b;
+      --danger: #dc2626;
+      --code: #0f172a;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 34rem),
+        linear-gradient(180deg, #fbfdff 0%, var(--bg) 42%, #eef3f9 100%);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 72px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 28px;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    .hero-card,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 36px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: #115e59;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.18;
+    }
+
+    h1 {
+      max-width: 760px;
+      font-size: clamp(34px, 5vw, 64px);
+      letter-spacing: -0.055em;
+    }
+
+    h2 {
+      font-size: clamp(24px, 3vw, 34px);
+      letter-spacing: -0.035em;
+    }
+
+    h3 {
+      font-size: 18px;
+      letter-spacing: -0.015em;
+    }
+
+    p {
+      margin: 12px 0 0;
+      color: var(--muted);
+    }
+
+    code {
+      border-radius: 8px;
+      background: #e8eef6;
+      color: var(--code);
+      padding: 2px 6px;
+      font-size: 0.92em;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 16px 0 0;
+      border-radius: 18px;
+      background: #0f172a;
+      color: #dbeafe;
+      padding: 18px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .summary-card {
+      display: grid;
+      align-content: center;
+      gap: 16px;
+      padding: 28px;
+      background: linear-gradient(145deg, #ffffff 0%, #ecfeff 100%);
+    }
+
+    .summary-card strong {
+      display: block;
+      color: var(--ink);
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .panel {
+      padding: 28px;
+      margin-top: 20px;
+    }
+
+    .soft {
+      background: var(--panel-soft);
+      box-shadow: none;
+    }
+
+    .phase {
+      position: relative;
+      padding-left: 54px;
+    }
+
+    .phase-number {
+      position: absolute;
+      left: 0;
+      top: 2px;
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      border: 1px solid #b6d7d2;
+      border-radius: 999px;
+      background: #f0fdfa;
+      color: #115e59;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .warning {
+      border-color: #fed7aa;
+      background: #fff7ed;
+    }
+
+    .warning .tag {
+      border-color: #fed7aa;
+      background: #ffedd5;
+      color: #9a3412;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .checklist li {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 12px 14px 12px 42px;
+      color: #334155;
+    }
+
+    .checklist li::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 16px;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 16px;
+    }
+
+    .flow-step b {
+      color: var(--primary);
+    }
+
+    .result {
+      border-left: 5px solid var(--primary);
+    }
+
+    .risk {
+      border-left: 5px solid var(--accent);
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      color: #475569;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card,
+      .panel,
+      .summary-card {
+        border-radius: 22px;
+        padding: 22px;
+      }
+
+      .flow-step {
+        grid-template-columns: 1fr;
+      }
+    }
+  
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <article class="hero-card">
+        <span class="eyebrow">SmartPole UI Architecture</span>
+        <h1>แผนแยก Header และ Include ให้เป็น Pattern เดียวทั้งระบบ</h1>
+        <p>
+          เป้าหมายคือแยกส่วนที่ใช้ซ้ำบ่อย เช่น header, top navigation, account controls,
+          language switcher, theme toggle และ action bar ออกเป็น include/template component
+          ที่ดูแลจากจุดเดียว แต่ยังแยกบริบทของ <code>/admin</code> และ frontend dashboard ออกจากกันชัดเจน
+        </p>
+      </article>
+
+      <aside class="summary-card panel">
+        <div>
+          <strong>2</strong>
+          <p>header families: Django Admin และ Frontend Dashboard</p>
+        </div>
+        <div>
+          <strong>1</strong>
+          <p>shared CSS token/pattern layer สำหรับ spacing, container, controls</p>
+        </div>
+        <div>
+          <strong>0</strong>
+          <p>เป้าหมายคือไม่มี duplicated header markup ที่แก้แล้วหลุดกันคนละหน้า</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel result">
+      <h2>ผลลัพธ์ที่ต้องได้</h2>
+      <div class="grid grid-3" style="margin-top: 18px;">
+        <div>
+          <h3>แก้จุดเดียว กระทบครบ</h3>
+          <p>ปรับ responsive, spacing, theme toggle, language switcher หรือ logout order จาก include หลัก ไม่ต้องไล่แก้หลาย template</p>
+        </div>
+        <div>
+          <h3>แยก admin/frontend ไม่ปนกัน</h3>
+          <p>Admin ใช้ template/include ของ admin เอง ส่วน dashboard/public pages ใช้ frontend shell ของตัวเอง ลดความเสี่ยง selector ชนกัน</p>
+        </div>
+        <div>
+          <h3>Responsive predictable</h3>
+          <p>container, grid row, branding row, user tools และ controls มี breakpoint เดียวกันทั้งระบบ</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Implementation Status</h2>
+      <p>สถานะปัจจุบันหลังเริ่มดำเนินการตามแผนนี้</p>
+      <ul class="checklist">
+        <li>Phase 1 ทำแล้ว: สำรวจ admin/frontend header paths และเพิ่ม contract ใน static guard</li>
+        <li>Phase 2 ทำแล้ว: Admin header ถูก override ที่ <code>block header</code> แบบยังรักษา Django blocks สำหรับหน้าเฉพาะ เช่น password change</li>
+        <li>Phase 3 ทำแล้ว: Frontend base เรียก <code>components/app_shell.html</code> เพื่อรวม sidebar/top nav เป็น shell include</li>
+        <li>Phase 4 ทำแล้วบางส่วน: เพิ่ม tests สำหรับ static guard, admin language switcher, logout order และ password change userlinks compatibility</li>
+        <li>Public/auth cleanup ทำแล้ว: login และ PDPA policy ใช้ semantic classes แทน utility class ยาวในจุดหลัก พร้อม test guard</li>
+        <li>ยังต้องทำด้วยตา: manual responsive QA บน admin, dashboard, map, device, notification, public register และ login pages</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>โครงสร้าง Include ที่เสนอ</h2>
+      <p>แยกตาม ownership และ runtime context ไม่รวมทุกอย่างเป็น component เดียว เพราะ admin กับ frontend มี constraint ไม่เหมือนกัน</p>
+
+      <div class="flow">
+        <div class="flow-step">
+          <b>Admin shell</b>
+          <div>
+            <code>templates/admin/base_site.html</code><br>
+            <code>templates/admin/components/header_userlinks.html</code>
+            <p>รับผิดชอบ branding, user tools, theme toggle, language switcher, logout และ object tools spacing เฉพาะ Django Admin โดยยังรักษา Django admin blocks เช่น <code>userlinks</code> ไว้ให้ child templates override ได้</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <b>Admin controls</b>
+          <div>
+            <code>templates/admin/components/theme_toggle_wrapper.html</code><br>
+            <code>templates/admin/components/language_switcher.html</code><br>
+            <code>templates/admin/components/user_tools.html</code>
+            <p>แยกย่อยเฉพาะจุดที่เปลี่ยนบ่อย เพื่อไม่ให้ header ใหญ่เกินและทดสอบยาก</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <b>Frontend shell</b>
+          <div>
+            <code>templates/components/app_shell.html</code><br>
+            <code>templates/components/top_nav.html</code><br>
+            <code>templates/components/sidebar.html</code>
+            <p>ใช้กับ dashboard/backoffice/customer pages โดยคุม container และ responsive grid จาก shared shell CSS</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <b>Shared CSS</b>
+          <div>
+            <code>static/css/material-theme.css</code><br>
+            <code>static/admin/css/base-site.css</code><br>
+            <code>static/css/components/shell.css</code>
+            <p>เก็บ token, container, spacing, button/menu primitives ให้ reuse ได้โดยไม่ผูกกับหน้าใดหน้าหนึ่ง</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-2">
+      <article class="panel">
+        <div class="phase">
+          <span class="phase-number">1</span>
+          <h2>Phase 1: Inventory & Contract</h2>
+          <p>สำรวจทุก template ที่มี header/top-nav/user-tools ซ้ำ และนิยาม contract ว่า include แต่ละตัวต้องรับ context อะไรบ้าง</p>
+          <ul class="checklist">
+            <li>หา markup ซ้ำใน <code>templates/admin/*</code>, <code>templates/components/*</code>, dashboard/public pages</li>
+            <li>แยก context ระหว่าง anonymous, platform owner, dealer, customer, staff/admin</li>
+            <li>กำหนด fallback กรณีไม่มี account, ไม่มี language, หรือไม่มี theme state</li>
+          </ul>
+          <div class="tag-list">
+            <span class="tag">low risk</span>
+            <span class="tag">read-only first</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="phase">
+          <span class="phase-number">2</span>
+          <h2>Phase 2: Admin Header Include</h2>
+          <p>ย้าย header ของ Django Admin มาอยู่ใต้ SmartPole-owned header block และแตกส่วนที่เปลี่ยนบ่อยเป็น partial ย่อย โดยรักษา Django admin block เดิมให้มากที่สุด</p>
+          <ul class="checklist">
+            <li>สร้าง block-compatible admin header ใน <code>templates/admin/base_site.html</code> และ include ย่อยสำหรับ links, language, theme, logout</li>
+            <li>ย้าย responsive grid ของ <code>#header</code>, <code>#branding</code>, <code>#user-tools</code> ไปไว้ที่ CSS กลาง</li>
+            <li>รักษา order: Welcome, links, theme, language, logout</li>
+          </ul>
+          <div class="tag-list">
+            <span class="tag">admin only</span>
+            <span class="tag">theme-safe</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="phase">
+          <span class="phase-number">3</span>
+          <h2>Phase 3: Frontend Header/Shell Include</h2>
+          <p>รวม dashboard/top-nav/sidebar header ให้ใช้ component contract เดียวกัน แต่ยังไม่ผูกกับ admin CSS</p>
+          <ul class="checklist">
+            <li>กำหนด <code>app_shell.html</code> สำหรับ frontend dashboard pages เพื่อรวม sidebar และ top nav ใน include เดียว</li>
+            <li>รวม search, alert button, user menu, language switcher เป็น child components</li>
+            <li>ใช้ container token เดียวกับ dashboard layout เพื่อให้ desktop ไม่แคบเกิน</li>
+          </ul>
+          <div class="tag-list">
+            <span class="tag">frontend only</span>
+            <span class="tag">responsive</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="phase">
+          <span class="phase-number">4</span>
+          <h2>Phase 4: Cleanup & Guard</h2>
+          <p>ลบ duplicated markup/CSS ที่เหลือและเพิ่ม test guard กัน regression จาก include path หรือ static asset order</p>
+          <ul class="checklist">
+            <li>เพิ่ม/ปรับ tests สำหรับ admin language switcher, theme toggle, logout order</li>
+            <li>เพิ่ม static guard สำหรับ include CSS ที่ต้องโหลดก่อน/หลัง</li>
+            <li>รัน related tests และ full suite ใน Docker ก่อนปิดงาน</li>
+          </ul>
+          <div class="tag-list">
+            <span class="tag">test required</span>
+            <span class="tag">safe rollout</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel warning risk">
+      <h2>ความเสี่ยงที่ต้องคุม</h2>
+      <div class="grid grid-3" style="margin-top: 18px;">
+        <div>
+          <h3>CSS specificity ชนกัน</h3>
+          <p>โดยเฉพาะ Django Admin มี selector เดิมเยอะ ต้องไม่แก้ด้วย <code>!important</code> เพิ่มถ้าไม่จำเป็น</p>
+        </div>
+        <div>
+          <h3>Context ไม่ครบ</h3>
+          <p>header frontend กับ admin ใช้ข้อมูลคนละชุด ต้องมี fallback ไม่ให้ template พังเมื่อ user/account/language ไม่มี</p>
+        </div>
+        <div>
+          <h3>Responsive regressions</h3>
+          <p>ต้องเช็ค 360px, 768px, 1024px, desktop wide เพราะ header มี controls หลายกลุ่ม</p>
+        </div>
+      </div>
+      <div class="tag-list">
+        <span class="tag">visual QA required</span>
+        <span class="tag">do not mix admin/frontend shell</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>ตัวอย่าง Before / After</h2>
+      <p>แนวทางคือเปลี่ยนจาก markup ซ้ำในหลายไฟล์ เป็น include ที่มี contract ชัดเจน</p>
+      <pre><code>Before:
+base_site.html
+  &lt;header id="header"&gt;
+    branding + user-tools + theme + language + logout
+  &lt;/header&gt;
+
+After:
+base_site.html
+  {% block header %}
+    SmartPole-owned admin header structure
+    {% block userlinks %}
+      {% include "admin/components/header_userlinks.html" %}
+    {% endblock %}
+  {% endblock %}
+
+admin/components/header_userlinks.html
+  {% include "admin/components/header_userlinks_links.html" %}
+  {% include "admin/components/header_userlinks_controls.html" %}
+
+base.html
+  {% include "components/app_shell.html" %}</code></pre>
+    </section>
+
+    <section class="panel result">
+      <h2>Definition of Done</h2>
+      <ul class="checklist">
+        <li>Admin header อยู่ใต้ SmartPole-owned header block และใช้ partial ย่อย โดยยัง block-compatible กับ Django admin</li>
+        <li>Frontend dashboard header/sidebar/top-nav ใช้ component contract เดียว ไม่ duplicate markup หลัก</li>
+        <li>Responsive breakpoint ของ branding, user tools, controls และ container เป็น pattern เดียว</li>
+        <li>Dark/light mode ของ theme toggle และ header controls ไม่ค้างสี hardcoded</li>
+        <li>Related tests และ full Django test suite ผ่านใน Docker</li>
+        <li>มีรายการ manual QA URLs สำหรับตรวจภาพจริงหลัง deploy/restart</li>
+      </ul>
+    </section>
+
+    <p class="footer-note">
+      เอกสารนี้เป็น implementation plan สำหรับ phase ถัดไป ไม่ใช่ code change ของ header include เอง
+      และควรใช้ร่วมกับ <code>prompts/INDEX_CANONICAL.html</code>
+    </p>
+  </main>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

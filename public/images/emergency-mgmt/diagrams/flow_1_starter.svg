@@ -1,0 +1,87 @@
+<svg viewBox="0 0 1000 620" xmlns="http://www.w3.org/2000/svg" font-family="'Sarabun','Tahoma',sans-serif" role="img" aria-labelledby="t1 d1">
+  <title id="t1">Workflow แพ็กเกจ Starter — รับแจ้งเหตุและประสานงาน</title>
+  <desc id="d1">ช่องทางแจ้งเหตุ 2 ทางเข้าศูนย์ คัดกรองโดยเจ้าหน้าที่ ส่งต่อหน่วยงานปลายทาง และอัปเดตสถานะกลับ</desc>
+  <defs>
+    <marker id="ar1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5F6B65"/></marker>
+    <marker id="ar1g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#0F6E56"/></marker>
+  </defs>
+  <rect width="1000" height="620" fill="#FAF7EE"/>
+  <text x="40" y="46" font-size="26" font-weight="700" fill="#0B5544">แพ็กเกจ Starter — รับแจ้งเหตุ · บันทึก · ประสานงาน</text>
+  <text x="40" y="74" font-size="15" fill="#5F6B65">เริ่มต้นง่าย เน้นรับเรื่องจากประชาชนและเจ้าหน้าที่ ให้ทุกฝ่ายเห็นข้อมูลชุดเดียวกัน</text>
+
+  <!-- Col headers -->
+  <text x="150" y="118" font-size="14" font-weight="700" fill="#0F6E56" text-anchor="middle">① ช่องทางแจ้งเหตุ</text>
+  <text x="410" y="118" font-size="14" font-weight="700" fill="#0F6E56" text-anchor="middle">② ศูนย์ + คัดกรอง</text>
+  <text x="680" y="118" font-size="14" font-weight="700" fill="#0F6E56" text-anchor="middle">③ ผู้รับผิดชอบปลายทาง</text>
+  <text x="905" y="118" font-size="14" font-weight="700" fill="#0F6E56" text-anchor="middle">④ อัปเดต</text>
+
+  <!-- Sources (2 channels) -->
+  <g>
+    <rect x="40" y="150" width="220" height="64" rx="12" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.5"/>
+    <text x="150" y="178" font-size="15" font-weight="700" fill="#1F2A24" text-anchor="middle">เว็บไซต์แจ้งเหตุ</text>
+    <text x="150" y="200" font-size="12.5" fill="#5F6B65" text-anchor="middle">ข้อความ · ภาพถ่าย · วิดีโอ</text>
+  </g>
+  <g>
+    <rect x="40" y="234" width="220" height="64" rx="12" fill="#FFFFFF" stroke="#BA7517" stroke-width="1.5"/>
+    <text x="150" y="262" font-size="15" font-weight="700" fill="#1F2A24" text-anchor="middle">LINE OA</text>
+    <text x="150" y="284" font-size="12.5" fill="#5F6B65" text-anchor="middle">เสริมได้ (Optional)</text>
+  </g>
+
+  <!-- Center: intake + screening -->
+  <rect x="320" y="150" width="180" height="200" rx="14" fill="#0F6E56"/>
+  <text x="410" y="186" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">ศูนย์ข้อมูลกลาง</text>
+  <text x="410" y="210" font-size="12.5" fill="#EAF3DE" text-anchor="middle">รวมทุกช่องทาง</text>
+  <line x1="345" y1="226" x2="475" y2="226" stroke="#1D9E75" stroke-width="1"/>
+  <text x="410" y="252" font-size="13.5" font-weight="700" fill="#FAEEDA" text-anchor="middle">คัดกรองโดยเจ้าหน้าที่</text>
+  <text x="410" y="276" font-size="11.5" fill="#FFFFFF" text-anchor="middle">ตรวจสอบ · ยืนยันเหตุ</text>
+  <text x="410" y="294" font-size="11.5" fill="#FFFFFF" text-anchor="middle">ก่อนส่งต่อ</text>
+  <text x="410" y="324" font-size="11" fill="#EAF3DE" text-anchor="middle">Geo-fencing กำหนด</text>
+  <text x="410" y="340" font-size="11" fill="#EAF3DE" text-anchor="middle">ขอบเขตแจ้งเตือน</text>
+
+  <!-- Destinations -->
+  <g font-size="13" fill="#1F2A24">
+    <rect x="560" y="150" width="240" height="44" rx="10" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.2"/>
+    <text x="680" y="177" text-anchor="middle" font-weight="700">งานป้องกันฯ (ปภ. ท้องถิ่น)</text>
+    <rect x="560" y="204" width="240" height="44" rx="10" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.2"/>
+    <text x="680" y="231" text-anchor="middle" font-weight="700">กองช่าง / โยธา</text>
+    <rect x="560" y="258" width="240" height="44" rx="10" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.2"/>
+    <text x="680" y="285" text-anchor="middle" font-weight="700">กองสาธารณสุข / สิ่งแวดล้อม</text>
+    <rect x="560" y="312" width="240" height="44" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+    <text x="680" y="339" text-anchor="middle" font-weight="700" fill="#BA7517">ผู้บริหาร (นายก/ปลัด) — ภาพรวม</text>
+  </g>
+
+  <!-- Update box -->
+  <rect x="840" y="150" width="130" height="206" rx="12" fill="#EAF3DE" stroke="#639922" stroke-width="1.5"/>
+  <text x="905" y="190" font-size="13" font-weight="700" fill="#3d6b12" text-anchor="middle">สถานะเหตุ</text>
+  <text x="905" y="222" font-size="11.5" fill="#3d6b12" text-anchor="middle">รับเรื่อง</text>
+  <text x="905" y="246" font-size="11.5" fill="#3d6b12" text-anchor="middle">→ กำลังดำเนินการ</text>
+  <text x="905" y="270" font-size="11.5" fill="#3d6b12" text-anchor="middle">→ แก้ไขแล้ว</text>
+  <line x1="860" y1="288" x2="950" y2="288" stroke="#639922" stroke-width="1"/>
+  <text x="905" y="312" font-size="11" fill="#3d6b12" text-anchor="middle">Event Report</text>
+  <text x="905" y="330" font-size="11" fill="#3d6b12" text-anchor="middle">เก็บเป็นฐานข้อมูล</text>
+
+  <!-- Arrows sources->center -->
+  <path d="M260,182 L312,200" fill="none" stroke="#5F6B65" stroke-width="1.6" marker-end="url(#ar1)"/>
+  <path d="M260,266 L312,250" fill="none" stroke="#5F6B65" stroke-width="1.6" marker-end="url(#ar1)"/>
+  <!-- center->dest -->
+  <path d="M500,210 L552,172" fill="none" stroke="#0F6E56" stroke-width="1.6" marker-end="url(#ar1g)"/>
+  <path d="M500,235 L552,226" fill="none" stroke="#0F6E56" stroke-width="1.6" marker-end="url(#ar1g)"/>
+  <path d="M500,262 L552,280" fill="none" stroke="#0F6E56" stroke-width="1.6" marker-end="url(#ar1g)"/>
+  <path d="M500,300 L552,330" fill="none" stroke="#0F6E56" stroke-width="1.6" marker-end="url(#ar1g)"/>
+  <!-- dest->update -->
+  <path d="M800,250 L836,250" fill="none" stroke="#639922" stroke-width="1.6" marker-end="url(#ar1)"/>
+  <!-- update feedback loop back to center -->
+  <path d="M840,330 Q620,420 500,330" fill="none" stroke="#639922" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ar1)"/>
+  <text x="640" y="408" font-size="11.5" fill="#3d6b12" text-anchor="middle">อัปเดตสถานะกลับเข้าศูนย์ — ทุกฝ่ายเห็นพร้อมกัน real-time</text>
+
+  <!-- Notify bar -->
+  <rect x="40" y="450" width="930" height="58" rx="12" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/>
+  <text x="60" y="476" font-size="13.5" font-weight="700" fill="#0B5544">การแจ้งเตือนสมาชิก:</text>
+  <text x="60" y="497" font-size="12.5" fill="#5F6B65">Email (พื้นฐาน) · SMS / LINE (เสริมได้) — แจ้งทั้งหมด หรือเฉพาะพื้นที่ตาม Geo-fencing</text>
+
+  <!-- Footnote -->
+  <text x="40" y="548" font-size="12" fill="#5F6B65">หมายเหตุ: ติดตั้งแบบ On-Premise บนเซิร์ฟเวอร์ของหน่วยงาน · รองรับ IoT Sensor พื้นฐาน</text>
+  <text x="40" y="572" font-size="11.5" fill="#A32D2D">★ เหมาะกับหน่วยงานที่เริ่มต้น ต้องการรวมช่องทางรับแจ้งเหตุให้เป็นระบบเดียวก่อน</text>
+  <rect x="40" y="588" width="6" height="22" fill="#0F6E56"/>
+  <text x="56" y="604" font-size="12" font-weight="700" fill="#0B5544">Smart Center Solution Platform</text>
+</svg>

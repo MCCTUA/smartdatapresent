@@ -80,6 +80,15 @@ const PRODUCTS = [
     icon: 'heart',
     bg: '#3D1418',
   },
+  {
+    to: '/emergency-mgmt',
+    eyebrow: 'ศูนย์บัญชาการ · เฝ้าระวัง',
+    title: 'บริหารเหตุฉุกเฉิน',
+    body: 'Smart Center Solution Platform — รวมทุกช่องทางแจ้งเหตุไว้ศูนย์เดียว · คัดกรองก่อนสั่งการ · ทุกฝ่ายเห็นข้อมูลชุดเดียวกันแบบ real-time · มีหลักฐานครบ',
+    accent: '#BA7517',
+    icon: 'siren',
+    bg: '#0B5544',
+  },
 ];
 
 function ProductIcon({ name, color = '#FFF' }) {
@@ -113,6 +122,13 @@ function ProductIcon({ name, color = '#FFF' }) {
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
       <path d="M24 40s-14-8-14-18a8 8 0 0114-5 8 8 0 0114 5c0 10-14 18-14 18z" stroke={color} strokeWidth="2.2" strokeLinejoin="round" />
       <path d="M16 24l4 4 4-6 4 4 4-2" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+  if (name === 'siren') return (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+      <path d="M14 28a10 10 0 0120 0v2H14v-2z" stroke={color} strokeWidth="2.2" strokeLinejoin="round" />
+      <path d="M10 36h28M24 14v-4" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M34 18l3-3M14 18l-3-3M40 28h4M4 28h4" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
     </svg>
   );
   return null;
@@ -154,8 +170,8 @@ export default function Home() {
             variants={fadeUp}
             className="text-[18px] md:text-[20px] leading-relaxed max-w-[780px] mb-8 text-white/85"
           >
-            5 ผลิตภัณฑ์ที่<strong className="text-white"> ติดตั้งใช้จริง · พิสูจน์ด้วยมาตรฐานสากล · ออกแบบโดยทีมวิศวกรในประเทศ</strong>
-            <br />— ตั้งแต่ไฟถนน · พลังงานสะอาด · GovTech · AI · ดูแลผู้สูงอายุ
+            6 ผลิตภัณฑ์ที่<strong className="text-white"> ติดตั้งใช้จริง · พิสูจน์ด้วยมาตรฐานสากล · ออกแบบโดยทีมวิศวกรในประเทศ</strong>
+            <br />— ตั้งแต่ไฟถนน · พลังงานสะอาด · GovTech · AI · ดูแลผู้สูงอายุ · บริหารเหตุฉุกเฉิน
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-wrap gap-3 mb-10">
@@ -196,7 +212,7 @@ export default function Home() {
       <section className="px-6 md:px-10 py-12" style={{ background: '#FFF', borderBottom: `1px solid ${C.surfaceSoft}` }}>
         <div className="max-w-[1100px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { n: '5', l: 'ผลิตภัณฑ์ในกลุ่ม', sub: 'ครบทุกหน่วยงานต้องการ' },
+            { n: '6', l: 'ผลิตภัณฑ์ในกลุ่ม', sub: 'ครบทุกหน่วยงานต้องการ' },
             { n: '15+', l: 'ปีประสบการณ์', sub: 'ทีมพัฒนาในประเทศไทย' },
             { n: 'มอก.', l: 'มาตรฐานรับรอง', sub: '2954-2562, 1955-2551, IES' },
             { n: '24/7', l: 'การสนับสนุน', sub: 'ทีมงานพูดไทย ดูแลตลอด' },

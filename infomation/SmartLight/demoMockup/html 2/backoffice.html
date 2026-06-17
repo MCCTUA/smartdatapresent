@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartPole Backoffice Concept</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #061115;
+      --panel: rgba(12, 24, 31, 0.86);
+      --panel-strong: rgba(14, 31, 41, 0.96);
+      --line: rgba(148, 163, 184, 0.18);
+      --line-strong: rgba(148, 163, 184, 0.3);
+      --text: #e9fbff;
+      --muted: #94a3b8;
+      --cyan: #22d3ee;
+      --blue: #60a5fa;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --violet: #a78bfa;
+      --max: 1680px;
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 8%, rgba(34, 211, 238, 0.16), transparent 28rem),
+        radial-gradient(circle at 82% 2%, rgba(96, 165, 250, 0.13), transparent 26rem),
+        radial-gradient(circle at 72% 88%, rgba(74, 222, 128, 0.08), transparent 30rem),
+        linear-gradient(135deg, #061115 0%, #081820 48%, #041014 100%);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body.is-light {
+      color-scheme: light;
+      --bg: #f4fbfc;
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-strong: rgba(255, 255, 255, 0.96);
+      --line: rgba(15, 23, 42, 0.12);
+      --line-strong: rgba(15, 23, 42, 0.2);
+      --text: #0f172a;
+      --muted: #64748b;
+      background:
+        radial-gradient(circle at 18% 8%, rgba(14, 165, 233, 0.16), transparent 28rem),
+        radial-gradient(circle at 82% 2%, rgba(59, 130, 246, 0.12), transparent 26rem),
+        linear-gradient(135deg, #f8feff 0%, #eef8fb 100%);
+    }
+
+    a { color: inherit; }
+
+    .app {
+      width: min(100% - 32px, var(--max));
+      margin: 0 auto;
+      padding: 22px 0 56px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(7, 16, 20, 0.78);
+      box-shadow: 0 26px 90px rgba(0, 0, 0, 0.28);
+      padding: 16px;
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+    }
+
+    body.is-light .topbar { background: rgba(255, 255, 255, 0.82); }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 17px;
+      background:
+        radial-gradient(circle at 35% 30%, #e0fbff, transparent 1.1rem),
+        linear-gradient(135deg, rgba(34, 211, 238, 0.92), rgba(74, 222, 128, 0.72));
+      box-shadow: 0 16px 36px rgba(34, 211, 238, 0.24);
+      flex: 0 0 auto;
+    }
+
+    h1, h2, h3, h4, p { margin: 0; }
+
+    h1 {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      color: var(--text);
+      font-size: clamp(22px, 2.4vw, 34px);
+      letter-spacing: -0.04em;
+    }
+
+    h2 { font-size: 19px; letter-spacing: -0.02em; }
+    h3 { font-size: 15px; letter-spacing: -0.01em; }
+
+    .subtitle, .muted {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.48;
+      margin-top: 5px;
+    }
+
+    .connection-badge,
+    .chip,
+    .button,
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text);
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .button { cursor: pointer; user-select: none; }
+    .button.primary { border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.14); }
+    .button.rose, .chip.rose, .status-pill.bad { border-color: rgba(251, 113, 133, 0.46); background: rgba(251, 113, 133, 0.14); color: #fecdd3; }
+    .button.warn, .chip.amber, .status-pill.warn { border-color: rgba(251, 191, 36, 0.44); background: rgba(251, 191, 36, 0.13); color: #fde68a; }
+    .button.green, .chip.green, .status-pill.good { border-color: rgba(74, 222, 128, 0.38); background: rgba(74, 222, 128, 0.12); color: #bbf7d0; }
+    .chip.blue, .status-pill.info { border-color: rgba(96, 165, 250, 0.4); background: rgba(96, 165, 250, 0.13); color: #bfdbfe; }
+    .status-pill.locked { color: #cbd5e1; background: rgba(100, 116, 139, 0.18); }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.72);
+      animation: liveGlow 1.8s ease-in-out infinite;
+    }
+
+    .critical-error-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(251, 113, 133, 0.5);
+      border-radius: 999px;
+      background: rgba(251, 113, 133, 0.16);
+      color: #fecdd3;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 950;
+      text-decoration: none;
+      animation: redBlink 1.35s ease-in-out infinite;
+    }
+
+    .top-actions,
+    .chip-row,
+    .card-actions,
+    .field-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .profile-menu,
+    .widget-menu { position: relative; display: inline-flex; }
+
+    .profile-popover,
+    .widget-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 30;
+      display: none;
+      width: min(520px, calc(100vw - 28px));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel-strong);
+      box-shadow: 0 26px 90px rgba(0, 0, 0, 0.42);
+      padding: 14px;
+      text-align: left;
+    }
+
+    .profile-popover { width: min(320px, calc(100vw - 28px)); }
+
+    .profile-menu:hover .profile-popover,
+    .widget-menu:hover .widget-popover,
+    .profile-menu:focus-within .profile-popover,
+    .widget-menu:focus-within .widget-popover,
+    .profile-menu.is-open .profile-popover,
+    .widget-menu.is-open .widget-popover {
+      display: grid;
+      gap: 12px;
+    }
+
+    .profile-popover-head,
+    .widget-popover-head {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+    }
+
+    .profile-actions,
+    .card-library { display: grid; gap: 8px; }
+
+    .profile-action,
+    .library-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text);
+      padding: 9px 10px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .profile-action span,
+    .library-card p {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .panel,
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 18px 56px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+    }
+
+    .panel { padding: 18px; margin-top: 18px; }
+    .card-inner { padding: 16px; }
+
+    .card-header,
+    .filter-head {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mode-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 13px;
+      min-height: 118px;
+      display: grid;
+      align-content: space-between;
+      gap: 12px;
+    }
+
+    .mode-card.active {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.14), rgba(74, 222, 128, 0.08));
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1.6fr repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      padding: 10px 11px;
+      outline: none;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat-card,
+    .mini-card,
+    .logic-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 14px;
+    }
+
+    .stat-card span,
+    .mini-card span,
+    .logic-card span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .stat-card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .grid-12 {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+      align-items: stretch;
+    }
+
+
+    .grid-12 > .panel,
+    .grid-12 > .card,
+    .grid-12 > .side-rail {
+      height: 100%;
+      min-width: 0;
+    }
+
+    .grid-12 > .panel > .panel-inner,
+    .grid-12 > .card > .card-inner,
+    .grid-12 > .side-rail > .panel > .panel-inner {
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .side-rail {
+      display: grid;
+      gap: 16px;
+      align-content: stretch;
+    }
+
+    .side-rail > .panel {
+      height: 100%;
+      min-width: 0;
+    }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .readiness-grid,
+    .menu-grid,
+    .logic-grid,
+    .contract-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .menu-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .contract-grid { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+
+    .readiness-row,
+    .action-row,
+    .alert-row,
+    .package-row {
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.044);
+      padding: 12px;
+      text-decoration: none;
+    }
+
+    .row-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .table-wrap {
+      max-height: 430px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    td span { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+
+    .table-wrap th { position: sticky; top: 0; z-index: 1; }
+
+    .sparkline {
+      height: 240px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background:
+        linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px) 0 0 / 12.5% 100%,
+        linear-gradient(to top, rgba(148, 163, 184, 0.08) 1px, transparent 1px) 0 0 / 100% 25%,
+        rgba(255, 255, 255, 0.035);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sparkline svg { width: 100%; height: 100%; display: block; }
+
+    .expiry-banner {
+      border-color: rgba(251, 191, 36, 0.34);
+      background:
+        radial-gradient(circle at 0 0, rgba(251, 191, 36, 0.13), transparent 18rem),
+        rgba(251, 191, 36, 0.06);
+    }
+
+    .overlay-preview {
+      border: 1px solid rgba(251, 113, 133, 0.38);
+      border-radius: 22px;
+      background: rgba(127, 29, 29, 0.18);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .contract-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 14px;
+    }
+
+    .contract-card ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .contract-card pre {
+      margin: 8px 0 0;
+      white-space: pre-wrap;
+      color: var(--muted);
+      font: 12px/1.52 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    @keyframes liveGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(74, 222, 128, 0); }
+      50% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.42); }
+    }
+
+    @keyframes redBlink {
+      0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+      50% { box-shadow: 0 0 26px rgba(239, 68, 68, 0.5); transform: scale(1.025); }
+    }
+
+    @media (max-width: 1220px) {
+      .topbar,
+      .grid-12 { grid-template-columns: 1fr; }
+      .span-3,
+      .span-4,
+      .span-5,
+      .span-6,
+      .span-7,
+      .span-8,
+      .span-12 { grid-column: auto; }
+      .filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .mode-tabs, .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .top-actions { justify-content: flex-start; }
+    }
+
+    @media (max-width: 720px) {
+      .app { width: min(100% - 18px, var(--max)); padding-top: 10px; }
+      .filter-grid,
+      .stats-grid,
+      .mode-tabs,
+      .readiness-grid,
+      .menu-grid,
+      .logic-grid { grid-template-columns: 1fr; }
+      .card-header,
+      .filter-head { display: grid; }
+    }
+  
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>▣ SmartPole Backoffice <span class="connection-badge"><span class="status-dot"></span>Live connected</span></h1>
+          <p class="subtitle">/backoffice/ · role-aware operations portal · customer/package/device readiness · entitlement-aware actions</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
+        <span class="chip">▣ Portfolio UI · Platform/Dealer</span>
+        <a class="critical-error-badge" href="/faults/?state=active">⚠ 37 active issues · 12 P1</a>
+        <div class="profile-menu" data-profile-menu>
+          <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+          <div class="profile-popover" aria-label="Profile controls">
+            <div class="profile-popover-head"><strong>◉ Manager Profile</strong><span>goodten</span></div>
+            <div class="profile-actions">
+              <a class="profile-action" href="/profile/">◉ Profile <span>name, email, language</span></a>
+              <a class="profile-action" href="/password_change/">◆ Password <span>change password</span></a>
+              <a class="profile-action" href="/settings/">⚙ Preferences <span>timezone, layout, notifications</span></a>
+              <a class="profile-action" href="/logout/">↪ Sign out <span>end session</span></a>
+            </div>
+          </div>
+        </div>
+        <div class="widget-menu" data-widget-menu>
+          <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+          <div class="widget-popover" aria-label="Widget visibility controls">
+            <div class="widget-popover-head"><strong>▦ Backoffice widgets</strong><span>Show/hide cards for this role.</span></div>
+            <div class="card-library">
+              <div class="library-card"><label><input type="checkbox" checked> ◇ Mode Overview</label><p>Platform, management, engineer, display panels.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▣ Setup Readiness</label><p>Accounts, devices, control, reports readiness.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ⚠ Active Alerts</label><p>System issue rail, not manual maintenance.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ◷ Package Expiry</label><p>Software/hardware expiry and renewal state.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▤ Package Sales Table</label><p>Device/package/zone/tag portfolio rows.</p></div>
+            </div>
+          </div>
+        </div>
+        <span class="button primary">✓ Save layout</span>
+      </div>
+    </header>
+
+    <section class="panel" aria-label="Backoffice role mode selector">
+      <div class="filter-head">
+        <div>
+          <h2>Backoffice Role Mode</h2>
+          <p class="subtitle">The existing view renders a different surface by dashboard_mode: platform, management, engineer, or display.</p>
+        </div>
+        <div class="chip-row"><span class="chip blue">current: management</span><span class="chip green">session-authenticated</span></div>
+      </div>
+      <div class="mode-tabs">
+        <div class="mode-card active"><div><h3>▣ Platform</h3><p class="subtitle">Cross-account summary, dealers/customers, package expiry, portfolio readiness.</p></div><span class="status-pill info">platform owner</span></div>
+        <div class="mode-card"><div><h3>◇ Management</h3><p class="subtitle">Dealer/customer portfolio, account creation, customer packages, reports.</p></div><span class="status-pill good">admin/manager</span></div>
+        <div class="mode-card"><div><h3>⚙ Engineer</h3><p class="subtitle">Operational health, online/offline devices, active faults, map/control entry.</p></div><span class="status-pill warn">operator</span></div>
+        <div class="mode-card"><div><h3>◉ Display</h3><p class="subtitle">Read-only monitoring, no mutation controls, minimal menu.</p></div><span class="status-pill locked">viewer</span></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Backoffice filters">
+      <div class="filter-head">
+        <div>
+          <h2>Backoffice Filters</h2>
+          <p class="subtitle">Use one filter bar across portfolio, readiness, package table, alerts, and decoded metrics.</p>
+        </div>
+        <div class="field-actions"><span class="button primary">✓ Apply</span><span class="button">× Reset</span></div>
+      </div>
+      <div class="filter-grid">
+        <!-- LOGIC: Backoffice root is Portfolio UI for platform/dealer. Customer users should see own-account operation shortcuts, not dealer/customer portfolio selectors. -->
+        <div class="field"><label>UI mode</label><select><option>Portfolio UI · Platform/Dealer</option><option>Customer UI · Own account shortcuts</option></select></div>
+        <div class="field"><label>Search</label><input value="SP-088 / Factory AA" aria-label="Search device customer zone package"></div>
+        <div class="field"><label>Account scope</label><select><option>All visible accounts</option><option>Dealer A subtree</option><option>Customer Factory AA</option></select></div>
+        <div class="field"><label>Site</label><select><option>All sites</option><option>Main campus</option><option>Factory AA Site 1</option></select></div>
+        <div class="field"><label>Zone</label><select><option>All zones</option><option>Road B</option><option>Warehouse</option><option>Parking</option></select></div>
+        <div class="field"><label>Device set</label><select><option>All sets</option><option>Street light V2</option><option>Gateway group</option></select></div>
+        <div class="field"><label>Connection</label><select><option>All</option><option>Online</option><option>Offline</option><option>Unreachable</option></select></div>
+        <div class="field"><label>Package</label><select><option>All package states</option><option>Active</option><option>Near expiry</option><option>Expired</option></select></div>
+      </div>
+    </section>
+
+    <section class="stats-grid" aria-label="Backoffice summary stats">
+      <div class="stat-card"><span>Total devices</span><strong>12,840</strong><span>visible in current scope</span></div>
+      <div class="stat-card"><span>Online</span><strong style="color:var(--green)">12,352</strong><span>96.2% online</span></div>
+      <div class="stat-card"><span>Lamp ON</span><strong style="color:var(--cyan)">8,124</strong><span>current allowed state</span></div>
+      <div class="stat-card"><span>Fault markers</span><strong style="color:var(--rose)">37</strong><span>12 critical</span></div>
+      <div class="stat-card"><span>Mapped</span><strong style="color:var(--blue)">12,244</strong><span>596 need position</span></div>
+    </section>
+
+    <section class="panel expiry-banner" aria-label="Package expiry behavior">
+      <div class="filter-head">
+        <div>
+          <h2>◷ Package / Entitlement State</h2>
+          <p class="subtitle">Backoffice must show renewal and expiry risk clearly without stopping telemetry ingestion.</p>
+        </div>
+        <div class="chip-row"><span class="chip amber">3 near expiry</span><span class="chip rose">1 expired</span><span class="button warn">Request renewal</span></div>
+      </div>
+      <div class="grid-12" style="margin-top:0">
+        <div class="span-4 overlay-preview">
+          <h3>Expired overlay behavior</h3>
+          <p class="subtitle">Package expiry should show a clear overlay. Ingestion continues, while UI data and actions follow entitlement limits.</p>
+          <div class="mini-card"><span>visible_until</span><h3>2026-06-10 23:59</h3></div>
+          <div class="chip-row" style="justify-content:flex-start"><span class="button rose">Read-only UI</span><span class="button warn">Renew package</span></div>
+        </div>
+        <div class="span-4 mini-card">
+          <span>Software expiry rule</span>
+          <h3 style="margin-top:8px">Cap UI query, do not stop feed</h3>
+          <p class="subtitle">MQTT, Node-RED, provider API, manual import, and future InfluxDB/PostgreSQL pipelines continue ingesting. Backoffice APIs apply EntitlementPolicy before returning rows, summaries, or actions.</p>
+        </div>
+        <div class="span-4 mini-card">
+          <span>Hardware / lamp expiry rule</span>
+          <h3 style="margin-top:8px">Warn, do not cap telemetry</h3>
+          <p class="subtitle">Lamp/warranty expiry creates lifecycle and maintenance recommendations. It does not block charts/control while software entitlement is active.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-12" aria-label="Backoffice main workspace">
+      <article class="card span-8">
+        <div class="card-inner">
+          <div class="card-header">
+            <div><h2>▣ Setup Readiness</h2><p class="subtitle">Existing workspace_readiness: Accounts, Devices, Control, Reports.</p></div>
+            <span class="chip">permission-gated</span>
+          </div>
+          <div class="readiness-grid">
+            <a class="readiness-row" href="/backoffice/account/"><div class="row-head"><div><strong>Accounts</strong><p class="subtitle">Scoped customer/dealer portfolio</p></div><span class="status-pill good">OK</span></div><h2>42</h2></a>
+            <a class="readiness-row" href="/device-list/"><div class="row-head"><div><strong>Devices</strong><p class="subtitle">Visible devices in current scope</p></div><span class="status-pill good">OK</span></div><h2>12,840</h2></a>
+            <a class="readiness-row" href="/backoffice/control/"><div class="row-head"><div><strong>Control</strong><p class="subtitle">Remote command permission + package gate</p></div><span class="status-pill warn">Limited</span></div><h2>On</h2></a>
+            <a class="readiness-row" href="/backoffice/reports/"><div class="row-head"><div><strong>Reports</strong><p class="subtitle">Report/export access for scoped data</p></div><span class="status-pill good">OK</span></div><h2>On</h2></a>
+          </div>
+        </div>
+      </article>
+
+      <aside class="card span-4">
+        <div class="card-inner">
+          <div class="card-header"><div><h2>↯ Next Actions</h2><p class="subtitle">Generated from permission + fault/package/device state.</p></div></div>
+          <div style="display:grid;gap:10px">
+            <a class="action-row" href="/backoffice/account/new/"><strong>Create account</strong><span>Add customer/dealer in permitted hierarchy.</span></a>
+            <a class="action-row" href="/faults/"><strong>Review active faults</strong><span>37 active system issues need attention.</span></a>
+            <a class="action-row" href="/device-list/"><strong>Review device placement</strong><span>596 mapped-state gaps or pending locations.</span></a>
+            <a class="action-row" href="/backoffice/reports/"><strong>Open reports</strong><span>Review readiness before exporting operational data.</span></a>
+          </div>
+        </div>
+      </aside>
+
+      <article class="card span-7">
+        <div class="card-inner">
+          <div class="card-header"><div><h2>↝ Operations Overview</h2><p class="subtitle">Backoffice should stay a portal and summary, not duplicate the full dashboard analytics page.</p></div><span class="chip blue">D3 summary</span></div>
+          <div class="sparkline" aria-label="Backoffice trend">
+            <svg viewBox="0 0 900 240" preserveAspectRatio="none" role="img" aria-label="operational summary chart">
+              <path d="M0 175 C80 145 120 178 180 138 C240 98 300 128 360 104 C450 64 520 92 600 84 C700 74 760 132 900 80" fill="none" stroke="#22d3ee" stroke-width="5" stroke-linecap="round"/>
+              <path d="M0 194 C90 186 160 192 230 170 C310 146 380 150 460 138 C560 116 660 120 760 110 C820 102 860 98 900 94" fill="none" stroke="#4ade80" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+              <circle cx="650" cy="85" r="8" fill="#fb7185"/><circle cx="735" cy="124" r="7" fill="#fbbf24"/>
+            </svg>
+          </div>
+          <div class="chip-row" style="justify-content:flex-start;margin-top:12px"><span class="chip">Energy kWh</span><span class="chip">Online rate</span><span class="chip rose">Fault markers</span><span class="chip amber">Package expiry</span></div>
+        </div>
+      </article>
+
+      <aside class="card span-5">
+        <div class="card-inner">
+          <div class="card-header"><div><h2>⚠ Active Alerts</h2><p class="subtitle">System-detected issues only; preventive maintenance belongs in maintenance records.</p></div><span class="chip rose">37</span></div>
+          <div style="display:grid;gap:10px">
+            <a class="alert-row" href="/faults/?device_id=SP-088"><div class="row-head"><strong>SP-088 · Promoted lamp-state fault</strong><span class="status-pill bad">P1</span></div><span>Road B · after debounce · ack Operator A · owner Technician A</span></a>
+            <a class="alert-row" href="/faults/?zone=warehouse"><div class="row-head"><strong>Warehouse · Multiple devices offline too long</strong><span class="status-pill bad">P1</span></div><span>9 nearby devices affected · grouped by offline_duration rule</span></a>
+            <a class="alert-row" href="/faults/?device_id=SP-144"><div class="row-head"><strong>SP-144 · Voltage sag</strong><span class="status-pill warn">P2</span></div><span>Parking · min 188V</span></a>
+          </div>
+        </div>
+      </aside>
+
+      <article class="card span-6">
+        <div class="card-inner">
+          <div class="card-header"><div><h2>▤ Customer Packages</h2><p class="subtitle">Package accounts visible to the current role and scope.</p></div><span class="chip amber">expiring soon</span></div>
+          <div style="display:grid;gap:10px">
+            <div class="package-row"><div class="row-head"><strong>Factory AA · BASIC</strong><span class="status-pill good">active</span></div><span>1,240 devices · expires 2028-06-10 · 730 days</span></div>
+            <div class="package-row"><div class="row-head"><strong>City BB · BASIC</strong><span class="status-pill warn">near expiry</span></div><span>430 devices · expires 2026-06-20 · 17 days</span></div>
+            <div class="package-row"><div class="row-head"><strong>Warehouse C · LEGACY</strong><span class="status-pill bad">software expired</span></div><span>UI visible_until 2026-05-31 · actions read-only</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card span-6">
+        <div class="card-inner">
+          <div class="card-header"><div><h2>⌁ Decoded Metrics</h2><p class="subtitle">Quick engineering summary; deep analytics belongs in /dashboard/ while baseline/tariff input belongs in /backoffice/energy/.</p></div></div>
+          <div class="stats-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:0">
+            <div class="stat-card"><span>Avg voltage</span><strong>221V</strong><span>visible range</span></div>
+            <div class="stat-card"><span>Avg current</span><strong>0.82A</strong><span>active lamps</span></div>
+            <div class="stat-card"><span>Avg power</span><strong>180W</strong><span>device mean</span></div>
+            <div class="stat-card"><span>Brightness</span><strong>72%</strong><span>avg dim level</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card span-12">
+        <div class="card-inner">
+          <div class="card-header"><div><h2>▤ Package Sales by Zone / Tag / Device ID</h2><p class="subtitle">Existing package_sales_rows table, capped by scope and entitlement.</p></div><span class="chip">75 rows max</span></div>
+          <div class="table-wrap">
+            <table data-sortable>
+              <thead><tr><th>Customer / Package</th><th>Zone</th><th>Tag</th><th>Device ID</th><th>State</th><th>Metrics</th><th>Gate</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Factory AA</strong><span>BASIC · Street light V2</span></td><td>Road B</td><td>North row</td><td><strong>SP-088</strong><span>SL-088</span></td><td>online-fault · lamp unconfirmed</td><td>220V · 0.00A · 0W</td><td><span class="status-pill good">software active</span></td></tr>
+                <tr><td><strong>City BB</strong><span>BASIC · Street light V2</span></td><td>Warehouse</td><td>Feeder A</td><td><strong>SP-103</strong><span>SL-103</span></td><td>offline · unknown</td><td>last packet 32m ago</td><td><span class="status-pill warn">near expiry</span></td></tr>
+                <tr><td><strong>Warehouse C</strong><span>LEGACY · Street light V1</span></td><td>Parking</td><td>South row</td><td><strong>SP-117</strong><span>SL-117</span></td><td>maintenance · dim 55%</td><td>visible until 2026-05-31</td><td><span class="status-pill bad">read-only</span></td></tr>
+              
+                <tr><td><strong>Factory Delta</strong><span>PRO · Street light V2</span></td><td>Road C</td><td>Feeder 3</td><td><strong>SP-177</strong><span>SL-177</span></td><td>online-warning · ON</td><td>252V · 0.88A · 198W</td><td><span class="status-pill good">software active</span></td></tr>
+                <tr><td><strong>School Lighting E</strong><span>BASIC · Street light V1</span></td><td>Front Gate</td><td>Main entry</td><td><strong>SP-205</strong><span>SL-205</span></td><td>schedule mismatch</td><td>221V · 0.44A · 96W</td><td><span class="status-pill good">software active</span></td></tr>
+                <tr><td><strong>Depot F</strong><span>PRO · Street light V2</span></td><td>Loading</td><td>Dock 2</td><td><strong>SP-221</strong><span>SL-221</span></td><td>online-anomaly</td><td>219V · 1.42A · 304W · PF 0.71</td><td><span class="status-pill warn">hardware near expiry</span></td></tr>
+                <tr><td><strong>Road Authority G</strong><span>ENTERPRISE · Street light V2</span></td><td>Highway 7</td><td>KM 14</td><td><strong>SP-244</strong><span>SL-244</span></td><td>online · dim 45%</td><td>222V · 0.52A · 112W</td><td><span class="status-pill good">software active</span></td></tr>
+</tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+    </section>
+
+
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (backoffice.html / Linked Page Spec: Backoffice Account Management): Linked Page Spec: Backoffice Account Management This section documents the linked /backoffice/account/ page. It should not render as a full account table inside the /backoffice/ root portal. /backoffice/customers/ remains a legacy alias only. canonical route ＋ Create account ← Backoffice Search Level All types Dealer Customer Activation All status Activated Pending Inactive Customer type All categories Factory Government Public lighting Package All package states Active Near expiry Expired Apply Reset Total accounts 42 visible scope only Dealers 4 parent/child hierarchy Customers 38 managed accounts Pending activation 6 primary contact link Expired software 1 read-only gate Account Level Parent Package Contact Status Devices Actions Dealer - dealer01 child dealer under Platform Owner Dealer SmartPole Platform BASIC dealer scope active dealer01@example.com +66... Active 2,340 scope total Open Members บริษัท BB Factory customer Customer dealer01 BASIC expires 2028-06-10 bb@example.com primary contact Pending activation 430 assigned Open Refresh link Warehouse C Public lighting customer Customer dealer01 LEGACY visible_until 2026-05-31 ops@example.com manager Software expired 117 read-only Open Renew Account detail route /backoffice/account/<customer_id>/ Shows package, contact, activation, device counts, purchase lots, edit/delete/recover, and membership entry. Membership route /backoffice/account/<id>/memberships/ Create/invite/resend/deactivate members by role. Pending invitations consume user slots only when package/user policy says so. Mutation gate Permission + entitlement Edit/delete/create/activation/member actions require backoffice.* permission and active software entitlement. -->
+
+
+    <section class="panel" aria-label="Backoffice menu hub">
+      <div class="filter-head"><div><h2>Backoffice Menu Hub</h2><p class="subtitle">This page should route to focused workspaces, not duplicate every workflow inline.</p></div></div>
+      <div class="menu-grid">
+        <a class="mini-card" href="/backoffice/account/"><span>Accounts</span><h3>Customer / Dealer portfolio</h3><p class="subtitle">Requires backoffice.customer.view.</p></a>
+        <a class="mini-card" href="/backoffice/account/new/"><span>Create</span><h3>Create customer/dealer</h3><p class="subtitle">Requires create permission and scope boundary.</p></a>
+        <a class="mini-card" href="/map/"><span>Map</span><h3>Map & alerts workspace</h3><p class="subtitle">Leaflet/OSM map, marker state, and realtime error rail.</p></a>
+        <a class="mini-card" href="/device-list/"><span>Devices</span><h3>Device list & placement</h3><p class="subtitle">Device inventory, QR, placement, and issue state.</p></a>
+        <a class="mini-card" href="/backoffice/control/"><span>Control</span><h3>Device command surface</h3><p class="subtitle">Requires backoffice.device.control + active software.</p></a>
+        <a class="mini-card" href="/backoffice/reports/"><span>Reports</span><h3>Reports / export</h3><p class="subtitle">Requires backoffice.report.access + package export policy.</p></a>
+        <a class="mini-card" href="/backoffice/energy/"><span>Energy</span><h3>Energy baseline input</h3><p class="subtitle">Customer bill history, baseline kWh, tariff, and dashboard compare source.</p></a>
+        <a class="mini-card" href="/faults/"><span>Faults</span><h3>Fault / maintenance command center</h3><p class="subtitle">Issue queue, maintenance records, and repair status.</p></a>
+        <a class="mini-card" href="/settings/"><span>Settings</span><h3>Profile / account preferences</h3><p class="subtitle">Own profile, theme, notifications, password.</p></a>
+      </div>
+    </section>
+
+
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (backoffice.html / Account Management Logic Matrix): Account Management Logic Matrix Specific logic for /backoffice/account/ and child account routes. account page spec Account List Access Route: /backoffice/account/ maps to backoffice_customer_list_view Legacy alias: /backoffice/customers/ should redirect or remain compatibility-only Permission: backoffice.customer.view Scope: platform sees all non-deleted accounts; dealer sees own subtree; customer users do not see portfolio list unless explicitly allowed for own account management use case Account Filters Source: search_query, level_filter, activation_filter, customer_type_filter, sort_by, sort_order Shows: scoped dealer/customer rows only Action: query/filter/sort only; no mutation Expiry: filters stay visible; package and device-derived columns use policy.visible_until Account Table Row Source: customer_rows from visible account queryset Shows: account, level, parent, package, contact, status, devices, actions Action: open detail, manage memberships, refresh activation, renew when allowed Expiry: software expired makes row actions read-only except detail/renew/contact-admin Create Account Route: /backoffice/account/new/ Permission: backoffice.customer.create or dealer.create based on target level Scope: platform may create dealers/customers; dealer may create child dealer/customer under own hierarchy; customer cannot create account portfolio rows Expiry: software expired disables create unless platform policy explicitly allows renewal/support workflow Account Detail Route: /backoffice/account/<customer_id>/ Source: Account, package tier, activation, device counts, device lots, membership permissions Shows: package/contact/activation/device counts/purchase lots/actions Expiry: software expired detail is readable; edit, activation refresh, add lot, add device, member mutation are disabled Memberships Route: /backoffice/account/<id>/memberships/ Permission: backoffice.membership.view/invite/resend/deactivate plus account scope Shows: active/pending/deactivated account memberships Expiry: software expired keeps list readable but disables invite/resend/deactivate unless policy allows admin support action Activation Route: /backoffice/account/<id>/activation/resend/ Permission: backoffice.customer.manage_activation Shows: activated/pending/inactive primary contact state and link expiry Expiry: software expired disables refresh activation link for normal users; renewal/contact-admin remains visible Edit / Delete / Recover Routes: /edit/, /delete/, /recover/ under /backoffice/account/<id>/ Permission: backoffice.customer.edit/delete plus scoped account boundary Behavior: soft delete first; recover inside allowed window Expiry: package expiry should not bypass account lifecycle permissions; mutation disabled unless platform support role -->
+
+
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (backoffice.html / Backoffice Card Logic Matrix): Backoffice Card Logic Matrix Every card must have a data source, visibility rule, action rule, and expiry behavior. implementation spec Root Context Route: /backoffice/ maps to backoffice_dashboard_view Template: templates/core/backoffice_dashboard.html Source context: account, role_name, dashboard_mode, filters, device_stats, fault_counts, active_faults, metrics_summary, package_accounts, package_sales_rows, workspace_readiness, next_actions, backoffice_menu_sections, dashboard_history_chart, history_filter Expiry: package_expiry_info can render renewal/expired overlay before normal card actions Role Mode Source: get_backoffice_dashboard_mode(user, account, permissions) Shows: platform, management, engineer, or display mode Action: mode changes available sections/menu items only Expiry: mode stays visible; expired package changes actions to read-only Filters Source: get_visual_filter_state, zones, device sets, current account scope Shows: scoped account/zone/device/package filters Action: updates query only Expiry: result time range is capped by policy.visible_until Stats Strip Source: device_stats from filtered visible devices Shows: total, online, lamp ON, fault marker, mapped count Action: drill to device-list/map/faults Expiry: values show allowed state only; latest expiry alert may remain visible Setup Readiness Source: workspace_readiness in view context Shows: Accounts, Devices, Control, Reports status Action: cards link only when permission allows Expiry: Control/Reports may become locked when software expired Next Actions Source: can_create_customer, fault_counts, device count, report permission Shows: actionable work list for current role Action: route to focused workflow Expiry: mutation actions replaced by renewal/contact-admin action when expired Active Alerts Source: FaultOccurrence active statuses in visible scope Shows: system-detected issues only Action: open map/faults command center if allowed Expiry: alerts still show, but acknowledge/repair/fix actions disabled Customer Packages Source: package_accounts from visible customer accounts Shows: package name, device count, expiry date, days remaining Action: renewal request or customer detail if permitted Expiry: software expired adds read-only state; hardware expiry adds lifecycle warning Package Sales Table Source: build_backoffice_package_sales_rows(filtered_device_objects) Shows: customer/package/zone/tag/device_id/state/metrics Action: drill to device, package, map, report Expiry: row metrics capped by visible_until; export disabled when policy blocks it Decoded Metrics Source: build_backoffice_metrics_summary(filtered_device_objects) Shows: avg voltage/current/power/brightness quick summary Action: link to energy/report dashboard Expiry: calculations use allowed_time_range only Dashboard History Chart Source: get_dashboard_history_filter + build_dashboard_history_chart(filtered_device_objects) Shows: compact trend only; deep graph work belongs in /dashboard/ Action: switch history range/filter or open /dashboard/ for full analysis Expiry: chart query uses allowed_time_range and must not render post-visible_until points Backoffice Menu Sections Source: build_backoffice_menu_sections(request, account, dashboard_mode) Shows: route cards prepared by central navigation/permission layer Action: navigate to focused pages only when item URL is present Expiry: hidden/locked items stay server-side controlled; template must not invent permission grants -->
+
+
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (backoffice.html / Backoffice Permission / Entitlement Contract): Backoffice Permission / Entitlement Contract Keep route authorization, scope isolation, and package lock server-side. UI only reflects prepared policy. Permission Source apps/core/backoffice_permissions.py get_backoffice_permissions(user, account) Permission examples: backoffice.customer.view backoffice.customer.create backoffice.device.control backoffice.device.import backoffice.device.export backoffice.report.access backoffice.audit.access Scope Isolation Platform owner: all non-deleted accounts. Dealer: dealer account + descendants only. Customer: own account only. Viewer/operator: no customer portfolio mutation. No menu item or URL may bypass server-side scope checks. Entitlement Policy Every backoffice summary/table/action must call: EntitlementPolicy.apply(scope, requested_time_range) Returns: allowed_time_range read_only disabled_actions expiry_notice visible_until Software Expired Do not stop telemetry/API ingestion. UI data is capped at visible_until. Disable: control, retry, acknowledge, assign, repair, close, suppress, export, save mutation. Allow: view notice, profile, renewal request, contact admin. Hardware / Lamp Expired Show lifecycle warning and maintenance/replacement recommendation. Do not cap telemetry by itself. Do not block commands if software entitlement is active and role allows control. Route Relationship /backoffice/ = portal + readiness + role summary /backoffice/account/ = canonical account/dealer/customer portfolio /backoffice/customers/ = legacy alias for account portfolio /backoffice/account/new/ = canonical account creation /backoffice/account/ / = canonical account detail /dashboard/ = executive operations analytics /map/ = canonical Leaflet map operations /backoffice/map/ = legacy alias for map operations /device-list/ = device placement/inventory /faults/ = issue/maintenance command center /backoffice/reports/ = export/reporting -->
+
+  
+    <!-- PACKAGE TELEMETRY POLICY REFERENCE:
+      Source plan: docs/html/device_state_engine.html#package-telemetry-policy
+      PackageTier polling interval, data retention, software expiry, and hardware warranty must be resolved server-side.
+      This page must not hardcode telemetry cadence, data visibility, export range, or expiry behavior.
+      Apply PackageTelemetryPolicy + EntitlementPolicy before dashboard/map/device/fault/report/notification queries.
+    -->
+
+  </main>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+    const profileMenu = document.querySelector('[data-profile-menu]');
+    const profileToggle = document.querySelector('[data-profile-toggle]');
+    const widgetMenu = document.querySelector('[data-widget-menu]');
+    const widgetToggle = document.querySelector('[data-widget-toggle]');
+
+    themeToggle?.addEventListener('click', () => {
+      const isLight = body.classList.toggle('is-light');
+      themeToggle.textContent = isLight ? '☼ Light' : '☾ Dark';
+      themeToggle.setAttribute('aria-pressed', String(!isLight));
+    });
+
+    profileToggle?.addEventListener('click', () => {
+      profileMenu?.classList.toggle('is-open');
+      widgetMenu?.classList.remove('is-open');
+    });
+
+    widgetToggle?.addEventListener('click', () => {
+      widgetMenu?.classList.toggle('is-open');
+      profileMenu?.classList.remove('is-open');
+    });
+
+    document.addEventListener('click', (event) => {
+      if (profileMenu && !profileMenu.contains(event.target)) profileMenu.classList.remove('is-open');
+      if (widgetMenu && !widgetMenu.contains(event.target)) widgetMenu.classList.remove('is-open');
+    });
+  </script>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

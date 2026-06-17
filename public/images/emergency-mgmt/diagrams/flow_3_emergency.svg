@@ -1,0 +1,110 @@
+<svg viewBox="0 0 1040 720" xmlns="http://www.w3.org/2000/svg" font-family="'Sarabun','Tahoma',sans-serif" role="img" aria-labelledby="t3 d3">
+  <title id="t3">Workflow แพ็กเกจ Emergency — บริหารจัดการเหตุฉุกเฉินเต็มระบบ</title>
+  <desc id="d3">รวมทุกช่องทาง (ประชาชน Sensor และ AI Vision) เข้าศูนย์ คัดกรอง 3 รูปแบบ สั่งการทรัพยากร แจ้งเตือนหลายช่องทาง และอัปเดตครบ 4 ระยะของเหตุ</desc>
+  <defs>
+    <marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5F6B65"/></marker>
+    <marker id="a3g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#0F6E56"/></marker>
+    <marker id="a3a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#BA7517"/></marker>
+  </defs>
+  <rect width="1040" height="720" fill="#FAF7EE"/>
+  <text x="40" y="44" font-size="26" font-weight="700" fill="#0B5544">แพ็กเกจ Emergency — บริหารจัดการเหตุฉุกเฉินเต็มรูปแบบ</text>
+  <text x="40" y="72" font-size="15" fill="#5F6B65">รวมประชาชน · Sensor · AI Vision เข้าศูนย์เดียว — คัดกรอง สั่งการทรัพยากร และแจ้งเตือนครบวงจร</text>
+
+  <!-- column labels -->
+  <text x="150" y="108" font-size="13.5" font-weight="700" fill="#0F6E56" text-anchor="middle">① ช่องทางแจ้งเหตุ (หลากหลาย)</text>
+  <text x="470" y="108" font-size="13.5" font-weight="700" fill="#0F6E56" text-anchor="middle">② ศูนย์ + คัดกรอง 3 รูปแบบ</text>
+  <text x="800" y="108" font-size="13.5" font-weight="700" fill="#0F6E56" text-anchor="middle">③ สั่งการ + ปลายทาง</text>
+
+  <!-- Sources -->
+  <g font-size="12.5">
+    <rect x="40" y="124" width="220" height="38" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/><text x="150" y="148" text-anchor="middle" font-weight="700" fill="#1F2A24">ประชาชน: LINE OA · เว็บ · Mobile</text>
+    <rect x="40" y="168" width="220" height="38" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/><text x="150" y="192" text-anchor="middle" font-weight="700" fill="#1F2A24">Call Center / เจ้าหน้าที่รับแจ้ง</text>
+    <rect x="40" y="212" width="220" height="38" rx="9" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/><text x="150" y="236" text-anchor="middle" font-weight="700" fill="#1F2A24">Sensor IoT (น้ำ · ฝุ่น · สารเคมี)</text>
+    <rect x="40" y="256" width="220" height="38" rx="9" fill="#FFFFFF" stroke="#BA7517" stroke-width="1.3"/><text x="150" y="280" text-anchor="middle" font-weight="700" fill="#1F2A24">AI Vision จากกล้องของหน่วยงาน</text>
+  </g>
+  <text x="150" y="312" font-size="11" fill="#5F6B65" text-anchor="middle">เหตุ: ไฟไหม้ · รถชน · น้ำเสีย · น้ำท่วม · สารเคมี · ร้องเรียน</text>
+
+  <!-- Center: intake + 3 screening modes -->
+  <rect x="320" y="124" width="300" height="76" rx="12" fill="#0F6E56"/>
+  <text x="470" y="152" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">ศูนย์ข้อมูลกลาง (Zeroloss Center)</text>
+  <text x="470" y="174" font-size="11.5" fill="#EAF3DE" text-anchor="middle">รวมทุกช่องทาง · GIS แผนที่ · ข้อมูลชุดเดียวกันทุกฝ่าย</text>
+  <text x="470" y="192" font-size="11.5" fill="#EAF3DE" text-anchor="middle">Chem Hub (MSDS) · Hazard Modeling</text>
+
+  <text x="470" y="228" font-size="13" font-weight="700" fill="#0B5544" text-anchor="middle">กระบวนการคัดกรองก่อนแจ้งเตือน — เลือกได้ 3 รูปแบบ</text>
+  <g font-size="11.5">
+    <rect x="320" y="240" width="96" height="92" rx="10" fill="#FCEBEB" stroke="#A32D2D" stroke-width="1.3"/>
+    <text x="368" y="262" text-anchor="middle" font-weight="700" fill="#A32D2D">รูปแบบ 1</text>
+    <text x="368" y="282" text-anchor="middle" fill="#1F2A24">ตรวจสอบ</text>
+    <text x="368" y="298" text-anchor="middle" fill="#1F2A24">ทุกประเภท</text>
+    <text x="368" y="318" text-anchor="middle" fill="#5F6B65">ปลอดภัยสูงสุด</text>
+
+    <rect x="422" y="240" width="96" height="92" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.3"/>
+    <text x="470" y="262" text-anchor="middle" font-weight="700" fill="#BA7517">รูปแบบ 2</text>
+    <text x="470" y="282" text-anchor="middle" fill="#1F2A24">ตรวจสอบ</text>
+    <text x="470" y="298" text-anchor="middle" fill="#1F2A24">บางประเภท</text>
+    <text x="470" y="318" text-anchor="middle" fill="#5F6B65">สมดุล (แนะนำ)</text>
+
+    <rect x="524" y="240" width="96" height="92" rx="10" fill="#EAF3DE" stroke="#639922" stroke-width="1.3"/>
+    <text x="572" y="262" text-anchor="middle" font-weight="700" fill="#3d6b12">รูปแบบ 3</text>
+    <text x="572" y="282" text-anchor="middle" fill="#1F2A24">ไม่ตรวจสอบ</text>
+    <text x="572" y="298" text-anchor="middle" fill="#1F2A24">แจ้งทันที</text>
+    <text x="572" y="318" text-anchor="middle" fill="#5F6B65">เร็วสุด</text>
+  </g>
+  <text x="470" y="352" font-size="10.5" fill="#5F6B65" text-anchor="middle">เจ้าหน้าที่ได้รับทันทีเสมอ · ส่วนประชาชนคัดกรองตามรูปแบบที่เลือก</text>
+
+  <!-- Right: command + destinations -->
+  <rect x="680" y="124" width="320" height="74" rx="12" fill="#BA7517"/>
+  <text x="840" y="150" font-size="14.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">บริหารทรัพยากร + ทีมปฏิบัติงาน</text>
+  <text x="840" y="170" font-size="11" fill="#FAEEDA" text-anchor="middle">จัดสรรกำลังตามระดับความรุนแรง · ศูนย์บัญชาการ</text>
+  <text x="840" y="188" font-size="11" fill="#FAEEDA" text-anchor="middle">หัวจ่ายน้ำดับเพลิง · คลังโฟม · ผู้เชี่ยวชาญสารเคมี</text>
+
+  <g font-size="12.5" fill="#1F2A24">
+    <rect x="680" y="208" width="320" height="34" rx="8" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.1"/><text x="840" y="230" text-anchor="middle" font-weight="700">ปภ. · ดับเพลิง · กู้ชีพ EMS</text>
+    <rect x="680" y="248" width="320" height="34" rx="8" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.1"/><text x="840" y="270" text-anchor="middle" font-weight="700">ตำรวจ · โรงพยาบาล · มูลนิธิในพื้นที่</text>
+    <rect x="680" y="288" width="320" height="34" rx="8" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.1"/><text x="840" y="310" text-anchor="middle" font-weight="700">กองช่าง · สาธารณสุข · อาสาสมัคร</text>
+  </g>
+
+  <!-- arrows sources->center -->
+  <path d="M260,143 L314,150" fill="none" stroke="#5F6B65" stroke-width="1.5" marker-end="url(#a3)"/>
+  <path d="M260,187 L314,162" fill="none" stroke="#5F6B65" stroke-width="1.5" marker-end="url(#a3)"/>
+  <path d="M260,231 L314,172" fill="none" stroke="#5F6B65" stroke-width="1.5" marker-end="url(#a3)"/>
+  <path d="M260,275 L314,184" fill="none" stroke="#BA7517" stroke-width="1.5" marker-end="url(#a3a)"/>
+  <!-- center->command -->
+  <path d="M620,162 L676,160" fill="none" stroke="#0F6E56" stroke-width="1.8" marker-end="url(#a3g)"/>
+  <!-- screening->destinations (down then right) -->
+  <path d="M572,332 Q640,360 700,322" fill="none" stroke="#0F6E56" stroke-width="1.6" marker-end="url(#a3g)"/>
+
+  <!-- Notify multi-channel -->
+  <rect x="40" y="392" width="600" height="74" rx="12" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/>
+  <text x="60" y="418" font-size="14" font-weight="700" fill="#0B5544">Mass Notify — แจ้งเตือนหลายช่องทาง</text>
+  <text x="60" y="440" font-size="12" fill="#5F6B65">LINE OA · SMS · Email · Mobile App · อุปกรณ์ IoT</text>
+  <text x="60" y="458" font-size="12" fill="#5F6B65">แจ้งทั้งหมด / เฉพาะพื้นที่ (Geo-fencing) / เจาะจงกลุ่มเป้าหมาย พร้อมคำแนะนำการปฏิบัติตัว</text>
+
+  <!-- Update: 4 phases -->
+  <rect x="660" y="392" width="340" height="74" rx="12" fill="#EAF3DE" stroke="#639922" stroke-width="1.4"/>
+  <text x="680" y="416" font-size="13.5" font-weight="700" fill="#3d6b12">อัปเดตครบ 4 ระยะของเหตุ</text>
+  <text x="680" y="438" font-size="11.5" fill="#3d6b12">ก่อนเกิด → เริ่มเกิด → ระหว่างเกิด → สิ้นสุด</text>
+  <text x="680" y="456" font-size="11" fill="#3d6b12">ทุกฝ่ายเห็นข้อมูลชุดเดียวกัน real-time · สรุปหลังเหตุ</text>
+
+  <!-- feedback loop -->
+  <path d="M470,392 Q470,365 470,356" fill="none" stroke="#639922" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#a3g)"/>
+  <path d="M830,392 Q620,470 472,356" fill="none" stroke="#639922" stroke-width="1.3" stroke-dasharray="5 4"/>
+
+  <text x="40" y="506" font-size="11.5" fill="#A32D2D">★ เหมาะกับหน่วยงานที่ต้องการระบบบัญชาการเหตุครบวงจร — รับแจ้ง คัดกรอง สั่งการ แจ้งเตือน และสรุปผล ในแพลตฟอร์มเดียว</text>
+
+  <!-- 4 phase strip -->
+  <g font-size="11.5">
+    <rect x="40" y="524" width="232" height="40" rx="8" fill="#F5F1E4" stroke="#5F6B65" stroke-width="0.8"/><text x="156" y="542" text-anchor="middle" font-weight="700" fill="#0B5544">ก่อนเกิดเหตุ</text><text x="156" y="558" text-anchor="middle" fill="#5F6B65">เตรียมข้อมูลพื้นที่เสี่ยง</text>
+    <rect x="280" y="524" width="232" height="40" rx="8" fill="#F5F1E4" stroke="#5F6B65" stroke-width="0.8"/><text x="396" y="542" text-anchor="middle" font-weight="700" fill="#0B5544">เริ่มเกิดเหตุ</text><text x="396" y="558" text-anchor="middle" fill="#5F6B65">วิเคราะห์ความเสี่ยง/ผลกระทบ</text>
+    <rect x="520" y="524" width="232" height="40" rx="8" fill="#F5F1E4" stroke="#5F6B65" stroke-width="0.8"/><text x="636" y="542" text-anchor="middle" font-weight="700" fill="#0B5544">ระหว่างเกิดเหตุ</text><text x="636" y="558" text-anchor="middle" fill="#5F6B65">รับแจ้ง+แจ้งเตือนพร้อมกัน</text>
+    <rect x="760" y="524" width="240" height="40" rx="8" fill="#F5F1E4" stroke="#5F6B65" stroke-width="0.8"/><text x="880" y="542" text-anchor="middle" font-weight="700" fill="#0B5544">หลังเกิดเหตุ</text><text x="880" y="558" text-anchor="middle" fill="#5F6B65">รวบรวมความเสียหาย+รายงาน</text>
+  </g>
+
+  <rect x="40" y="586" width="6" height="22" fill="#0F6E56"/>
+  <text x="56" y="602" font-size="12" font-weight="700" fill="#0B5544">Smart Center Solution Platform</text>
+  <g font-size="11" fill="#5F6B65">
+    <rect x="700" y="592" width="14" height="10" fill="#A32D2D"/><text x="720" y="601">เข้มงวด</text>
+    <rect x="800" y="592" width="14" height="10" fill="#BA7517"/><text x="820" y="601">สมดุล</text>
+    <rect x="890" y="592" width="14" height="10" fill="#639922"/><text x="910" y="601">เร็วสุด</text>
+  </g>
+</svg>

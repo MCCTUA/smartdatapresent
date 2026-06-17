@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SmartPole — Lot / Device / Location / Dashboard Flow</title>
+<style>
+  :root{
+    --bg:#0b1118;--panel:#121c27;--panel2:#162230;--line:#26394e;--text:#e6edf3;--muted:#9fb0c0;
+    --cyan:#22d3ee;--blue:#5ec8ff;--green:#34d399;--amber:#fbbf24;--rose:#f87171;--violet:#c4b5fd;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#091017,#0b1118 58%,#101720);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;line-height:1.55}
+  a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+  .page{width:min(1500px,calc(100% - 32px));margin:0 auto;padding:26px 0 56px}
+  header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end;margin-bottom:18px}
+  h1{margin:0;font-size:clamp(28px,4vw,52px);line-height:1;letter-spacing:0}
+  h2{margin:26px 0 10px;color:var(--blue);font-size:1.25rem;border-bottom:1px solid var(--line);padding-bottom:8px}
+  h3{margin:0 0 7px;font-size:1rem;color:#f8fbff}
+  p{margin:0;color:var(--muted)}
+  code{background:#0e1620;border:1px solid var(--line);padding:1px 6px;border-radius:6px;font-size:.83em;color:#bfe3ff}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.04);font-size:.78rem;font-weight:800;color:#d9e8f3;white-space:nowrap}
+  .pill.ok{border-color:rgba(52,211,153,.42);background:rgba(52,211,153,.12);color:#bbf7d0}
+  .pill.warn{border-color:rgba(251,191,36,.42);background:rgba(251,191,36,.12);color:#fde68a}
+  .pill.info{border-color:rgba(34,211,238,.40);background:rgba(34,211,238,.11);color:#cffafe}
+  .lede{border:1px solid var(--line);border-radius:8px;background:linear-gradient(135deg,rgba(34,211,238,.10),rgba(18,28,39,.90));padding:16px;margin:14px 0 18px}
+  .mindmap{position:relative;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-items:start;margin-top:18px}
+  .center{grid-column:5/span 4;grid-row:1/span 2;position:sticky;top:16px;z-index:2;border:2px solid rgba(34,211,238,.52);border-radius:8px;background:linear-gradient(145deg,rgba(34,211,238,.18),rgba(18,28,39,.96));box-shadow:0 24px 70px rgba(0,0,0,.34);padding:18px;text-align:center}
+  .center strong{display:block;font-size:1.2rem;color:#eaffff}
+  .center span{display:block;margin-top:8px;color:#a9c6d8;font-size:.88rem}
+  .branch{position:relative;border:1px solid var(--line);border-radius:8px;background:rgba(18,28,39,.94);padding:14px;min-height:156px}
+  .branch:before{content:"";position:absolute;top:28px;height:2px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+  .left:before{right:-16px;width:16px}.right:before{left:-16px;width:16px}
+  .b1{grid-column:1/span 4;grid-row:1}.b2{grid-column:1/span 4;grid-row:2}.b3{grid-column:1/span 4;grid-row:3}
+  .b4{grid-column:9/span 4;grid-row:1}.b5{grid-column:9/span 4;grid-row:2}.b6{grid-column:9/span 4;grid-row:3}
+  .b7{grid-column:5/span 4;grid-row:3}.b8{grid-column:1/span 6;grid-row:4}.b9{grid-column:7/span 6;grid-row:4}
+  .branch h3{display:flex;align-items:center;gap:8px}
+  .dot{width:12px;height:12px;border-radius:999px;display:inline-block;flex:0 0 auto}
+  .cyan{background:var(--cyan)}.green{background:var(--green)}.amber{background:var(--amber)}.rose{background:var(--rose)}.violet{background:var(--violet)}.blue{background:var(--blue)}
+  ul{margin:8px 0 0;padding-left:18px;color:var(--text)}
+  li{margin:4px 0;color:#dce7ef}
+  .small{font-size:.84rem;color:var(--muted)}
+  .warnbox,.goodbox,.badbox,.note{border-left:3px solid var(--amber);background:rgba(251,191,36,.08);border-radius:0 8px 8px 0;padding:10px 13px;margin:14px 0}
+  .goodbox{border-left-color:var(--green);background:rgba(52,211,153,.07)}.badbox{border-left-color:var(--rose);background:rgba(248,113,113,.08)}.note{border-left-color:var(--blue);background:rgba(94,200,255,.07)}
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .card{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:13px}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.86rem}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
+  footer{border-top:1px solid var(--line);margin-top:28px;padding-top:12px;color:var(--muted);font-size:.82rem}
+  @media(max-width:1100px){
+    header{grid-template-columns:1fr}.meta{justify-content:flex-start}
+    .mindmap{grid-template-columns:1fr}.center,.b1,.b2,.b3,.b4,.b5,.b6,.b7,.b8,.b9{grid-column:auto;grid-row:auto}.center{position:static}.branch:before{display:none}.grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <header>
+    <div>
+      <h1>SmartPole Flow Diagram</h1>
+      <p>กล่อง flow สำหรับเพิ่ม lot, เพิ่ม device id/pole id, เลือก location type, และการแสดงผล dashboard โดยอิงเอกสารแม่กับ logic ใน service/form/view จริง.</p>
+    </div>
+    <div class="meta">
+      <span class="pill info">source: master_doc.html</span>
+      <span class="pill ok">Python 3.13 target</span>
+      <span class="pill warn">Keep InfluxDB 2.7 for now</span>
+    </div>
+  </header>
+
+  <section class="lede">
+    <h2 style="margin-top:0">แกนคิดเดียว</h2>
+    <p><b>Device identity, placement, telemetry, package entitlement, and reports must all pass through shared services.</b> ห้ามให้หน้า admin/frontend/report สร้าง logic ซ้ำ เพราะจะเกิด drift ทันทีเมื่อ device ย้าย customer, lot หมดอายุ, หรือ Pole Group ใช้ zone/tag เป็น Group/Pole.</p>
+  </section>
+
+  <section>
+    <h2>Box Diagram — Add Lot → Add ID → Location → Dashboard</h2>
+    <div class="note">
+      <b>Logic surface map:</b> source of truth = <code>DeviceSet</code>, <code>DeviceSetPricingLine</code>, <code>Device</code>, <code>DeviceLotService</code>, <code>CustomerDeviceAdminForm</code>, <code>node_placement_policy.py</code>, and <code>serialize_device_summary()</code>. Management surfaces = DeviceSet admin, account manage devices, CSV import. Display surfaces = device-list, map, dashboard, device detail, reports.
+    </div>
+
+    <h3>Lane A — Create / Manage Lot</h3>
+    <div class="grid">
+      <article class="card"><h3>A1 · Select customer scope</h3><p>PO/Dealer เลือก customer ก่อนสร้าง lot; Customer เห็น workspace ตัวเองเท่านั้น. ทุก query ต้องผ่าน account scope helper.</p></article>
+      <article class="card"><h3>A2 · Create DeviceSet lot</h3><p><code>/admin/smartpoleapp/deviceset/</code> กำหนด package/trial, lifecycle dates, software/hardware expiry, fetch policy.</p></article>
+      <article class="card"><h3>A3 · Choose lot_kind + layout</h3><p><b>Lamp IOT</b> = telemetry/control. <b>Pole Group</b> = manual pole items; group meter/fault API เป็น Phase 2. Layout = Map หรือ Floor.</p></article>
+      <article class="card"><h3>A4 · Add pricing lines</h3><p><code>DeviceSetPricingLine</code> เก็บ bucket เช่น 100W x 10, 200W x 20. Quantity ที่ซื้ออยู่ที่ <code>lamp_quantity</code>.</p></article>
+      <article class="card"><h3>A5 · Summary / capacity SSOT</h3><p><code>DeviceLotService.lot_summary()</code> และ <code>can_add_device_to_line()</code> คำนวณ used/remaining/status/warning ให้ admin/frontend เรียกชุดเดียว.</p></article>
+    </div>
+
+    <h3>Lane B — Add Device ID / Pole ID</h3>
+    <div class="grid">
+      <article class="card"><h3>B1 · Open Manage devices</h3><p><code>/admin/accounts/account/&lt;id&gt;/devices/</code> โหลด lot summaries, pricing filters, add-device drawer, import/template/export ต่อ lot.</p></article>
+      <article class="card"><h3>B2 · Pick pricing detail</h3><p>เลือก line ที่จะ consume slot. ถ้า line เต็มหรือ lot expired/inactive form จะ reject ผ่าน <code>clean_pricing_line()</code>.</p></article>
+      <article class="card"><h3>B3 · Field rules by lot_kind</h3><p>Lamp IOT ต้องมี id, watt, IMEI/SIM expiry, serial, catalog. Pole Group ต้องมี pole id + watt; ไม่มี SIM/serial/catalog.</p></article>
+      <article class="card"><h3>B4 · Generate QR round 1</h3><p>ก่อน save ต้อง generate QR. QR bind กับ URL <code>device_qr_detail</code> จาก device/pole id; Pole Group ไม่มี serial ก็ยังมี QR.</p></article>
+      <article class="card"><h3>B5 · Save + bind lot</h3><p>save ตั้ง <code>account</code>, <code>device_set</code>, <code>pricing_line</code>. Lamp IOT bootstrap provider; Pole Group skip provider sync.</p></article>
+    </div>
+
+    <h3>Lane C — Location Type / Placement</h3>
+    <div class="grid">
+      <article class="card"><h3>C1 · Entry point</h3><p><code>/device-list/</code> Location column เปิด placement drawer. <code>/devices/&lt;id&gt;/</code> เป็น read detail ไม่ใช่ placement editor.</p></article>
+      <article class="card"><h3>C2 · Place later</h3><p>สร้าง id/pole ได้ก่อนโดยยังไม่วางตำแหน่ง. ระบบยังถือว่าไม่สมบูรณ์จนบันทึก placement และ re-stamp QR รอบสอง.</p></article>
+      <article class="card"><h3>C3 · Map placement</h3><p>เก็บ <code>latitude</code> + <code>longitude</code>; form clear <code>position_x/y_pct</code>. Map marker แสดงเมื่อมี lat/lng.</p></article>
+      <article class="card"><h3>C4 · Floor placement</h3><p>เก็บ <code>zone</code> + <code>position_x_pct</code>/<code>position_y_pct</code>; form clear lat/lng. Floor plan บังคับ zone.</p></article>
+      <article class="card"><h3>C5 · Pole Group rule</h3><p>Contract target: ใช้งานจริงต้องมี <code>Zone=Group</code> และ <code>Tag=Pole</code> ตอน placement/import. Live code ตอนนี้บังคับ zone แต่ <code>tag_required()</code> ยังบังคับเฉพาะ group/meter node; ต้องแก้ policy/test ให้ตรง contract.</p></article>
+    </div>
+
+    <h3>Lane D — Dashboard / Map / Report Display</h3>
+    <div class="grid">
+      <article class="card"><h3>D1 · Serialize device</h3><p><code>serialize_device_summary()</code> คืน placement status, location source, lat/lng, zone/tag, lot fields ให้ device-list/map/dashboard ใช้.</p></article>
+      <article class="card"><h3>D2 · Conditional display</h3><p><code>DeviceLotService.scope_display_flags()</code> ตัดสิน SIM/control/zone/type columns จาก lot_kind/layout จริงใน scope. ห้าม template คำนวณเอง.</p></article>
+      <article class="card"><h3>D3 · Dashboard metrics</h3><p>dashboard scoped queryset → filters → live snapshot refresh → <code>IoTDashboardAggregationService</code> → history chart/analytics.</p></article>
+      <article class="card"><h3>D4 · Dashboard map</h3><p>dashboard map payload plot เฉพาะ device ที่มี lat/lng และจำกัด 100 markers; floor-only devices ต้องดูผ่าน floor/zone workspace.</p></article>
+      <article class="card"><h3>D5 · Reports / exports</h3><p>Report/export ต้องใช้ current preview query/filter เดียวกับ UI และ clamp date window ตาม package expiry ก่อน query/export.</p></article>
+    </div>
+  </section>
+
+  <section class="mindmap" aria-label="SmartPole flow mindmap">
+    <div class="center">
+      <strong>SmartPole SSOT Flow</strong>
+      <span>Account scoped · Lot typed · Owner stamped · Service-first · Guarded by tests</span>
+    </div>
+
+    <article class="branch left b1">
+      <h3><span class="dot blue"></span>1. Account / Tenant</h3>
+      <ul>
+        <li>Platform Owner → Dealer → Customer → User</li>
+        <li>ทุก query ต้องผ่าน account context/helper</li>
+        <li>Branding, package, permission, visibility แยกตาม account tree</li>
+      </ul>
+    </article>
+
+    <article class="branch left b2">
+      <h3><span class="dot violet"></span>2. Package / Lot</h3>
+      <ul>
+        <li><code>DeviceSet</code> = lot purchase + lifecycle</li>
+        <li><code>DeviceSetPricingLine</code> = quantity/watt/price bucket</li>
+        <li><code>DeviceLotService</code> = summary/capacity/status SSOT</li>
+      </ul>
+    </article>
+
+    <article class="branch left b3">
+      <h3><span class="dot amber"></span>3. Device Provision</h3>
+      <ul>
+        <li>PO/Dealer สร้าง identity ก่อน placement ได้</li>
+        <li>QR รอบแรกหลัง save identity/provision data</li>
+        <li>ห้ามสร้าง device เกิน lot capacity</li>
+      </ul>
+    </article>
+
+    <article class="branch right b4">
+      <h3><span class="dot cyan"></span>4. Placement</h3>
+      <ul>
+        <li>Map = lat/lng</li>
+        <li>Floor = building/floor/zone/tag/x/y</li>
+        <li>Pole Group ใช้งานจริงต้องมี <code>Zone=Group</code>, <code>Tag=Pole</code></li>
+      </ul>
+    </article>
+
+    <article class="branch right b5">
+      <h3><span class="dot green"></span>5. Telemetry Ingest</h3>
+      <ul>
+        <li>Device → EMQX → Node-RED/consumer → Django API/service</li>
+        <li>PostgreSQL = business state/latest/fault</li>
+        <li>InfluxDB = historical telemetry, owner-safe tag <code>account_id</code></li>
+      </ul>
+    </article>
+
+    <article class="branch right b6">
+      <h3><span class="dot rose"></span>6. Fault / Control</h3>
+      <ul>
+        <li>Control target = current assignment + permission + entitlement</li>
+        <li>Fault rows must stamp account at write time</li>
+        <li>Pole Group fault uses expected watt vs measured group watt</li>
+      </ul>
+    </article>
+
+    <article class="branch b7">
+      <h3><span class="dot blue"></span>7. UI / API / Reports</h3>
+      <ul>
+        <li>Dashboard, device list, map, zone, report read shared payloads</li>
+        <li>Exports must use same filtered preview query</li>
+        <li>Expiry/date windows must clamp before query/export</li>
+      </ul>
+    </article>
+
+    <article class="branch b8">
+      <h3><span class="dot green"></span>8. Runtime Decision</h3>
+      <ul>
+        <li>Python target = <code>3.13</code></li>
+        <li>Django 6.0 supports Python 3.13</li>
+        <li>Upgrade slice: Dockerfile, pyproject, lock, requirements, CI</li>
+      </ul>
+    </article>
+
+    <article class="branch b9">
+      <h3><span class="dot amber"></span>9. InfluxDB Decision</h3>
+      <ul>
+        <li>Production-safe path now = keep <code>InfluxDB 2.7</code></li>
+        <li>Reason: v3 Core is not drop-in for Flux/history workload</li>
+        <li>Future: rewrite adapter to SQL/InfluxQL before v3 cutover</li>
+      </ul>
+    </article>
+  </section>
+
+  <section>
+    <h2>Flow By Responsibility</h2>
+    <div class="grid">
+      <article class="card">
+        <h3>Write Path</h3>
+        <p class="small">All writes must go through services that validate scope, package, capacity, and ownership.</p>
+        <ul>
+          <li>Account create/update → account services</li>
+          <li>Device import/add → <code>DeviceImportService</code> + <code>DeviceLotService</code></li>
+          <li>Telemetry write → ingestion + owner stamp</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Read Path</h3>
+        <p class="small">Historical reads must not trust the device current account after transfer.</p>
+        <ul>
+          <li>Current owner → <code>DeviceOwnershipService.current_owner()</code></li>
+          <li>Historical owner → stamped <code>account_id</code></li>
+          <li>Package/lot display → <code>account_lot_summary()</code></li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Guard Path</h3>
+        <p class="small">Every repeated rule needs a test that fails when a surface bypasses the SSOT.</p>
+        <ul>
+          <li>No duplicated map payload logic</li>
+          <li>No cross-customer mutation on active device row</li>
+          <li>No v3 Influx cutover before adapter rewrite</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Lamp IOT vs Pole Group</h2>
+    <table>
+      <tr><th>Topic</th><th>Lamp IOT</th><th>Pole Group</th></tr>
+      <tr><td>Provision</td><td>device id + catalog/SIM/serial/watt ตาม lot requirement</td><td>pole/group item id + watt; zone/tag ยังไม่บังคับตอน provision</td></tr>
+      <tr><td>Placement</td><td>Map/Floor placement; zone/tag ใช้ได้แต่ไม่ใช่ identity หลัก</td><td>บังคับ <code>zone</code> + <code>tag</code> ตอนใช้งานจริง หรือ import CSV ต่อ lot</td></tr>
+      <tr><td>Meaning</td><td>Zone/Tag = grouping/filter/display</td><td><code>Zone = Group</code>, <code>Tag = Pole</code></td></tr>
+      <tr><td>Fault logic</td><td>device-level telemetry/state</td><td>group meter measured watt vs expected watt sum</td></tr>
+      <tr><td>QR</td><td>Round 1 provision, Round 2 after placement</td><td>Round 1 provision, Round 2 after zone/tag/location placement</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>InfluxDB 2.7 vs 3 Core Decision</h2>
+    <div class="warnbox">
+      <b>Decision now:</b> ใช้ InfluxDB 2.7 ต่อสำหรับ production/commercial long-history path จนกว่า adapter rewrite และ query comparison ผ่าน. Python 3.13 upgrade ทำแยกได้ ไม่ต้องผูกกับ InfluxDB 3.
+    </div>
+    <table>
+      <tr><th>Need</th><th>InfluxDB 2.7</th><th>InfluxDB 3 Core</th><th>SmartPole decision</th></tr>
+      <tr><td>Flux query เดิม</td><td>รองรับ</td><td>ไม่ใช่ compatibility path หลัก</td><td>อยู่ 2.7 ก่อน</td></tr>
+      <tr><td>Long-history query ฟรี/เชิงพาณิชย์</td><td>เหมาะกว่า ณ ตอนนี้</td><td>ต้องพิสูจน์ workload และ feature gap</td><td>ไม่ cutover จน benchmark ผ่าน</td></tr>
+      <tr><td>Write path</td><td><code>/api/v2/write</code></td><td><code>/api/v3/write_lp</code> หรือ compatibility</td><td>rewrite adapter ก่อน</td></tr>
+      <tr><td>Data model</td><td>org/bucket/measurement</td><td>database/table/columns</td><td>เพิ่ม abstraction <code>database</code> ภายหลัง</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Implementation Order</h2>
+    <ol>
+      <li>Keep InfluxDB 2.7 in compose and docs as current runtime decision.</li>
+      <li>Upgrade Python to 3.13: Dockerfile, pyproject, uv.lock, requirements, GitHub workflows.</li>
+      <li>Keep telemetry flags conservative: Influx write/query off until tests confirm behavior.</li>
+      <li>Refactor only through <code>InfluxTelemetryService</code> when preparing v3; no dashboard/report direct query.</li>
+      <li>When v3 is revisited, write SQL/InfluxQL adapter tests first, then compose change, then staged dual-run.</li>
+    </ol>
+  </section>
+
+  <footer>
+    <code>docs/flow_diagram.html</code> · mindmap regenerated 2026-06-17 · sources: <a href="master_doc.html">master_doc.html</a>, <a href="html/logic_flow.html">docs/html/logic_flow.html</a>, <a href="html/influx.html">docs/html/influx.html</a>
+  </footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" font-family="'Sarabun','Tahoma',sans-serif" role="img" aria-labelledby="t4 d4">
+  <title id="t4">โปรโมชัน LRP — เชื่อมกล้อง 5 ตัวของหน่วยงานเข้าระบบ</title>
+  <desc id="d4">ระบบอ่านป้ายทะเบียนจากกล้องเดิม 5 ตัว ประมวลผล on-premise บนเซิร์ฟเวอร์หน่วยงาน หากเซิร์ฟเวอร์ไม่พอจึงเสริม Jetson Orin แล้วส่งเหตุการณ์เข้าศูนย์</desc>
+  <defs>
+    <marker id="a4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5F6B65"/></marker>
+    <marker id="a4g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#0F6E56"/></marker>
+    <marker id="a4a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#BA7517"/></marker>
+  </defs>
+  <rect width="1000" height="600" fill="#FAF7EE"/>
+  <rect x="40" y="24" width="520" height="30" rx="15" fill="#BA7517"/>
+  <text x="56" y="45" font-size="15" font-weight="700" fill="#FFFFFF">★ โปรโมชันเข้าตลาด — เสริมเข้ากับแพ็กเกจ Starter</text>
+  <text x="40" y="86" font-size="25" font-weight="700" fill="#0B5544">ต่อยอดกล้อง CCTV เดิม — อ่านป้ายทะเบียนรถ (LRP)</text>
+  <text x="40" y="112" font-size="14.5" fill="#5F6B65">ใช้กล้องที่หน่วยงานมีอยู่แล้ว 5 ตัว · ประมวลผลในพื้นที่ (On-Premise) · ไม่ต้องลงทุนกล้องใหม่</text>
+
+  <!-- Cameras -->
+  <text x="130" y="158" font-size="13.5" font-weight="700" fill="#0F6E56" text-anchor="middle">① กล้องเดิมของหน่วยงาน</text>
+  <g font-size="12.5">
+    <rect x="40" y="172" width="180" height="34" rx="8" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/><text x="130" y="194" text-anchor="middle" fill="#1F2A24">กล้อง 1 — ทางเข้า-ออก</text>
+    <rect x="40" y="212" width="180" height="34" rx="8" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/><text x="130" y="234" text-anchor="middle" fill="#1F2A24">กล้อง 2 — จุดตรวจ</text>
+    <rect x="40" y="252" width="180" height="34" rx="8" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/><text x="130" y="274" text-anchor="middle" fill="#1F2A24">กล้อง 3 — ลานจอด</text>
+    <rect x="40" y="292" width="180" height="34" rx="8" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/><text x="130" y="314" text-anchor="middle" fill="#1F2A24">กล้อง 4 — ถนนหลัก</text>
+    <rect x="40" y="332" width="180" height="34" rx="8" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.3"/><text x="130" y="354" text-anchor="middle" fill="#1F2A24">กล้อง 5 — พื้นที่เฝ้าระวัง</text>
+  </g>
+
+  <!-- Processing: on-prem with fallback -->
+  <text x="470" y="158" font-size="13.5" font-weight="700" fill="#0F6E56" text-anchor="middle">② ประมวลผลในพื้นที่ (On-Premise)</text>
+  <rect x="300" y="176" width="340" height="100" rx="12" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.6"/>
+  <text x="470" y="204" font-size="15" font-weight="700" fill="#0B5544" text-anchor="middle">แอปอ่านป้ายทะเบียน (LRP)</text>
+  <text x="470" y="226" font-size="12" fill="#5F6B65" text-anchor="middle">ทางเลือกหลัก: รันบนเซิร์ฟเวอร์ของหน่วยงาน</text>
+  <text x="470" y="246" font-size="12" fill="#5F6B65" text-anchor="middle">ข้อมูลภาพอยู่ในเครือข่ายหน่วยงาน — ไม่ออกนอก</text>
+  <text x="470" y="266" font-size="11" fill="#639922" text-anchor="middle">✓ ประหยัด — ใช้ทรัพยากรที่มีอยู่</text>
+
+  <!-- fallback condition -->
+  <rect x="300" y="296" width="340" height="40" rx="9" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.4"/>
+  <text x="470" y="313" font-size="12" font-weight="700" fill="#BA7517" text-anchor="middle">หากเซิร์ฟเวอร์เดิมไม่พอ / ทำงานไม่ไหว</text>
+  <text x="470" y="330" font-size="11.5" fill="#1F2A24" text-anchor="middle">→ เสริมกล่อง Edge AI (Jetson Orin 16GB) เข้าไป</text>
+
+  <rect x="300" y="352" width="340" height="40" rx="9" fill="#0F6E56"/>
+  <text x="470" y="369" font-size="12.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">กล่อง Jetson Orin 16GB (เสริมเมื่อจำเป็น)</text>
+  <text x="470" y="385" font-size="11" fill="#EAF3DE" text-anchor="middle">ประมวลผล AI ในพื้นที่ ไม่กระทบเซิร์ฟเวอร์งานหลัก</text>
+
+  <!-- Output to center -->
+  <text x="838" y="158" font-size="13.5" font-weight="700" fill="#0F6E56" text-anchor="middle">③ เข้าศูนย์ + แจ้งเตือน</text>
+  <rect x="700" y="176" width="276" height="84" rx="12" fill="#0F6E56"/>
+  <text x="838" y="206" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">ศูนย์ข้อมูลกลาง</text>
+  <text x="838" y="228" font-size="11.5" fill="#EAF3DE" text-anchor="middle">บันทึก "เหตุการณ์" จากป้ายทะเบียน</text>
+  <text x="838" y="246" font-size="11.5" fill="#EAF3DE" text-anchor="middle">ตามกฎที่หน่วยงานกำหนด</text>
+
+  <rect x="700" y="276" width="276" height="60" rx="10" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.2"/>
+  <text x="838" y="300" font-size="12.5" font-weight="700" fill="#1F2A24" text-anchor="middle">เจ้าหน้าที่ผู้รับผิดชอบ</text>
+  <text x="838" y="320" font-size="11.5" fill="#5F6B65" text-anchor="middle">ตรวจสอบเหตุการณ์ที่บันทึก</text>
+
+  <rect x="700" y="352" width="276" height="40" rx="9" fill="#EAF3DE" stroke="#639922" stroke-width="1.3"/>
+  <text x="838" y="377" font-size="11.5" fill="#3d6b12" text-anchor="middle">อัปเดตเหตุการณ์ + เก็บเป็นหลักฐานย้อนหลัง</text>
+
+  <!-- arrows -->
+  <path d="M220,189 L296,210" fill="none" stroke="#5F6B65" stroke-width="1.4" marker-end="url(#a4)"/>
+  <path d="M220,229 L296,222" fill="none" stroke="#5F6B65" stroke-width="1.4" marker-end="url(#a4)"/>
+  <path d="M220,269 L296,232" fill="none" stroke="#5F6B65" stroke-width="1.4" marker-end="url(#a4)"/>
+  <path d="M220,309 L296,242" fill="none" stroke="#5F6B65" stroke-width="1.4" marker-end="url(#a4)"/>
+  <path d="M220,349 L296,252" fill="none" stroke="#5F6B65" stroke-width="1.4" marker-end="url(#a4)"/>
+  <path d="M470,276 L470,294" fill="none" stroke="#BA7517" stroke-width="1.5" marker-end="url(#a4a)"/>
+  <path d="M470,336 L470,350" fill="none" stroke="#BA7517" stroke-width="1.5" marker-end="url(#a4a)"/>
+  <path d="M640,220 L696,218" fill="none" stroke="#0F6E56" stroke-width="1.8" marker-end="url(#a4g)"/>
+  <path d="M640,372 Q670,372 690,300 L696,290" fill="none" stroke="#0F6E56" stroke-width="1.5" marker-end="url(#a4g)"/>
+  <path d="M838,260 L838,272" fill="none" stroke="#0F6E56" stroke-width="1.5" marker-end="url(#a4g)"/>
+  <path d="M838,336 L838,348" fill="none" stroke="#639922" stroke-width="1.5" marker-end="url(#a4)"/>
+
+  <!-- compliance note -->
+  <rect x="40" y="420" width="936" height="56" rx="12" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1"/>
+  <text x="60" y="444" font-size="12.5" font-weight="700" fill="#0B5544">กรอบการใช้งาน:</text>
+  <text x="60" y="464" font-size="12" fill="#5F6B65">บันทึก "เหตุการณ์" ที่ตรงเงื่อนไขของหน่วยงานเท่านั้น (เช่น รถเข้าพื้นที่หวงห้ามนอกเวลา) · เทียบกับรายการที่หน่วยงานดูแลเอง · เป็นการเฝ้าระวังโครงสร้างพื้นฐานของหน่วยงาน ไม่ใช่การติดตามบุคคล</text>
+
+  <text x="40" y="508" font-size="11.5" fill="#A32D2D">★ จุดขายโปรโมชัน: เริ่มต้นด้วยงบน้อย ใช้กล้องเดิม เห็นผลเร็ว — เป็นประตูเข้าสู่ระบบเต็มในอนาคต</text>
+  <rect x="40" y="528" width="6" height="22" fill="#0F6E56"/>
+  <text x="56" y="544" font-size="12" font-weight="700" fill="#0B5544">Smart Center Solution Platform — LRP Add-on</text>
+  <g font-size="11" fill="#5F6B65">
+    <rect x="640" y="534" width="14" height="10" fill="#BA7517"/><text x="660" y="543">เส้นทางสำรอง (Jetson)</text>
+    <rect x="820" y="534" width="14" height="10" fill="#0F6E56"/><text x="840" y="543">เส้นทางหลัก</text>
+  </g>
+</svg>

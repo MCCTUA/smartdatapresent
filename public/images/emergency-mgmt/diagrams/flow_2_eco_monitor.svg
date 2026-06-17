@@ -1,0 +1,91 @@
+<svg viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg" font-family="'Sarabun','Tahoma',sans-serif" role="img" aria-labelledby="t2 d2">
+  <title id="t2">Workflow แพ็กเกจ Eco-Monitor — เฝ้าระวังด้วย Sensor</title>
+  <desc id="d2">Sensor ตรวจวัดส่งข้อมูลเข้าศูนย์ ระบบเทียบค่าเกณฑ์อัตโนมัติ เกินค่าจึงแจ้งเตือนเจ้าหน้าที่และอัปเดตค่าแบบ real-time</desc>
+  <defs>
+    <marker id="ar2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5F6B65"/></marker>
+    <marker id="ar2t" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#0F6E56"/></marker>
+    <marker id="ar2r" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#A32D2D"/></marker>
+  </defs>
+  <rect width="1000" height="640" fill="#FAF7EE"/>
+  <text x="40" y="46" font-size="26" font-weight="700" fill="#0B5544">แพ็กเกจ Eco-Monitor — ตรวจวัด เฝ้าระวัง แจ้งเตือนภัย</text>
+  <text x="40" y="74" font-size="15" fill="#5F6B65">เน้นทำงานร่วมกับ Sensor เป็นหลัก — เฝ้าระวังแบบ Realtime พบผิดปกติแจ้งเตือนทันที</text>
+
+  <text x="150" y="116" font-size="14" font-weight="700" fill="#0F6E56" text-anchor="middle">① แหล่งข้อมูล Sensor</text>
+  <text x="430" y="116" font-size="14" font-weight="700" fill="#0F6E56" text-anchor="middle">② ศูนย์ + คัดกรองอัตโนมัติ</text>
+  <text x="700" y="116" font-size="14" font-weight="700" fill="#0F6E56" text-anchor="middle">③ ผู้รับผิดชอบ</text>
+  <text x="908" y="116" font-size="14" font-weight="700" fill="#0F6E56" text-anchor="middle">④ อัปเดต</text>
+
+  <!-- Sensors -->
+  <g font-size="13">
+    <rect x="40" y="142" width="220" height="42" rx="10" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/>
+    <text x="150" y="168" text-anchor="middle" font-weight="700" fill="#1F2A24">Sensor คลอรีน / คุณภาพน้ำ</text>
+    <rect x="40" y="192" width="220" height="42" rx="10" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/>
+    <text x="150" y="218" text-anchor="middle" font-weight="700" fill="#1F2A24">Sensor ระดับน้ำ / น้ำท่วม</text>
+    <rect x="40" y="242" width="220" height="42" rx="10" fill="#FFFFFF" stroke="#0F6E56" stroke-width="1.4"/>
+    <text x="150" y="268" text-anchor="middle" font-weight="700" fill="#1F2A24">Sensor ฝุ่น PM2.5 / อากาศ</text>
+    <rect x="40" y="292" width="220" height="42" rx="10" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="150" y="318" text-anchor="middle" fill="#5F6B65">Sensor อื่น ๆ (ลม · แผ่นดินไหว)</text>
+  </g>
+
+  <!-- Center auto screening -->
+  <rect x="320" y="142" width="220" height="240" rx="14" fill="#0F6E56"/>
+  <text x="430" y="176" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">Measurement</text>
+  <text x="430" y="196" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">Dashboard</text>
+  <text x="430" y="218" font-size="12" fill="#EAF3DE" text-anchor="middle">Realtime Monitoring</text>
+  <line x1="345" y1="234" x2="515" y2="234" stroke="#1D9E75" stroke-width="1"/>
+  <text x="430" y="260" font-size="13.5" font-weight="700" fill="#FAEEDA" text-anchor="middle">คัดกรองอัตโนมัติ</text>
+  <text x="430" y="282" font-size="11.5" fill="#FFFFFF" text-anchor="middle">เทียบค่ากับเกณฑ์ (threshold)</text>
+  <text x="430" y="304" font-size="11.5" fill="#FFFFFF" text-anchor="middle">ปกติ → บันทึกค่าต่อเนื่อง</text>
+  <text x="430" y="326" font-size="11.5" fill="#FCEBEB" text-anchor="middle">เกินค่า → ทริกเกอร์แจ้งเตือน</text>
+  <text x="430" y="356" font-size="11" fill="#EAF3DE" text-anchor="middle">Hazard Modeling (เสริม):</text>
+  <text x="430" y="372" font-size="11" fill="#EAF3DE" text-anchor="middle">จำลองทิศทางการแพร่กระจาย</text>
+
+  <!-- Destinations -->
+  <g font-size="13" fill="#1F2A24">
+    <rect x="600" y="150" width="250" height="46" rx="10" fill="#FCEBEB" stroke="#A32D2D" stroke-width="1.4"/>
+    <text x="725" y="170" text-anchor="middle" font-weight="700" fill="#A32D2D">เจ้าหน้าที่เวร / ผู้ดูแลระบบ</text>
+    <text x="725" y="188" text-anchor="middle" font-size="11" fill="#A32D2D">เข้าตรวจสอบจุดเกิดเหตุทันที</text>
+    <rect x="600" y="206" width="250" height="46" rx="10" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.2"/>
+    <text x="725" y="234" text-anchor="middle" font-weight="700">หน่วยซ่อมบำรุง / ทีมภาคสนาม</text>
+    <rect x="600" y="262" width="250" height="46" rx="10" fill="#FFFFFF" stroke="#5F6B65" stroke-width="1.2"/>
+    <text x="725" y="290" text-anchor="middle" font-weight="700">ผู้บริหารงาน — ดูแนวโน้มค่า</text>
+  </g>
+
+  <!-- Update -->
+  <rect x="868" y="142" width="102" height="166" rx="12" fill="#EAF3DE" stroke="#639922" stroke-width="1.5"/>
+  <text x="919" y="178" font-size="12.5" font-weight="700" fill="#3d6b12" text-anchor="middle">ค่าวัด</text>
+  <text x="919" y="200" font-size="11" fill="#3d6b12" text-anchor="middle">อัปเดตต่อเนื่อง</text>
+  <text x="919" y="222" font-size="11" fill="#3d6b12" text-anchor="middle">real-time</text>
+  <line x1="884" y1="238" x2="954" y2="238" stroke="#639922" stroke-width="1"/>
+  <text x="919" y="262" font-size="11" fill="#3d6b12" text-anchor="middle">Measurement</text>
+  <text x="919" y="278" font-size="11" fill="#3d6b12" text-anchor="middle">Report</text>
+  <text x="919" y="298" font-size="11" fill="#3d6b12" text-anchor="middle">ราย วัน/เดือน</text>
+
+  <!-- arrows -->
+  <path d="M260,163 L314,210" fill="none" stroke="#5F6B65" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <path d="M260,213 L314,232" fill="none" stroke="#5F6B65" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <path d="M260,263 L314,252" fill="none" stroke="#5F6B65" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <path d="M260,313 L314,270" fill="none" stroke="#5F6B65" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <path d="M540,230 L596,180" fill="none" stroke="#A32D2D" stroke-width="1.8" marker-end="url(#ar2r)"/>
+  <path d="M540,255 L596,228" fill="none" stroke="#0F6E56" stroke-width="1.5" marker-end="url(#ar2t)"/>
+  <path d="M540,282 L596,284" fill="none" stroke="#0F6E56" stroke-width="1.5" marker-end="url(#ar2t)"/>
+  <path d="M850,228 L864,228" fill="none" stroke="#639922" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <path d="M868,280 Q650,360 540,300" fill="none" stroke="#639922" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ar2)"/>
+
+  <!-- Hero use case banner: water utility chlorine -->
+  <rect x="40" y="408" width="930" height="92" rx="14" fill="#FFFFFF" stroke="#BA7517" stroke-width="1.6"/>
+  <rect x="40" y="408" width="8" height="92" rx="4" fill="#BA7517"/>
+  <text x="64" y="436" font-size="15" font-weight="700" fill="#BA7517">ตัวอย่างใช้งานจริง — การประปานครหลวง (สถานีบางเขน): เฝ้าระวังคลอรีนรั่วไหล</text>
+  <text x="64" y="460" font-size="12" fill="#1F2A24">Sensor ตรวจจับคลอรีน + ม่านน้ำ (water curtain) กันการแพร่ → ระบบเทียบค่าเกินเกณฑ์ → แจ้งเจ้าหน้าที่เข้าตรวจและแก้ไขทันที</text>
+  <text x="64" y="482" font-size="12.5" fill="#5F6B65">คุณค่า: ตรวจพบเร็วก่อนลุกลาม · ลดความเสี่ยงต่อชุมชนรอบสถานี · มีหลักฐานค่าวัดย้อนหลังครบ</text>
+
+  <text x="40" y="536" font-size="11.5" fill="#A32D2D">★ เหมาะกับงานที่ "ค่าที่วัดได้" คือหัวใจ — ประปา · โรงบำบัด · พื้นที่เสี่ยงสารเคมี · จุดเสี่ยงน้ำท่วม</text>
+  <rect x="40" y="556" width="6" height="22" fill="#0F6E56"/>
+  <text x="56" y="572" font-size="12" font-weight="700" fill="#0B5544">Smart Center Solution Platform</text>
+
+  <!-- legend -->
+  <g font-size="11" fill="#5F6B65">
+    <rect x="620" y="566" width="13" height="9" fill="#A32D2D"/><text x="639" y="575">เตือนภัย (เกินค่า)</text>
+    <rect x="780" y="566" width="13" height="9" fill="#639922"/><text x="799" y="575">วงจรอัปเดตค่า</text>
+  </g>
+</svg>

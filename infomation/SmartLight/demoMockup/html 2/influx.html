@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartPole InfluxDB Implementation Plan</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6faf9;
+      --panel: #ffffff;
+      --panel-soft: #eef7f6;
+      --ink: #10211d;
+      --muted: #5f746f;
+      --line: #d7e6e2;
+      --primary: #0f766e;
+      --cyan: #0891b2;
+      --green: #16a34a;
+      --amber: #d97706;
+      --rose: #dc2626;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+      --shadow: 0 22px 58px rgba(15, 23, 42, 0.08);
+      --radius: 24px;
+      --max: 1420px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 6% 2%, rgba(8, 145, 178, 0.16), transparent 30rem),
+        radial-gradient(circle at 93% 6%, rgba(15, 118, 110, 0.14), transparent 34rem),
+        linear-gradient(180deg, #fbfefd 0%, var(--bg) 48%, #e9f3f0 100%);
+      color: var(--ink);
+      font-family: "Aptos", "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+      line-height: 1.62;
+    }
+
+    a { color: inherit; }
+    code, pre { font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace; }
+    code {
+      border-radius: 6px;
+      background: #edf7f4;
+      color: #0f766e;
+      padding: 2px 5px;
+      font-size: 12px;
+    }
+
+    .page {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 76px;
+    }
+
+    .topbar,
+    .panel,
+    .card,
+    .flow-node,
+    .table-wrap,
+    .callout {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 14px;
+      z-index: 30;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      border-radius: 999px;
+      padding: 10px 14px 10px 18px;
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-weight: 950;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 13px;
+      background: conic-gradient(from 220deg, var(--primary), var(--green), var(--cyan), var(--primary));
+      box-shadow: 0 12px 28px rgba(15, 118, 110, 0.24);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .nav a,
+    .pill,
+    .badge {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: #28443e;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .panel,
+    .card,
+    .flow-node,
+    .table-wrap,
+    .callout { border-radius: var(--radius); }
+    .panel { padding: clamp(22px, 4vw, 38px); }
+    .card,
+    .flow-node,
+    .callout { padding: 20px; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      background: #ccfbf1;
+      color: #115e59;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p { margin: 0; }
+    h1 {
+      max-width: 940px;
+      font-size: clamp(36px, 5.4vw, 72px);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+    }
+    h2 {
+      font-size: clamp(25px, 3.1vw, 40px);
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+    }
+    h3 { font-size: 18px; line-height: 1.18; letter-spacing: -0.018em; }
+    p { color: var(--muted); }
+    .lead {
+      margin-top: 16px;
+      max-width: 900px;
+      color: #526a64;
+      font-size: clamp(16px, 2vw, 19px);
+    }
+
+    .section { margin-top: 18px; }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4,
+    .flow-grid {
+      display: grid;
+      gap: 14px;
+    }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .flow-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+
+    .card span,
+    .flow-node span,
+    .small-label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.055em;
+      text-transform: uppercase;
+    }
+
+    .card strong,
+    .flow-node strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink);
+      font-size: 20px;
+      line-height: 1.12;
+    }
+
+    .card p,
+    .flow-node p { margin-top: 8px; font-size: 13px; }
+
+    .flow-node {
+      position: relative;
+      min-height: 160px;
+      background: linear-gradient(145deg, #fff 0%, #f0fbf8 100%);
+    }
+
+    .flow-node:after {
+      content: "->";
+      position: absolute;
+      top: 18px;
+      right: 14px;
+      color: var(--primary);
+      font-weight: 950;
+    }
+    .flow-node:last-child:after { content: "✓"; color: var(--green); }
+
+    .state-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .state-pill {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: #2b4842;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 920px; }
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+    th {
+      background: #eef7f4;
+      color: #31554d;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    td span { color: var(--muted); }
+
+    pre {
+      margin: 14px 0 0;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #0f172a;
+      color: #dff7ff;
+      padding: 16px;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .callout {
+      background: linear-gradient(145deg, #ecfdf5, #f0fdfa);
+    }
+    .callout strong { color: #115e59; }
+    .warn { border-color: rgba(217, 119, 6, 0.28); background: #fffbeb; }
+    .bad { border-color: rgba(220, 38, 38, 0.28); background: #fff7f7; }
+    .blue { border-color: rgba(37, 99, 235, 0.24); background: #eff6ff; }
+
+    @media (max-width: 1120px) {
+      .hero,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .flow-grid { grid-template-columns: 1fr; }
+      .topbar { border-radius: 22px; }
+    }
+  
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>SmartPole InfluxDB Plan</span></div>
+      <nav class="nav" aria-label="Page links">
+        <a href="#overview">Overview</a>
+        <a href="#flow">Flow</a>
+        <a href="#code-plan">Code Plan</a>
+        <a href="#ui-map">UI Map</a>
+        <a href="device_state_engine.html">State Engine</a>
+        <a href="logic_flow.html">Logic Flow</a>
+      </nav>
+    </header>
+
+    <section class="hero" id="overview">
+      <div class="panel">
+        <span class="eyebrow">Implementation source plan</span>
+        <h1>InfluxDB เป็น telemetry store, Django ยังเป็น business API</h1>
+        <p class="lead">เอกสารนี้อธิบายแผนแก้ระบบให้รองรับ telemetry scale โดยไม่ทำให้ logic ซ้ำซ้อน: InfluxDB เก็บ time-series, PostgreSQL เก็บ latest/business state, Device State Engine ตัดสิน OK/error/fault, และ UI ทุกหน้าอ่านผ่าน Django API เท่านั้น.</p>
+      </div>
+      <aside class="panel">
+        <span class="small-label">Non-negotiable rule</span>
+        <h2>UI must not query InfluxDB directly.</h2>
+        <p class="lead">ทุกหน้า HTML ต้องเรียก Django Ninja/API layer เพื่อ enforce tenant, package, visible_until, retention, role, export และ action lock ก่อนเสมอ.</p>
+      </aside>
+    </section>
+
+    <section class="section">
+      <div class="grid-4">
+        <div class="card"><span>InfluxDB owns</span><strong>Telemetry history</strong><p>Voltage, current, power, kWh, PF, RSSI, runtime, raw/downsampled time-series.</p></div>
+        <div class="card"><span>PostgreSQL owns</span><strong>Business state</strong><p>DeviceLatestState, ActiveIssue, FaultOccurrence, WorkOrder, Notification, AuditLog.</p></div>
+        <div class="card"><span>Django owns</span><strong>Policy + API</strong><p>PackageTelemetryPolicy, EntitlementPolicy, dashboard/report/query/control endpoints.</p></div>
+        <div class="card"><span>EMQX owns</span><strong>Production ingest</strong><p>Large-scale MQTT firehose consumed by telemetry workers, not direct Django request per lamp.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="flow">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Target data flow</span>
+          <h2>Production pipeline ที่ต้องทำจริง</h2>
+        </div>
+        <span class="badge">MQTT -> Worker -> InfluxDB/PostgreSQL -> API -> UI</span>
+      </div>
+      <div class="flow-grid">
+        <div class="flow-node"><span>1</span><strong>Device/Gateway</strong><p>ส่ง telemetry ตาม package/gateway cadence หรือ batch payload. ห้าม assume ว่าทุกโคมส่งเท่ากัน.</p></div>
+        <div class="flow-node"><span>2</span><strong>EMQX</strong><p>รับ MQTT topics ระดับ production scale และแยก tenant/device/account scope ใน topic/payload.</p></div>
+        <div class="flow-node"><span>3</span><strong>Consumer</strong><p>อ่าน stream, validate schema, dedupe event_id, resolve package policy, normalize units/timezone.</p></div>
+        <div class="flow-node"><span>4</span><strong>InfluxDB</strong><p>batch write raw/downsampled telemetry ตาม retention และ sampling policy.</p></div>
+        <div class="flow-node"><span>5</span><strong>State Engine</strong><p>คำนวณ latest state และ issue rules เช่น lamp_state_unconfirmed after debounce, command timeout, offline.</p></div>
+        <div class="flow-node"><span>6</span><strong>PostgreSQL</strong><p>upsert latest state, active issue, notification, audit, work-order relationship.</p></div>
+        <div class="flow-node"><span>7</span><strong>Django API/UI</strong><p>Dashboard, Map, Device, Faults, Reports query ผ่าน API กลางพร้อม package/entitlement gate.</p></div>
+      </div>
+      <pre>Large scale path:
+Devices/Gateways -> EMQX -> telemetry_consumer -> PackageTelemetryPolicy
+-> InfluxDB raw/downsample write
+-> DeviceStateEngine / IssueRuleEngine
+-> PostgreSQL DeviceLatestState + ActiveIssue
+-> Channels delta event
+-> Django Ninja query APIs -> UI
+
+Small/dev path:
+Simulator/Node-RED/manual import -> Django Ninja ingest endpoint
+-> same normalize/policy/state services
+-> same InfluxDB/PostgreSQL outputs</pre>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Package binding</span>
+          <h2>Package ต้องควบคุม sampling, visibility, retention และ lock</h2>
+        </div>
+        <span class="badge">PackageTier -> PackageTelemetryPolicy</span>
+      </div>
+      <div class="table-wrap">
+        <table data-sortable>
+          <thead>
+            <tr><th>Package field</th><th>Used for</th><th>Pipeline effect</th><th>UI effect</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>data_polling_interval_seconds</code></td><td>Expected telemetry cadence</td><td>Debounce, freshness threshold, oversampling guard, default bucket.</td><td>Dashboard graph defaults, delayed/offline display, package preview.</td></tr>
+            <tr><td><code>data_retention_months</code> + <code>data_retention_days</code></td><td>Frontend visible data window</td><td>Query clamp. Does not necessarily delete raw InfluxDB data immediately.</td><td>Dashboard/report/export show only allowed visible range.</td></tr>
+            <tr><td><code>platform_included_months</code> + <code>software_extend_days</code></td><td>Software visible_until/action entitlement</td><td>Ingest continues after expiry, but action/state mutation policy becomes read-only.</td><td>Charts/tables cap data at visible_until; command/ack/repair/export locked.</td></tr>
+            <tr><td><code>hardware_warranty_months</code> + <code>hardware_extend_days</code></td><td>Hardware/lamp lifecycle</td><td>No telemetry cap if software active.</td><td>Maintenance risk, replacement recommendation, lifecycle badge.</td></tr>
+            <tr><td>Pricing/feature flags</td><td>Capability and report controls</td><td>Do not change raw ingest ownership.</td><td>Show/hide export, control, auto dimming, zone/tag features by package/capability.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="code-plan">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Code change plan</span>
+          <h2>แก้ code เป็นลำดับเพื่อไม่พลาด</h2>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card blue"><span>Already added</span><strong>Docker + settings</strong><p><code>docker-compose.yml</code> มี service InfluxDB แล้ว. <code>.env</code> และ <code>settings.py</code> มี <code>INFLUXDB_*</code> แล้ว.</p></div>
+        <div class="card"><span>Step 1</span><strong>Add client dependency</strong><p>เพิ่ม InfluxDB Python client ใน dependency แล้วทำ wrapper service กลาง ไม่เรียก client ตรงจาก views/templates.</p></div>
+        <div class="card"><span>Step 2</span><strong>PackageTelemetryPolicy</strong><p>Resolver จาก Account/PackageTier เพื่อคืน sampling, visible range, retention, action lock, export permission.</p></div>
+        <div class="card"><span>Step 3</span><strong>NormalizedTelemetryEvent</strong><p>สร้าง schema/service สำหรับ normalize timestamp, unit, tenant, account, device_id, event_id, source.</p></div>
+        <div class="card"><span>Step 4</span><strong>Influx writer/query service</strong><p>Batch write raw points, query time-series with Flux/API, support bucket/agg/group/compare.</p></div>
+        <div class="card"><span>Step 5</span><strong>Telemetry consumer</strong><p>MQTT consumer/worker อ่าน EMQX stream, dedupe, resolve package, write InfluxDB, update PostgreSQL state.</p></div>
+        <div class="card"><span>Step 6</span><strong>State + issue engines</strong><p>DeviceLatestState and ActiveIssue remain PostgreSQL business state. Do not create issue every telemetry point.</p></div>
+        <div class="card"><span>Step 7</span><strong>Django Ninja query APIs</strong><p>Dashboard timeseries, map state, device list, faults, reports query through API with package/entitlement applied.</p></div>
+        <div class="card"><span>Step 8</span><strong>Channels delta</strong><p>Push only state changes, issue changes, command ACK, and aggregate/delta. Do not push every raw telemetry point to UI.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Data ownership</span>
+          <h2>กันข้อมูลซ้ำซ้อนและกัน logic แตก</h2>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table data-sortable>
+          <thead>
+            <tr><th>Data</th><th>Owner</th><th>Reason</th><th>Do not</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Raw telemetry per second</td><td>InfluxDB</td><td>Time-series history and graph performance.</td><td>Do not store every raw point in PostgreSQL.</td></tr>
+            <tr><td>Downsampled telemetry</td><td>InfluxDB</td><td>Long-range dashboard/report performance.</td><td>Do not compute long-range charts from PostgreSQL latest rows.</td></tr>
+            <tr><td>Latest device state</td><td>PostgreSQL</td><td>Fast map/device-list/dashboard current state.</td><td>Do not let each UI page infer status from raw telemetry.</td></tr>
+            <tr><td>Active issue/fault</td><td>PostgreSQL</td><td>Business workflow, acknowledge, assign, repair, close.</td><td>Do not create duplicate active issue for every bad telemetry point.</td></tr>
+            <tr><td>Command history/audit</td><td>PostgreSQL</td><td>Traceability and PDPA/audit compliance.</td><td>Do not store secrets/tokens in event body.</td></tr>
+            <tr><td>Dashboard layout/card config</td><td>PostgreSQL</td><td>User preference and role/scope defaults.</td><td>Do not store layout in InfluxDB.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="ui-map">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">HTML/UI binding</span>
+          <h2>ผูกกับเอกสาร UI ทุกหน้าอย่างไร</h2>
+        </div>
+        <span class="badge">Every UI calls Django API, not InfluxDB directly</span>
+      </div>
+      <div class="table-wrap">
+        <table data-sortable>
+          <thead>
+            <tr><th>HTML file</th><th>InfluxDB relation</th><th>PostgreSQL relation</th><th>Required API behavior</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="dashboard.html">dashboard.html</a></td><td>Main TS, monthly comparison, heatmap, electrical graphs query InfluxDB aggregates.</td><td>KPI, Top Issues, layout, active faults from latest/business state.</td><td>Apply package visible range, compare period, zone/group filters, card export policy.</td></tr>
+            <tr><td><a href="maps.html">maps.html</a></td><td>Optional mini sparkline/history in marker popup from InfluxDB.</td><td>Marker state, active issue, maintenance state from DeviceLatestState/ActiveIssue.</td><td>Map marker color must come from backend state, not local raw telemetry logic.</td></tr>
+            <tr><td><a href="device.html">device.html</a></td><td>Device history, ping trend, telemetry freshness from InfluxDB aggregates.</td><td>Inventory, placement, latest state, active issue, work order from PostgreSQL.</td><td>Device row and map marker must use same state API as map/dashboard.</td></tr>
+            <tr><td><a href="faults.html">faults.html</a></td><td>Evidence graphs before/after issue can query InfluxDB by issue time window.</td><td>Issue queue, records, maintenance drawer, work-order lifecycle from PostgreSQL.</td><td>Issue queue shows system-detected active issues only; maintenance records separate.</td></tr>
+            <tr><td><a href="notifications.html">notifications.html</a></td><td>No direct raw series required except optional linked evidence preview.</td><td>Notifications from Issue Rule Engine, work orders, package expiry, command state.</td><td>Click notification deep-links to fault/device/map context with same issue id.</td></tr>
+            <tr><td><a href="reports.html">reports.html</a></td><td>Energy/cost/carbon/device performance exports query InfluxDB aggregates.</td><td>Package/account/device/fault/audit metadata from PostgreSQL.</td><td>Preview table and export must use same package/visible range filter.</td></tr>
+            <tr><td><a href="energy.html">energy.html</a></td><td>Actual telemetry kWh from InfluxDB for compare.</td><td>Bill/baseline/tariff input records from PostgreSQL.</td><td>Dashboard compares Influx actual vs PostgreSQL baseline by selected period.</td></tr>
+            <tr><td><a href="remote_control.html">remote_control.html</a></td><td>Optional recent telemetry to validate command effect.</td><td>Command request, ACK/timeout, permission, audit from PostgreSQL.</td><td>Command action locked by entitlement; result updates latest state and issue engine.</td></tr>
+            <tr><td><a href="zones.html">zones.html</a></td><td>Zone energy/load/electrical trend from InfluxDB grouped by zone/tag.</td><td>Zone/tag/device membership and zone control state from PostgreSQL.</td><td>Zone control and zone analytics must share account/package scope filter.</td></tr>
+            <tr><td><a href="backoffice.html">backoffice.html</a></td><td>Portfolio metrics/history cards use InfluxDB aggregates when needed.</td><td>Customer/package/account/device summary from PostgreSQL.</td><td>Backoffice cards show package expiry and clamp telemetry by entitlement.</td></tr>
+            <tr><td><a href="account.html">account.html</a></td><td>No raw stream ownership, but package fields drive telemetry policy.</td><td>Account package assignment, lifecycle, user/device quota from PostgreSQL.</td><td>Changing package must affect future telemetry policy and UI visibility.</td></tr>
+            <tr><td><a href="audit-logs.html">audit-logs.html</a></td><td>No direct InfluxDB query by default.</td><td>AuditLog rows from PostgreSQL.</td><td>Log command, issue, export, package policy changes without leaking secrets.</td></tr>
+            <tr><td><a href="device_state_engine.html">device_state_engine.html</a></td><td>Defines telemetry storage/query contract.</td><td>Defines latest/business state contract.</td><td>Implementation source for state/issue/policy rules.</td></tr>
+            <tr><td><a href="logic_flow.html">logic_flow.html</a></td><td>Architecture flow reference.</td><td>Architecture flow reference.</td><td>Use as high-level roadmap.</td></tr>
+            <tr><td><a href="include_plan.html">include_plan.html</a></td><td>No telemetry logic.</td><td>Shared header/navigation implementation pattern.</td><td>Header should display live status/issue count from backend API only.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">API contract</span>
+          <h2>Django APIs ที่ต้องมีเพื่อผูก UI</h2>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card"><span>Policy</span><strong>GET /api/telemetry/policy</strong><p>Resolved package sampling, retention, visible range, software/hardware state, action lock.</p></div>
+        <div class="card"><span>Timeseries</span><strong>GET /api/dashboard/timeseries</strong><p>Metric, range, bucket, aggregate, group_by, compare, overlays. Query InfluxDB behind API.</p></div>
+        <div class="card"><span>State</span><strong>GET /api/devices/state</strong><p>DeviceLatestState list for map/device-list/dashboard. Query PostgreSQL latest state.</p></div>
+        <div class="card"><span>Issue</span><strong>GET /api/faults/issues</strong><p>Active issue queue from Issue Rule Engine only.</p></div>
+        <div class="card"><span>Reports</span><strong>GET /api/reports/preview</strong><p>Preview table uses same filter/export contract, then CSV/PDF uses identical query.</p></div>
+        <div class="card"><span>Export</span><strong>POST /api/exports/card</strong><p>Card export receives card_id + current filter context and applies package/role policy.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Failure prevention</span>
+          <h2>Checklist กันพลาดตอนลง code จริง</h2>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="callout">
+          <strong>Must pass before merge</strong>
+          <p>1. Docker compose config passes<br>2. InfluxDB healthcheck passes<br>3. PackageTelemetryPolicy tests pass<br>4. Ingest idempotency tests pass<br>5. Query clamp by visible_until tests pass<br>6. UI pages do not call InfluxDB directly<br>7. Exports use same filter contract as preview<br>8. Expired package locks actions but ingestion continues</p>
+        </div>
+        <div class="callout bad">
+          <strong>Do not implement this way</strong>
+          <p>Do not write every raw telemetry point to PostgreSQL.<br>Do not let dashboard/map/device-list calculate fault independently.<br>Do not create a new active issue every second for the same fault.<br>Do not let frontend bypass Django API to query InfluxDB.<br>Do not hardcode polling interval in UI cards.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPLEMENTATION NOTE:
+      This document is the bridge between InfluxDB infrastructure, package telemetry policy,
+      Device State Engine, and every docs/html UI prototype. It should be used as the source
+      checklist before writing production ingest/query/UI code.
+    -->
+  </main>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

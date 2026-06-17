@@ -1,0 +1,1220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartPole Reports & Export Workspace</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: rgba(15, 23, 42, 0.86);
+      --panel-soft: rgba(15, 23, 42, 0.62);
+      --panel-raised: rgba(30, 41, 59, 0.78);
+      --line: rgba(148, 163, 184, 0.18);
+      --line-strong: rgba(148, 163, 184, 0.34);
+      --text: #e5edf7;
+      --muted: #93a4b8;
+      --faint: #64748b;
+      --cyan: #22d3ee;
+      --blue: #60a5fa;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --violet: #a78bfa;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      --radius: 24px;
+      --container: min(100% - 32px, 1680px);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      min-height: 100%;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 8%, rgba(34, 211, 238, 0.16), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(74, 222, 128, 0.13), transparent 24%),
+        linear-gradient(145deg, #07111f 0%, #0f172a 56%, #111827 100%);
+    }
+
+    body[data-theme="light"] {
+      color-scheme: light;
+      --bg: #eef5fb;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-soft: rgba(255, 255, 255, 0.72);
+      --panel-raised: rgba(248, 250, 252, 0.96);
+      --line: rgba(51, 65, 85, 0.14);
+      --line-strong: rgba(51, 65, 85, 0.24);
+      --text: #0f172a;
+      --muted: #475569;
+      --faint: #64748b;
+      background:
+        radial-gradient(circle at 10% 8%, rgba(34, 211, 238, 0.2), transparent 30%),
+        radial-gradient(circle at 86% 12%, rgba(74, 222, 128, 0.14), transparent 26%),
+        linear-gradient(145deg, #eef5fb 0%, #f8fafc 68%, #e0f2fe 100%);
+    }
+
+    a { color: inherit; }
+    button, input, select, textarea { font: inherit; }
+    .page { width: var(--container); margin: 0 auto; padding: 20px 0 56px; }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: rgba(15, 23, 42, 0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+    }
+    body[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.82); }
+    .brand h1 { margin: 0; font-size: clamp(24px, 4vw, 42px); letter-spacing: -0.05em; line-height: 1; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .header-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+
+    .button, .chip, .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    .button.primary { border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.14); }
+    .button.green, .chip.green, .status-pill.good { border-color: rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: #bbf7d0; }
+    .button.warn, .chip.amber, .status-pill.warn { border-color: rgba(251, 191, 36, 0.46); background: rgba(251, 191, 36, 0.13); color: #fde68a; }
+    .button.rose, .chip.rose, .status-pill.bad { border-color: rgba(251, 113, 133, 0.48); background: rgba(251, 113, 133, 0.14); color: #fecdd3; }
+    .chip.blue, .status-pill.info { border-color: rgba(96, 165, 250, 0.42); background: rgba(96, 165, 250, 0.13); color: #bfdbfe; }
+    .button.locked { cursor: not-allowed; color: var(--faint); background: rgba(15, 23, 42, 0.38); border-color: rgba(148, 163, 184, 0.2); }
+    body[data-theme="light"] .button.green, body[data-theme="light"] .chip.green, body[data-theme="light"] .status-pill.good { color: #166534; }
+    body[data-theme="light"] .button.warn, body[data-theme="light"] .chip.amber, body[data-theme="light"] .status-pill.warn { color: #92400e; }
+    body[data-theme="light"] .button.rose, body[data-theme="light"] .chip.rose, body[data-theme="light"] .status-pill.bad { color: #9f1239; }
+    body[data-theme="light"] .chip.blue, body[data-theme="light"] .status-pill.info { color: #1d4ed8; }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.16); animation: pulseGreen 1.6s infinite; }
+    .status-dot.bad { background: var(--rose); box-shadow: 0 0 0 6px rgba(251, 113, 133, 0.14); animation: pulseRed 1s infinite; }
+    @keyframes pulseGreen { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.78); opacity: 0.62; } }
+    @keyframes pulseRed { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: 0.58; } }
+
+    .popover-wrap { position: relative; }
+    .popover {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 10px);
+      width: min(340px, calc(100vw - 40px));
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-raised);
+      box-shadow: var(--shadow);
+      z-index: 30;
+    }
+    .popover-wrap.open .popover { display: block; }
+    .popover h3 { margin: 0 0 8px; font-size: 14px; }
+    .popover p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .popover-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+    .popover-row:first-of-type { border-top: 0; }
+
+    .hero { margin-top: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .panel, .card, .filter-panel, .drawer-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-inner, .card-inner { padding: 16px; }
+    .section-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+    .section-title h2, .card h3 { margin: 0; letter-spacing: -0.03em; }
+    .section-title h2 { font-size: 18px; }
+    .section-title p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .report-command-panel .panel-inner { padding: 15px; }
+    .report-command-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.85fr) minmax(260px, 0.7fr);
+      gap: 12px;
+      align-items: stretch;
+    }
+    .command-card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 13px;
+    }
+    .command-card h2,
+    .command-card h3 {
+      margin: 0;
+      letter-spacing: -0.03em;
+    }
+    .command-card h2 { font-size: 18px; }
+    .command-card h3 { font-size: 14px; }
+    .command-card p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .analysis-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .analysis-metric {
+      min-height: 64px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.32);
+      padding: 10px;
+    }
+    body[data-theme="light"] .analysis-metric { background: rgba(248, 250, 252, 0.7); }
+    .analysis-metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .analysis-metric strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 20px;
+      letter-spacing: -0.04em;
+    }
+    .access-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .access-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.035);
+      padding: 8px 10px;
+    }
+    .access-row strong { display: block; font-size: 12px; }
+    .access-row div span { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; line-height: 1.3; }
+    .command-links { display: grid; gap: 8px; margin-top: 10px; }
+    .command-links .button { width: 100%; justify-content: space-between; border-radius: 14px; }
+
+    .filter-panel { margin-top: 16px; padding: 14px; }
+    .filter-workspace {
+      display: block;
+    }
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.035);
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    .filter-tab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 38px;
+      flex: 1 1 150px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted);
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      text-align: left;
+    }
+    .filter-tab[aria-selected="true"] {
+      border-color: rgba(34, 211, 238, 0.52);
+      background: rgba(34, 211, 238, 0.15);
+      color: var(--text);
+    }
+    .filter-tab small { color: var(--faint); font-size: 10px; font-weight: 850; }
+    .filter-groups { min-width: 0; }
+    .filter-group {
+      display: none;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.035);
+      padding: 12px;
+      min-width: 0;
+    }
+    .filter-group.is-active { display: block; }
+    .filter-group h3 {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+    .filter-summary-strip {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(34, 211, 238, 0.07);
+    }
+    .filter-summary-strip p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .scope-rule-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .scope-rule {
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(15, 23, 42, 0.28);
+      padding: 9px;
+    }
+    body[data-theme="light"] .scope-rule { background: rgba(248, 250, 252, 0.68); }
+    .scope-rule strong { display: block; font-size: 12px; }
+    .scope-rule span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .quick-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+    .quick-filter-row .chip { min-height: 30px; padding: 5px 9px; }
+    .customer-scope-contract {
+      margin-top: 10px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 15px;
+      background: rgba(74, 222, 128, 0.07);
+      color: var(--muted);
+      padding: 9px 10px;
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1.45;
+    }
+    .customer-scope-contract strong { color: var(--text); }
+    .filter-group.scope { grid-column: span 5; }
+    .filter-group.period { grid-column: span 3; }
+    .filter-group.report-type { grid-column: span 4; }
+    .filter-group.output { grid-column: span 5; }
+    .filter-group.actions { grid-column: span 7; flex-direction: column; }
+    .filter-group.actions.is-active { display: flex; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; align-items: end; }
+    .filter-group.actions .filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); height: 100%; }
+    .filter-action-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: auto;
+    }
+    .selected-query {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .selected-query span {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--muted);
+      padding: 8px 9px;
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+    .field { min-width: 0; }
+    .field label { display: block; margin: 0 0 5px; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.58);
+      color: var(--text);
+      padding: 9px 11px;
+      outline: none;
+    }
+    body[data-theme="light"] .field input, body[data-theme="light"] .field select, body[data-theme="light"] .field textarea { background: rgba(255, 255, 255, 0.75); }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+    .stat { border: 1px solid var(--line); border-radius: 20px; background: var(--panel-soft); padding: 13px; min-height: 92px; }
+    .stat span { color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat strong { display: block; margin-top: 9px; font-size: 27px; letter-spacing: -0.05em; }
+    .stat small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    .grid-12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; margin-top: 16px; align-items: stretch; }
+
+    .grid-12 > .panel,
+    .grid-12 > .card,
+    .grid-12 > .side-rail {
+      height: 100%;
+      min-width: 0;
+    }
+
+    .grid-12 > .panel > .panel-inner,
+    .grid-12 > .card > .card-inner,
+    .grid-12 > .side-rail > .panel > .panel-inner {
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .side-rail {
+      display: grid;
+      gap: 16px;
+      align-content: stretch;
+    }
+
+    .side-rail > .panel {
+      height: 100%;
+      min-width: 0;
+    }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-9 { grid-column: span 9; }
+    .span-12 { grid-column: 1 / -1; }
+
+    .readiness-grid, .access-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .access-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .readiness-card { border: 1px solid var(--line); border-radius: 18px; padding: 13px; background: rgba(255, 255, 255, 0.04); }
+    .readiness-card h3 { margin: 0; font-size: 14px; }
+    .readiness-card p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .export-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .export-card { border: 1px solid var(--line); border-radius: 20px; background: rgba(255, 255, 255, 0.04); padding: 14px; }
+    .export-card h3 { margin: 0; font-size: 16px; }
+    .export-card p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .export-flow { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+    .flow-card { border: 1px solid var(--line); border-radius: 18px; padding: 13px; background: rgba(255, 255, 255, 0.04); }
+    .flow-card span { color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .flow-card strong { display: block; margin-top: 6px; font-size: 14px; }
+    .flow-card p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .schema-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .schema-list code { border: 1px solid var(--line); border-radius: 999px; padding: 5px 8px; color: var(--muted); background: rgba(255, 255, 255, 0.04); font-size: 11px; }
+    .output-preview { border: 1px solid var(--line); border-radius: 18px; background: rgba(15, 23, 42, 0.42); padding: 12px; overflow: auto; }
+    body[data-theme="light"] .output-preview { background: rgba(248, 250, 252, 0.78); }
+    .output-preview pre { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; white-space: pre; }
+    .preview-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .preview-columns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .preview-columns label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 30px;
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      background: rgba(255, 255, 255, 0.04);
+      white-space: nowrap;
+    }
+    .preview-columns input { accent-color: var(--cyan); }
+
+    .table-wrap { max-height: 430px; overflow: auto; border: 1px solid var(--line); border-radius: 20px; }
+    table { width: 100%; min-width: 1120px; border-collapse: collapse; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; font-size: 13px; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255, 255, 255, 0.035); }
+    tr:last-child td { border-bottom: 0; }
+    td span { color: var(--muted); font-size: 11px; display: block; margin-top: 3px; }
+    .row-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+    .row-actions.stack { flex-direction: column; align-items: stretch; margin-top: auto; }
+
+    .report-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .report-tabs .button.active { background: rgba(34, 211, 238, 0.18); border-color: rgba(34, 211, 238, 0.52); }
+
+    .contract-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .contract-card { border: 1px solid var(--line); border-radius: 18px; padding: 13px; background: rgba(255, 255, 255, 0.04); }
+    .contract-card h3 { margin: 0 0 8px; font-size: 14px; }
+    .contract-card ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .contract-card pre { margin: 0; white-space: pre-wrap; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+
+    body.drawer-open { overflow: hidden; }
+    tr[data-open-report-drawer] { cursor: pointer; }
+    tr[data-open-report-drawer]:hover td { background: rgba(34, 211, 238, 0.055); }
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      background: rgba(2, 6, 23, 0.56);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+      backdrop-filter: blur(4px);
+    }
+    .drawer-backdrop.is-open { opacity: 1; pointer-events: auto; }
+    .report-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 80;
+      width: min(520px, calc(100vw - 22px));
+      max-height: 100dvh;
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-left: 1px solid var(--line);
+      border-radius: 24px 0 0 24px;
+      background: var(--panel-raised);
+      box-shadow: -24px 0 80px rgba(0, 0, 0, 0.46);
+      padding: 18px;
+      transform: translateX(106%);
+      transition: transform 220ms ease;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .report-drawer.is-open { transform: translateX(0); }
+    .report-drawer__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .report-drawer__head h3 { margin: 0; font-size: 18px; letter-spacing: -0.03em; }
+    .report-drawer__head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .download-option-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .download-option { border: 1px solid var(--line); border-radius: 18px; padding: 12px; background: rgba(255, 255, 255, 0.04); }
+    .download-option strong { display: block; font-size: 13px; }
+    .download-option span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .drawer-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+
+    @media (max-width: 1240px) {
+      .hero { grid-template-columns: 1fr; }
+      .report-command-grid { grid-template-columns: 1fr; }
+      .filter-group.scope, .filter-group.period, .filter-group.report-type, .filter-group.output, .filter-group.actions { grid-column: span 6; }
+      .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filter-group.actions .filter-grid, .filter-action-bar, .selected-query { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stat-grid, .readiness-grid, .access-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .export-grid, .contract-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .export-flow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .span-3, .span-4, .span-5, .span-6, .span-7, .span-8, .span-9 { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 760px) {
+      :root { --container: min(100% - 20px, 1680px); }
+      .topbar { grid-template-columns: 1fr; position: static; border-radius: 20px; }
+      .header-actions { justify-content: flex-start; }
+      .filter-workspace, .filter-grid, .filter-summary-strip, .scope-rule-grid, .filter-action-bar, .selected-query, .stat-grid, .readiness-grid, .access-grid, .export-grid, .export-flow, .contract-grid, .analysis-metrics { grid-template-columns: 1fr; }
+      .filter-tab { flex-basis: 100%; }
+      .filter-group.scope, .filter-group.period, .filter-group.report-type, .filter-group.output, .filter-group.actions { grid-column: 1 / -1; }
+      .section-title { flex-direction: column; }
+    }
+      .table-wrap th { position: sticky; top: 0; z-index: 1; }
+
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body>
+  <!-- LOGIC: Header must match docs/new_dashboard.html and every frontend/backoffice docs page. In implementation, replace repeated markup with templates/includes/frontend_dashboard_header.html. -->
+  <main class="page">
+    <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+      <div class="brand">
+        <h1>SmartPole Reports <span class="chip green"><span class="status-dot"></span>Live connected</span></h1>
+        <p class="subtitle">/backoffice/reports/ · scoped reports · package analysis · device/fault export · readiness · CSV/PDF/Excel strategy</p>
+      </div>
+      <div class="header-actions">
+        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
+        <span class="chip blue">Portfolio UI · Platform/Dealer</span>
+        <div class="popover-wrap" data-profile-menu>
+          <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+          <div class="popover">
+            <h3>Profile controls</h3>
+            <div class="popover-row"><p>Report preferences, export format, timezone.</p><span class="chip">Open</span></div>
+            <div class="popover-row"><p>Report access is enabled for this profile.</p><span class="chip blue">Manager</span></div>
+          </div>
+        </div>
+        <div class="popover-wrap" data-widget-menu>
+          <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+          <div class="popover">
+            <h3>Layout widgets</h3>
+            <div class="popover-row"><p>Show readiness.</p><input type="checkbox" checked /></div>
+            <div class="popover-row"><p>Show export cards.</p><input type="checkbox" checked /></div>
+            <div class="popover-row"><p>Show fault summary.</p><input type="checkbox" checked /></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <article class="panel report-command-panel">
+        <div class="panel-inner report-command-grid">
+          <div class="command-card">
+            <div>
+              <h2>Reports & Package Analysis</h2>
+              <p>เลือก report, ตรวจ preview, export ไฟล์ และเปิด action ต่อจาก customer/device/fault ที่เจอในผลลัพธ์.</p>
+            </div>
+            <div class="report-tabs" style="margin-top:10px" role="tablist" aria-label="Report analysis tabs">
+              <button class="button active" type="button" role="tab" aria-selected="true" data-report-tab="package">Package</button>
+              <button class="button" type="button" role="tab" aria-selected="false" data-report-tab="devices">Devices</button>
+              <button class="button" type="button" role="tab" aria-selected="false" data-report-tab="faults">Faults</button>
+              <button class="button" type="button" role="tab" aria-selected="false" data-report-tab="energy">Energy</button>
+              <button class="button" type="button" role="tab" aria-selected="false" data-report-tab="carbon">Carbon</button>
+              <button class="button" type="button" role="tab" aria-selected="false" data-report-tab="audit">Audit</button>
+            </div>
+            <div class="analysis-metrics">
+              <div class="analysis-metric"><span>Customers</span><strong>28</strong></div>
+              <div class="analysis-metric"><span>Devices</span><strong>12.8k</strong></div>
+              <div class="analysis-metric"><span>Open faults</span><strong style="color:var(--amber)">37</strong></div>
+              <div class="analysis-metric"><span>Exports</span><strong style="color:var(--green)">CSV</strong></div>
+            </div>
+          </div>
+
+          <div class="command-card">
+            <div class="section-title" style="margin-bottom:0"><div><h3>Access Status</h3><p>ตรวจสิทธิ์และ package gate ก่อน preview/export ทุกครั้ง.</p></div><span class="chip amber">gated</span></div>
+            <div class="access-list">
+              <div class="access-row"><div><strong>View report</strong><span>role + visible account scope</span></div><span class="status-pill good">allowed</span></div>
+              <div class="access-row"><div><strong>CSV export</strong><span>package flag + export permission</span></div><span class="status-pill good">allowed</span></div>
+              <div class="access-row"><div><strong>PDF / Excel</strong><span>show only when capability is enabled</span></div><span class="status-pill warn">locked</span></div>
+            </div>
+          </div>
+
+          <div class="command-card">
+            <h3>Next actions</h3>
+            <p>พื้นที่ต่อไปหลังจากเห็น row ที่ต้องแก้ ไม่ต้องทำให้ header สูงเกินจำเป็น.</p>
+            <div class="command-links">
+              <a class="button" href="/dashboard/">Dashboard <span>›</span></a>
+              <a class="button" href="/map/">Map <span>›</span></a>
+              <a class="button" href="/backoffice/energy/">Energy <span>›</span></a>
+              <a class="button" href="/backoffice/notifications/">Faults <span>›</span></a>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="filter-panel" aria-label="Report filters">
+      <div class="section-title">
+        <div><h2>⌕ Report Filters</h2><p>เลือก scope, ช่วงเวลา, readiness, output และ search ในจุดเดียว แล้ว preview ก่อน export.</p></div>
+        <span class="chip blue">scoped data</span>
+      </div>
+      <div class="filter-summary-strip">
+        <p><strong style="color:var(--text)">Scope rule:</strong> Platform Owner/Dealer เห็น account + customer selector. Customer role ใช้ current customer scope และไม่แสดง customer filter.</p>
+        <span class="chip green">server-side scope required</span>
+      </div>
+      <div class="filter-workspace">
+        <nav class="filter-tabs" role="tablist" aria-label="Report filter tabs">
+          <button class="filter-tab" type="button" role="tab" aria-selected="true" data-filter-tab="scope">Scope <small>role/account</small></button>
+          <button class="filter-tab" type="button" role="tab" aria-selected="false" data-filter-tab="report">Report <small>type/status</small></button>
+          <button class="filter-tab" type="button" role="tab" aria-selected="false" data-filter-tab="period">Period <small>date/compare</small></button>
+          <button class="filter-tab" type="button" role="tab" aria-selected="false" data-filter-tab="output">Output <small>format/columns</small></button>
+          <button class="filter-tab" type="button" role="tab" aria-selected="false" data-filter-tab="run">Run <small>preview/export</small></button>
+        </nav>
+        <div class="filter-groups">
+        <div class="filter-group scope is-active" data-filter-panel="scope">
+          <h3>Scope</h3>
+          <div class="scope-rule-grid">
+            <div class="scope-rule"><strong>Platform / Dealer</strong><span>แสดง account scope, dealer/customer, site/zone/tag/device set ตาม visible tree.</span></div>
+            <div class="scope-rule"><strong>Customer</strong><span>ซ่อน dealer/customer filter แล้วล็อกเป็น own account จาก request.user.</span></div>
+          </div>
+          <div class="filter-grid">
+            <!-- LOGIC: Platform/Dealer report page exports cross-customer scoped reports. Customer users stay on the same report route but the implementation must hide dealer/customer selectors and pin customer_id to the current account. -->
+            <div class="field"><label>Account scope</label><select><option>All visible accounts</option><option>Platform direct customers</option><option>dealer01 subtree</option><option>Dealer North subtree</option></select></div>
+            <div class="field"><label>Dealer</label><select><option>All visible dealers</option><option>dealer01</option><option>Dealer North</option><option>SmartPole Platform</option></select></div>
+            <div class="field"><label>Customer</label><select><option>All customers</option><option>บริษัท BB</option></select></div>
+            <div class="field"><label>Site</label><select><option>All sites</option><option>Main campus</option><option>Factory AA Site 1</option></select></div>
+            <div class="field"><label>Zone</label><select><option>All zones</option><option>Road B</option><option>Warehouse</option></select></div>
+            <div class="field"><label>Tag</label><select><option>All tags</option><option>Pole line</option><option>Bay 2</option></select></div>
+            <div class="field"><label>Device set</label><select><option>All sets</option><option>LOT-2026-01</option></select></div>
+          </div>
+          <div class="customer-scope-contract"><strong>Customer mode:</strong> render only a fixed current-account pill plus site/zone/tag/device filters. Do not render Dealer or Customer selects.</div>
+        </div>
+        <div class="filter-group report-type" data-filter-panel="report">
+          <h3>Report</h3>
+          <div class="filter-grid">
+            <div class="field"><label>Report</label><select><option>Device operations</option><option>Device inventory</option><option>Fault / issue</option><option>Maintenance</option><option>Energy usage</option><option>Cost saving</option><option>Carbon / ESG</option><option>Package expiry</option><option>Audit log</option><option>Daily / monthly operations summary</option></select></div>
+            <div class="field"><label>Readiness</label><select><option>All readiness states</option><option>Ready</option><option>Needs baseline</option><option>Needs tariff</option><option>Package expired</option><option>Export locked</option></select></div>
+            <div class="field"><label>Status</label><select><option>All statuses</option><option>Active package</option><option>Expiring in 30 days</option><option>Expired software</option><option>Open faults</option><option>No recent telemetry</option></select></div>
+            <div class="field"><label>Search</label><input value="SP-088" placeholder="device, customer, issue, package" /></div>
+          </div>
+          <div class="quick-filter-row" aria-label="Quick report filters">
+            <span class="chip amber">Expiring packages</span>
+            <span class="chip rose">Active faults</span>
+            <span class="chip green">Energy ready</span>
+            <span class="chip blue">CSV eligible</span>
+          </div>
+        </div>
+        <div class="filter-group period" data-filter-panel="period">
+          <h3>Period</h3>
+          <div class="filter-grid">
+            <!-- LOGIC: Report period is the primary time selector. "Full year" maps to data_from=YYYY-01-01 and data_to=YYYY-12-31. "Custom range" enables date inputs. -->
+            <div class="field"><label>Preset</label><select><option>Full year 2026</option><option>This month</option><option>Last 30 days</option><option>Custom range</option></select></div>
+            <div class="field"><label>From</label><input type="date" value="2026-01-01" /></div>
+            <div class="field"><label>To</label><input type="date" value="2026-12-31" /></div>
+            <div class="field"><label>Compare</label><select><option>No comparison</option><option>Previous period</option><option>Same period last year</option></select></div>
+          </div>
+        </div>
+        <div class="filter-group output" data-filter-panel="output">
+          <h3>Output</h3>
+          <div class="filter-grid">
+            <div class="field"><label>Mode</label><select><option>Preview table</option><option>Export file</option><option>Saved report</option></select></div>
+            <div class="field"><label>Format</label><select><option>CSV</option><option>JSON</option><option>Excel - locked until enabled</option><option>PDF - locked until enabled</option></select></div>
+            <div class="field"><label>Columns</label><select><option>Default columns</option><option>Operational columns</option><option>Finance columns</option><option>Audit-safe columns</option></select></div>
+            <div class="field"><label>Timezone</label><select><option>Asia/Bangkok</option><option>UTC</option></select></div>
+          </div>
+        </div>
+        <div class="filter-group actions" data-filter-panel="run">
+          <h3>Run</h3>
+          <div class="filter-grid">
+            <div class="field"><label>Preview rows</label><select><option>500 rows</option><option>1,000 rows</option><option>2,000 rows</option></select></div>
+            <div class="field"><label>File name</label><input value="device_ops_2026" /></div>
+            <div class="field"><label>Archive</label><select><option>Do not archive</option><option>Save generated report</option></select></div>
+            <div class="field"><label>Audit note</label><input placeholder="reason for export" /></div>
+          </div>
+          <div class="selected-query">
+            <span>Scope: All visible dealers / 28 customers</span>
+            <span>Period: 2026-01-01 to 2026-12-31</span>
+            <span>Output: CSV only unless package enables more</span>
+          </div>
+          <div class="filter-action-bar">
+            <button class="button primary" type="button">Apply filters</button>
+            <button class="button green" type="button">Preview</button>
+            <button class="button green" type="button">Export CSV</button>
+            <button class="button" type="button">Reset</button>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stat-grid" aria-label="Report summary stats">
+      <div class="stat"><span>Selected report</span><strong>Device ops</strong><small>preview table</small></div>
+      <div class="stat"><span>Period</span><strong>2026</strong><small>Jan 1 - Dec 31</small></div>
+      <div class="stat"><span>Dealer / Customer</span><strong>All / 28</strong><small>visible scope</small></div>
+      <div class="stat"><span>Preview rows</span><strong>500</strong><small>12,840 total rows</small></div>
+      <div class="stat"><span>Export</span><strong style="color:var(--green)">Allowed</strong><small>CSV / JSON</small></div>
+    </section>
+
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (reports.html / Export Builder Flow):
+      Export uses the current GET filters. UI must show the exact query/scope before users download CSV/Excel/JSON/PDF.
+      Flow: 1. Report type 2. Period 3. Scope 4. Preview 5. Export 6. Next action.
+      Report type examples: devices, package, faults, energy saving, budget, daily/monthly, TEA, Smart Energy KPI, carbon/ESG.
+      Period examples: full year, month, last 30 days, custom range. Export must use the same period as preview.
+      Scope uses account_scope_id + customer + zone + tag + device_set from the preview table.
+      Preview may limit visible rows for performance but must show total filtered count.
+      CSV/Excel/JSON/PDF exports use scoped queryset after filters, never all system data.
+      After export keep links to device, map, fault, account renewal, notifications, or report archive.
+    -->
+
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (reports.html / Report Types and Data Sources):
+      Report types available from this page:
+      1. Device inventory: PostgreSQL device registry, customer, dealer, zone/tag, lot, QR, map/floorplan placement.
+      2. Device operations: latest device snapshot, command state, connection/lamp/marker state, optional InfluxDB time-series for selected period.
+      3. Fault / issue: FaultOccurrence, active issue state, acknowledge state, notification state.
+      4. Maintenance: work orders, technician, status, created/completed time, resolution.
+      5. Energy usage: InfluxDB actual kWh/power time-series grouped by customer/zone/device.
+      6. Cost saving: customer energy baseline/history + tariff from PostgreSQL and actual kWh from InfluxDB.
+      7. Carbon / ESG: saved_kWh and configured emission factor.
+      8. Package expiry: Account, PackageTier, package lifecycle, software lock/visible_until.
+      9. Audit log: PostgreSQL AuditLog scoped by dealer/customer/account.
+      10. Daily/monthly operations summary: summary from device, fault, command, maintenance, energy, and package warning sources.
+      build_backoffice_report_readiness() maps customer setup to readiness states. Missing baseline/tariff/budget must show setup warning instead of unsupported savings.
+      Export endpoint: GET ?export=csv|excel|json|pdf&report=<type>. Invalid report/format returns 400. Never include password/token/secret/api_key.
+    -->
+
+    <section class="panel" style="margin-top:16px">
+      <div class="panel-inner">
+        <div class="section-title">
+          <div><h2>Customer / Scope List</h2><p>Platform owner และ dealer เลือก customer หรือ scope row ก่อน แล้วค่อย download report จาก drawer.</p></div>
+          <span class="chip blue">portfolio mode</span>
+        </div>
+        <!-- LOGIC: Platform/Dealer mode shows customer/scope rows first. Customer mode skips this customer list and shows only reports for the current account. Clicking a row opens the report drawer. -->
+        <div class="table-wrap">
+          <table data-sortable>
+            <thead>
+              <tr><th>Dealer</th><th>Customer / Site</th><th>Package</th><th>Devices</th><th>Open issues</th><th>Energy readiness</th><th>Last data</th><th>Available reports</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr data-open-report-drawer>
+                <td>SmartPole Platform<span>direct customer</span></td>
+                <td>บริษัท BB<span>Main campus</span></td>
+                <td>BASIC - Basic<span>active · 737 days</span></td>
+                <td>128<span>12 zones · 2 lots</span></td>
+                <td><span class="status-pill bad">3 open</span><span>1 critical</span></td>
+                <td><span class="status-pill good">Ready</span><span>baseline + tariff</span></td>
+                <td>2m ago<span>telemetry active</span></td>
+                <td>Device ops, Fault, Energy, Package</td>
+                <td><button class="button primary" type="button" data-open-report-drawer>Reports</button></td>
+              </tr>
+              <tr data-open-report-drawer>
+                <td>dealer01<span>dealer tree</span></td>
+                <td>City AA<span>Road lighting</span></td>
+                <td>LEGACY<span>17 days left</span></td>
+                <td>210<span>21 zones</span></td>
+                <td><span class="status-pill warn">8 open</span><span>package warning</span></td>
+                <td><span class="status-pill warn">Partial</span><span>tariff missing</span></td>
+                <td>38s ago<span>live snapshot</span></td>
+                <td>Device ops, Fault, Maintenance, Package</td>
+                <td><button class="button warn" type="button" data-open-report-drawer>Review</button></td>
+              </tr>
+              <tr data-open-report-drawer>
+                <td>Dealer North<span>dealer tree</span></td>
+                <td>Factory Delta<span>Factory Site 1</span></td>
+                <td>PRO - 24m<span>active · 586 days</span></td>
+                <td>92<span>floor plan + map</span></td>
+                <td><span class="status-pill warn">2 open</span><span>voltage warning</span></td>
+                <td><span class="status-pill good">Ready</span><span>cost + carbon</span></td>
+                <td>16s ago<span>telemetry active</span></td>
+                <td>Energy, Cost, Carbon, Maintenance</td>
+                <td><button class="button primary" type="button" data-open-report-drawer>Reports</button></td>
+              </tr>
+              <tr data-open-report-drawer>
+                <td>dealer01<span>dealer tree</span></td>
+                <td>School Lighting E<span>Front Gate</span></td>
+                <td>BASIC<span>28 days left</span></td>
+                <td>38<span>6 zones</span></td>
+                <td><span class="status-pill warn">1 open</span><span>runtime mismatch</span></td>
+                <td><span class="status-pill bad">Needs tariff</span><span>cost report locked</span></td>
+                <td>21s ago<span>telemetry active</span></td>
+                <td>Device inventory, Fault, Package</td>
+                <td><button class="button warn" type="button" data-open-report-drawer>Review</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row-actions">
+          <span class="chip">Customers: 28</span>
+          <span class="chip">Preview rows: customer scope list</span>
+          <span class="chip blue">Period: 2026-01-01 to 2026-12-31</span>
+          <span class="chip amber">Click row to choose report</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="drawer-backdrop" data-close-report-drawer></div>
+    <aside class="report-drawer" aria-label="Selected customer report drawer" aria-hidden="true">
+      <div class="report-drawer__head">
+        <div>
+          <h3>บริษัท BB</h3>
+          <p>SmartPole Platform · Main campus · 128 devices · selected portfolio scope.</p>
+        </div>
+        <button class="button" type="button" data-close-report-drawer>Close</button>
+      </div>
+      <div class="drawer-form-grid">
+        <div class="field"><label>Period</label><select><option>Full year 2026</option><option>This month</option><option>Last 30 days</option><option>Custom range</option></select></div>
+        <div class="field"><label>Output</label><select><option>Preview table</option><option>CSV</option><option>Excel</option><option>PDF</option><option>JSON</option></select></div>
+      </div>
+      <div class="download-option-grid">
+        <div class="download-option"><strong>Device inventory</strong><span>device list, lot, zone/tag, QR, placement</span><div class="row-actions"><button class="button green">CSV</button><button class="button">Preview</button></div></div>
+        <div class="download-option"><strong>Device operations</strong><span>online/offline, lamp state, command status</span><div class="row-actions"><button class="button green">CSV</button><button class="button green">PDF</button></div></div>
+        <div class="download-option"><strong>Fault / issue</strong><span>active faults, acknowledged state, severity</span><div class="row-actions"><button class="button green">CSV</button><button class="button rose">Open faults</button></div></div>
+        <div class="download-option"><strong>Maintenance</strong><span>work orders, technician, completed_at</span><div class="row-actions"><button class="button green">PDF</button><button class="button">Preview</button></div></div>
+        <div class="download-option"><strong>Energy / cost / carbon</strong><span>kWh, baseline, THB saved, CO2 saved</span><div class="row-actions"><button class="button green">Excel</button><button class="button">Energy setup</button></div></div>
+        <div class="download-option"><strong>Package expiry</strong><span>package, expiry, visible_until, renewal</span><div class="row-actions"><button class="button green">CSV</button><button class="button warn">Renewal</button></div></div>
+      </div>
+      <!-- LOGIC: Drawer reports use selected customer/account scope. Backend must re-check visible_account_ids and package export capability before every export. -->
+    </aside>
+
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (reports.html / Report Preview Variants):
+      Do not render separate Package / Device / Fault summary tables at the same time.
+      The visible Output Preview Table changes columns based on the selected report type.
+      Package expiry preview columns: customer, dealer, package, start, end, expiry, status, devices, renewal action.
+      Device operations preview columns: device, customer, zone/tag, connection, lamp, marker, brightness, voltage, current, power, energy, PF, last_seen, action.
+      Fault / issue preview columns: device, customer, zone, fault_type, severity, detected_at, acknowledge_state, maintenance_state, action.
+      Energy/cost/carbon preview columns: customer/site, period, baseline_kwh, actual_kwh, saved_kwh, tariff, cost_saved, co2_saved.
+      Audit log preview columns: time, actor, dealer/customer scope, action, target, source, status, details.
+    -->
+
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (reports.html / Reports Logic Matrix):
+      Route Contract:
+      /backoffice/reports/ -> backoffice_reports_view
+      GET filters: ui_mode, dealer_id, customer_id, site_id, zone_id, tag_id, device_set_id, report, output, period, data_from, data_to, search.
+      GET export=csv|excel|json|pdf&report=device_inventory|device_operations|fault_issue|maintenance|energy_usage|cost_saving|carbon_esg|package_expiry|audit_log|operations_summary.
+      Access Gate:
+      View requires report access permission and package report capability.
+      Export is stricter than preview and is gated by package format capability.
+      Customer UI fixes customer_id to current account and hides dealer/customer portfolio selectors.
+      Platform/Dealer UI can group/list by dealer and customer inside visible scope.
+      Scope Isolation:
+      AccountScopeService.resolve() computes visible dealer/customer/site/zone/tag/device ids.
+      Dealer excludes sibling customer accounts/devices/faults.
+      All preview and export rows must use the same scoped queryset/time-series filters.
+      Data Sources:
+      Device inventory/package/audit/baseline/tariff/maintenance/fault metadata come from PostgreSQL.
+      Actual energy/power/electrical time-series come from InfluxDB.
+      Latest device state may come from PostgreSQL snapshot/cache populated by telemetry pipeline.
+      Report Flow:
+      User selects scope -> period -> report type -> preview/export.
+      Preview table columns change by selected report type.
+      Preview can show first N rows, but export uses all filtered eligible rows.
+      Export must show total rows, preview rows, filename, selected period, scope, and column selection.
+      Readiness:
+      Energy/cost/carbon reports need customer energy baseline and tariff setup.
+      Missing setup shows warning rows, never unsupported savings.
+      Entitlement:
+      Apply PackageTelemetryPolicy + EntitlementPolicy before preview/export.
+      Software expired: show data only up to visible_until and lock export/action unless renewal/system role allows.
+      Security:
+      Never include password, token, secret, api_key, or raw sensitive payload in exports.
+      Audit export itself must create AuditLog.
+      Cross-Page Links:
+      Device rows link to device-list/map/QR/control/faults.
+      Fault/maintenance rows link to faults and notifications.
+      Package rows link to account/package renewal.
+      Energy/cost/carbon rows link to backoffice energy baseline and dashboard.
+    -->
+
+  
+    <!-- PACKAGE TELEMETRY POLICY REFERENCE:
+      Source plan: docs/html/device_state_engine.html#package-telemetry-policy
+      PackageTier polling interval, data retention, software expiry, and hardware warranty must be resolved server-side.
+      This page must not hardcode telemetry cadence, data visibility, export range, or expiry behavior.
+      Apply PackageTelemetryPolicy + EntitlementPolicy before dashboard/map/device/fault/report/notification queries.
+    -->
+
+  </main>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+    const profileToggle = document.querySelector('[data-profile-toggle]');
+    const widgetToggle = document.querySelector('[data-widget-toggle]');
+    const profileMenu = document.querySelector('[data-profile-menu]');
+    const widgetMenu = document.querySelector('[data-widget-menu]');
+    const reportDrawer = document.querySelector('.report-drawer');
+    const reportDrawerBackdrop = document.querySelector('.drawer-backdrop');
+
+    const openReportDrawer = () => {
+      reportDrawer?.classList.add('is-open');
+      reportDrawerBackdrop?.classList.add('is-open');
+      reportDrawer?.setAttribute('aria-hidden', 'false');
+      body.classList.add('drawer-open');
+    };
+
+    const closeReportDrawer = () => {
+      reportDrawer?.classList.remove('is-open');
+      reportDrawerBackdrop?.classList.remove('is-open');
+      reportDrawer?.setAttribute('aria-hidden', 'true');
+      body.classList.remove('drawer-open');
+    };
+
+    themeToggle?.addEventListener('click', () => {
+      const isLight = body.dataset.theme === 'light';
+      body.dataset.theme = isLight ? 'dark' : 'light';
+      themeToggle.textContent = isLight ? '☾ Dark' : '☼ Light';
+      themeToggle.setAttribute('aria-pressed', String(isLight));
+    });
+
+    profileToggle?.addEventListener('click', () => {
+      profileMenu?.classList.toggle('open');
+      widgetMenu?.classList.remove('open');
+    });
+
+    widgetToggle?.addEventListener('click', () => {
+      widgetMenu?.classList.toggle('open');
+      profileMenu?.classList.remove('open');
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        profileMenu?.classList.remove('open');
+        widgetMenu?.classList.remove('open');
+        closeReportDrawer();
+      }
+    });
+
+    document.querySelectorAll('[data-open-report-drawer]').forEach((trigger) => {
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        openReportDrawer();
+      });
+    });
+
+    document.querySelectorAll('[data-close-report-drawer]').forEach((trigger) => {
+      trigger.addEventListener('click', closeReportDrawer);
+    });
+
+    document.querySelectorAll('[data-report-tab]').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('[data-report-tab]').forEach((item) => {
+          const selected = item === tab;
+          item.classList.toggle('active', selected);
+          item.setAttribute('aria-selected', String(selected));
+        });
+      });
+    });
+
+    document.querySelectorAll('[data-filter-tab]').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.filterTab;
+        document.querySelectorAll('[data-filter-tab]').forEach((item) => {
+          item.setAttribute('aria-selected', String(item === tab));
+        });
+        document.querySelectorAll('[data-filter-panel]').forEach((panel) => {
+          panel.classList.toggle('is-active', panel.dataset.filterPanel === target);
+        });
+      });
+    });
+  </script>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
