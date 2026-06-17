@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartPole Energy Baseline Input</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: rgba(15, 23, 42, 0.86);
+      --panel-soft: rgba(15, 23, 42, 0.62);
+      --panel-raised: rgba(30, 41, 59, 0.78);
+      --line: rgba(148, 163, 184, 0.18);
+      --text: #e5edf7;
+      --muted: #93a4b8;
+      --faint: #64748b;
+      --cyan: #22d3ee;
+      --blue: #60a5fa;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --violet: #a78bfa;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      --radius: 24px;
+      --container: min(100% - 32px, 1680px);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      min-height: 100%;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 8%, rgba(34, 211, 238, 0.16), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(74, 222, 128, 0.14), transparent 25%),
+        linear-gradient(145deg, #07111f 0%, #0f172a 56%, #111827 100%);
+    }
+    body[data-theme="light"] {
+      color-scheme: light;
+      --bg: #eef5fb;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-soft: rgba(255, 255, 255, 0.72);
+      --panel-raised: rgba(248, 250, 252, 0.96);
+      --line: rgba(51, 65, 85, 0.14);
+      --text: #0f172a;
+      --muted: #475569;
+      --faint: #64748b;
+      background:
+        radial-gradient(circle at 10% 8%, rgba(34, 211, 238, 0.2), transparent 30%),
+        radial-gradient(circle at 86% 12%, rgba(74, 222, 128, 0.14), transparent 26%),
+        linear-gradient(145deg, #eef5fb 0%, #f8fafc 68%, #e0f2fe 100%);
+    }
+    body.drawer-open { overflow: hidden; }
+    a { color: inherit; }
+    button, input, select, textarea { font: inherit; }
+    .page { width: var(--container); margin: 0 auto; padding: 20px 0 56px; }
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: rgba(15, 23, 42, 0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+    }
+    body[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.82); }
+    .brand h1 { margin: 0; font-size: clamp(24px, 4vw, 42px); letter-spacing: -0.05em; line-height: 1; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .header-actions, .row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .header-actions { justify-content: flex-end; }
+    .button, .chip, .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    .button.primary { border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.14); }
+    .button.green, .chip.green, .status-pill.good { border-color: rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: #bbf7d0; }
+    .button.warn, .chip.amber, .status-pill.warn { border-color: rgba(251, 191, 36, 0.46); background: rgba(251, 191, 36, 0.13); color: #fde68a; }
+    .button.rose, .chip.rose, .status-pill.bad { border-color: rgba(251, 113, 133, 0.48); background: rgba(251, 113, 133, 0.14); color: #fecdd3; }
+    .chip.blue, .status-pill.info { border-color: rgba(96, 165, 250, 0.42); background: rgba(96, 165, 250, 0.13); color: #bfdbfe; }
+    body[data-theme="light"] .button.green, body[data-theme="light"] .chip.green, body[data-theme="light"] .status-pill.good { color: #166534; }
+    body[data-theme="light"] .button.warn, body[data-theme="light"] .chip.amber, body[data-theme="light"] .status-pill.warn { color: #92400e; }
+    body[data-theme="light"] .button.rose, body[data-theme="light"] .chip.rose, body[data-theme="light"] .status-pill.bad { color: #9f1239; }
+    body[data-theme="light"] .chip.blue, body[data-theme="light"] .status-pill.info { color: #1d4ed8; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.16); animation: pulseGreen 1.6s infinite; }
+    @keyframes pulseGreen { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.78); opacity: 0.62; } }
+    .popover-wrap { position: relative; }
+    .popover {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 10px);
+      width: min(340px, calc(100vw - 40px));
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-raised);
+      box-shadow: var(--shadow);
+      z-index: 30;
+    }
+    .popover-wrap.open .popover { display: block; }
+    .popover h3 { margin: 0 0 8px; font-size: 14px; }
+    .popover p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .popover-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+    .popover-row:first-of-type { border-top: 0; }
+    .hero { margin-top: 18px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr); gap: 16px; }
+    .panel, .filter-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-inner { padding: 16px; }
+    .section-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+    .section-title h2 { margin: 0; font-size: 18px; letter-spacing: -0.03em; }
+    .section-title p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tabs .button.active { background: rgba(34, 211, 238, 0.18); border-color: rgba(34, 211, 238, 0.52); }
+    .filter-panel { margin-top: 16px; padding: 14px; }
+    .filter-groups { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+    .filter-group { border: 1px solid var(--line); border-radius: 20px; background: rgba(255, 255, 255, 0.035); padding: 12px; min-width: 0; }
+    .filter-group h3 { margin: 0 0 10px; color: var(--muted); font-size: 11px; font-weight: 950; letter-spacing: 0.09em; text-transform: uppercase; }
+    .filter-group.scope { grid-column: span 4; }
+    .filter-group.bill { grid-column: span 4; }
+    .filter-group.tariff { grid-column: span 4; }
+    .filter-group.detail-half { grid-column: span 6; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; align-items: end; }
+    .field { min-width: 0; }
+    .field label { display: block; margin: 0 0 5px; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.58);
+      color: var(--text);
+      padding: 9px 11px;
+      outline: none;
+    }
+    .field textarea { min-height: 86px; resize: vertical; }
+    body[data-theme="light"] .field input, body[data-theme="light"] .field select, body[data-theme="light"] .field textarea { background: rgba(255, 255, 255, 0.75); }
+    .stat-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+    .stat { border: 1px solid var(--line); border-radius: 20px; background: var(--panel-soft); padding: 13px; min-height: 92px; }
+    .stat span { color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat strong { display: block; margin-top: 9px; font-size: 27px; letter-spacing: -0.05em; }
+    .stat small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .grid-12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; margin-top: 16px; align-items: stretch; }
+
+    .grid-12 > .panel,
+    .grid-12 > .card,
+    .grid-12 > .side-rail {
+      height: 100%;
+      min-width: 0;
+    }
+
+    .grid-12 > .panel > .panel-inner,
+    .grid-12 > .card > .card-inner,
+    .grid-12 > .side-rail > .panel > .panel-inner {
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .side-rail {
+      display: grid;
+      gap: 16px;
+      align-content: stretch;
+    }
+
+    .side-rail > .panel {
+      height: 100%;
+      min-width: 0;
+    }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: 1 / -1; }
+    .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .card { border: 1px solid var(--line); border-radius: 18px; padding: 13px; background: rgba(255, 255, 255, 0.04); }
+    .card h3 { margin: 0; font-size: 14px; }
+    .card p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .table-wrap { max-height: 430px; overflow: auto; border: 1px solid var(--line); border-radius: 20px; }
+    .energy-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+    .energy-list-pane { min-width: 0; }
+    .energy-list-pane .table-wrap { max-height: min(62vh, 620px); }
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      background: rgba(2, 6, 23, 0.56);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+      backdrop-filter: blur(4px);
+    }
+    .drawer-backdrop.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .customer-detail-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 80;
+      width: min(480px, calc(100vw - 22px));
+      max-height: 100dvh;
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-left: 1px solid var(--line);
+      border-radius: 24px 0 0 24px;
+      background: var(--panel-raised);
+      box-shadow: -24px 0 80px rgba(0, 0, 0, 0.46);
+      padding: 18px;
+      min-width: 0;
+      transform: translateX(106%);
+      transition: transform 220ms ease;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .customer-detail-drawer.is-open { transform: translateX(0); }
+    .customer-detail-drawer__head { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .customer-detail-drawer__head h3 { margin: 0; font-size: 16px; letter-spacing: -0.02em; }
+    .customer-detail-drawer__head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .compact-form { display: grid; gap: 10px; }
+    .compact-form .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .compare-preview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+    .compare-preview-card { border: 1px solid var(--line); border-radius: 16px; background: rgba(255, 255, 255, 0.04); padding: 10px; }
+    .compare-preview-card span { display: block; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; }
+    .compare-preview-card strong { display: block; margin-top: 5px; font-size: 18px; letter-spacing: -0.03em; }
+    table { width: 100%; min-width: 1120px; border-collapse: collapse; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; font-size: 13px; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255, 255, 255, 0.035); }
+    tr:last-child td { border-bottom: 0; }
+    tr[data-open-energy-drawer] { cursor: pointer; }
+    tr[data-open-energy-drawer]:hover td { background: rgba(34, 211, 238, 0.055); }
+    td span { color: var(--muted); font-size: 11px; display: block; margin-top: 3px; }
+    .contract-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .contract-card { border: 1px solid var(--line); border-radius: 18px; padding: 13px; background: rgba(255, 255, 255, 0.04); }
+    .contract-card h3 { margin: 0 0 8px; font-size: 14px; }
+    .contract-card ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .contract-card pre { margin: 0; white-space: pre-wrap; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    @media (max-width: 1240px) {
+      .hero { grid-template-columns: 1fr; }
+      .filter-group.scope, .filter-group.bill, .filter-group.tariff, .filter-group.detail-half { grid-column: span 12; }
+      .stat-grid, .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .contract-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: 1 / -1; }
+    }
+    @media (max-width: 760px) {
+      :root { --container: min(100% - 20px, 1680px); }
+      .topbar { grid-template-columns: 1fr; position: static; border-radius: 20px; }
+      .header-actions { justify-content: flex-start; }
+      .section-title { flex-direction: column; }
+      .filter-groups, .filter-grid, .stat-grid, .card-grid, .contract-grid, .compact-form .filter-grid, .compare-preview-grid { grid-template-columns: 1fr; }
+      .filter-group.scope, .filter-group.bill, .filter-group.tariff, .filter-group.detail-half { grid-column: 1 / -1; }
+    }
+      .table-wrap th { position: sticky; top: 0; z-index: 1; }
+
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body>
+  
+  <main class="page">
+    <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+      <div class="brand">
+        <h1>SmartPole Energy Baseline <span class="chip green"><span class="status-dot"></span>Live connected</span></h1>
+        <p class="subtitle">/backoffice/energy/ · bill input · historical kWh baseline · tariff setup · dashboard comparison source</p>
+      </div>
+      <div class="header-actions">
+        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
+        <span class="chip blue">Portfolio UI · Platform/Dealer</span>
+        <div class="popover-wrap" data-profile-menu>
+          <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+          <div class="popover">
+            <h3>Profile controls</h3>
+            <div class="popover-row"><p>Energy input permission, timezone, and export format.</p><span class="chip">Open</span></div>
+            <div class="popover-row"><p>Manager/admin can maintain baseline.</p><span class="chip blue">Manager</span></div>
+          </div>
+        </div>
+        <div class="popover-wrap" data-widget-menu>
+          <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+          <div class="popover">
+            <h3>Layout widgets</h3>
+            <div class="popover-row"><p>Show bill form.</p><input type="checkbox" checked /></div>
+            <div class="popover-row"><p>Show monthly history.</p><input type="checkbox" checked /></div>
+            <div class="popover-row"><p>Show compare preview.</p><input type="checkbox" checked /></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <article class="panel">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Energy Input For Dashboard Compare</h2>
+              <p>Customer baseline, receipt, tariff, and budget readiness for dashboard compare.</p>
+            </div>
+            <div class="row-actions"><a class="button" href="/dashboard/">Dashboard</a><a class="button" href="/backoffice/reports/">Reports</a></div>
+          </div>
+          <div class="tabs">
+            <span class="button active">Customer list</span>
+            <span class="button">Selected customer</span>
+            <span class="button">History</span>
+            <span class="button">Tariff</span>
+            <span class="button">Dashboard compare</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Current Scope Snapshot</h2>
+              <p>Data status for the selected visible customer scope.</p>
+            </div>
+            <span class="chip green">18 ready</span>
+          </div>
+          <div class="card-grid">
+            <div class="card"><h3>Latest bill month</h3><p><strong>2026-05</strong><br>21 customers have May bill data.</p></div>
+            <div class="card"><h3>Baseline source</h3><p><strong>Receipt + historical avg</strong><br>7 customers still need baseline.</p></div>
+            <div class="card"><h3>Tariff readiness</h3><p><strong>25 / 28</strong><br>3 customers need tariff setup.</p></div>
+            <div class="card"><h3>Dashboard compare</h3><p><strong>Energy / Cost / Carbon</strong><br>Ready customers can compare with telemetry.</p></div>
+          </div>
+        </div>
+      </article>
+      
+    
+
+    </section>
+
+    <section class="stat-grid" aria-label="Energy readiness stats">
+      <div class="stat"><span>Customers</span><strong>28</strong><small>visible scope</small></div>
+      <div class="stat"><span>Ready</span><strong style="color:var(--green)">18</strong><small>baseline + tariff</small></div>
+      <div class="stat"><span>Need baseline</span><strong style="color:var(--amber)">7</strong><small>missing bill history</small></div>
+      <div class="stat"><span>Need tariff</span><strong style="color:var(--blue)">3</strong><small>missing rate</small></div>
+      <div class="stat"><span>Compare source</span><strong>kWh</strong><small>monthly baseline</small></div>
+    </section>
+
+    <section class="filter-panel" aria-label="Energy customer filters">
+      <div class="section-title">
+        <div><h2>⌕ Customer Filter</h2><p>List customers first, then open detail after selecting a row.</p></div>
+        <span class="chip blue">list first</span>
+      </div>
+      <div class="filter-groups">
+        
+        <div class="filter-group scope">
+          <h3>Scope</h3>
+          <div class="filter-grid">
+            
+            <div class="field"><label>UI mode</label><select><option>Portfolio UI · customer list</option><option>Customer UI · own site</option></select></div>
+            <div class="field"><label>Dealer</label><select><option>All visible dealers</option><option>dealer01</option><option>SmartPole Platform</option></select></div>
+            <div class="field"><label>Customer</label><select><option>All customers</option><option>บริษัท BB</option><option>Customer AA</option><option>City AA</option></select></div>
+            <div class="field"><label>Site</label><select><option>All sites</option><option>Main campus</option><option>Factory AA Site 1</option></select></div>
+            <div class="field"><label>Readiness</label><select><option>All readiness</option><option>Ready</option><option>Need baseline</option><option>Need tariff</option><option>No receipt</option></select></div>
+            <div class="field"><label>Search</label><input value="" placeholder="Customer, dealer, site" /></div>
+          </div>
+        </div>
+        <div class="filter-group bill">
+          <h3>Compare period</h3>
+          <div class="filter-grid">
+            <div class="field"><label>Month</label><input type="month" value="2026-05" /></div>
+            <div class="field"><label>Baseline source</label><select><option>Any source</option><option>Receipt before install</option><option>Historical average</option><option>Manual target</option></select></div>
+            <div class="field"><label>Usage period</label><select><option>Monthly</option><option>Yearly</option><option>Daily</option><option>Rolling 7 days</option></select></div>
+          </div>
+        </div>
+        <div class="filter-group tariff">
+          <h3>Run</h3>
+          <div class="filter-grid">
+            <button class="button primary" type="button">Apply</button>
+            <button class="button" type="button">Reset</button>
+            <button class="button" type="button">Import customer CSV</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+      <div class="panel-inner">
+        <div class="section-title"><div><h2>Customer Energy List</h2><p>Readiness table for baseline, tariff, receipt, and dashboard compare.</p></div><span class="chip violet">click to edit</span></div>
+        
+        <div class="energy-workspace">
+          <div class="energy-list-pane">
+            <div class="table-wrap">
+              <table data-sortable>
+                <thead><tr><th>Customer</th><th>Dealer</th><th>Devices</th><th>Baseline</th><th>Latest bill</th><th>Tariff</th><th>Dashboard compare</th><th>Receipt</th><th>Readiness</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr data-open-energy-drawer><td>บริษัท BB<span>Selected example</span></td><td>dealer01</td><td>128</td><td>82,400 kWh<span>monthly</span></td><td>2026-05<span>349,820 THB</span></td><td>4.6836 THB/kWh<span>MEA + Ft + VAT</span></td><td><span class="status-pill good">Ready</span><span>actual vs baseline</span></td><td>2 files</td><td><span class="status-pill good">Ready</span></td><td><div class="row-actions"><button class="button primary" type="button" data-open-energy-drawer>Selected</button><a class="button" href="/dashboard/?customer=บริษัท-BB">Dashboard</a></div></td></tr>
+                  <tr data-open-energy-drawer><td>Customer AA<span>needs receipt</span></td><td>dealer01</td><td>46</td><td>28,100 kWh<span>historical avg</span></td><td>2026-04<span>119,420 THB</span></td><td>4.2500 THB/kWh<span>Manual</span></td><td><span class="status-pill warn">Partial</span><span>receipt missing</span></td><td>-</td><td><span class="status-pill warn">No receipt</span></td><td><div class="row-actions"><button class="button warn" type="button" data-open-energy-drawer>Attach receipt</button><button class="button" type="button" data-open-energy-drawer>Open</button></div></td></tr>
+                  <tr data-open-energy-drawer><td>City AA<span>setup required</span></td><td>SmartPole Platform</td><td>210</td><td>-</td><td>-</td><td>-</td><td><span class="status-pill bad">Not ready</span><span>dashboard shows setup warning</span></td><td>-</td><td><span class="status-pill bad">Need baseline</span></td><td><div class="row-actions"><button class="button rose" type="button" data-open-energy-drawer>Add baseline</button><button class="button" type="button" data-open-energy-drawer>Open</button></div></td></tr>
+                  <tr data-open-energy-drawer><td>Factory Delta<span>ready for compare</span></td><td>Dealer North</td><td>92</td><td>41,600 kWh<span>monthly avg</span></td><td>2026-05<span>176,320 THB</span></td><td>4.2380 THB/kWh<span>PEA + VAT</span></td><td><span class="status-pill good">Ready</span><span>energy/cost/carbon</span></td><td>1 file</td><td><span class="status-pill good">Ready</span></td><td><div class="row-actions"><button class="button primary" type="button" data-open-energy-drawer>Open</button><a class="button" href="/dashboard/?customer=Factory-Delta">Dashboard</a></div></td></tr>
+                  <tr data-open-energy-drawer><td>School Lighting E<span>needs tariff</span></td><td>dealer01</td><td>38</td><td>12,800 kWh<span>manual</span></td><td>2026-05<span>missing amount</span></td><td>-</td><td><span class="status-pill warn">Partial</span><span>tariff missing</span></td><td>1 file</td><td><span class="status-pill warn">Need tariff</span></td><td><div class="row-actions"><button class="button warn" type="button" data-open-energy-drawer>Add tariff</button><button class="button" type="button" data-open-energy-drawer>Open</button></div></td></tr>
+                  <tr data-open-energy-drawer><td>Depot F<span>no history</span></td><td>Dealer North</td><td>74</td><td>-</td><td>-</td><td>4.5100 THB/kWh<span>Manual</span></td><td><span class="status-pill bad">Not ready</span><span>baseline missing</span></td><td>-</td><td><span class="status-pill bad">Need baseline</span></td><td><div class="row-actions"><button class="button rose" type="button" data-open-energy-drawer>Add baseline</button><button class="button" type="button" data-open-energy-drawer>Open</button></div></td></tr>
+                  <tr data-open-energy-drawer><td>Road Authority G<span>yearly import</span></td><td>SmartPole Platform</td><td>1,240</td><td>308,900 kWh<span>yearly split monthly</span></td><td>2026-05<span>1,294,880 THB</span></td><td>4.1900 THB/kWh<span>Government</span></td><td><span class="status-pill good">Ready</span><span>year compare</span></td><td>12 files</td><td><span class="status-pill good">Ready</span></td><td><div class="row-actions"><button class="button primary" type="button" data-open-energy-drawer>Open</button><button class="button" type="button" data-open-energy-drawer>Year view</button></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="drawer-backdrop" data-close-energy-drawer></div>
+          <aside class="customer-detail-drawer" aria-label="Selected customer energy detail drawer" aria-hidden="true">
+            <div class="customer-detail-drawer__head">
+              <div>
+                <h3>บริษัท BB</h3>
+                <p>Selected from table · baseline, bill, tariff, and dashboard preview.</p>
+              </div>
+              <div class="row-actions"><span class="status-pill good">Ready</span><button class="button" type="button" data-close-energy-drawer>Close</button></div>
+            </div>
+            <div class="compare-preview-grid">
+              <div class="compare-preview-card"><span>Baseline</span><strong>82,400 kWh</strong></div>
+              <div class="compare-preview-card"><span>Telemetry</span><strong>71,300 kWh</strong></div>
+              <div class="compare-preview-card"><span>Saving</span><strong>11,100 kWh</strong></div>
+              <div class="compare-preview-card"><span>Cost avoided</span><strong>51,991 THB</strong></div>
+            </div>
+            <div class="compact-form" style="margin-top:12px">
+              
+              <div class="filter-grid">
+                <div class="field"><label>Bill month</label><input type="month" value="2026-05" /></div>
+                <div class="field"><label>Bill kWh</label><input type="number" value="82400" /></div>
+                <div class="field"><label>Total THB</label><input type="number" value="349820.00" /></div>
+                <div class="field"><label>Tariff THB/kWh</label><input type="number" value="4.6836" /></div>
+                <div class="field"><label>Receipt</label><input type="file" /></div>
+                <div class="field"><label>Provider</label><select><option>MEA</option><option>PEA</option><option>Manual</option></select></div>
+              </div>
+              <div class="row-actions"><button class="button primary" type="button">Calculate</button><button class="button green" type="button">Save baseline</button><button class="button" type="button">History</button></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    
+
+    
+
+    <section class="panel" style="margin-top:16px">
+      <div class="panel-inner">
+        <div class="section-title"><div><h2>Monthly Energy History</h2><p>ตารางประวัตินี้คือข้อมูลอ้างอิงที่ dashboard ใช้เทียบเป็นรายเดือน/รายปี.</p></div><span class="chip violet">baseline table</span></div>
+        
+        <div class="table-wrap">
+          <table data-sortable>
+            <thead><tr><th>Month</th><th>Customer / Site</th><th>Dealer scope</th><th>Source</th><th>Bill kWh</th><th>Actual telemetry</th><th>Saving vs baseline</th><th>Bill THB</th><th>Effective rate</th><th>Receipt</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>2026-05</td><td>บริษัท BB<span>Main campus</span></td><td>dealer01</td><td>Receipt before install</td><td>82,400 kWh</td><td>71,300 kWh</td><td><span class="status-pill good">11,100 kWh</span><span>customer/site row</span></td><td>349,820</td><td>4.6836</td><td>MEA_2026_05.pdf</td><td><span class="status-pill good">Ready</span></td><td><div class="row-actions"><button class="button">Edit</button><button class="button">Use in dashboard</button></div></td></tr>
+              <tr><td>2026-04</td><td>บริษัท BB<span>Main campus</span></td><td>dealer01</td><td>Manual history</td><td>79,800 kWh</td><td>72,950 kWh</td><td><span class="status-pill good">6,850 kWh</span><span>customer/site row</span></td><td>338,700</td><td>4.6810</td><td>-</td><td><span class="status-pill warn">No receipt</span></td><td><div class="row-actions"><button class="button">Attach receipt</button><button class="button">Edit</button></div></td></tr>
+              <tr><td>2025-05</td><td>บริษัท BB<span>Main campus</span></td><td>dealer01</td><td>Prior year baseline</td><td>83,100 kWh</td><td>-</td><td>-<span>actual missing</span></td><td>352,440</td><td>4.6620</td><td>MEA_2025_05.pdf</td><td><span class="status-pill info">Baseline only</span></td><td><div class="row-actions"><button class="button">Compare year</button></div></td></tr>
+            
+              <tr><td>2026-03</td><td>บริษัท BB<span>Main campus</span></td><td>dealer01</td><td>Receipt</td><td>81,220 kWh</td><td>73,480 kWh</td><td><span class="status-pill good">7,740 kWh</span><span>customer/site row</span></td><td>344,980</td><td>4.6730</td><td>MEA_2026_03.pdf</td><td><span class="status-pill good">Ready</span></td><td><div class="row-actions"><button class="button">Edit</button></div></td></tr>
+              <tr><td>2026-02</td><td>บริษัท BB<span>Main campus</span></td><td>dealer01</td><td>Receipt</td><td>76,900 kWh</td><td>70,110 kWh</td><td><span class="status-pill good">6,790 kWh</span><span>customer/site row</span></td><td>326,880</td><td>4.6500</td><td>MEA_2026_02.pdf</td><td><span class="status-pill good">Ready</span></td><td><div class="row-actions"><button class="button">Edit</button></div></td></tr>
+              <tr><td>2026-01</td><td>บริษัท BB<span>Main campus</span></td><td>dealer01</td><td>Manual history</td><td>78,420 kWh</td><td>71,960 kWh</td><td><span class="status-pill good">6,460 kWh</span><span>customer/site row</span></td><td>333,120</td><td>4.6510</td><td>-</td><td><span class="status-pill warn">No receipt</span></td><td><div class="row-actions"><button class="button">Attach receipt</button></div></td></tr>
+              <tr><td>2025-12</td><td>บริษัท BB<span>Main campus</span></td><td>dealer01</td><td>Prior year baseline</td><td>84,050 kWh</td><td>-</td><td>-<span>actual missing</span></td><td>356,920</td><td>4.6400</td><td>MEA_2025_12.pdf</td><td><span class="status-pill info">Baseline only</span></td><td><div class="row-actions"><button class="button">Compare year</button></div></td></tr>
+              <tr><td>2025-11</td><td>บริษัท BB<span>Main campus</span></td><td>dealer01</td><td>Prior year baseline</td><td>80,700 kWh</td><td>-</td><td>-<span>actual missing</span></td><td>342,140</td><td>4.6380</td><td>MEA_2025_11.pdf</td><td><span class="status-pill info">Baseline only</span></td><td><div class="row-actions"><button class="button">Compare year</button></div></td></tr>
+</tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    
+    
+
+  
+    
+
+  </main>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+    const profileToggle = document.querySelector('[data-profile-toggle]');
+    const widgetToggle = document.querySelector('[data-widget-toggle]');
+    const profileMenu = document.querySelector('[data-profile-menu]');
+    const widgetMenu = document.querySelector('[data-widget-menu]');
+    const energyDrawer = document.querySelector('.customer-detail-drawer');
+    const energyDrawerBackdrop = document.querySelector('.drawer-backdrop');
+
+    const openEnergyDrawer = () => {
+      energyDrawer?.classList.add('is-open');
+      energyDrawerBackdrop?.classList.add('is-open');
+      energyDrawer?.setAttribute('aria-hidden', 'false');
+      body.classList.add('drawer-open');
+    };
+
+    const closeEnergyDrawer = () => {
+      energyDrawer?.classList.remove('is-open');
+      energyDrawerBackdrop?.classList.remove('is-open');
+      energyDrawer?.setAttribute('aria-hidden', 'true');
+      body.classList.remove('drawer-open');
+    };
+
+    themeToggle?.addEventListener('click', () => {
+      const isLight = body.dataset.theme === 'light';
+      body.dataset.theme = isLight ? 'dark' : 'light';
+      themeToggle.textContent = isLight ? '☾ Dark' : '☼ Light';
+      themeToggle.setAttribute('aria-pressed', String(isLight));
+    });
+
+    profileToggle?.addEventListener('click', () => {
+      profileMenu?.classList.toggle('open');
+      widgetMenu?.classList.remove('open');
+    });
+
+    widgetToggle?.addEventListener('click', () => {
+      widgetMenu?.classList.toggle('open');
+      profileMenu?.classList.remove('open');
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        profileMenu?.classList.remove('open');
+        widgetMenu?.classList.remove('open');
+        closeEnergyDrawer();
+      }
+    });
+
+    document.querySelectorAll('[data-open-energy-drawer]').forEach((trigger) => {
+      trigger.addEventListener('click', (event) => {
+        if (event.target.closest('a')) return;
+        event.preventDefault();
+        openEnergyDrawer();
+      });
+    });
+
+    document.querySelectorAll('[data-close-energy-drawer]').forEach((trigger) => {
+      trigger.addEventListener('click', closeEnergyDrawer);
+    });
+  </script>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

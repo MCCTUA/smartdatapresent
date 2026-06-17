@@ -1,0 +1,4611 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartPole Dashboard - D3 Card Workspace</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #071014;
+      --bg-2: #0d1a20;
+      --panel: rgba(13, 29, 36, 0.88);
+      --panel-solid: #101f27;
+      --panel-soft: rgba(255, 255, 255, 0.055);
+      --ink: #ecfeff;
+      --muted: #8aa7aa;
+      --line: rgba(148, 163, 184, 0.22);
+      --line-strong: rgba(148, 163, 184, 0.34);
+      --cyan: #22d3ee;
+      --teal: #2dd4bf;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --blue: #60a5fa;
+      --violet: #a78bfa;
+      --shadow: 0 24px 74px rgba(0, 0, 0, 0.36);
+      --radius: 24px;
+      --max: 1540px;
+    }
+
+    body.theme-light {
+      color-scheme: light;
+      --bg: #eef6f7;
+      --bg-2: #dcecee;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-solid: #ffffff;
+      --panel-soft: rgba(15, 23, 42, 0.045);
+      --ink: #0f2630;
+      --muted: #526872;
+      --line: rgba(15, 23, 42, 0.14);
+      --line-strong: rgba(15, 23, 42, 0.24);
+      --shadow: 0 22px 64px rgba(15, 23, 42, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 2%, rgba(34, 211, 238, 0.18), transparent 30rem),
+        radial-gradient(circle at 90% 12%, rgba(45, 212, 191, 0.15), transparent 34rem),
+        radial-gradient(circle at 52% 98%, rgba(167, 139, 250, 0.12), transparent 30rem),
+        linear-gradient(145deg, #071014 0%, #0b171e 52%, #10131d 100%);
+      color: var(--ink);
+      font-family: "Aptos", "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+      line-height: 1.55;
+    }
+
+    body.theme-light {
+      background:
+        radial-gradient(circle at 8% 2%, rgba(34, 211, 238, 0.2), transparent 30rem),
+        radial-gradient(circle at 90% 12%, rgba(45, 212, 191, 0.14), transparent 34rem),
+        linear-gradient(145deg, #edf7f8 0%, #f8fbfc 52%, #e8f1f3 100%);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      width: min(var(--max), calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 56px;
+    }
+
+    .app-shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .topbar,
+    .filter-panel,
+    .card,
+    .toolbar,
+    .mode-panel {
+      border: 1px solid var(--line);
+      background: linear-gradient(145deg, rgba(14, 30, 38, 0.92), rgba(8, 20, 27, 0.88));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    body.theme-light .topbar,
+    body.theme-light .filter-panel,
+    body.theme-light .card,
+    body.theme-light .toolbar,
+    body.theme-light .mode-panel {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(235, 247, 249, 0.86));
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      border-radius: 28px;
+      padding: 14px 16px 14px 18px;
+    }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      border-radius: 15px;
+      background: conic-gradient(from 210deg, var(--cyan), var(--teal), var(--green), var(--blue), var(--cyan));
+      box-shadow: 0 0 34px rgba(34, 211, 238, 0.38);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1;
+      letter-spacing: -0.055em;
+    }
+
+    .brand p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .brand-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 5px;
+    }
+
+    .brand-meta p {
+      margin: 0;
+    }
+
+    .connection-badge {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      border: 1px solid rgba(74, 222, 128, 0.38);
+      border-radius: 999px;
+      background: rgba(74, 222, 128, 0.1);
+      color: #dcfce7;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .connection-badge.is-connected {
+      animation: connectedPulse 1.8s ease-in-out infinite;
+    }
+
+    .connection-badge.is-disconnected {
+      border-color: rgba(248, 113, 113, 0.72);
+      background: rgba(127, 29, 29, 0.52);
+      color: #fff7f7;
+      animation: disconnectedBlink 0.95s ease-in-out infinite;
+    }
+
+    .top-actions,
+    .mode-tabs,
+    .card-actions,
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .button,
+    .mode-tab,
+    .chip,
+    .icon-button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #d8f5f5;
+      padding: 8px 12px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+      cursor: default;
+    }
+
+    .button.primary,
+    .mode-tab.active {
+      border-color: rgba(34, 211, 238, 0.65);
+      background: rgba(34, 211, 238, 0.14);
+      color: #f1fdff;
+    }
+
+    .theme-mode-toggle {
+      min-width: 68px;
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.1);
+    }
+
+    body.theme-light .button,
+    body.theme-light .mode-tab,
+    body.theme-light .chip,
+    body.theme-light .icon-button {
+      background: rgba(15, 23, 42, 0.045);
+      color: #17313a;
+    }
+
+    body.theme-light .theme-mode-toggle {
+      border-color: rgba(15, 23, 42, 0.22);
+      background: rgba(15, 23, 42, 0.06);
+    }
+
+    .button.green { border-color: rgba(74, 222, 128, 0.45); background: rgba(74, 222, 128, 0.12); color: #bbf7d0; }
+    .button.warn { border-color: rgba(251, 191, 36, 0.42); background: rgba(251, 191, 36, 0.12); color: #fde68a; }
+    .button.rose { border-color: rgba(251, 113, 133, 0.45); background: rgba(251, 113, 133, 0.12); color: #fecdd3; }
+
+    .filter-panel {
+      position: relative;
+      z-index: 60;
+      overflow: visible;
+      border-radius: var(--radius);
+      padding: 12px;
+    }
+
+    .filter-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .filter-head h2,
+    .card-title h2,
+    .mode-panel h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.12;
+      letter-spacing: -0.035em;
+    }
+
+    .filter-head p,
+    .card-title p,
+    .mode-panel p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .quick-filter-grid {
+      display: grid;
+      grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(116px, 0.72fr) minmax(116px, 0.72fr) auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .scope-mode-strip {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .scope-mode-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 10px 12px;
+      min-width: 0;
+    }
+
+    .scope-mode-card.active {
+      border-color: rgba(34, 211, 238, 0.42);
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.13), rgba(45, 212, 191, 0.08));
+    }
+
+    .scope-mode-icon {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(34, 211, 238, 0.12);
+      color: #dffbff;
+      font-weight: 950;
+    }
+
+    .scope-mode-copy {
+      min-width: 0;
+    }
+
+    .scope-mode-copy strong,
+    .scope-mode-copy span {
+      display: block;
+    }
+
+    .scope-mode-copy strong {
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.15;
+    }
+
+    .scope-mode-copy span {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .scope-mode-pill {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted);
+      padding: 4px 7px;
+      font-size: 10px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .scope-mode-card.active .scope-mode-pill {
+      border-color: rgba(74, 222, 128, 0.38);
+      background: rgba(74, 222, 128, 0.11);
+      color: #bbf7d0;
+    }
+
+    .filter-actions {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .filter-actions .button,
+    .quick-filter-grid .button {
+      min-height: 38px;
+      white-space: nowrap;
+    }
+
+    .advanced-filter {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 18px;
+      background: rgba(7, 16, 20, 0.94);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+      overflow: hidden;
+    }
+
+    body.theme-light .advanced-filter {
+      background: rgba(248, 250, 252, 0.98);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+    }
+
+    .filter-overlay {
+      position: absolute;
+      z-index: 90;
+      top: calc(100% + 10px);
+      right: 0;
+      width: min(940px, 100%);
+    }
+
+    .filter-overlay[hidden] {
+      display: none;
+    }
+
+    .advanced-filter-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      color: #dff7f7;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    body.theme-light .advanced-filter-head { color: #0f172a; }
+
+    .advanced-filter-body {
+      padding: 0 14px 14px;
+    }
+
+    .active-filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .active-filter-chip {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      border: 1px solid rgba(34, 211, 238, 0.24);
+      border-radius: 999px;
+      background: rgba(34, 211, 238, 0.07);
+      color: #dffbff;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .active-filter-chip button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 0;
+      cursor: default;
+      font-weight: 950;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .field select,
+    .field input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.065);
+      color: var(--ink);
+      padding: 9px 11px;
+      outline: 0;
+    }
+
+    .field select option { color: #0f172a; }
+
+    .mode-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .dashboard-workspace-toolbar {
+      grid-template-columns: minmax(0, 1fr) minmax(320px, auto);
+    }
+
+    .toolbar-stack {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .preset-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .preset-strip-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .toolbar strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    .toolbar span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .profile-menu,
+    .widget-menu {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .profile-popover,
+    .widget-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 30;
+      display: none;
+      width: min(680px, calc(100vw - 28px));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(34, 211, 238, 0.08), transparent 18rem),
+        rgba(7, 16, 20, 0.96);
+      box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48);
+      padding: 14px;
+      text-align: left;
+    }
+
+    .profile-popover {
+      width: min(320px, calc(100vw - 28px));
+    }
+
+    .profile-menu.is-open .profile-popover,
+    .widget-menu.is-open .widget-popover {
+      display: grid;
+      gap: 12px;
+    }
+
+    .profile-popover-head,
+    .widget-popover-head {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      padding-bottom: 10px;
+    }
+
+    .profile-popover-head strong,
+    .widget-popover-head strong {
+      color: #f8ffff;
+      font-size: 14px;
+    }
+
+    .profile-popover-head span,
+    .widget-popover-head span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .profile-actions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .profile-action {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #dff7f7;
+      padding: 10px 11px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .profile-action span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: 16px;
+      row-gap: 18px;
+      align-items: stretch;
+      grid-auto-flow: row;
+    }
+
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: var(--radius);
+      height: auto;
+      min-height: 0;
+      min-width: 0;
+      isolation: isolate;
+    }
+
+    .card.card-menu-open {
+      overflow: visible;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      height: auto;
+      min-height: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 18px;
+    }
+
+    .card:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background: radial-gradient(circle at 16% 0%, rgba(34, 211, 238, 0.08), transparent 18rem);
+    }
+
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .card-header {
+      display: flex;
+      flex: 0 0 auto;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .main-timeseries-card .card-header,
+    .dashboard-wide-card[data-card="zone-breakdown"] .card-header {
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .card-title h3 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+
+    .card-title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .drag-handle {
+      color: #77a2a5;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+
+    .card-menu-open {
+      z-index: 80;
+    }
+
+    .card-actions {
+      position: relative;
+      flex-wrap: nowrap;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .card-actions::-webkit-scrollbar {
+      display: none;
+    }
+
+    .card-menu {
+      position: relative;
+      display: inline-flex;
+      flex: 0 0 auto;
+    }
+
+    .card-menu-toggle {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--ink);
+      padding: 0;
+      font-size: 20px;
+      font-weight: 950;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .card-menu-toggle:hover,
+    .card-menu-toggle[aria-expanded="true"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.12);
+    }
+
+    .card-menu-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 120;
+      display: none;
+      width: min(250px, calc(100vw - 36px));
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(34, 211, 238, 0.08), transparent 14rem),
+        rgba(7, 16, 20, 0.97);
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.46);
+      overflow: hidden;
+      text-align: left;
+    }
+
+    body.theme-light .card-menu-popover {
+      background:
+        radial-gradient(circle at 100% 0%, rgba(34, 211, 238, 0.1), transparent 14rem),
+        rgba(255, 255, 255, 0.98);
+      box-shadow: 0 22px 58px rgba(15, 23, 42, 0.18);
+    }
+
+    .card-menu.is-open .card-menu-popover {
+      display: grid;
+    }
+
+    .card-menu-head {
+      display: grid;
+      gap: 2px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      padding: 11px 12px 9px;
+    }
+
+    .card-menu-head strong {
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .card-menu-head span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .card-menu-body {
+      display: grid;
+      gap: 4px;
+      padding: 8px;
+    }
+
+    .card-menu-action {
+      display: grid;
+      gap: 1px;
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--ink);
+      padding: 8px 9px;
+      text-align: left;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .card-menu-action:hover {
+      background: rgba(34, 211, 238, 0.1);
+    }
+
+    .card-menu-action span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .card-menu-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      border-top: 1px solid rgba(148, 163, 184, 0.12);
+      margin-top: 4px;
+      padding: 8px 9px 2px;
+    }
+
+    .card-menu-meta span {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted);
+      padding: 3px 6px;
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    .card-menu-meta--stack {
+      display: grid;
+    }
+
+    .card-menu-meta--stack .issue-display-mode,
+    .card-menu-meta--stack .drawer-transition-note {
+      width: 100%;
+      justify-content: center;
+      margin: 0;
+    }
+
+    .kpi-value {
+      margin: 12px 0 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1;
+      font-weight: 950;
+      letter-spacing: -0.055em;
+    }
+
+    .kpi-card .card-header {
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .kpi-card .card-title h3 {
+      font-size: 15px;
+    }
+
+    .kpi-status {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #d9eeee;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .kpi-status.good { border-color: rgba(74, 222, 128, 0.36); color: #bbf7d0; background: rgba(74, 222, 128, 0.1); }
+    .kpi-status.warn { border-color: rgba(251, 191, 36, 0.36); color: #fde68a; background: rgba(251, 191, 36, 0.1); }
+    .kpi-status.bad { border-color: rgba(251, 113, 133, 0.36); color: #fecdd3; background: rgba(251, 113, 133, 0.1); }
+
+    .kpi-card .kpi-value {
+      margin-top: 8px;
+      font-size: clamp(30px, 3.3vw, 40px);
+    }
+
+    .kpi-sub {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .kpi-meta-dot:before {
+      content: "·";
+      margin-right: 8px;
+      color: rgba(148, 163, 184, 0.62);
+    }
+
+    .kpi-footer {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+
+    .sparkline {
+      display: block;
+      width: 86px;
+      height: 28px;
+      overflow: visible;
+    }
+
+    .sparkline path {
+      fill: none;
+      stroke: var(--cyan);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .sparkline.good path { stroke: var(--green); }
+    .sparkline.warn path { stroke: var(--amber); }
+    .sparkline.bad path { stroke: var(--rose); }
+
+    .kpi-action {
+      color: #b9f8ff;
+      font-size: 11px;
+      font-weight: 950;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .delta {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .delta.good { background: rgba(74, 222, 128, 0.14); color: #bbf7d0; }
+    .delta.warn { background: rgba(251, 191, 36, 0.14); color: #fde68a; }
+    .delta.bad { background: rgba(251, 113, 133, 0.14); color: #fecdd3; }
+
+    .chart-shell {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 12px;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .main-chart-shell {
+      display: grid;
+      flex: 1 1 auto;
+      min-height: clamp(560px, 58vh, 740px);
+      grid-template-rows: auto auto auto minmax(320px, 1fr) auto auto;
+      gap: 6px;
+    }
+
+    .main-timeseries-card .card-inner {
+      padding: 14px;
+    }
+
+    .main-timeseries-card .card-header {
+      margin-bottom: 8px;
+    }
+
+    .main-timeseries-card .card-title p {
+      margin-top: 2px;
+    }
+
+    .main-timeseries-card .chart-shell {
+      padding: 9px;
+    }
+
+    .main-timeseries-card .chart-tools {
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .main-timeseries-card .chart-tools .left,
+    .main-timeseries-card .chart-tools .right {
+      gap: 5px;
+    }
+
+    .main-timeseries-card .mode-tab,
+    .main-timeseries-card .chip,
+    .main-timeseries-card .legend-toggle {
+      padding: 5px 8px;
+      font-size: 11px;
+    }
+
+    .main-timeseries-card .card-config {
+      margin-bottom: 4px;
+    }
+
+    .main-timeseries-card .chart-legend {
+      margin: 2px 0 5px;
+    }
+
+    .main-timeseries-card .legend-toggles {
+      margin-top: 6px;
+      gap: 5px;
+    }
+
+    .main-chart-stage {
+      position: relative;
+      min-height: clamp(320px, 38vh, 520px);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 75% 8%, rgba(251, 113, 133, 0.08), transparent 16rem),
+        rgba(3, 10, 14, 0.22);
+      overflow: hidden;
+    }
+
+    .chart-tools {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .chart-tools::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chart-tools .left,
+    .chart-tools .right {
+      display: flex;
+      flex: 0 0 auto;
+      flex-wrap: nowrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .card-config {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 7px;
+      align-items: center;
+      margin-bottom: 8px;
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .card-config::-webkit-scrollbar {
+      display: none;
+    }
+
+    .zone-control-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .zone-control-grid .field select {
+      min-height: 34px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .dashboard-wide-card[data-card="zone-breakdown"] .card-inner {
+      gap: 8px;
+    }
+
+    .dashboard-wide-card[data-card="zone-breakdown"] .card-actions .chip:first-child {
+      display: none;
+    }
+
+    .dashboard-wide-card[data-card="zone-breakdown"] .split-card {
+      gap: 12px;
+      min-height: 430px;
+      grid-template-columns: minmax(0, 8fr) minmax(300px, 4fr);
+    }
+
+    .dashboard-wide-card[data-card="zone-breakdown"] .chart-shell {
+      display: grid;
+      grid-template-rows: auto auto minmax(260px, 1fr) auto;
+      min-height: 430px;
+    }
+
+    .dashboard-wide-card[data-card="zone-breakdown"] .chart-svg {
+      height: 100%;
+      min-height: 260px;
+    }
+
+    .zone-rule-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .zone-rule-card {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 11px;
+    }
+
+    .zone-rule-card strong,
+    .zone-rule-card span {
+      display: block;
+    }
+
+    .zone-rule-card strong {
+      color: #f2ffff;
+      font-size: 12px;
+    }
+
+    .zone-rule-card span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      margin-top: 4px;
+    }
+
+    .config-pill {
+      display: inline-flex;
+      flex: 0 0 auto;
+      gap: 5px;
+      align-items: center;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.035);
+      padding: 5px 8px;
+      color: #d9eeee;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .config-pill span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .config-pill.more {
+      color: #b9f8ff;
+    }
+
+    .legend-toggles {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      align-items: center;
+      margin-top: 8px;
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .legend-toggles::-webkit-scrollbar {
+      display: none;
+    }
+
+    .toggle-group-label {
+      flex: 0 0 auto;
+      color: #dff7f7;
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .legend-toggle {
+      display: inline-flex;
+      flex: 0 0 auto;
+      gap: 5px;
+      align-items: center;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #d9eeee;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .legend-toggle.alert-toggle {
+      border-color: rgba(251, 113, 133, 0.46);
+      background: rgba(251, 113, 133, 0.14);
+      color: #fecdd3;
+    }
+
+    .chart-legend {
+      display: inline-flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      align-items: center;
+      margin: 4px 0 6px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      vertical-align: top;
+    }
+
+    .chart-legend::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chart-legend:before {
+      content: "Legend";
+      color: #dff7f7;
+      font-weight: 950;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      padding: 0;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 6px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+    }
+
+    .legend-swatch.solid {
+      border-top: 2px solid var(--cyan);
+    }
+
+    .legend-swatch.dashed {
+      border-top: 2px dashed rgba(148, 163, 184, 0.75);
+    }
+
+    .legend-swatch.area {
+      background: rgba(34, 211, 238, 0.18);
+      border: 1px solid rgba(34, 211, 238, 0.34);
+    }
+
+    .legend-swatch.threshold {
+      border-top: 2px dashed var(--amber);
+    }
+
+    .legend-swatch.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--rose);
+      box-shadow: 0 0 0 2px rgba(251, 113, 133, 0.2);
+    }
+
+    .legend-swatch.baseline {
+      border-top: 2px dashed var(--blue);
+    }
+
+    .legend-item strong {
+      color: inherit;
+      font-size: inherit;
+      font-weight: 850;
+    }
+
+    .chart-svg {
+      display: block;
+      width: 100%;
+      height: 320px;
+      overflow: hidden;
+    }
+
+    .main-chart-stage .chart-svg {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+    }
+
+    .axis-label {
+      position: absolute;
+      z-index: 2;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+      background: rgba(7, 16, 20, 0.78);
+      color: #c9f6f8;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 950;
+      pointer-events: none;
+    }
+
+    .axis-label--y {
+      left: 12px;
+      top: 14px;
+    }
+
+    .axis-label--x {
+      right: 12px;
+      bottom: 12px;
+    }
+
+    .axis-note {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      z-index: 2;
+      display: none;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      pointer-events: none;
+    }
+
+    .x-axis-dates {
+      position: absolute;
+      left: 44px;
+      right: 44px;
+      bottom: 34px;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      color: rgba(203, 234, 236, 0.72);
+      font-size: 10px;
+      font-weight: 850;
+      pointer-events: none;
+    }
+
+    .x-axis-dates span:not(:first-child):not(:last-child) {
+      text-align: center;
+    }
+
+    .x-axis-dates span:last-child {
+      text-align: right;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      right: 84px;
+      top: 72px;
+      z-index: 3;
+      width: min(260px, calc(100% - 24px));
+      border: 1px solid rgba(34, 211, 238, 0.28);
+      border-radius: 16px;
+      background: rgba(7, 16, 20, 0.9);
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.32);
+      padding: 11px 12px;
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+      transition: opacity 140ms ease, transform 140ms ease;
+    }
+
+    .main-chart-stage:hover .chart-tooltip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .chart-tooltip strong {
+      display: block;
+      color: #f2ffff;
+      font-size: 13px;
+    }
+
+    .chart-tooltip p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .tooltip-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .tooltip-stat {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px 7px;
+      color: #dff7f7;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .tooltip-stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    .tooltip-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .threshold-line {
+      position: absolute;
+      left: 5.2%;
+      right: 4.8%;
+      border-top: 1px dashed rgba(251, 191, 36, 0.76);
+      color: #fde68a;
+      font-size: 11px;
+      font-weight: 950;
+      pointer-events: none;
+    }
+
+    .threshold-line span {
+      position: absolute;
+      top: -18px;
+      right: 0;
+      border: 1px solid rgba(251, 191, 36, 0.42);
+      border-radius: 999px;
+      background: rgba(7, 16, 20, 0.8);
+      padding: 3px 8px;
+    }
+
+    .threshold-line--upper { top: 25%; }
+    .threshold-line--lower { top: 76%; border-color: rgba(96, 165, 250, 0.7); color: #bfdbfe; }
+
+
+
+
+
+
+
+
+
+    .dashboard-card-row--ts-issues {
+      --main-ts-span: 12;
+      --top-issues-span: 0;
+      grid-column: span 12;
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 16px;
+      align-items: stretch;
+      overflow: visible;
+      margin-bottom: 0;
+      transition: grid-template-columns 220ms ease;
+    }
+
+    .dashboard-card-row--ts-issues .main-timeseries-card {
+      grid-column: span var(--main-ts-span);
+    }
+
+    .dashboard-card-row--ts-issues .issue-side-panel {
+      display: none;
+      position: relative;
+      top: auto;
+      right: auto;
+      z-index: 9;
+      width: auto;
+      max-height: none;
+      grid-column: span var(--top-issues-span);
+      opacity: 0;
+      pointer-events: none;
+      transform: none;
+      min-height: 0;
+      transition: opacity 180ms ease, transform 220ms ease;
+    }
+
+    .dashboard-card-row--ts-issues .main-timeseries-card,
+    .dashboard-card-row--ts-issues .issue-side-panel,
+    .dashboard-card-row--ts-issues .main-timeseries-card > .card-inner {
+      height: 100%;
+      min-height: 0;
+    }
+
+    .dashboard-card-row--ts-issues.is-issue-hidden,
+    .dashboard-card-row--ts-issues.is-issue-auto:not(.has-active-issues) {
+      --main-ts-span: 12;
+      --top-issues-span: 0;
+    }
+
+    .dashboard-card-row--ts-issues.is-issue-auto.has-active-issues .issue-side-panel {
+      display: flex;
+      opacity: 1;
+      pointer-events: auto;
+      transform: none;
+    }
+
+    .dashboard-card-row--ts-issues.is-issue-open,
+    .dashboard-card-row--ts-issues.is-issue-auto.has-active-issues {
+      --main-ts-span: 9;
+      --top-issues-span: 3;
+    }
+
+    .dashboard-card-row--ts-issues.is-issue-open .issue-side-panel,
+    .dashboard-card-row--ts-issues.is-issue-auto.has-active-issues .issue-side-panel {
+      display: flex;
+      opacity: 1;
+      pointer-events: auto;
+      transform: none;
+    }
+
+    .dashboard-card-row--ts-issues.is-issue-overlay .issue-side-panel {
+      display: flex;
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: min(390px, calc(100% - 24px));
+      max-height: calc(100% - 8px);
+      overflow: auto;
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .drawer-transition-note {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      border-radius: 999px;
+      background: rgba(34, 211, 238, 0.08);
+      color: #b9f8ff;
+      padding: 5px 8px;
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .dashboard-card-row--ts-issues .main-timeseries-card,
+    .dashboard-card-row--ts-issues .issue-side-panel {
+      min-width: 0;
+    }
+
+    .dashboard-card-row--ts-issues.is-issue-open .issue-side-panel,
+    .dashboard-card-row--ts-issues.is-issue-auto.has-active-issues .issue-side-panel,
+    .dashboard-card-row--ts-issues.is-issue-overlay .issue-side-panel {
+      animation: issueSlideIn 180ms ease-out;
+    }
+
+    .issue-summary[data-issue-layout-toggle] {
+      cursor: pointer;
+    }
+
+    .issue-empty-state {
+      display: none;
+      place-items: center;
+      min-height: 240px;
+      border: 1px dashed rgba(148, 163, 184, 0.22);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.035);
+      padding: 22px;
+      text-align: center;
+    }
+
+    .issue-empty-state strong {
+      display: block;
+      color: #f8ffff;
+      font-size: 16px;
+    }
+
+    .issue-empty-state span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .dashboard-card-row--ts-issues:not(.has-active-issues) .issue-queue {
+      display: none;
+    }
+
+    .dashboard-card-row--ts-issues:not(.has-active-issues) .issue-empty-state {
+      display: grid;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    .event-lane {
+      display: grid;
+      grid-template-columns: 210px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .event-lane-name {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .event-lane-title,
+    .event-lane-desc {
+      display: block;
+    }
+
+    .event-lane-title {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: #dff7f7;
+      font-size: 12px;
+    }
+
+    .event-lane-desc {
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .event-dot {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: rgba(96, 165, 250, 0.85);
+    }
+
+    .event-dot.warn { background: var(--amber); }
+    .event-dot.bad { background: var(--rose); }
+    .event-dot.green { background: var(--green); }
+
+
+
+
+    .event-track {
+      position: relative;
+      min-height: 26px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.035);
+      overflow: hidden;
+    }
+
+    .event-track:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent calc(20% - 1px),
+        rgba(148, 163, 184, 0.12) calc(20% - 1px),
+        rgba(148, 163, 184, 0.12) 20%
+      );
+    }
+
+    .event-pill {
+      position: absolute;
+      top: 5px;
+      height: 16px;
+      border-radius: 999px;
+      background: rgba(96, 165, 250, 0.72);
+    }
+
+    .event-pill.warn { background: rgba(251, 191, 36, 0.8); }
+    .event-pill.bad { background: rgba(251, 113, 133, 0.85); }
+    .event-pill.green { background: rgba(74, 222, 128, 0.74); }
+
+    .alert-marker {
+      position: absolute;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      border: 1px solid rgba(251, 113, 133, 0.5);
+      border-radius: 999px;
+      background: rgba(251, 113, 133, 0.16);
+      color: #fecdd3;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 950;
+      box-shadow: 0 12px 34px rgba(251, 113, 133, 0.18);
+      white-space: nowrap;
+    }
+
+    .alert-marker.warn {
+      border-color: rgba(251, 191, 36, 0.5);
+      background: rgba(251, 191, 36, 0.15);
+      color: #fde68a;
+    }
+
+    .alert-marker--lamp-mismatch { left: 49%; top: 28%; }
+    .alert-marker--offline { right: 10%; top: 12%; }
+
+    .chart-grid-line { stroke: rgba(148, 163, 184, 0.16); stroke-width: 1; }
+    .chart-axis-line {
+      stroke: rgba(203, 234, 236, 0.72);
+      stroke-width: 1.35;
+      vector-effect: non-scaling-stroke;
+    }
+    .chart-axis-tick {
+      stroke: rgba(203, 234, 236, 0.46);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+    .chart-axis-text,
+    .chart-axis-title {
+      fill: rgba(218, 246, 248, 0.84);
+      font-family: "Aptos", "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .chart-axis-title {
+      fill: rgba(236, 254, 255, 0.94);
+      font-size: 12px;
+      font-weight: 950;
+    }
+    .chart-line { fill: none; stroke: var(--cyan); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.32)); }
+    .chart-line.previous { stroke: rgba(148, 163, 184, 0.68); stroke-width: 3; stroke-dasharray: 8 8; filter: none; }
+    .chart-line.energy { stroke: var(--green); }
+    .chart-line.fault { stroke: var(--rose); }
+    .chart-area { fill: rgba(34, 211, 238, 0.12); }
+    .chart-dot { fill: #fff; stroke: var(--cyan); stroke-width: 3; }
+    .chart-dot.warn { stroke: var(--amber); }
+    .chart-dot.bad { stroke: var(--rose); }
+    .bar { fill: rgba(34, 211, 238, 0.72); rx: 7; }
+    .bar.previous { fill: rgba(148, 163, 184, 0.22); }
+    .bar.good { fill: rgba(74, 222, 128, 0.74); }
+    .bar.warn { fill: rgba(251, 191, 36, 0.74); }
+    .bar.bad { fill: rgba(251, 113, 133, 0.74); }
+
+    .split-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+      gap: 14px;
+      align-items: stretch;
+      min-width: 0;
+    }
+
+    .list {
+      max-height: 320px;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .list--fill {
+      height: 100%;
+      max-height: none;
+      align-content: stretch;
+      min-height: 0;
+    }
+
+    .zone-side-panel,
+    .electrical-side-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 10px;
+      height: 100%;
+      min-height: 100%;
+      max-height: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.035);
+      padding: 12px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .zone-side-panel .list,
+    .electrical-side-panel .list {
+      min-height: 0;
+      max-height: 100%;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 2px;
+    }
+
+    .dashboard-wide-card .list:not(.list--fill),
+    .analytics-card .list,
+    .issue-queue {
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+
+    .dashboard-wide-card .list:not(.list--fill) {
+      max-height: min(260px, 34vh);
+    }
+
+    .zone-priority-list {
+      max-height: clamp(320px, 42vh, 520px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+      gap: 8px;
+    }
+
+    .list.list--fill.zone-priority-list {
+      height: clamp(320px, 42vh, 520px);
+      max-height: clamp(320px, 42vh, 520px);
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      align-content: start;
+      padding-right: 4px;
+    }
+
+    .zone-priority-list .row-item {
+      grid-template-columns: minmax(0, 1fr) minmax(92px, auto);
+    }
+
+    .zone-priority-list .row-item.is-priority {
+      border-color: rgba(251, 113, 133, 0.28);
+      background: rgba(251, 113, 133, 0.07);
+    }
+
+    .zone-priority-list .row-item.is-maintenance {
+      border-color: rgba(96, 165, 250, 0.28);
+      background: rgba(96, 165, 250, 0.07);
+    }
+
+    .zone-priority-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 7px;
+    }
+
+    .dashboard-wide-card .card-inner {
+      gap: 2px;
+    }
+
+    .dashboard-wide-card .chart-shell,
+    .dashboard-wide-card .split-card,
+    .dashboard-wide-card .electrical-health-layout,
+    .dashboard-wide-card .heatmap-panel {
+      flex: 1 1 auto;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .monthly-comparison-card .chart-shell {
+      display: grid;
+      grid-template-rows: auto auto minmax(300px, 1fr) auto auto auto;
+      min-height: 520px;
+    }
+
+    .monthly-comparison-card .chart-svg {
+      height: 100%;
+      min-height: 320px;
+    }
+
+    .electrical-health-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 8fr) minmax(320px, 4fr);
+      gap: 14px;
+      align-items: stretch;
+      min-height: 430px;
+    }
+
+    .electrical-chart-shell {
+      display: grid;
+      grid-template-rows: auto auto minmax(240px, 1fr) auto;
+      min-height: 100%;
+    }
+
+    .electrical-chart-shell .chart-svg {
+      height: 100%;
+      min-height: 260px;
+    }
+
+    .analytics-card .chart-shell {
+      display: grid;
+      grid-template-rows: auto auto minmax(220px, 1fr) auto;
+      min-height: 390px;
+      height: 100%;
+    }
+
+    .analytics-card .card-inner {
+      height: 100%;
+    }
+
+    .analytics-card .chart-svg {
+      height: 100%;
+      min-height: 220px;
+    }
+
+    .analytics-card .list {
+      max-height: min(210px, 32vh);
+      min-height: 0;
+    }
+
+    .row-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 11px 12px;
+    }
+
+    .row-item strong {
+      display: block;
+      color: #f2ffff;
+      font-size: 13px;
+    }
+
+    .row-item span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .issue-drawer {
+      border-color: rgba(251, 113, 133, 0.28);
+      background:
+        radial-gradient(circle at 92% 0%, rgba(251, 113, 133, 0.12), transparent 22rem),
+        linear-gradient(145deg, rgba(14, 30, 38, 0.92), rgba(8, 20, 27, 0.88));
+    }
+
+    .issue-summary {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 16px 18px;
+      cursor: pointer;
+    }
+
+    .issue-summary-title {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .issue-summary h3 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+
+    .issue-summary p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .issue-count {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      border: 1px solid rgba(251, 113, 133, 0.46);
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.34), rgba(127, 29, 29, 0.42));
+      color: #fff7f7;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.01em;
+    }
+
+    .issue-drawer.is-alerting .issue-count {
+      animation: issueBlink 0.95s ease-in-out infinite, issuePulse 1.8s ease-in-out infinite;
+    }
+
+    .issue-summary-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .issue-drawer-body {
+      max-height: 560px;
+      overflow: auto;
+      padding-top: 0;
+      padding-right: 4px;
+      animation: drawerSlide 180ms ease-out;
+    }
+
+    .issue-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+      gap: 14px;
+    }
+
+    .issue-impact {
+      display: grid;
+      gap: 10px;
+    }
+
+    .issue-impact-card {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 12px;
+    }
+
+    .issue-impact-card strong {
+      display: block;
+      color: #f2ffff;
+      font-size: 13px;
+    }
+
+    .issue-impact-card span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .issue-queue {
+      display: grid;
+      gap: 8px;
+      max-height: clamp(360px, 52vh, 640px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 2px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+
+    .issue-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 10px 12px;
+    }
+
+    .issue-priority {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .issue-priority.p1 { background: rgba(251, 113, 133, 0.16); color: #fecdd3; }
+    .issue-priority.p2 { background: rgba(251, 191, 36, 0.16); color: #fde68a; }
+    .issue-priority.p3,
+    .issue-priority:not(.p1):not(.p2) { background: rgba(34, 211, 238, 0.14); color: #cffafe; }
+
+    .issue-main {
+      min-width: 0;
+    }
+
+    .issue-main strong {
+      display: block;
+      color: #f2ffff;
+      font-size: 13px;
+    }
+
+    .issue-main span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .issue-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .issue-meta .delta {
+      padding: 2px 7px;
+    }
+
+    .issue-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .issue-actions .button {
+      padding: 6px 9px;
+    }
+
+    .issue-side-panel .issue-summary {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+      padding: 12px 12px 10px;
+    }
+
+    .issue-side-panel .issue-summary p {
+      display: none;
+    }
+
+    .issue-side-panel .issue-summary-title {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .issue-side-panel .issue-summary-title h3 {
+      grid-column: 1;
+      grid-row: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .issue-side-panel .issue-summary-title .issue-count {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .issue-side-panel .issue-summary-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .issue-side-panel .issue-summary-actions .issue-display-mode,
+    .issue-side-panel .issue-summary-actions .drawer-transition-note {
+      display: none;
+    }
+
+    .issue-side-panel .issue-summary-actions .button {
+      justify-content: center;
+      min-width: 0;
+      padding: 5px 8px;
+      font-size: 11px;
+    }
+
+    .issue-side-panel .issue-summary-actions .drag-handle {
+      justify-self: end;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 7px;
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    .issue-side-panel .issue-drawer-body {
+      padding: 0 10px 10px;
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: clamp(440px, 62vh, 760px);
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+
+    .issue-side-panel {
+      flex-direction: column;
+    }
+
+    .issue-side-panel .issue-queue {
+      gap: 7px;
+      min-height: 0;
+      max-height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+    }
+
+    .issue-side-panel .issue-row {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: 14px;
+    }
+
+    .issue-side-panel .issue-priority {
+      min-width: 30px;
+      padding: 3px 7px;
+      font-size: 10px;
+    }
+
+    .issue-side-panel .issue-main strong {
+      font-size: 12px;
+    }
+
+    .issue-side-panel .issue-main span {
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .issue-side-panel .issue-meta {
+      gap: 4px;
+      margin-top: 5px;
+    }
+
+    .issue-side-panel .issue-meta .delta {
+      font-size: 10px;
+      padding: 2px 6px;
+    }
+
+    .issue-side-panel .issue-actions {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      gap: 5px;
+      margin-top: -1px;
+      overflow-x: auto;
+      padding-bottom: 1px;
+    }
+
+    .issue-side-panel .issue-actions .button {
+      flex: 0 0 auto;
+      padding: 5px 7px;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .issue-display-mode {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      padding: 5px 8px;
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .issue-display-mode.active {
+      border-color: rgba(251, 113, 133, 0.36);
+      background: rgba(251, 113, 133, 0.12);
+      color: #fecdd3;
+    }
+
+    .issue-floating-controls {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 8;
+      display: none;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dashboard-card-row--ts-issues.is-issue-hidden[data-issue-visible="false"] .issue-floating-controls {
+      display: inline-flex;
+    }
+
+    .issue-floating-trigger,
+    .issue-floating-link,
+    .issue-options-button {
+      border: 1px solid rgba(251, 113, 133, 0.42);
+      border-radius: 999px;
+      background: rgba(7, 16, 20, 0.88);
+      color: #fecdd3;
+      box-shadow: 0 16px 46px rgba(0, 0, 0, 0.28);
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .issue-floating-link {
+      text-decoration: none;
+    }
+
+    .dashboard-card-row--ts-issues.has-active-issues .issue-floating-trigger {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.92), rgba(153, 27, 27, 0.96));
+      border-color: rgba(254, 202, 202, 0.72);
+      color: #fff7f7;
+      animation: issueBlink 0.95s ease-in-out infinite, issuePulse 1.8s ease-in-out infinite;
+    }
+
+    .issue-options-button {
+      width: 32px;
+      padding: 7px 0;
+      color: #dff7f7;
+      border-color: rgba(148, 163, 184, 0.24);
+    }
+
+    .issue-options-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      display: none;
+      min-width: 190px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 16px;
+      background: rgba(7, 16, 20, 0.94);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+      padding: 8px;
+    }
+
+    .issue-floating-controls.options-open .issue-options-menu {
+      display: grid;
+      gap: 6px;
+    }
+
+    .issue-options-menu .issue-display-mode {
+      justify-content: flex-start;
+      width: 100%;
+      border-radius: 12px;
+      padding: 8px 9px;
+    }
+
+    @keyframes drawerSlide {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes issueSlideIn {
+      from { opacity: 0; transform: translateX(18px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes issuePulse {
+      0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0), 0 0 0 0 rgba(239, 68, 68, 0); }
+      50% { box-shadow: 0 0 28px rgba(239, 68, 68, 0.62), 0 0 0 7px rgba(239, 68, 68, 0.18); }
+    }
+
+    @keyframes issueBlink {
+      0%, 100% {
+        background-color: rgba(239, 68, 68, 0.32);
+        transform: scale(1);
+      }
+      50% {
+        background-color: rgba(239, 68, 68, 0.98);
+        transform: scale(1.045);
+      }
+    }
+
+    @keyframes connectedPulse {
+      0%, 100% { box-shadow: 0 0 0 rgba(74, 222, 128, 0); }
+      50% { box-shadow: 0 0 22px rgba(74, 222, 128, 0.34); }
+    }
+
+    @keyframes connectedDotPulse {
+      0%, 100% { transform: scale(1); opacity: 0.82; }
+      50% { transform: scale(1.35); opacity: 1; }
+    }
+
+    @keyframes disconnectedBlink {
+      0%, 100% { background-color: rgba(127, 29, 29, 0.5); box-shadow: 0 0 0 rgba(248, 113, 113, 0); }
+      50% { background-color: rgba(239, 68, 68, 0.95); box-shadow: 0 0 26px rgba(248, 113, 113, 0.55); }
+    }
+
+    @keyframes disconnectedDotBlink {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.45); opacity: 1; }
+    }
+
+    .progress {
+      overflow: hidden;
+      height: 10px;
+      min-width: 94px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.16);
+    }
+
+    .progress > i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+    }
+
+    .progress.warn > i { background: linear-gradient(90deg, var(--amber), var(--green)); }
+    .progress.bad > i { background: linear-gradient(90deg, var(--rose), var(--amber)); }
+
+    .status-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.55);
+    }
+
+    .status-dot.warn { background: var(--amber); box-shadow: 0 0 16px rgba(251, 191, 36, 0.55); }
+    .status-dot.bad { background: var(--rose); box-shadow: 0 0 16px rgba(251, 113, 133, 0.55); }
+    .status-dot.cyan { background: var(--cyan); box-shadow: 0 0 16px rgba(34, 211, 238, 0.55); }
+    .status-dot.good {
+      background: var(--green);
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.65);
+      animation: connectedDotPulse 1.35s ease-in-out infinite;
+    }
+    .status-dot.disconnected {
+      background: var(--rose);
+      box-shadow: 0 0 18px rgba(248, 113, 113, 0.75);
+      animation: disconnectedDotBlink 0.8s ease-in-out infinite;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+      color: #dbeeee;
+    }
+
+    th {
+      color: #91b9bc;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .heatmap-panel {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 14px;
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+
+    .heatmap-axis {
+      display: grid;
+      grid-template-columns: 82px repeat(25, minmax(42px, 1fr));
+      gap: 4px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      margin-top: 10px;
+      min-width: 1260px;
+    }
+
+    .heatmap-row {
+      display: grid;
+      grid-template-columns: 82px repeat(25, minmax(42px, 1fr));
+      gap: 4px;
+      align-items: center;
+      margin-top: 6px;
+      min-width: 1260px;
+    }
+
+    .heatmap-label {
+      color: #d8eeee;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .heat-cell {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(74, 222, 128, 0.18);
+      color: #eaffff;
+      font-size: 9px;
+      font-weight: 950;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .heat-cell.cool { background: rgba(34, 211, 238, 0.16); }
+    .heat-cell.mid { background: rgba(251, 191, 36, 0.25); }
+    .heat-cell.hot { background: rgba(251, 113, 133, 0.34); }
+
+    .heatmap-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-scale {
+      display: flex;
+      overflow: hidden;
+      min-width: 180px;
+      height: 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(90deg, rgba(34,211,238,.28), rgba(74,222,128,.28), rgba(251,191,36,.38), rgba(251,113,133,.52));
+    }
+
+    .month-axis {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 4px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .no-data-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .insight-card {
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 11px 12px;
+    }
+
+    .insight-card strong {
+      display: block;
+      color: #f2ffff;
+      font-size: 13px;
+    }
+
+    .insight-card span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .card-library {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      max-height: min(620px, calc(100vh - 180px));
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .library-card {
+      border: 1px dashed rgba(148, 163, 184, 0.34);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.035);
+      padding: 12px;
+    }
+
+    .library-card label {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: #dff7f7;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .library-card p {
+      margin: 6px 0 0 26px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .optional-card[hidden] {
+      display: none !important;
+    }
+
+    .report-summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: stretch;
+      min-width: 0;
+    }
+
+    .report-primary {
+      border: 1px solid rgba(45, 212, 191, 0.22);
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.16), rgba(15, 23, 42, 0.52));
+      padding: 16px;
+    }
+
+    .report-primary span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .report-primary strong {
+      display: block;
+      margin-top: 8px;
+      color: #f8ffff;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1;
+    }
+
+    .report-primary p {
+      margin: 8px 0 0;
+      color: #b7caca;
+      font-size: 12px;
+    }
+
+    .report-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .report-mini-card {
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 12px;
+    }
+
+    .report-mini-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .report-mini-card strong {
+      display: block;
+      margin-top: 5px;
+      color: #edfdfd;
+      font-size: 16px;
+    }
+
+    .card-footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .contract-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .contract-card {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 14px;
+    }
+
+    .contract-card h4 {
+      margin: 0 0 8px;
+      color: #f2ffff;
+      font-size: 14px;
+    }
+
+    .contract-card code,
+    .contract-card pre {
+      color: #b9f8ff;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .contract-card pre {
+      overflow: auto;
+      margin: 10px 0 0;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.22);
+      padding: 10px;
+      white-space: pre-wrap;
+    }
+
+    .device-qr-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      border-radius: 18px;
+      background: rgba(7, 16, 20, 0.42);
+      padding: 14px;
+    }
+
+    .qr-code {
+      width: 104px;
+      height: 104px;
+      border: 8px solid #f8fafc;
+      border-radius: 14px;
+      background:
+        linear-gradient(90deg, #071014 10px, transparent 10px 18px, #071014 18px 28px, transparent 28px 40px, #071014 40px 48px, transparent 48px),
+        linear-gradient(#071014 10px, transparent 10px 18px, #071014 18px 28px, transparent 28px 40px, #071014 40px 48px, transparent 48px),
+        #f8fafc;
+      background-size: 48px 48px;
+      box-shadow: 0 16px 42px rgba(0, 0, 0, 0.24);
+    }
+
+    .qr-detail {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .qr-detail h4 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .qr-detail p,
+    .qr-detail span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .qr-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .qr-meta {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 8px;
+    }
+
+    .qr-meta strong,
+    .qr-meta span {
+      display: block;
+    }
+
+    .qr-meta strong {
+      color: var(--ink);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .green { color: var(--green); }
+    .amber { color: var(--amber); }
+    .rose { color: var(--rose); }
+    .cyan { color: var(--cyan); }
+    .muted { color: var(--muted); }
+
+    @media (max-width: 1220px) {
+      .topbar,
+      .mode-panel,
+      .toolbar,
+      .split-card { grid-template-columns: 1fr; }
+      .top-actions,
+      .mode-tabs,
+      .preset-strip { justify-content: flex-start; }
+      .filter-grid,
+      .compare-grid,
+      .zone-control-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filter-head { grid-template-columns: 1fr; }
+      .filter-actions { justify-content: flex-start; }
+      .filter-overlay { width: 100%; }
+      .quick-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .contract-grid,
+      .chart-legend,
+      .electrical-health-layout { grid-template-columns: 1fr; }
+      .dashboard-card-row--ts-issues,
+      .dashboard-card-row--ts-issues.is-issue-auto,
+      .dashboard-card-row--ts-issues.is-issue-auto.has-active-issues { grid-template-columns: 1fr; }
+      .dashboard-card-row--ts-issues .main-timeseries-card,
+      .dashboard-card-row--ts-issues .issue-side-panel,
+      .dashboard-card-row--ts-issues.is-issue-hidden .main-timeseries-card,
+      .dashboard-card-row--ts-issues.is-issue-auto:not(.has-active-issues) .main-timeseries-card {
+        grid-column: 1 / -1;
+      }
+      .issue-grid { grid-template-columns: 1fr; }
+      .span-3,
+      .span-4,
+      .span-5,
+      .span-6,
+      .span-7,
+      .span-8 { grid-column: span 6; }
+      .card-library { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dashboard-wide-card[data-card="zone-breakdown"] .split-card {
+        grid-template-columns: 1fr;
+      }
+      .zone-side-panel,
+      .electrical-side-panel {
+        min-height: 280px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app { width: min(100% - 18px, var(--max)); padding-top: 10px; }
+      .topbar { position: static; }
+        .filter-grid,
+        .compare-grid,
+        .quick-filter-grid,
+        .scope-mode-strip,
+        .zone-control-grid,
+        .zone-rule-grid,
+        .report-summary,
+        .report-mini-grid,
+        .card-library { grid-template-columns: 1fr; }
+      .span-3,
+      .span-4,
+      .span-5,
+      .span-6,
+      .span-7,
+      .span-8,
+      .span-12 { grid-column: span 12; }
+      .insight-grid { grid-template-columns: 1fr; }
+      .dashboard-grid { gap: 12px; }
+      .chart-svg { height: 240px; }
+      .main-chart-shell { min-height: 500px; }
+      .main-chart-stage { min-height: 300px; }
+      .chart-tools,
+      .card-config,
+      .legend-toggles {
+        margin-left: -2px;
+        padding-bottom: 2px;
+      }
+      .heat-grid,
+      .heatmap-axis,
+      .heatmap-row {
+        min-width: 1260px;
+      }
+      table { min-width: 620px; }
+      .table-scroll {
+      max-height: 480px; overflow: auto; }
+    }
+      .table-scroll th { position: sticky; top: 0; z-index: 1; }
+
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body>
+  <main class="app">
+    <div class="app-shell">
+      <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1>⚡ SmartPole Dashboard <span class="connection-badge is-connected"><span class="status-dot good"></span>Live connected</span></h1>
+            <div class="brand-meta">
+              <p>Card workspace for /dashboard/ · D3 renderer · role-aware filters</p>
+            </div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
+          <span class="chip">▣ Portfolio UI · Platform/Dealer</span>
+          <div class="profile-menu" data-profile-menu>
+            <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+            <div class="profile-popover" aria-label="Profile controls">
+              <div class="profile-popover-head">
+                <strong>◉ Manager Profile</strong>
+                <span>goodten</span>
+              </div>
+              <div class="profile-actions">
+                <a class="profile-action" href="/profile/">◉ Profile <span>name, email, language</span></a>
+                <a class="profile-action" href="/password_change/">◆ Password <span>change password</span></a>
+                <a class="profile-action" href="/settings/">⚙ Preferences <span>timezone, layout</span></a>
+                <a class="profile-action" href="/logout/">↪ Sign out <span>end session</span></a>
+              </div>
+            </div>
+          </div>
+          <div class="widget-menu" data-widget-menu>
+            <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+            <div class="widget-popover" aria-label="Widget visibility controls">
+              <div class="widget-popover-head">
+                <strong>▦ Widget visibility</strong>
+                <span>Show or hide cards in this dashboard layout.</span>
+              </div>
+              <div class="card-library">
+                <div class="library-card"><label><input type="checkbox" checked> ◼ KPI Summary</label><p>Devices, online, energy kWh, fault, cost, carbon.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ↝ Main D3 Time-Series</label><p>Energy/power/fault/online rate with compare and anomaly marker.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ◇ Zone Breakdown</label><p>Group by zone/tag/customer/dealer with ranking and fault density.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ⇄ Monthly Comparison</label><p>This month vs previous month, baseline, cost and carbon.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ⚡ Electrical Health</label><p>Voltage sag, current anomaly, PF, expected vs actual watt.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ⚠ Fault Queue</label><p>Action list for operator/admin with ticket/drilldown.</p></div>
+                <div class="library-card"><label><input type="checkbox" data-card-toggle="carbon-credit-report"> ♻ Carbon Credit Report</label><p>CO2 avoided, credit equivalent, report-ready summary.</p></div>
+                <div class="library-card"><label><input type="checkbox"> ◷ Schedule Compliance</label><p>Runtime mismatch, lamp state vs schedule, command ACK.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ◉ Availability Trend</label><p>Online/offline rate by dealer, customer, zone, or device group.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ↯ Command Success</label><p>Command sent, ACK, failed, and timeout trend.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ◷ Runtime vs Schedule</label><p>Actual runtime against fixed time or sunrise/sunset schedule.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ⎍ Expected vs Actual W</label><p>Watt mismatch by device model and telemetry average.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ⌁ Maintenance Risk</label><p>Runtime hours, repeat faults, warranty and last service score.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ⟳ Fault Recurrence</label><p>Repeated faults by device and zone for root-cause review.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ▵ Saving vs Baseline</label><p>Actual kWh against bill/history baseline.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ฿ Avoided Cost</label><p>THB saving from tariff-aware baseline comparison.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ♻ Carbon Trend</label><p>CO2 avoided and carbon credit equivalent over time.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ▰ Peak Demand</label><p>Peak kW, demand profile, and load risk window.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ⚡ Power Quality</label><p>Voltage sag, over voltage, poor PF and current anomaly mix.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ⇅ Load Imbalance</label><p>Zone load comparison normalized by active device count.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ◴ Telemetry Freshness</label><p>Last seen distribution for realtime confidence.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ▤ Top N Drilldown</label><p>Top devices, zones, customers, or dealers by selected metric.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ☁ Weather Correlation</label><p>Free Open-Meteo context for rain, cloud, temperature, and sunrise/sunset timing.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ◷ Budget / Quota</label><p>Monthly budget, yearly quota, warning threshold, and Telegram alert readiness.</p></div>
+              </div>
+            </div>
+          </div>
+          <span class="button primary">✓ Save layout</span>
+        </div>
+      </header>
+
+      <section class="filter-panel" aria-label="Dashboard filters" data-filter-menu>
+        <div class="filter-head">
+          <div>
+            <h2>⌕ Filters</h2>
+            <p>Quick filter ใช้เฉพาะ scope/time/metric ที่เปลี่ยนบ่อย ส่วน compare, package, electrical, device detail อยู่ใน overlay.</p>
+          </div>
+          <div class="filter-actions">
+            <button class="button" type="button" data-filter-toggle>⚙ More filters</button>
+            <button class="button" type="button">★ Saved view</button>
+            <button class="button" type="button">× Clear</button>
+            <button class="button primary" type="button">✓ Apply</button>
+          </div>
+        </div>
+        <div class="scope-mode-strip" aria-label="Dashboard UI mode selector">
+          
+          <div class="scope-mode-card active">
+            <span class="scope-mode-icon">▣</span>
+            <div class="scope-mode-copy">
+              <strong>Portfolio UI</strong>
+              <span>Platform/Dealer: Dealer -> Customer -> Site -> Zone -> Device</span>
+            </div>
+            <span class="scope-mode-pill">Active</span>
+          </div>
+          <div class="scope-mode-card">
+            <span class="scope-mode-icon">◎</span>
+            <div class="scope-mode-copy">
+              <strong>Customer UI</strong>
+              <span>Customer: Site -> Zone -> Tag -> Device, no dealer portfolio filters</span>
+            </div>
+            <span class="scope-mode-pill">Switch</span>
+          </div>
+        </div>
+        <div class="quick-filter-grid" aria-label="Quick filters">
+          
+          <div class="field">
+            <label for="dealer">Dealer / Scope</label>
+            <select id="dealer">
+              <option>All dealers</option>
+              <option>Dealer A</option>
+              <option>Dealer B</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="customer">Customer</label>
+            <select id="customer">
+              <option>All customers</option>
+              <option>Factory AA</option>
+              <option>City BB</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="site">Site / Zone</label>
+            <select id="site">
+              <option>All sites</option>
+              <option>Road B</option>
+              <option>Warehouse</option>
+              <option>Front Gate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="time-range">Time</label>
+            <select id="time-range">
+              <option>This M</option>
+              <option>Live</option>
+              <option>Today</option>
+              <option>7d</option>
+              <option>30d</option>
+              <option>Custom</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="metric-focus">Metric</label>
+            <select id="metric-focus">
+              <option>kWh</option>
+              <option>kW</option>
+              <option>Faults</option>
+              <option>THB</option>
+              <option>CO2</option>
+            </select>
+          </div>
+          <button class="button primary" type="button">Run</button>
+        </div>
+        <div class="active-filter-chips" aria-label="Active filter chips">
+          <span class="active-filter-chip">Portfolio UI <button>x</button></span>
+          <span class="active-filter-chip">Dealer B <button>x</button></span>
+          <span class="active-filter-chip">Factory AA <button>x</button></span>
+          <span class="active-filter-chip">Layout: MAP <button>x</button></span>
+          <span class="active-filter-chip">Road B <button>x</button></span>
+          <span class="active-filter-chip">Lot: Basic 24m <button>x</button></span>
+          <span class="active-filter-chip">30d <button>x</button></span>
+          <span class="active-filter-chip">Prev M <button>x</button></span>
+          <span class="active-filter-chip">Issues <button>x</button></span>
+        </div>
+        <div class="advanced-filter filter-overlay" data-filter-overlay hidden>
+          <div class="advanced-filter-head">
+            <span>Advanced filters</span>
+            <span class="chip">Portfolio: Dealer -> Customer -> Site -> Zone -> Tag -> Device</span>
+            <span class="chip">Customer: Site -> Zone -> Tag -> Device</span>
+          </div>
+          <div class="advanced-filter-body">
+            <div class="filter-grid">
+              <div class="field">
+                <label for="zone">Zone / Tag</label>
+                <select id="zone">
+                  <option>All zones</option>
+                  <option>Front Gate</option>
+                  <option>Road B</option>
+                  <option>Warehouse</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="layout-mode">Layout</label>
+                <select id="layout-mode">
+                  <option>All layout modes</option>
+                  <option>MAP · lat/lng markers</option>
+                  <option>FLOOR_PLAN · indoor layout</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="floor-area">Floor / Area</label>
+                <select id="floor-area">
+                  <option>All floors / areas</option>
+                  <option>Floor 1 · Production</option>
+                  <option>Floor 2 · Warehouse</option>
+                  <option>Outdoor · Road B</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="purchase-lot">Purchase Lot</label>
+                <select id="purchase-lot">
+                  <option>All purchase lots</option>
+                  <option>LOT-2026-001 · Basic 24m</option>
+                  <option>LOT-2026-002 · Expansion</option>
+                  <option>Expiring within 30d</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="device">Device</label>
+                <select id="device">
+                  <option>All devices</option>
+                  <option>SP-088</option>
+                  <option>Offline devices</option>
+                  <option>Repeated fault devices</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="compare">Compare</label>
+                <select id="compare">
+                  <option>Prev M</option>
+                  <option>M-to-M</option>
+                  <option>Y-to-Y</option>
+                  <option>Zone-to-zone</option>
+                  <option>No compare</option>
+                  <option>Prev Y</option>
+                  <option>Baseline</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="condition">Condition</label>
+                <select id="condition">
+                  <option>All states</option>
+                  <option>Fault / Warning</option>
+                  <option>Offline</option>
+                  <option>V sag</option>
+                  <option>Lamp telemetry mismatch</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="severity">Severity</label>
+                <select id="severity">
+                  <option>All severity</option>
+                  <option>Critical</option>
+                  <option>Warning</option>
+                  <option>Info</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="package-tier">Package</label>
+                <select id="package-tier">
+                  <option>All packages</option>
+                  <option>Basic</option>
+                  <option>Pro</option>
+                  <option>Enterprise</option>
+                </select>
+              </div>
+            </div>
+            <div class="compare-grid" aria-label="Comparison controls">
+              <div class="field">
+                <label for="compare-metric">Compare Metric</label>
+                <select id="compare-metric">
+                  <option>Energy kWh</option>
+                  <option>Cost THB</option>
+                  <option>Fault count</option>
+                  <option>CO2 avoided</option>
+                  <option>Online rate</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="compare-from">Current Period</label>
+                <select id="compare-from">
+                  <option>Year 2026</option>
+                  <option>June 2026</option>
+                  <option>Q2 2026</option>
+                  <option>Year 2025</option>
+                  <option>Custom selected range</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="compare-to">Compare Against</label>
+                <select id="compare-to">
+                  <option>Year 2025</option>
+                  <option>Year 2024</option>
+                  <option>Year 2023</option>
+                  <option>May 2026</option>
+                  <option>June 2025</option>
+                  <option>Baseline target</option>
+                  <option>Selected zone group</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="zone-compare">Zone Compare</label>
+                <select id="zone-compare">
+                  <option>Road B vs all zones</option>
+                  <option>Road B vs Warehouse</option>
+                  <option>Top 5 zones by energy</option>
+                  <option>Top 5 zones by fault</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mode-panel">
+        <div>
+          <h2>Dashboard Modes</h2>
+          <p>Mode เปลี่ยนชุด card และ metric focus แต่ผู้ใช้ยังจัด layout ส่วนตัวเองได้.</p>
+        </div>
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="overview">Overview</button>
+          <button class="mode-tab" data-mode="energy">Energy</button>
+          <button class="mode-tab" data-mode="fault">Fault</button>
+          <button class="mode-tab" data-mode="electrical">Electrical</button>
+          <button class="mode-tab" data-mode="carbon">Carbon</button>
+          <button class="mode-tab" data-mode="operations">Operations</button>
+        </div>
+      </section>
+
+      <section class="toolbar dashboard-workspace-toolbar" aria-label="Dashboard layout controls">
+        
+        <div class="toolbar-stack">
+          <strong>Custom card workspace</strong>
+          <span>Pin / hide / reorder / resize card ได้ โดย default layout มาจาก role + account scope. Preset เป็นค่าเริ่มต้น ไม่ใช่ lock layout.</span>
+          <div class="preset-strip">
+            <span class="preset-strip-label">Preset</span>
+            <span class="button primary">Operations</span>
+            <span class="button">Energy</span>
+            <span class="button">Budget</span>
+            <span class="button">Maintenance</span>
+          </div>
+        </div>
+        <div class="top-actions">
+          <span class="button">Customize cards</span>
+          <span class="button">Reset preset</span>
+          <span class="button green">Export report</span>
+        </div>
+      </section>
+
+      <section class="dashboard-grid" aria-label="Dashboard cards">
+        <article class="card span-3 kpi-card" data-card="fleet-health">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Fleet Health</h3><p>Total device availability</p></div><span class="kpi-status good">Healthy</span></div>
+            <div class="kpi-value">12,840</div>
+            <div class="kpi-sub"><span>Total devices</span><span class="kpi-meta-dot">96.2% online</span></div>
+            <div class="kpi-footer">
+              <svg class="sparkline good" viewBox="0 0 86 28" aria-hidden="true"><path d="M2 20 C16 16, 22 18, 34 12 S58 8, 84 6"/></svg>
+              <span class="kpi-action">View devices</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-3 kpi-card" data-card="energy-kwh">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Energy</h3><p>This month usage</p></div><span class="kpi-status good">-12%</span></div>
+            <div class="kpi-value">82,400 kWh</div>
+            <div class="kpi-sub"><span>This month</span><span class="kpi-meta-dot">vs prev M</span></div>
+            <div class="kpi-footer">
+              <svg class="sparkline good" viewBox="0 0 86 28" aria-hidden="true"><path d="M2 8 C18 12, 24 10, 36 16 S62 20, 84 18"/></svg>
+              <span class="kpi-action">Analyze</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-3 kpi-card" data-card="active-faults">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Active Faults</h3><p>Critical + warning</p></div><span class="kpi-status bad">Action</span></div>
+            <div class="kpi-value rose">37</div>
+            <div class="kpi-sub"><span>12 critical</span><span class="kpi-meta-dot">+8 today</span></div>
+            <div class="kpi-footer">
+              <svg class="sparkline bad" viewBox="0 0 86 28" aria-hidden="true"><path d="M2 22 C16 18, 22 20, 34 14 S58 8, 84 4"/></svg>
+              <span class="kpi-action">Inspect</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-3 kpi-card" data-card="carbon-saving">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Carbon</h3><p>CO2 avoided</p></div><span class="kpi-status good">On track</span></div>
+            <div class="kpi-value">38.1 tCO2e</div>
+            <div class="kpi-sub"><span>Credit equivalent</span><span class="kpi-meta-dot">report ready</span></div>
+            <div class="kpi-footer">
+              <svg class="sparkline good" viewBox="0 0 86 28" aria-hidden="true"><path d="M2 24 C18 20, 24 18, 36 14 S62 10, 84 5"/></svg>
+              <span class="kpi-action">Report</span>
+            </div>
+          </div>
+        </article>
+
+        
+        <div class="dashboard-card-row dashboard-card-row--ts-issues is-issue-auto has-active-issues" data-layout-role="ts-issue-row" data-layout-state="auto" data-main-span="9" data-issue-span="3" data-issue-visible="true" aria-label="Time-series with issue drawer layout">
+        <article class="card main-timeseries-card" data-card="main-timeseries" data-layout-area="main-timeseries">
+          <div class="card-inner">
+            <div class="card-header">
+              <div class="card-title"><h3>↝ Main TS Analytics</h3><p>D3 responsive time-series · compare, overlay, anomaly, drill</p></div>
+              <div class="card-actions"><span class="drag-handle">::</span></div>
+            </div>
+            <div class="chart-shell main-chart-shell">
+              <div class="chart-tools">
+                <div class="left">
+                  <button class="mode-tab active" data-chart="energy">kWh</button>
+                  <button class="mode-tab" data-chart="power">kW</button>
+                  <button class="mode-tab" data-chart="voltage">V</button>
+                  <button class="mode-tab" data-chart="current">A</button>
+                  <button class="mode-tab" data-chart="pf">PF</button>
+                  <button class="mode-tab" data-chart="fault">Faults</button>
+                  <button class="mode-tab" data-chart="cost">THB</button>
+                  <button class="mode-tab" data-chart="co2">CO2</button>
+                  <button class="mode-tab" data-chart="online">Online %</button>
+                </div>
+                <div class="right">
+                  <label class="legend-toggle alert-toggle"><input type="checkbox" checked> Issues/Errors</label>
+                  <span class="chip">Line / area / step</span>
+                  <span class="chip">Card filter override</span>
+                </div>
+              </div>
+              <div class="card-config">
+                <div class="config-pill" title="Time range"><span>Range</span>30d</div>
+                <div class="config-pill" title="Data bucket size"><span>Bucket</span>1h</div>
+                <div class="config-pill" title="Aggregation method"><span>Agg</span>Sum</div>
+                <div class="config-pill" title="Comparison series"><span>Compare</span>Prev M</div>
+                <div class="config-pill" title="Group series by scope"><span>Group</span>Zone</div>
+              </div>
+              <div class="chart-legend" aria-label="Chart visual legend">
+                <span class="legend-item" title="Current selected metric, e.g. kWh."><i class="legend-swatch solid"></i><strong>Current</strong></span>
+                <span class="legend-item" title="Comparison series, e.g. previous period or previous year."><i class="legend-swatch dashed"></i><strong>Compare</strong></span>
+                <span class="legend-item" title="Upper operating threshold or warning limit."><i class="legend-swatch threshold"></i><strong>Limit</strong></span>
+                <span class="legend-item" title="Baseline, expected value, or target."><i class="legend-swatch baseline"></i><strong>Base</strong></span>
+                <span class="legend-item" title="Issue, error, or anomaly marker."><i class="legend-swatch dot"></i><strong>Issue</strong></span>
+              </div>
+              <div class="main-chart-stage">
+                <svg class="chart-svg" viewBox="0 0 860 340" preserveAspectRatio="none" role="img" aria-label="Main D3 responsive time series chart">
+                  <line class="chart-grid-line" x1="44" y1="64" x2="820" y2="64"/>
+                  <line class="chart-grid-line" x1="44" y1="142" x2="820" y2="142"/>
+                  <line class="chart-grid-line" x1="44" y1="222" x2="820" y2="222"/>
+                  <line class="chart-grid-line" x1="44" y1="292" x2="820" y2="292"/>
+                  <polygon class="chart-area" points="54,254 130,214 206,232 282,166 358,182 434,126 510,142 586,104 662,118 738,84 804,98 804,306 54,306"/>
+                  <polyline class="chart-line previous" points="54,272 130,238 206,248 282,204 358,212 434,178 510,190 586,158 662,172 738,144 804,156"/>
+                  <polyline class="chart-line" points="54,254 130,214 206,232 282,166 358,182 434,126 510,142 586,104 662,118 738,84 804,98"/>
+                  <circle class="chart-dot warn" cx="434" cy="126" r="8"/>
+                  <circle class="chart-dot bad" cx="738" cy="84" r="8"/>
+                </svg>
+                <span class="threshold-line threshold-line--upper"><span>Upper threshold</span></span>
+                <span class="threshold-line threshold-line--lower"><span>Baseline / expected</span></span>
+                <span class="axis-label axis-label--y">Y: selected metric value (kWh now)</span>
+                <span class="axis-label axis-label--x">X: time bucket (30d / 1h)</span>
+                <span class="axis-note">Each point = aggregated value per bucket; switch metric changes Y unit.</span>
+                <span class="x-axis-dates" aria-hidden="true">
+                  <span>May 04</span><span>May 10</span><span>May 16</span><span>May 22</span><span>May 28</span><span>Jun 03</span>
+                </span>
+                <div class="chart-tooltip" aria-label="Hover and click tooltip example">
+                  <strong>Jun 03 · 18:00</strong>
+                  <p>Hover shows values at this bucket. Click opens drilldown for devices, zone, and related events.</p>
+                  <div class="tooltip-grid">
+                    <div class="tooltip-stat"><span>Current</span>4,820 kWh</div>
+                    <div class="tooltip-stat"><span>Compare</span>+18% vs prev M</div>
+                    <div class="tooltip-stat"><span>Zone</span>Road B</div>
+                    <div class="tooltip-stat"><span>Issue</span>9 offline</div>
+                  </div>
+                  <div class="tooltip-actions">
+                    <span class="button rose">Inspect</span>
+                    <span class="button">Filter graph</span>
+                  </div>
+                </div>
+                <span class="alert-marker warn alert-marker--lamp-mismatch">Issue · lamp telemetry mismatch</span>
+                <span class="alert-marker alert-marker--offline">Error · Multiple devices offline too long</span>
+              </div>
+              <div class="legend-toggles" aria-label="Main chart legend toggles">
+                <span class="toggle-group-label">Series</span>
+                <label class="legend-toggle" title="Show selected metric line."><input type="checkbox" checked> Current</label>
+                <label class="legend-toggle" title="Show previous month/year comparison line."><input type="checkbox" checked> Compare</label>
+                <label class="legend-toggle" title="Show expected target or baseline line."><input type="checkbox"> Target</label>
+                <label class="legend-toggle" title="Show average for selected zone group."><input type="checkbox"> Zone avg</label>
+                <span class="toggle-group-label">Markers</span>
+                <label class="legend-toggle" title="Show fault markers."><input type="checkbox" checked> Faults</label>
+                <label class="legend-toggle" title="Show issue and error markers."><input type="checkbox" checked> Issues</label>
+                <label class="legend-toggle" title="Show anomaly markers from engineering rules."><input type="checkbox" checked> Anomalies</label>
+                <label class="legend-toggle" title="Show command events only when diagnosing operations."><input type="checkbox"> Commands</label>
+                <label class="legend-toggle" title="Show maintenance windows only when comparing before/after repair."><input type="checkbox"> Maintenance</label>
+              </div>
+              
+            </div>
+          </div>
+        </article>
+
+        
+        <aside class="card issue-drawer issue-side-panel is-alerting" data-card="top-issues" data-layout-area="top-issues">
+          <div class="issue-summary" data-issue-layout-toggle>
+            <div>
+              <div class="issue-summary-title">
+                <h3>⚠ Top Issues</h3>
+                <span class="issue-count" data-issue-count-label>7 open · 2 P1</span>
+              </div>
+              <p>Priority queue for issues that need action now. Click an issue to filter graph, map, and device list.</p>
+            </div>
+              <div class="issue-summary-actions">
+                <a class="button rose" href="/faults/">↗ View all issues</a>
+                
+                <span class="drag-handle">::</span>
+              </div>
+          </div>
+          <div class="card-inner issue-drawer-body">
+            <div class="issue-queue">
+              <div class="issue-row">
+                <span class="issue-priority p1">P1</span>
+                <div class="issue-main">
+                  <strong>Multiple devices offline too long · Road B</strong>
+                  <span>9 devices affected · open 32m · owner: Ops Team</span>
+                  <div class="issue-meta"><span class="delta bad">SLA risk 18m</span><span class="delta warn">New</span></div>
+                </div>
+                <div class="issue-actions"><span class="button rose">Inspect</span><span class="button">Assign</span></div>
+              </div>
+              <div class="issue-row">
+                <span class="issue-priority p2">P2</span>
+                <div class="issue-main">
+                  <strong>Energy spike · Factory AA</strong>
+                  <span>+18% vs baseline · open 1h 12m · zone: Warehouse</span>
+                  <div class="issue-meta"><span class="delta warn">Investigate</span><span class="delta good">Graph linked</span></div>
+                </div>
+                <div class="issue-actions"><span class="button warn">Analyze</span><span class="button">Ticket</span></div>
+              </div>
+
+              <div class="issue-row">
+                <span class="issue-priority p2">P2</span>
+                <div class="issue-main">
+                  <strong>Over voltage · SP-177</strong>
+                  <span>Front Gate · max 252V · open 34m · source: electrical anomaly</span>
+                  <div class="issue-meta"><span class="delta warn">Electrical</span><span class="delta">Zone: Front Gate</span></div>
+                </div>
+                <div class="issue-actions"><span class="button warn">Analyze</span><a class="button" href="/faults/?device_id=SP-177">Fault</a></div>
+              </div>
+              <div class="issue-row">
+                <span class="issue-priority p2">P2</span>
+                <div class="issue-main">
+                  <strong>Schedule mismatch · SP-205</strong>
+                  <span>Road C · actual ON outside schedule · open 48m · source: schedule engine</span>
+                  <div class="issue-meta"><span class="delta warn">Schedule</span><span class="delta good">Graph linked</span></div>
+                </div>
+                <div class="issue-actions"><span class="button warn">Inspect</span><a class="button" href="/zones/control/?device_id=SP-205">Zone</a></div>
+              </div>
+              <div class="issue-row">
+                <span class="issue-priority">P3</span>
+                <div class="issue-main">
+                  <strong>Poor power factor · SP-221</strong>
+                  <span>Factory AA · PF 0.71 · watchlist · source: anomaly engine</span>
+                  <div class="issue-meta"><span class="delta">Power quality</span><span class="delta">Owner: monitor</span></div>
+                </div>
+                <div class="issue-actions"><span class="button">Watch</span><a class="button" href="/map/?device_id=SP-221">Map</a></div>
+              </div>
+              <div class="issue-row">
+                <span class="issue-priority p1">P1</span>
+                  <div class="issue-main">
+                    <strong>Promoted lamp-state fault · SP-088</strong>
+                  <span>Command ON unconfirmed after debounce · open 18m · customer: City BB</span>
+                  <div class="issue-meta"><span class="delta bad">Device risk</span><span class="delta warn">Ack: Operator A</span><span class="delta">Owner: Technician A</span></div>
+                </div>
+                <div class="issue-actions"><span class="button rose">Open maintenance</span><a class="button" href="/faults/?device_id=SP-088">Command center</a></div>
+              </div>
+              <div class="issue-row">
+                <span class="issue-priority p2">P2</span>
+                <div class="issue-main">
+                  <strong>Low power factor · Zone C</strong>
+                  <span>PF avg 0.84 · open 44m · compare electrical mode</span>
+                  <div class="issue-meta"><span class="delta warn">Review</span><span class="delta">Electrical</span></div>
+                </div>
+                <div class="issue-actions"><span class="button">Review</span><span class="button">Filter graph</span></div>
+              </div>
+              <div class="issue-row">
+                <span class="issue-priority p2">P2</span>
+                <div class="issue-main">
+                  <strong>Voltage sag · Road D</strong>
+                  <span>Min 184V · 6 devices affected · open 52m</span>
+                  <div class="issue-meta"><span class="delta warn">Electrical</span><span class="delta">Feeder check</span></div>
+                </div>
+                <div class="issue-actions"><span class="button warn">Analyze</span><a class="button" href="/map/?zone=road-d">Map</a></div>
+              </div>
+              <div class="issue-row">
+                <span class="issue-priority">P3</span>
+                <div class="issue-main">
+                  <strong>Delayed telemetry · Parking</strong>
+                  <span>12 devices last seen over 15m · package interval 5m</span>
+                  <div class="issue-meta"><span class="delta">Watch</span><span class="delta">Influx lag</span></div>
+                </div>
+                <div class="issue-actions"><span class="button">Inspect</span><span class="button">Drill</span></div>
+              </div>
+              <div class="issue-row">
+                <span class="issue-priority">P3</span>
+                <div class="issue-main">
+                  <strong>Brightness mismatch · Warehouse</strong>
+                  <span>Command 70% · reported 40% · open 1h 08m</span>
+                  <div class="issue-meta"><span class="delta">Command</span><span class="delta">Retry candidate</span></div>
+                </div>
+                <div class="issue-actions"><span class="button">Retry</span><span class="button">Ticket</span></div>
+              </div>
+              <div class="issue-row">
+                <span class="issue-priority">P3</span>
+                <div class="issue-main">
+                  <strong>Maintenance due · SP-244</strong>
+                  <span>Runtime 41,200h · repeat minor faults · due this week</span>
+                  <div class="issue-meta"><span class="delta warn">Plan WO</span><span class="delta">Aging</span></div>
+                </div>
+                <div class="issue-actions"><span class="button">Create WO</span><span class="button">Device</span></div>
+              </div>
+            </div>
+            <div class="issue-empty-state" aria-label="No active issues empty state">
+              <div>
+                <strong>No active issues</strong>
+                <span>Time Series stays full width. The issue badge can still open this drawer for history, filters, or resolved items.</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <div class="issue-floating-controls" aria-label="Hidden issue drawer controls">
+          <button class="issue-floating-trigger" type="button" data-drawer-mode="drawer">7 issues · 2 P1</button>
+          <a class="issue-floating-link" href="/faults/" aria-label="View all issues">↗ All</a>
+          <button class="issue-options-button" type="button" aria-label="Issue display options" data-issue-options-toggle>...</button>
+          <div class="issue-options-menu" aria-label="Issue display menu">
+            <button class="issue-display-mode" type="button" data-drawer-mode="drawer">▣ Drawer 9/3</button>
+            <button class="issue-display-mode" type="button" data-drawer-mode="overlay">↗ Overlay</button>
+            <button class="issue-display-mode" type="button" data-drawer-mode="hidden">× Hidden</button>
+            <button class="issue-display-mode active" type="button" data-drawer-mode="auto">◉ Auto on issue</button>
+          </div>
+        </div>
+        </div>
+
+
+        
+
+
+        <article class="card span-12 dashboard-wide-card" data-card="zone-breakdown">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Zone Energy & Fault Breakdown</h3><p>เลือก zone/tag, period, compare period, average method, และ fault overlay ได้ชัดเจนก่อน render graph.</p></div><div class="card-actions"><span class="chip">12-grid full width</span><span class="chip">Zone / Tag</span><span class="drag-handle">::</span></div></div>
+            <div class="zone-control-grid" aria-label="Zone breakdown controls">
+              <div class="field"><label for="zone-primary">Zone</label><select id="zone-primary"><option>Road B</option><option>Warehouse</option><option>Front Gate</option><option>Parking</option><option>All zones</option></select></div>
+              <div class="field"><label for="zone-group-by">Group</label><select id="zone-group-by"><option>Zone</option><option>Tag</option><option>Customer</option><option>Dealer</option><option>Device model</option></select></div>
+              <div class="field"><label for="zone-period">Period</label><select id="zone-period"><option>June 2026</option><option>This month</option><option>Last 30d</option><option>Q2 2026</option><option>Year 2026</option><option>Custom range</option></select></div>
+              <div class="field"><label for="zone-compare-period">Compare</label><select id="zone-compare-period"><option>May 2026</option><option>Same period 2025</option><option>Previous 30d</option><option>Zone average</option><option>Baseline</option><option>No compare</option></select></div>
+              <div class="field"><label for="zone-average-method">Average</label><select id="zone-average-method"><option>Scope avg / device</option><option>Scope avg total kWh</option><option>Same package tier avg</option><option>Same customer type avg</option><option>Selected zones only</option></select></div>
+              <div class="field"><label for="zone-fault-overlay">Fault overlay</label><select id="zone-fault-overlay"><option>P1/P2 active faults</option><option>All faults in period</option><option>Electrical anomalies</option><option>Command timeout</option><option>Off</option></select></div>
+            </div>
+            <div class="split-card">
+              <div class="chart-shell">
+                <div class="chart-tools">
+                  <div class="left"><span class="chip">Zone: Road B</span><span class="chip">Period: Jun 2026</span><span class="chip">Metric: kWh + fault count</span></div>
+                  <div class="right"><span class="chip">Sort: highest risk</span></div>
+                </div>
+                <div class="card-config">
+                  <div class="config-pill"><span>Zone</span>Road B</div>
+                  <div class="config-pill"><span>Period</span>Jun 2026</div>
+                  <div class="config-pill"><span>Compare</span>May 2026</div>
+                  <div class="config-pill"><span>Avg rule</span>visible scope / device</div>
+                  <div class="config-pill"><span>Fault overlay</span>P1/P2 active</div>
+                </div>
+                <svg class="chart-svg" viewBox="0 0 520 300" aria-label="Zone grouped bar chart">
+                  <line class="chart-grid-line" x1="34" y1="52" x2="500" y2="52"/>
+                  <line class="chart-grid-line" x1="34" y1="126" x2="500" y2="126"/>
+                  <line class="chart-grid-line" x1="34" y1="202" x2="500" y2="202"/>
+                  <rect class="bar" x="62" y="92" width="42" height="216"/>
+                  <rect class="bar previous" x="110" y="134" width="42" height="174"/>
+                  <rect class="bar good" x="186" y="128" width="42" height="180"/>
+                  <rect class="bar previous" x="234" y="162" width="42" height="146"/>
+                  <rect class="bar warn" x="310" y="70" width="42" height="238"/>
+                  <rect class="bar previous" x="358" y="118" width="42" height="190"/>
+                  <rect class="bar bad" x="434" y="150" width="42" height="158"/>
+                  <circle class="chart-dot bad" cx="330" cy="64" r="6"/>
+                  <circle class="chart-dot warn" cx="456" cy="144" r="5"/>
+                </svg>
+                <div class="legend-toggles" aria-label="Zone chart legend toggles">
+                  <label class="legend-toggle"><input type="checkbox" checked> Selected zone</label>
+                  <label class="legend-toggle"><input type="checkbox" checked> Compare period</label>
+                  <label class="legend-toggle" title="Average is computed from visible scope using selected average method."><input type="checkbox" checked> Scope average</label>
+                  <label class="legend-toggle" title="Fault overlay uses selected fault source and same selected period unless changed."><input type="checkbox" checked> Fault overlay</label>
+                </div>
+              </div>
+              <div class="zone-side-panel">
+                <div class="chart-tools" style="margin:0">
+                  <div class="left"><span class="chip">Ranking</span><span class="chip">kWh + faults</span></div>
+                  <div class="right"><span class="chip">5 zones</span></div>
+                </div>
+                <div class="list list--fill zone-priority-list" aria-label="Scrollable zone priority ranking">
+                  
+                  <div class="row-item is-priority">
+                    <div><strong>Road B</strong><span>24,700 kWh · 11 faults · +18% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta bad">P1 active</span><span class="delta warn">Multiple devices offline too long</span></div></div>
+                    <div class="progress bad"><i style="width:88%"></i></div>
+                  </div>
+                  <div class="row-item is-priority">
+                    <div><strong>Warehouse</strong><span>18,920 kWh · 9 faults · +11% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta bad">P1/P2</span><span class="delta">lamp mismatch</span></div></div>
+                    <div class="progress bad"><i style="width:78%"></i></div>
+                  </div>
+                  <div class="row-item is-maintenance">
+                    <div><strong>Parking</strong><span>12,640 kWh · 4 faults · -3% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta warn">maintenance</span><span class="delta">WO-2026-0049</span></div></div>
+                    <div class="progress warn"><i style="width:52%"></i></div>
+                  </div>
+                  <div class="row-item">
+                    <div><strong>Road C</strong><span>15,310 kWh · 3 faults · +4% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta warn">watch</span></div></div>
+                    <div class="progress warn"><i style="width:62%"></i></div>
+                  </div>
+                  <div class="row-item">
+                    <div><strong>Front Gate</strong><span>8,420 kWh · 1 fault · -9% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta good">stable</span></div></div>
+                    <div class="progress"><i style="width:34%"></i></div>
+                  </div>
+                  <div class="row-item">
+                    <div><strong>Zone A · Production</strong><span>7,920 kWh · 0 faults · -12% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta good">normal</span></div></div>
+                    <div class="progress"><i style="width:28%"></i></div>
+                  </div>
+                  <div class="row-item">
+                    <div><strong>QC Gate</strong><span>6,140 kWh · 0 faults · -18% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta good">normal</span></div></div>
+                    <div class="progress"><i style="width:22%"></i></div>
+                  </div>
+                  <div class="row-item">
+                    <div><strong>Warehouse West</strong><span>9,880 kWh · 2 faults · +2% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta">monitor</span></div></div>
+                    <div class="progress"><i style="width:44%"></i></div>
+                  </div>
+                  <div class="row-item">
+                    <div><strong>Road D</strong><span>11,420 kWh · 5 faults · +9% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta warn">voltage sag</span></div></div>
+                    <div class="progress warn"><i style="width:58%"></i></div>
+                  </div>
+                  <div class="row-item">
+                    <div><strong>Loading Bay</strong><span>5,760 kWh · 1 fault · -20% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta good">stable</span></div></div>
+                    <div class="progress"><i style="width:18%"></i></div>
+                  </div>
+                  <div class="row-item">
+                    <div><strong>Service Alley</strong><span>4,880 kWh · 0 faults · -24% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta good">normal</span></div></div>
+                    <div class="progress"><i style="width:16%"></i></div>
+                  </div>
+                  <div class="row-item">
+                    <div><strong>Admin Parking</strong><span>3,940 kWh · 0 faults · -31% vs scope avg/device</span><div class="zone-priority-meta"><span class="delta good">normal</span></div></div>
+                    <div class="progress"><i style="width:12%"></i></div>
+                  </div>
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-12 dashboard-wide-card monthly-comparison-card" data-card="monthly-comparison">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>12-Month Energy / Cost / Carbon Comparison</h3><p>Year comparison card · Jan-Dec, hide future months when current year has no data</p></div><div class="card-actions"><span class="chip">Year comparison</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">kWh</span><span class="chip">THB</span><span class="chip">CO2</span></div><div class="right"><span class="chip">12 months · grouped bar</span></div></div>
+              <div class="card-config">
+                <div class="config-pill"><span>Compare type</span>Year-to-year</div>
+                <div class="config-pill"><span>Selected year</span>2026</div>
+                <div class="config-pill"><span>Compare year</span>2025 / 2024 / 2023</div>
+                <div class="config-pill"><span>Rule</span>Show months with data only</div>
+              </div>
+              <svg class="chart-svg" viewBox="0 0 720 300" aria-label="12-month yearly comparison chart">
+                <line class="chart-grid-line" x1="40" y1="62" x2="690" y2="62"/>
+                <line class="chart-grid-line" x1="40" y1="140" x2="690" y2="140"/>
+                <line class="chart-grid-line" x1="40" y1="220" x2="690" y2="220"/>
+                <rect class="bar previous" x="54" y="142" width="18" height="168"/><rect class="bar" x="76" y="158" width="18" height="152"/>
+                <rect class="bar previous" x="108" y="132" width="18" height="178"/><rect class="bar" x="130" y="146" width="18" height="164"/>
+                <rect class="bar previous" x="162" y="116" width="18" height="194"/><rect class="bar" x="184" y="124" width="18" height="186"/>
+                <rect class="bar previous" x="216" y="104" width="18" height="206"/><rect class="bar" x="238" y="118" width="18" height="192"/>
+                <rect class="bar previous" x="270" y="92" width="18" height="218"/><rect class="bar good" x="292" y="108" width="18" height="202"/>
+                <rect class="bar previous" x="324" y="86" width="18" height="224"/><rect class="bar good" x="346" y="126" width="18" height="184"/>
+                <rect class="bar previous" x="378" y="80" width="18" height="230"/>
+                <rect class="bar previous" x="432" y="72" width="18" height="238"/>
+                <rect class="bar previous" x="486" y="88" width="18" height="222"/>
+                <rect class="bar previous" x="540" y="96" width="18" height="214"/>
+                <rect class="bar previous" x="594" y="110" width="18" height="200"/>
+                <rect class="bar previous" x="648" y="122" width="18" height="188"/>
+                <circle class="chart-dot warn" cx="388" cy="292" r="5"/>
+                <circle class="chart-dot warn" cx="442" cy="292" r="5"/>
+                <circle class="chart-dot warn" cx="496" cy="292" r="5"/>
+                <circle class="chart-dot warn" cx="550" cy="292" r="5"/>
+                <circle class="chart-dot warn" cx="604" cy="292" r="5"/>
+                <circle class="chart-dot warn" cx="658" cy="292" r="5"/>
+              </svg>
+              <div class="month-axis"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span></div>
+              <div class="no-data-note">Current year 2026 shows Jan-Jun only. Jul-Dec are hidden/no-data until telemetry exists; compare year 2025 can show all 12 months.</div>
+              <div class="legend-toggles" aria-label="Monthly comparison legend toggles">
+                <label class="legend-toggle"><input type="checkbox" checked> 2026 selected year</label>
+                <label class="legend-toggle"><input type="checkbox" checked> 2025 compare year</label>
+                <label class="legend-toggle"><input type="checkbox"> 2024 compare year</label>
+                <label class="legend-toggle"><input type="checkbox"> 2023 compare year</label>
+                <label class="legend-toggle"><input type="checkbox" checked> Baseline</label>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-12 dashboard-wide-card" data-card="electrical-health">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Electrical Health</h3><p>Voltage, current, power, PF anomaly summary</p></div><div class="card-actions"><span class="chip">Electrical</span><span class="drag-handle">::</span></div></div>
+            <div class="electrical-health-layout">
+              <div class="chart-shell electrical-chart-shell">
+                <div class="chart-tools"><div class="left"><span class="chip">24h</span><span class="chip">V / A / W / PF</span></div><div class="right"><span class="chip">Threshold by model</span></div></div>
+                <div class="card-config">
+                  <div class="config-pill"><span>Range</span>24h</div>
+                  <div class="config-pill"><span>Metrics</span>V / A / W / PF</div>
+                  <div class="config-pill"><span>Threshold</span>Device model</div>
+                  <div class="config-pill"><span>Show</span>Anomalies</div>
+                </div>
+                <svg class="chart-svg" viewBox="0 0 720 300" aria-label="Electrical health trend chart">
+                  <line class="chart-grid-line" x1="40" y1="60" x2="690" y2="60"/>
+                  <line class="chart-grid-line" x1="40" y1="140" x2="690" y2="140"/>
+                  <line class="chart-grid-line" x1="40" y1="220" x2="690" y2="220"/>
+                  <path class="chart-line" d="M42 128 C110 118 150 138 205 126 S315 104 382 116 S505 142 575 132 S650 108 690 118"/>
+                  <path class="chart-line previous" d="M42 174 C120 160 190 190 250 168 S360 150 430 162 S560 180 690 158"/>
+                  <path class="chart-line fault" d="M42 242 C120 244 190 236 250 238 S360 232 430 222 S560 210 690 214"/>
+                  <line class="chart-grid-line" x1="40" y1="92" x2="690" y2="92"/>
+                  <circle class="chart-dot warn" cx="382" cy="116" r="6"/>
+                  <circle class="chart-dot bad" cx="430" cy="222" r="6"/>
+                  <text x="45" y="48" fill="#94a3b8" font-size="11">Voltage threshold</text>
+                  <text x="45" y="288" fill="#94a3b8" font-size="11">00h</text>
+                  <text x="345" y="288" fill="#94a3b8" font-size="11">12h</text>
+                  <text x="665" y="288" fill="#94a3b8" font-size="11">24h</text>
+                </svg>
+                <div class="legend-toggles" aria-label="Electrical legend toggles">
+                  <label class="legend-toggle"><input type="checkbox" checked> Voltage</label>
+                  <label class="legend-toggle"><input type="checkbox" checked> Current</label>
+                  <label class="legend-toggle"><input type="checkbox" checked> Power</label>
+                  <label class="legend-toggle"><input type="checkbox"> PF</label>
+                  <label class="legend-toggle"><input type="checkbox" checked> Threshold</label>
+                </div>
+              </div>
+              <div class="electrical-side-panel">
+                <div class="chart-tools" style="margin:0"><div class="left"><span class="chip">Anomaly list</span></div><div class="right"><span class="chip rose">4 alerts</span></div></div>
+                <div class="list list--fill">
+                  <div class="row-item"><div><strong>Voltage average</strong><span>219V · min 188V · max 231V</span></div><span class="delta warn">6 sags</span></div>
+                  <div class="row-item"><div><strong>Current anomaly</strong><span>3 devices have promoted lamp-state faults</span></div><span class="delta bad">High</span></div>
+                  <div class="row-item"><div><strong>Power factor</strong><span>Zone Road B average 0.84</span></div><span class="delta warn">Review</span></div>
+                  <div class="row-item"><div><strong>Expected vs actual watt</strong><span>12 devices below expected range</span></div><span class="delta bad">Inspect</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-12 dashboard-wide-card" data-card="fault-heatmap">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Fault / Energy Heatmap</h3><p>Hour-by-day pattern · useful for operation and engineering review</p></div><div class="card-actions"><span class="chip">Heatmap</span><span class="drag-handle">::</span></div></div>
+            <div class="heatmap-panel" aria-label="Fault heatmap">
+              <div class="chart-tools">
+                <div class="left"><span class="chip">Rows: zones</span><span class="chip">Columns: 00-24 hourly</span></div>
+                <div class="right"><span class="chip">Cell value: selected metric</span><span class="chip">Color: risk intensity</span></div>
+              </div>
+              <div class="card-config">
+                <div class="config-pill"><span>Rows</span>Zone</div>
+                <div class="config-pill"><span>Cols</span>00-24 hourly</div>
+                <div class="config-pill"><span>Range</span>7d</div>
+                <div class="config-pill"><span>Metric</span>kWh selected</div>
+                <div class="config-pill"><span>Color</span>Risk</div>
+              </div>
+              <div class="heatmap-axis"><span>Zone / hr</span><span>00</span><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span><span>07</span><span>08</span><span>09</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span></div>
+              <div class="heatmap-row"><span class="heatmap-label">Road B</span><span class="heat-cell cool">1.0</span><span class="heat-cell cool">1.1</span><span class="heat-cell cool">1.2</span><span class="heat-cell cool">1.4</span><span class="heat-cell">1.8</span><span class="heat-cell">2.2</span><span class="heat-cell">2.8</span><span class="heat-cell mid">3.4</span><span class="heat-cell mid">4.3</span><span class="heat-cell hot">5.1</span><span class="heat-cell hot">5.4</span><span class="heat-cell hot">4.8</span><span class="heat-cell mid">3.9</span><span class="heat-cell mid">3.2</span><span class="heat-cell">2.8</span><span class="heat-cell">2.6</span><span class="heat-cell">2.2</span><span class="heat-cell">2.0</span><span class="heat-cell">2.1</span><span class="heat-cell">2.7</span><span class="heat-cell mid">3.4</span><span class="heat-cell mid">4.0</span><span class="heat-cell hot">4.8</span><span class="heat-cell hot">5.8</span><span class="heat-cell hot">4.9</span></div>
+              <div class="heatmap-row"><span class="heatmap-label">Warehouse</span><span class="heat-cell">2.2</span><span class="heat-cell">2.8</span><span class="heat-cell mid">3.7</span><span class="heat-cell hot">4.9</span><span class="heat-cell hot">5.6</span><span class="heat-cell hot">5.2</span><span class="heat-cell mid">4.1</span><span class="heat-cell mid">3.4</span><span class="heat-cell">2.8</span><span class="heat-cell">2.5</span><span class="heat-cell">2.2</span><span class="heat-cell cool">1.4</span><span class="heat-cell cool">1.2</span><span class="heat-cell">2.0</span><span class="heat-cell">2.7</span><span class="heat-cell mid">3.5</span><span class="heat-cell mid">4.0</span><span class="heat-cell hot">5.0</span><span class="heat-cell mid">4.2</span><span class="heat-cell mid">3.8</span><span class="heat-cell">2.9</span><span class="heat-cell">2.4</span><span class="heat-cell mid">3.1</span><span class="heat-cell hot">4.6</span><span class="heat-cell mid">3.9</span></div>
+              <div class="heatmap-row"><span class="heatmap-label">Front Gate</span><span class="heat-cell cool">0.9</span><span class="heat-cell cool">1.0</span><span class="heat-cell">2.3</span><span class="heat-cell mid">3.0</span><span class="heat-cell mid">3.6</span><span class="heat-cell hot">5.3</span><span class="heat-cell mid">3.4</span><span class="heat-cell">2.6</span><span class="heat-cell">2.0</span><span class="heat-cell cool">1.2</span><span class="heat-cell cool">1.3</span><span class="heat-cell">2.1</span><span class="heat-cell">2.4</span><span class="heat-cell mid">3.0</span><span class="heat-cell mid">3.9</span><span class="heat-cell hot">5.2</span><span class="heat-cell hot">5.5</span><span class="heat-cell mid">4.4</span><span class="heat-cell mid">3.8</span><span class="heat-cell">2.6</span><span class="heat-cell">2.2</span><span class="heat-cell cool">1.6</span><span class="heat-cell">2.1</span><span class="heat-cell mid">3.7</span><span class="heat-cell hot">4.8</span></div>
+              <div class="heatmap-row"><span class="heatmap-label">Parking</span><span class="heat-cell cool">0.8</span><span class="heat-cell cool">0.9</span><span class="heat-cell cool">1.1</span><span class="heat-cell">1.8</span><span class="heat-cell">2.2</span><span class="heat-cell mid">3.2</span><span class="heat-cell">2.6</span><span class="heat-cell">2.1</span><span class="heat-cell">2.0</span><span class="heat-cell mid">3.3</span><span class="heat-cell mid">4.0</span><span class="heat-cell hot">5.0</span><span class="heat-cell mid">3.8</span><span class="heat-cell">2.8</span><span class="heat-cell">2.2</span><span class="heat-cell cool">1.5</span><span class="heat-cell cool">1.4</span><span class="heat-cell">2.4</span><span class="heat-cell mid">3.1</span><span class="heat-cell mid">3.6</span><span class="heat-cell">2.9</span><span class="heat-cell">2.0</span><span class="heat-cell cool">1.6</span><span class="heat-cell cool">1.2</span><span class="heat-cell cool">1.0</span></div>
+              <div class="heatmap-legend"><span>Low</span><span class="legend-scale"></span><span>High · inspect first</span></div>
+              <div class="legend-toggles" aria-label="Heatmap legend toggles">
+                <label class="legend-toggle"><input type="radio" name="heatmap-metric" checked> kWh</label>
+                <label class="legend-toggle"><input type="radio" name="heatmap-metric"> Voltage</label>
+                <label class="legend-toggle"><input type="radio" name="heatmap-metric"> Power</label>
+                <label class="legend-toggle"><input type="radio" name="heatmap-metric"> PF</label>
+                <label class="legend-toggle"><input type="radio" name="heatmap-metric"> Fault count</label>
+              </div>
+              <div class="list" style="margin-top:12px">
+                <div class="row-item"><div><strong>Peak risk window</strong><span>Road B · 08:00-10:00 and 22:00 · 7 faults + energy anomaly</span></div><span class="button rose">Inspect</span></div>
+                <div class="row-item"><div><strong>Compare note</strong><span>Warehouse has higher early-morning fault density than previous month.</span></div><span class="button warn">Compare</span></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="availability-trend">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Device Availability Trend</h3><p>Online/offline rate by time and scope.</p></div><div class="card-actions"><span class="chip">Availability</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">30d</span><span class="chip">Online %</span></div><div class="right"><span class="chip green">96.2%</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Group</span>Dealer / customer / zone</div><div class="config-pill"><span>Compare</span>Prev M</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Availability trend chart">
+                <line class="chart-grid-line" x1="34" y1="54" x2="500" y2="54"/><line class="chart-grid-line" x1="34" y1="126" x2="500" y2="126"/><line class="chart-grid-line" x1="34" y1="200" x2="500" y2="200"/>
+                <path class="chart-area" d="M34 92 C90 84 140 110 196 98 S310 76 370 88 S458 118 500 96 L500 230 L34 230 Z"/>
+                <path class="chart-line energy" d="M34 92 C90 84 140 110 196 98 S310 76 370 88 S458 118 500 96"/>
+                <path class="chart-line previous" d="M34 116 C110 108 172 128 238 112 S356 104 500 120"/>
+                <circle class="chart-dot warn" cx="430" cy="116" r="6"/>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Current</label><label class="legend-toggle"><input type="checkbox" checked> Previous</label><label class="legend-toggle"><input type="checkbox" checked> Offline marker</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="command-success-trend">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Command Success / Failure Trend</h3><p>Sent, ACK, failed, timeout by device/zone.</p></div><div class="card-actions"><span class="chip">Command</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">7d</span><span class="chip">ACK / timeout</span></div><div class="right"><span class="chip amber">8 timeout</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Filter</span>ON / OFF / DIM / Ping</div><div class="config-pill"><span>Drill</span>Command history</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Command success stacked bar chart">
+                <line class="chart-grid-line" x1="34" y1="62" x2="500" y2="62"/><line class="chart-grid-line" x1="34" y1="140" x2="500" y2="140"/><line class="chart-grid-line" x1="34" y1="216" x2="500" y2="216"/>
+                <rect class="bar good" x="62" y="90" width="34" height="150"/><rect class="bar warn" x="62" y="72" width="34" height="18"/><rect class="bar bad" x="62" y="58" width="34" height="14"/>
+                <rect class="bar good" x="124" y="112" width="34" height="128"/><rect class="bar warn" x="124" y="92" width="34" height="20"/><rect class="bar bad" x="124" y="82" width="34" height="10"/>
+                <rect class="bar good" x="186" y="76" width="34" height="164"/><rect class="bar warn" x="186" y="62" width="34" height="14"/>
+                <rect class="bar good" x="248" y="116" width="34" height="124"/><rect class="bar warn" x="248" y="88" width="34" height="28"/><rect class="bar bad" x="248" y="70" width="34" height="18"/>
+                <rect class="bar good" x="310" y="96" width="34" height="144"/><rect class="bar warn" x="310" y="78" width="34" height="18"/>
+                <rect class="bar good" x="372" y="86" width="34" height="154"/><rect class="bar warn" x="372" y="74" width="34" height="12"/>
+                <rect class="bar good" x="434" y="102" width="34" height="138"/><rect class="bar warn" x="434" y="80" width="34" height="22"/><rect class="bar bad" x="434" y="66" width="34" height="14"/>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> ACK</label><label class="legend-toggle"><input type="checkbox" checked> Pending</label><label class="legend-toggle"><input type="checkbox" checked> Failed / timeout</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="runtime-schedule-compliance">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Runtime vs Schedule Compliance</h3><p>Actual ON/OFF runtime compared with configured schedule.</p></div><div class="card-actions"><span class="chip">Schedule</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">Today</span><span class="chip">By zone</span></div><div class="right"><span class="chip rose">12 mismatch</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Mode</span>Sunset / fixed</div><div class="config-pill"><span>Overlay</span>Override</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Runtime schedule compliance chart">
+                <line class="chart-grid-line" x1="38" y1="70" x2="500" y2="70"/><line class="chart-grid-line" x1="38" y1="150" x2="500" y2="150"/><line class="chart-grid-line" x1="38" y1="220" x2="500" y2="220"/>
+                <rect class="bar previous" x="72" y="92" width="320" height="26"/><rect class="bar good" x="92" y="96" width="280" height="18"/>
+                <rect class="bar previous" x="72" y="142" width="320" height="26"/><rect class="bar warn" x="112" y="146" width="340" height="18"/>
+                <rect class="bar previous" x="72" y="192" width="320" height="26"/><rect class="bar bad" x="40" y="196" width="360" height="18"/>
+                <text x="44" y="85" fill="#94a3b8" font-size="11">Road B</text><text x="44" y="135" fill="#94a3b8" font-size="11">Warehouse</text><text x="44" y="185" fill="#94a3b8" font-size="11">Gate</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Planned</label><label class="legend-toggle"><input type="checkbox" checked> Actual</label><label class="legend-toggle"><input type="checkbox" checked> Mismatch</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="expected-watt-actual-watt">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Expected Watt vs Actual Watt</h3><p>Compare model/spec wattage with real device load.</p></div><div class="card-actions"><span class="chip">Watt check</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">Device model</span><span class="chip">W</span></div><div class="right"><span class="chip rose">12 inspect</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Expected</span>Model watt table</div><div class="config-pill"><span>Actual</span>Telemetry avg</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Expected actual watt scatter chart">
+                <line class="chart-grid-line" x1="42" y1="214" x2="492" y2="214"/><line class="chart-grid-line" x1="42" y1="50" x2="42" y2="214"/><line class="chart-line previous" x1="42" y1="214" x2="492" y2="50"/>
+                <circle class="chart-dot" cx="112" cy="178" r="6"/><circle class="chart-dot" cx="166" cy="152" r="6"/><circle class="chart-dot warn" cx="226" cy="120" r="7"/><circle class="chart-dot bad" cx="286" cy="196" r="7"/><circle class="chart-dot" cx="342" cy="92" r="6"/><circle class="chart-dot bad" cx="410" cy="182" r="7"/><circle class="chart-dot warn" cx="456" cy="82" r="6"/>
+                <text x="44" y="238" fill="#94a3b8" font-size="11">Expected W</text><text x="46" y="42" fill="#94a3b8" font-size="11">Actual W</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Normal</label><label class="legend-toggle"><input type="checkbox" checked> Below expected</label><label class="legend-toggle"><input type="checkbox" checked> Above expected</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="budget-quota-control">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Budget / Quota Control</h3><p>Monthly budget, yearly quota, and alert thresholds from energy settings.</p></div><div class="card-actions"><span class="chip amber">Budget</span><span class="drag-handle">::</span></div></div>
+            
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">This M</span><span class="chip">kWh</span></div><div class="right"><span class="chip amber">82% used</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Budget</span>90,000 kWh/M</div><div class="config-pill"><span>Quota</span>1,080,000 kWh/Y</div><div class="config-pill"><span>Alert</span>80% / 95%</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Budget quota chart">
+                <rect class="bar good" x="56" y="170" width="62" height="54"/><rect class="bar good" x="132" y="150" width="62" height="74"/><rect class="bar warn" x="208" y="116" width="62" height="108"/><rect class="bar warn" x="284" y="92" width="62" height="132"/><rect class="bar bad" x="360" y="70" width="62" height="154"/>
+                <line class="chart-line previous" x1="40" y1="86" x2="500" y2="86"/>
+                <text x="44" y="78" fill="#94a3b8" font-size="11">95% alert</text><text x="58" y="244" fill="#94a3b8" font-size="11">Jan</text><text x="364" y="244" fill="#94a3b8" font-size="11">May</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Actual kWh</label><label class="legend-toggle"><input type="checkbox" checked> Budget line</label><label class="legend-toggle"><input type="checkbox" checked> Alert overlay</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="weather-correlation">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Weather Correlation</h3><p>Free Open-Meteo weather context for energy, faults, and schedule analysis.</p></div><div class="card-actions"><span class="chip blue">Weather</span><span class="drag-handle">::</span></div></div>
+            
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">Rain / cloud</span><span class="chip">Temp</span></div><div class="right"><span class="chip">Open-Meteo</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Location</span>Account control point</div><div class="config-pill"><span>Overlay</span>Rain + cloud</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Weather correlation chart">
+                <path class="chart-area" d="M40 198 C100 172 140 180 190 142 S290 116 360 134 S448 96 500 86 L500 230 L40 230 Z"/>
+                <path class="chart-line" d="M40 198 C100 172 140 180 190 142 S290 116 360 134 S448 96 500 86"/>
+                <rect x="170" y="42" width="68" height="182" fill="rgba(96,165,250,.12)" stroke="rgba(96,165,250,.35)"/>
+                <rect x="384" y="42" width="54" height="182" fill="rgba(96,165,250,.12)" stroke="rgba(96,165,250,.35)"/>
+                <text x="178" y="58" fill="#bfdbfe" font-size="11">rain</text><text x="392" y="58" fill="#bfdbfe" font-size="11">cloud</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Energy</label><label class="legend-toggle"><input type="checkbox" checked> Rain window</label><label class="legend-toggle"><input type="checkbox"> Temperature</label><label class="legend-toggle"><input type="checkbox"> Sunset shift</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="maintenance-risk">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Device Aging / Maintenance Risk</h3><p>Runtime hours, repeat faults, warranty and last service.</p></div><div class="card-actions"><span class="chip">Maintenance</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">Risk score</span><span class="chip">Top devices</span></div><div class="right"><span class="chip amber">26 due</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Score</span>Runtime + faults + age</div><div class="config-pill"><span>Action</span>Create WO</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Maintenance risk chart">
+                <rect class="bar bad" x="70" y="48" width="360" height="24"/><rect class="bar warn" x="70" y="92" width="292" height="24"/><rect class="bar warn" x="70" y="136" width="250" height="24"/><rect class="bar good" x="70" y="180" width="198" height="24"/><rect class="bar" x="70" y="224" width="152" height="24"/>
+                <text x="36" y="64" fill="#94a3b8" font-size="11">SP-088</text><text x="36" y="108" fill="#94a3b8" font-size="11">SP-177</text><text x="36" y="152" fill="#94a3b8" font-size="11">SP-221</text><text x="36" y="196" fill="#94a3b8" font-size="11">SP-144</text><text x="36" y="240" fill="#94a3b8" font-size="11">SP-205</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Due</label><label class="legend-toggle"><input type="checkbox" checked> Watch</label><label class="legend-toggle"><input type="checkbox"> Completed</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="fault-recurrence">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Fault Recurrence by Device / Zone</h3><p>Find repeat failures and root-cause candidates.</p></div><div class="card-actions"><span class="chip">Repeat fault</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">90d</span><span class="chip">Device / zone</span></div><div class="right"><span class="chip rose">7 repeaters</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Fault types</span>Offline / current / voltage</div><div class="config-pill"><span>Threshold</span>3+ repeats</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Fault recurrence chart">
+                <line class="chart-grid-line" x1="38" y1="60" x2="500" y2="60"/><line class="chart-grid-line" x1="38" y1="130" x2="500" y2="130"/><line class="chart-grid-line" x1="38" y1="200" x2="500" y2="200"/>
+                <circle class="chart-dot bad" cx="86" cy="86" r="16"/><circle class="chart-dot warn" cx="160" cy="144" r="12"/><circle class="chart-dot bad" cx="250" cy="102" r="18"/><circle class="chart-dot" cx="328" cy="172" r="9"/><circle class="chart-dot warn" cx="410" cy="118" r="13"/><circle class="chart-dot bad" cx="460" cy="70" r="15"/>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Device</label><label class="legend-toggle"><input type="checkbox" checked> Zone</label><label class="legend-toggle"><input type="checkbox" checked> Severity size</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="energy-saving-baseline">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Energy Saving vs Baseline Trend</h3><p>Actual kWh compared with bill/history baseline.</p></div><div class="card-actions"><span class="chip">Saving</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">Monthly</span><span class="chip">kWh</span></div><div class="right"><span class="chip green">12,400 saved</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Baseline</span>Energy bill history</div><div class="config-pill"><span>Compare</span>Actual telemetry</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Energy saving baseline chart">
+                <path class="chart-line previous" d="M40 74 C110 70 160 88 220 80 S330 66 500 82"/>
+                <path class="chart-line energy" d="M40 132 C112 128 160 150 220 142 S330 118 500 126"/>
+                <path class="chart-area" d="M40 74 C110 70 160 88 220 80 S330 66 500 82 L500 126 C330 118 220 142 40 132 Z"/>
+                <text x="44" y="54" fill="#94a3b8" font-size="11">Baseline</text><text x="44" y="156" fill="#94a3b8" font-size="11">Actual</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Baseline</label><label class="legend-toggle"><input type="checkbox" checked> Actual</label><label class="legend-toggle"><input type="checkbox" checked> Saved area</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="cost-saving-trend">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Cost Saving / Avoided Cost Trend</h3><p>THB saved from tariff and baseline model.</p></div><div class="card-actions"><span class="chip">Cost</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">THB</span><span class="chip">Tariff aware</span></div><div class="right"><span class="chip green">49,600 THB</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Rate</span>MEA / PEA / manual</div><div class="config-pill"><span>Period</span>YTD</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Cost saving chart">
+                <line class="chart-grid-line" x1="34" y1="70" x2="500" y2="70"/><line class="chart-grid-line" x1="34" y1="150" x2="500" y2="150"/><line class="chart-grid-line" x1="34" y1="220" x2="500" y2="220"/>
+                <rect class="bar good" x="62" y="180" width="28" height="50"/><rect class="bar good" x="118" y="164" width="28" height="66"/><rect class="bar good" x="174" y="152" width="28" height="78"/><rect class="bar good" x="230" y="130" width="28" height="100"/><rect class="bar good" x="286" y="116" width="28" height="114"/><rect class="bar good" x="342" y="104" width="28" height="126"/>
+                <path class="chart-line" d="M76 180 L132 164 L188 152 L244 130 L300 116 L356 104"/>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Saved THB</label><label class="legend-toggle"><input type="checkbox" checked> Cumulative</label><label class="legend-toggle"><input type="checkbox"> Demand charge</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="carbon-saving-trend">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Carbon Saving Trend</h3><p>CO2 avoided and carbon credit equivalent over time.</p></div><div class="card-actions"><span class="chip">Carbon</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">tCO2e</span><span class="chip">Credit eq.</span></div><div class="right"><span class="chip green">38.1 tCO2e</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Factor</span>0.4999 kgCO2/kWh</div><div class="config-pill"><span>Source</span>Saved kWh</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Carbon saving trend chart">
+                <path class="chart-area" d="M42 214 C112 190 160 172 220 150 S330 116 500 82 L500 230 L42 230 Z"/>
+                <path class="chart-line energy" d="M42 214 C112 190 160 172 220 150 S330 116 500 82"/>
+                <circle class="chart-dot" cx="500" cy="82" r="7"/>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> CO2 avoided</label><label class="legend-toggle"><input type="checkbox" checked> Credit equivalent</label><label class="legend-toggle"><input type="checkbox"> Target</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="peak-demand-load-profile">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Peak Demand / Load Profile</h3><p>Peak kW, load curve and demand risk by period.</p></div><div class="card-actions"><span class="chip">Load</span><span class="drag-handle">::</span></div></div>
+            
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">24h</span><span class="chip">kW</span></div><div class="right"><span class="chip amber">185.4 kW peak</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Bucket</span>15m / 1h</div><div class="config-pill"><span>Compare</span>Prev day</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Peak demand load profile chart">
+                <line class="chart-grid-line" x1="34" y1="62" x2="500" y2="62"/><line class="chart-grid-line" x1="34" y1="138" x2="500" y2="138"/><line class="chart-grid-line" x1="34" y1="216" x2="500" y2="216"/>
+                <path class="chart-area" d="M34 210 C80 204 116 178 166 160 S258 102 318 90 S420 124 500 86 L500 230 L34 230 Z"/>
+                <path class="chart-line" d="M34 210 C80 204 116 178 166 160 S258 102 318 90 S420 124 500 86"/>
+                <circle class="chart-dot warn" cx="318" cy="90" r="7"/>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Load kW</label><label class="legend-toggle"><input type="checkbox" checked> Peak marker</label><label class="legend-toggle"><input type="checkbox"> Demand threshold</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="power-quality-distribution">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Power Quality Distribution</h3><p>Backend anomaly buckets only: voltage sag, over voltage, low PF, current anomaly.</p></div><div class="card-actions"><span class="chip">PQ</span><span class="drag-handle">::</span></div></div>
+            
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">30d</span><span class="chip">FaultRule + Influx</span></div><div class="right"><span class="chip rose">61 events</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Group</span>Type / zone</div><div class="config-pill"><span>Severity</span>P1-P3</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Power quality distribution chart">
+                <circle cx="170" cy="132" r="72" fill="rgba(251,113,133,.34)"/><circle cx="250" cy="132" r="54" fill="rgba(251,191,36,.34)"/><circle cx="318" cy="132" r="42" fill="rgba(34,211,238,.28)"/><circle cx="370" cy="132" r="28" fill="rgba(74,222,128,.24)"/>
+                <text x="132" y="136" fill="#fff" font-size="13">V sag</text><text x="230" y="136" fill="#fff" font-size="12">PF</text><text x="300" y="136" fill="#fff" font-size="11">A</text><text x="356" y="136" fill="#fff" font-size="10">OV</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Voltage sag</label><label class="legend-toggle"><input type="checkbox" checked> Poor PF</label><label class="legend-toggle"><input type="checkbox" checked> Current</label><label class="legend-toggle"><input type="checkbox" checked> Over voltage</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="zone-load-imbalance">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Zone Load Imbalance</h3><p>Zone comparison from grouped kWh/power time-series; no data means empty state.</p></div><div class="card-actions"><span class="chip">Imbalance</span><span class="drag-handle">::</span></div></div>
+            
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">This M</span><span class="chip">kWh / active device</span></div><div class="right"><span class="chip amber">Road B high</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Normalize</span>Per active device</div><div class="config-pill"><span>Compare</span>Scope average</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Zone load imbalance radar chart">
+                <polygon points="260,50 410,130 260,220 110,130" fill="rgba(148,163,184,.08)" stroke="rgba(148,163,184,.25)"/>
+                <polygon points="260,72 382,136 258,202 128,124" fill="rgba(34,211,238,.18)" stroke="#22d3ee" stroke-width="3"/>
+                <polygon points="260,96 340,130 260,178 178,130" fill="rgba(148,163,184,.12)" stroke="rgba(148,163,184,.65)" stroke-dasharray="7 7"/>
+                <text x="246" y="38" fill="#94a3b8" font-size="11">Road B</text><text x="416" y="132" fill="#94a3b8" font-size="11">Warehouse</text><text x="246" y="238" fill="#94a3b8" font-size="11">Parking</text><text x="56" y="132" fill="#94a3b8" font-size="11">Gate</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Selected</label><label class="legend-toggle"><input type="checkbox" checked> Average</label><label class="legend-toggle"><input type="checkbox" checked> Fault overlay</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="telemetry-freshness">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Telemetry Freshness</h3><p>Last seen distribution for realtime confidence.</p></div><div class="card-actions"><span class="chip">Freshness</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">Last seen</span><span class="chip">Device count</span></div><div class="right"><span class="chip rose">47 delayed</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Bins</span>&lt;1m / 5m / 30m / offline</div><div class="config-pill"><span>Scope</span>Visible devices</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Telemetry freshness chart">
+                <rect class="bar good" x="60" y="76" width="72" height="164"/><rect class="bar" x="160" y="128" width="72" height="112"/><rect class="bar warn" x="260" y="168" width="72" height="72"/><rect class="bar bad" x="360" y="196" width="72" height="44"/>
+                <text x="68" y="254" fill="#94a3b8" font-size="11">&lt;1m</text><text x="168" y="254" fill="#94a3b8" font-size="11">1-5m</text><text x="268" y="254" fill="#94a3b8" font-size="11">5-30m</text><text x="368" y="254" fill="#94a3b8" font-size="11">offline</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Fresh</label><label class="legend-toggle"><input type="checkbox" checked> Delayed</label><label class="legend-toggle"><input type="checkbox" checked> Offline</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 analytics-card" data-card="top-n-drilldown">
+          <div class="card-inner">
+            <div class="card-header"><div class="card-title"><h3>Top N Drilldown Charts</h3><p>Top devices, zones, customers and dealers by selected metric.</p></div><div class="card-actions"><span class="chip">Top N</span><span class="drag-handle">::</span></div></div>
+            <div class="chart-shell">
+              <div class="chart-tools"><div class="left"><span class="chip">Metric: kWh</span><span class="chip">Top 5</span></div><div class="right"><span class="chip">Click -> drill</span></div></div>
+              <div class="card-config"><div class="config-pill"><span>Entity</span>Device / zone / customer / dealer</div><div class="config-pill"><span>Sort</span>Highest risk</div></div>
+              <svg class="chart-svg" viewBox="0 0 520 260" aria-label="Top N drilldown chart">
+                <rect class="bar bad" x="72" y="42" width="360" height="24"/><rect class="bar warn" x="72" y="82" width="318" height="24"/><rect class="bar" x="72" y="122" width="282" height="24"/><rect class="bar good" x="72" y="162" width="230" height="24"/><rect class="bar previous" x="72" y="202" width="196" height="24"/>
+                <text x="26" y="58" fill="#94a3b8" font-size="11">SP-088</text><text x="26" y="98" fill="#94a3b8" font-size="11">Road B</text><text x="26" y="138" fill="#94a3b8" font-size="11">BB</text><text x="26" y="178" fill="#94a3b8" font-size="11">SP-177</text><text x="26" y="218" fill="#94a3b8" font-size="11">Gate</text>
+              </svg>
+              <div class="legend-toggles"><label class="legend-toggle"><input type="checkbox" checked> Energy</label><label class="legend-toggle"><input type="checkbox"> Fault</label><label class="legend-toggle"><input type="checkbox"> Cost</label><label class="legend-toggle"><input type="checkbox"> Offline</label></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-12 dashboard-wide-card optional-card" data-card="carbon-credit-report" hidden>
+          <div class="card-inner">
+            <div class="card-header">
+              <div class="card-title">
+                <h3>♻ Carbon Credit Report</h3>
+                <p>Optional card · CO2 avoided, credit equivalent, and report-ready summary.</p>
+              </div>
+              <div class="card-actions">
+                <span class="chip">Report card</span>
+                <span class="drag-handle">::</span>
+              </div>
+            </div>
+            <div class="report-summary">
+              <div class="report-primary">
+                <span>CO2 avoided</span>
+                <strong>38.1 tCO2e</strong>
+                <p>Based on 82,400 kWh tracked for the selected dashboard scope and period.</p>
+              </div>
+              <div class="report-mini-grid">
+                <div class="report-mini-card"><span>kWh saved</span><strong>12,400</strong></div>
+                <div class="report-mini-card"><span>THB saved</span><strong>49,600</strong></div>
+                <div class="report-mini-card"><span>Credit eq.</span><strong>38.1</strong></div>
+                <div class="report-mini-card"><span>Period</span><strong>Jun 2026</strong></div>
+              </div>
+            </div>
+            <div class="legend-toggles" aria-label="Carbon report actions">
+              <label class="legend-toggle"><input type="checkbox" checked> Include energy baseline</label>
+              <label class="legend-toggle"><input type="checkbox" checked> Include zone comparison</label>
+              <label class="legend-toggle"><input type="checkbox"> Include dealer/customer ranking</label>
+            </div>
+            <div class="card-footer-actions">
+              <span class="chip">Export actions live in the card ⋮ menu</span>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+
+    
+
+
+
+    
+
+
+
+    
+
+    </div>
+
+    
+
+
+    
+
+  </main>
+
+  <script>
+    const svgNs = 'http://www.w3.org/2000/svg';
+
+    function inferAxisLabels(svg) {
+      const label = (svg.getAttribute('aria-label') || '').toLowerCase();
+      const timeTicks = ['Day 1', 'Day 7', 'Day 15', 'Day 23', 'Day 30'];
+      const valueTicks = ['High', '', 'Mid', '', 'Low'];
+      if (label.includes('time series')) return { y: 'kWh / selected metric', x: 'Time bucket', xTicks: timeTicks, yTicks: valueTicks };
+      if (label.includes('12-month') || label.includes('yearly')) return { y: 'kWh / THB / CO2', x: 'Month', xTicks: ['Jan', 'Mar', 'Jun', 'Sep', 'Dec'], yTicks: valueTicks };
+      if (label.includes('zone')) return { y: 'kWh / fault count', x: 'Zone / group', xTicks: ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4', 'Zone 5'], yTicks: valueTicks };
+      if (label.includes('electrical')) return { y: 'V / A / kW / PF', x: 'Time bucket', xTicks: timeTicks, yTicks: ['Upper', '', 'Normal', '', 'Lower'] };
+      if (label.includes('heatmap')) return { y: 'Day / zone', x: 'Hour bucket', xTicks: ['00:00', '06:00', '12:00', '18:00', '24:00'], yTicks: ['Zone A', '', 'Zone B', '', 'Zone C'] };
+      if (label.includes('command')) return { y: 'Command count', x: 'Time bucket', xTicks: ['00:00', '06:00', '12:00', '18:00', '24:00'], yTicks: valueTicks };
+      if (label.includes('availability')) return { y: 'Online %', x: 'Time bucket', xTicks: timeTicks, yTicks: ['100%', '', '50%', '', '0%'] };
+      if (label.includes('carbon')) return { y: 'tCO2e', x: 'Time bucket', xTicks: timeTicks, yTicks: valueTicks };
+      if (label.includes('cost')) return { y: 'THB', x: 'Time bucket', xTicks: timeTicks, yTicks: valueTicks };
+      if (label.includes('watt')) return { y: 'Actual W', x: 'Expected W', xTicks: ['Low W', 'Spec', 'Nominal', 'High W', 'Peak'], yTicks: valueTicks };
+      return { y: 'Value', x: 'Period', xTicks: ['Start', '25%', '50%', '75%', 'End'], yTicks: valueTicks };
+    }
+
+    function injectChartAxes() {
+      document.querySelectorAll('svg.chart-svg').forEach((svg) => {
+        if (svg.querySelector('.chart-axis-layer')) return;
+
+        const viewBox = (svg.getAttribute('viewBox') || '0 0 520 260').split(/\s+/).map(Number);
+        const width = viewBox[2] || 520;
+        const height = viewBox[3] || 260;
+        const left = Math.max(34, Math.round(width * 0.07));
+        const right = Math.max(18, Math.round(width * 0.04));
+        const top = Math.max(24, Math.round(height * 0.09));
+        const bottom = Math.max(30, Math.round(height * 0.13));
+        const plotRight = width - right;
+        const plotBottom = height - bottom;
+        const labels = inferAxisLabels(svg);
+
+        const layer = document.createElementNS(svgNs, 'g');
+        layer.setAttribute('class', 'chart-axis-layer');
+
+        const makeLine = (x1, y1, x2, y2, className) => {
+          const line = document.createElementNS(svgNs, 'line');
+          line.setAttribute('x1', x1);
+          line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2);
+          line.setAttribute('y2', y2);
+          line.setAttribute('class', className);
+          return line;
+        };
+
+        layer.appendChild(makeLine(left, top, left, plotBottom, 'chart-axis-line'));
+        layer.appendChild(makeLine(left, plotBottom, plotRight, plotBottom, 'chart-axis-line'));
+
+        const yLabels = labels.yTicks;
+        yLabels.forEach((tick, index) => {
+          const y = top + ((plotBottom - top) * index / (yLabels.length - 1));
+          layer.appendChild(makeLine(left - 5, y, left, y, 'chart-axis-tick'));
+          const text = document.createElementNS(svgNs, 'text');
+          text.setAttribute('x', left - 9);
+          text.setAttribute('y', y + 4);
+          text.setAttribute('text-anchor', 'end');
+          text.setAttribute('class', 'chart-axis-text');
+          text.textContent = tick;
+          layer.appendChild(text);
+        });
+
+        const xLabels = labels.xTicks;
+        xLabels.forEach((tick, index) => {
+          const x = left + ((plotRight - left) * index / (xLabels.length - 1));
+          layer.appendChild(makeLine(x, plotBottom, x, plotBottom + 5, 'chart-axis-tick'));
+          const text = document.createElementNS(svgNs, 'text');
+          text.setAttribute('x', x);
+          text.setAttribute('y', plotBottom + 18);
+          text.setAttribute('text-anchor', index === 0 ? 'start' : index === xLabels.length - 1 ? 'end' : 'middle');
+          text.setAttribute('class', 'chart-axis-text');
+          text.textContent = tick;
+          layer.appendChild(text);
+        });
+
+        const yTitle = document.createElementNS(svgNs, 'text');
+        yTitle.setAttribute('x', left);
+        yTitle.setAttribute('y', Math.max(14, top - 10));
+        yTitle.setAttribute('class', 'chart-axis-title');
+        yTitle.textContent = `Y: ${labels.y}`;
+        layer.appendChild(yTitle);
+
+        const xTitle = document.createElementNS(svgNs, 'text');
+        xTitle.setAttribute('x', plotRight);
+        xTitle.setAttribute('y', height - 6);
+        xTitle.setAttribute('text-anchor', 'end');
+        xTitle.setAttribute('class', 'chart-axis-title');
+        xTitle.textContent = `X: ${labels.x}`;
+        layer.appendChild(xTitle);
+
+        svg.appendChild(layer);
+      });
+    }
+
+    injectChartAxes();
+
+    document.querySelectorAll('.mode-tab[data-mode]').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.mode-tab[data-mode]').forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.mode-tab[data-chart]').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.mode-tab[data-chart]').forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+      });
+    });
+
+    const tsIssueLayout = document.querySelector('.dashboard-card-row--ts-issues');
+    const issuePanel = document.querySelector('.issue-side-panel');
+    const drawerButtons = document.querySelectorAll('[data-drawer-mode]');
+    const issueFloatingControls = document.querySelector('.issue-floating-controls');
+    const issueOptionsToggle = document.querySelector('[data-issue-options-toggle]');
+    const issueLayoutToggle = document.querySelector('[data-issue-layout-toggle]');
+    const issueScenarioToggle = document.querySelector('[data-issue-scenario-toggle]');
+    const issueCountLabel = document.querySelector('[data-issue-count-label]');
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+    const profileMenu = document.querySelector('[data-profile-menu]');
+    const profileToggle = document.querySelector('[data-profile-toggle]');
+    const widgetMenu = document.querySelector('[data-widget-menu]');
+    const widgetToggle = document.querySelector('[data-widget-toggle]');
+    const filterMenu = document.querySelector('[data-filter-menu]');
+    const filterToggle = document.querySelector('[data-filter-toggle]');
+    const filterOverlay = document.querySelector('[data-filter-overlay]');
+
+    function normalizeCardLabel(cardId) {
+      return (cardId || 'dashboard-card').replace(/-/g, ' ');
+    }
+
+    function createCardMenu(card) {
+      const header = card.querySelector(':scope > .card-inner > .card-header') || card.querySelector(':scope > .issue-summary');
+      if (!header || header.querySelector('[data-card-menu]')) return;
+
+      const cardId = card.dataset.card || 'dashboard-card';
+      let actions = header.querySelector('.card-actions, .issue-summary-actions');
+      if (!actions) {
+        actions = document.createElement('div');
+        actions.className = 'card-actions';
+        header.appendChild(actions);
+      }
+
+      const headerTags = Array.from(actions.querySelectorAll(':scope > .chip')).map((chip) => {
+        const text = chip.textContent.trim();
+        chip.remove();
+        return text;
+      }).filter(Boolean);
+      const movedIssueControls = cardId === 'top-issues'
+        ? Array.from(actions.querySelectorAll(':scope > .issue-display-mode, :scope > .drawer-transition-note'))
+        : [];
+
+      const menu = document.createElement('div');
+      menu.className = 'card-menu';
+      menu.dataset.cardMenu = '';
+      menu.innerHTML = `
+        <button class="card-menu-toggle" type="button" aria-haspopup="true" aria-expanded="false" title="Card actions">⋮</button>
+        <div class="card-menu-popover" role="menu" aria-label="${normalizeCardLabel(cardId)} actions">
+          <div class="card-menu-head">
+            <strong>Card actions</strong>
+            <span>${normalizeCardLabel(cardId)}</span>
+          </div>
+          <div class="card-menu-body">
+            <button class="card-menu-action" type="button" role="menuitem">Export CSV<span>Filtered card data only</span></button>
+            <button class="card-menu-action" type="button" role="menuitem">Export PDF<span>Card snapshot + filters</span></button>
+            <button class="card-menu-action" type="button" role="menuitem">Export PNG<span>Graph image / visual snapshot</span></button>
+            <a class="card-menu-action" href="/backoffice/reports/?card=${encodeURIComponent(cardId)}" role="menuitem">Open report<span>Continue in report builder</span></a>
+            <button class="card-menu-action" type="button" role="menuitem">Configure card<span>Metric, compare, period, overlays</span></button>
+            <button class="card-menu-action" type="button" role="menuitem">Hide card<span>Can restore from Widget</span></button>
+            ${headerTags.length ? `<div class="card-menu-meta">${headerTags.map((tag) => `<span>${tag}</span>`).join('')}</div>` : ''}
+          </div>
+        </div>
+      `;
+
+      if (movedIssueControls.length) {
+        const menuBody = menu.querySelector('.card-menu-body');
+        const issueControlGroup = document.createElement('div');
+        issueControlGroup.className = 'card-menu-meta card-menu-meta--stack';
+        movedIssueControls.forEach((control) => issueControlGroup.appendChild(control));
+        menuBody.appendChild(issueControlGroup);
+      }
+
+      const dragHandle = actions.querySelector('.drag-handle');
+      if (dragHandle) {
+        actions.insertBefore(menu, dragHandle);
+      } else {
+        actions.appendChild(menu);
+      }
+    }
+
+    function closeCardMenus(exceptMenu) {
+      document.querySelectorAll('[data-card-menu]').forEach((menu) => {
+        if (menu === exceptMenu) return;
+        menu.classList.remove('is-open');
+        menu.closest('.card')?.classList.remove('card-menu-open');
+        menu.querySelector('.card-menu-toggle')?.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    document.querySelectorAll('[data-card]').forEach(createCardMenu);
+
+    document.addEventListener('click', (event) => {
+      const toggle = event.target.closest('.card-menu-toggle');
+      if (toggle) {
+        event.preventDefault();
+        event.stopPropagation();
+        const menu = toggle.closest('[data-card-menu]');
+        const shouldOpen = !menu.classList.contains('is-open');
+        closeCardMenus(menu);
+        menu.classList.toggle('is-open', shouldOpen);
+        menu.closest('.card')?.classList.toggle('card-menu-open', shouldOpen);
+        toggle.setAttribute('aria-expanded', String(shouldOpen));
+        if (widgetMenu) widgetMenu.classList.remove('is-open');
+        if (profileMenu) profileMenu.classList.remove('is-open');
+        return;
+      }
+
+      if (!event.target.closest('[data-card-menu]')) {
+        closeCardMenus();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeCardMenus();
+    });
+
+    function syncIssueLayoutMeta(mode, hasIssue) {
+      if (!tsIssueLayout) return;
+
+      const issueVisible = mode === 'drawer' || mode === 'overlay' || (mode === 'auto' && hasIssue);
+      const issuePushesLayout = mode === 'drawer' || (mode === 'auto' && hasIssue);
+      const issueSpan = issuePushesLayout ? '3' : issueVisible ? 'overlay' : '0';
+      tsIssueLayout.dataset.layoutState = mode;
+      tsIssueLayout.dataset.mainSpan = issuePushesLayout ? '9' : '12';
+      tsIssueLayout.dataset.issueSpan = issueSpan;
+      tsIssueLayout.dataset.issueVisible = issueVisible ? 'true' : 'false';
+      tsIssueLayout.style.setProperty('--main-ts-span', issuePushesLayout ? '9' : '12');
+      tsIssueLayout.style.setProperty('--top-issues-span', issuePushesLayout ? '3' : '0');
+    }
+
+    function setDrawerMode(mode) {
+      if (!tsIssueLayout) return;
+
+      const hasIssue = tsIssueLayout.classList.contains('has-active-issues');
+      tsIssueLayout.classList.remove('is-issue-open', 'is-issue-overlay', 'is-issue-hidden', 'is-issue-auto');
+      syncIssueLayoutMeta(mode, hasIssue);
+
+      if (mode === 'hidden') {
+        tsIssueLayout.classList.add('is-issue-hidden');
+      } else if (mode === 'overlay') {
+        tsIssueLayout.classList.add('is-issue-overlay');
+      } else if (mode === 'auto') {
+        tsIssueLayout.classList.add('is-issue-auto');
+      } else {
+        tsIssueLayout.classList.add('is-issue-open');
+      }
+
+      drawerButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.drawerMode === mode);
+      });
+
+      if (issueFloatingControls) {
+        issueFloatingControls.classList.remove('options-open');
+      }
+    }
+
+    drawerButtons.forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setDrawerMode(button.dataset.drawerMode);
+      });
+    });
+
+    if (issueLayoutToggle) {
+      issueLayoutToggle.addEventListener('click', (event) => {
+        if (event.target.closest('a, button')) return;
+        const isVisible = tsIssueLayout.dataset.issueVisible === 'true';
+        setDrawerMode(isVisible ? 'hidden' : 'drawer');
+      });
+    }
+
+    if (issueScenarioToggle && issueCountLabel && tsIssueLayout) {
+      issueScenarioToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const hasIssue = tsIssueLayout.classList.toggle('has-active-issues');
+        issueCountLabel.textContent = hasIssue ? '7 open · 2 P1' : '0 open';
+        issueScenarioToggle.textContent = hasIssue ? '○ Empty preview' : '⚠ Issue preview';
+        setDrawerMode('drawer');
+      });
+    }
+
+    if (issueOptionsToggle && issueFloatingControls) {
+      issueOptionsToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        issueFloatingControls.classList.toggle('options-open');
+      });
+    }
+
+    if (filterMenu && filterToggle && filterOverlay) {
+      filterToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        filterOverlay.hidden = !filterOverlay.hidden;
+        filterToggle.classList.toggle('primary', !filterOverlay.hidden);
+        if (widgetMenu) widgetMenu.classList.remove('is-open');
+        if (profileMenu) profileMenu.classList.remove('is-open');
+      });
+
+      filterOverlay.addEventListener('click', (event) => {
+        event.stopPropagation();
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!filterMenu.contains(event.target)) {
+          filterOverlay.hidden = true;
+          filterToggle.classList.remove('primary');
+        }
+      });
+    }
+
+    if (widgetMenu && widgetToggle) {
+      widgetToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        widgetMenu.classList.toggle('is-open');
+        if (profileMenu) {
+          profileMenu.classList.remove('is-open');
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!widgetMenu.contains(event.target)) {
+          widgetMenu.classList.remove('is-open');
+        }
+      });
+    }
+
+    if (profileMenu && profileToggle) {
+      profileToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        profileMenu.classList.toggle('is-open');
+        if (widgetMenu) {
+          widgetMenu.classList.remove('is-open');
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!profileMenu.contains(event.target)) {
+          profileMenu.classList.remove('is-open');
+        }
+      });
+    }
+
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const isLight = document.body.classList.toggle('theme-light');
+        themeToggle.textContent = isLight ? '☼ Light' : '☾ Dark';
+        themeToggle.setAttribute('aria-pressed', String(!isLight));
+      });
+    }
+
+    document.querySelectorAll('[data-card-toggle]').forEach((checkbox) => {
+      const target = document.querySelector(`[data-card="${checkbox.dataset.cardToggle}"]`);
+      const syncCardVisibility = () => {
+        if (target) {
+          target.hidden = !checkbox.checked;
+        }
+      };
+
+      checkbox.addEventListener('change', syncCardVisibility);
+      syncCardVisibility();
+    });
+  </script>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

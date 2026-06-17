@@ -680,10 +680,103 @@ function Slide06() {
 }
 
 // ---------------------------------------------------------------------------
+// SmartLight Demo Modal — เปิดระบบจริง (public/ui/smartlight-demo/*.html) ทับสไลด์
+// มี tab สลับหน้า เพราะไฟล์ dev แต่ละหน้าเป็น workspace เดี่ยว (ไม่มี nav ข้ามหน้า)
+// ปิดด้วยปุ่ม X / ESC / คลิกพื้นหลัง → กลับมาที่สไลด์เดิม
+// ---------------------------------------------------------------------------
+
+const DEMO_TABS = [
+  { id: 'dashboard', label: '📊 ภาพรวมระบบ', file: 'dashboard.html' },
+  { id: 'maps', label: '🗺️ แผนที่อุปกรณ์', file: 'maps.html' },
+  { id: 'faults', label: '🔧 แจ้งซ่อม/ปัญหา', file: 'faults.html' },
+  { id: 'energy', label: '⚡ พลังงาน', file: 'energy.html' },
+  { id: 'remote_control', label: '🎛️ สั่งงานระยะไกล', file: 'remote_control.html' },
+  { id: 'zones', label: '📍 โซน', file: 'zones.html' },
+  { id: 'device', label: '💡 รายการโคม', file: 'device.html' },
+];
+
+function SmartLightDemoModal({ onClose }) {
+  const [tab, setTab] = useState('dashboard');
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prevOverflow; };
+  }, [onClose]);
+
+  const active = DEMO_TABS.find((t) => t.id === tab) || DEMO_TABS[0];
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 10000,
+        background: 'rgba(20,28,24,0.66)', backdropFilter: 'blur(3px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 'clamp(12px, 3vw, 36px)', animation: 'slFade .2s ease',
+      }}
+    >
+      <style>{`@keyframes slFade{from{opacity:0}to{opacity:1}}`}</style>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: 'min(1320px, 100%)', height: 'min(820px, 100%)',
+          background: '#FFF', borderRadius: 16, overflow: 'hidden',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column',
+        }}
+      >
+        {/* Header */}
+        <div style={{ flexShrink: 0, height: 50, background: C.primaryDeep, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, fontWeight: 700 }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#9FE3C0' }} />
+            ตัวอย่างระบบจริง — ระบบบริหารไฟถนนอัจฉริยะ (กดเมนูด้านบนเพื่อดูแต่ละหน้า)
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="ปิด"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.16)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
+          >
+            ✕ ปิด · กลับสู่การนำเสนอ
+          </button>
+        </div>
+        {/* Tab bar */}
+        <div style={{ flexShrink: 0, display: 'flex', gap: 4, padding: '8px 12px', background: C.surfaceSoft, borderBottom: `1px solid ${C.surfaceSoft}`, overflowX: 'auto' }}>
+          {DEMO_TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              style={{
+                whiteSpace: 'nowrap', flexShrink: 0, border: 'none', cursor: 'pointer',
+                borderRadius: 8, padding: '8px 14px', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600,
+                background: tab === t.id ? C.primary : '#FFF',
+                color: tab === t.id ? '#FFF' : C.text,
+                boxShadow: tab === t.id ? '0 2px 6px rgba(15,110,86,0.3)' : 'none',
+                transition: 'background .15s ease',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        {/* iframe */}
+        <iframe
+          key={active.id}
+          src={`${import.meta.env.BASE_URL}ui/smartlight-demo/${active.file}`}
+          title={`ระบบบริหารไฟถนน — ${active.label}`}
+          style={{ flex: 1, width: '100%', border: 'none', display: 'block', background: '#F4F6FB' }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // SLIDE 7 — สัญญาณ → การจัดการ
 // ---------------------------------------------------------------------------
 
 function Slide07() {
+  const [showDemo, setShowDemo] = useState(false);
   const rows = [
     ['💡 Lamp Failure (ไฟดับ)', 'หลอด LED เสีย / Driver พัง', 'แจ้งช่าง + ส่งตำแหน่ง — ซ่อมก่อนประชาชนแจ้ง'],
     ['🔌 Power Failure (ไฟตัด)', 'การไฟฟ้าตัดวงจร / สายขาด', 'แจ้งกองช่าง + ประสาน กฟภ. ทันที'],
@@ -692,8 +785,19 @@ function Slide07() {
   ];
   return (
     <Slide num={7}>
-      <Eyebrow>จากสัญญาณ สู่การจัดการ</Eyebrow>
-      <Title>4 สัญญาณ ที่ระบบจับให้ — ก่อนกลายเป็นเรื่องใหญ่</Title>
+      {showDemo && <SmartLightDemoModal onClose={() => setShowDemo(false)} />}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <Eyebrow>จากสัญญาณ สู่การจัดการ</Eyebrow>
+          <Title>4 สัญญาณ ที่ระบบจับให้ — ก่อนกลายเป็นเรื่องใหญ่</Title>
+        </div>
+        <button
+          onClick={() => setShowDemo(true)}
+          style={{ flexShrink: 0, marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, background: C.primary, color: '#FFF', border: 'none', borderRadius: 12, padding: '11px 18px', fontFamily: 'inherit', fontSize: 14.5, fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 8px rgba(15,110,86,0.28)' }}
+        >
+          🖥️ เปิดดูระบบจริง (กดเล่นได้)
+        </button>
+      </div>
       <Lead style={{ marginTop: 10, maxWidth: 1040 }}>
         Node ส่งสถานะทุก 4 ค่าเข้า Cloud ตลอด 24 ชั่วโมง — ระบบเปรียบเทียบกับกฎที่ตั้งไว้ และตัดสินว่า "เรื่องนี้ใครต้องรู้"
       </Lead>

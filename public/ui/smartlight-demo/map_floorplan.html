@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartPole Floor Plan - Indoor Device Placement</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #071014;
+      --panel: rgba(10, 24, 31, 0.92);
+      --panel-2: rgba(15, 34, 43, 0.86);
+      --ink: #ecfeff;
+      --muted: #8aa7aa;
+      --line: rgba(148, 163, 184, 0.22);
+      --cyan: #22d3ee;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --blue: #60a5fa;
+      --violet: #a78bfa;
+      --shadow: 0 24px 76px rgba(0, 0, 0, 0.38);
+      --radius: 24px;
+      --max: 1540px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(34, 211, 238, 0.16), transparent 32rem),
+        radial-gradient(circle at 92% 12%, rgba(167, 139, 250, 0.12), transparent 30rem),
+        linear-gradient(145deg, #071014 0%, #0b171e 55%, #10131d 100%);
+      color: var(--ink);
+      font-family: Aptos, "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select { font: inherit; }
+
+    .app {
+      width: min(var(--max), calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 56px;
+    }
+
+    .shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .topbar,
+    .panel,
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(14, 30, 38, 0.94), rgba(8, 20, 27, 0.9));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 16px;
+    }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      border-radius: 15px;
+      background: conic-gradient(from 210deg, var(--cyan), var(--green), var(--blue), var(--violet), var(--cyan));
+      box-shadow: 0 0 34px rgba(34, 211, 238, 0.38);
+    }
+
+    h1,
+    h2,
+    h3,
+    p { margin: 0; }
+
+    h1 {
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1;
+      letter-spacing: -0.055em;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .actions,
+    .chip-row,
+    .card-actions,
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .button,
+    .chip,
+    .tab {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #dff7f7;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 900;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .button.primary,
+    .tab.active {
+      border-color: rgba(34, 211, 238, 0.58);
+      background: rgba(34, 211, 238, 0.14);
+      color: #f1fdff;
+    }
+
+    .button.warn { border-color: rgba(251, 191, 36, 0.42); background: rgba(251, 191, 36, 0.12); color: #fde68a; }
+    .button.rose { border-color: rgba(251, 113, 133, 0.45); background: rgba(251, 113, 133, 0.12); color: #fecdd3; }
+    .button.green { border-color: rgba(74, 222, 128, 0.45); background: rgba(74, 222, 128, 0.12); color: #bbf7d0; }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.72);
+    }
+
+    .connection-badge {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      border: 1px solid rgba(74, 222, 128, 0.38);
+      border-radius: 999px;
+      background: rgba(74, 222, 128, 0.1);
+      color: #dcfce7;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+      animation: liveGlow 1.8s ease-in-out infinite;
+    }
+
+    .critical-error-badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid rgba(254, 202, 202, 0.78);
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.92), rgba(153, 27, 27, 0.96));
+      color: #fff7f7;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 950;
+      text-decoration: none;
+      animation: redBlink 0.95s ease-in-out infinite;
+    }
+
+    .panel {
+      padding: 14px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .field select,
+    .field input {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.065);
+      color: var(--ink);
+      padding: 8px 10px;
+      outline: 0;
+    }
+
+    .field select option { color: #0f172a; }
+
+    .mode-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mode-card {
+      display: grid;
+      gap: 7px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 13px;
+    }
+
+    .mode-card.active {
+      border-color: rgba(34, 211, 238, 0.42);
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.13), rgba(45, 212, 191, 0.08));
+    }
+
+    .mode-card strong {
+      color: #f8ffff;
+      font-size: 14px;
+    }
+
+    .mode-card span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .layout-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 9fr) minmax(320px, 3fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .floor-card {
+      min-height: 720px;
+      overflow: hidden;
+    }
+
+    .card-inner {
+      height: 100%;
+      padding: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card-title h2,
+    .card-title h3 {
+      font-size: 18px;
+      letter-spacing: -0.025em;
+    }
+
+    .card-title p {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .floor-workbench {
+      position: relative;
+      min-height: 620px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 22px;
+      background:
+        linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+        radial-gradient(circle at 76% 15%, rgba(251, 191, 36, 0.1), transparent 16rem),
+        rgba(3, 10, 14, 0.42);
+      background-size: 34px 34px, 34px 34px, auto, auto;
+      overflow: hidden;
+    }
+
+    .floor-image-layer {
+      position: absolute;
+      inset: 26px;
+      border: 2px solid rgba(203, 234, 236, 0.2);
+      border-radius: 18px;
+      background:
+        linear-gradient(90deg, transparent 0 27%, rgba(148, 163, 184, 0.13) 27% 28%, transparent 28% 100%),
+        linear-gradient(90deg, transparent 0 62%, rgba(148, 163, 184, 0.13) 62% 63%, transparent 63% 100%),
+        linear-gradient(0deg, transparent 0 34%, rgba(148, 163, 184, 0.13) 34% 35%, transparent 35% 100%),
+        linear-gradient(0deg, transparent 0 68%, rgba(148, 163, 184, 0.13) 68% 69%, transparent 69% 100%),
+        rgba(255, 255, 255, 0.025);
+    }
+
+    .floor-zone {
+      position: absolute;
+      border: 1px dashed rgba(34, 211, 238, 0.42);
+      border-radius: 16px;
+      background: rgba(34, 211, 238, 0.055);
+      color: rgba(236, 254, 255, 0.86);
+      padding: 7px 9px;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .zone-a { left: 7%; top: 12%; width: 26%; height: 30%; }
+    .zone-b { left: 38%; top: 12%; width: 22%; height: 30%; }
+    .zone-c { left: 64%; top: 12%; width: 28%; height: 30%; border-color: rgba(251, 191, 36, 0.48); background: rgba(251, 191, 36, 0.06); }
+    .zone-d { left: 7%; top: 52%; width: 40%; height: 34%; }
+    .zone-e { left: 52%; top: 52%; width: 40%; height: 34%; border-color: rgba(251, 113, 133, 0.48); background: rgba(251, 113, 133, 0.06); }
+
+    .device-node {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 3px solid rgba(236, 254, 255, 0.92);
+      border-radius: 999px;
+      background: var(--green);
+      color: #061016;
+      font-size: 10px;
+      font-weight: 950;
+      box-shadow: 0 0 0 8px rgba(74, 222, 128, 0.14), 0 18px 34px rgba(0, 0, 0, 0.26);
+    }
+
+    .device-node.warn {
+      background: var(--amber);
+      box-shadow: 0 0 0 8px rgba(251, 191, 36, 0.14), 0 18px 34px rgba(0, 0, 0, 0.26);
+    }
+
+    .device-node.bad {
+      background: var(--rose);
+      color: #fff7f7;
+      animation: redPulse 1.1s ease-in-out infinite;
+      box-shadow: 0 0 0 8px rgba(251, 113, 133, 0.18), 0 18px 34px rgba(0, 0, 0, 0.26);
+    }
+
+    .device-node.maintenance {
+      background: var(--blue);
+      color: #eff6ff;
+      box-shadow: 0 0 0 8px rgba(96, 165, 250, 0.16), 0 18px 34px rgba(0, 0, 0, 0.26);
+    }
+
+    .node-01 { left: 14%; top: 22%; }
+    .node-02 { left: 25%; top: 34%; }
+    .node-03 { left: 44%; top: 26%; }
+    .node-04 { left: 72%; top: 25%; }
+    .node-05 { left: 79%; top: 35%; }
+    .node-06 { left: 18%; top: 65%; }
+    .node-07 { left: 34%; top: 72%; }
+    .node-08 { left: 61%; top: 64%; }
+    .node-09 { left: 76%; top: 74%; }
+
+    .floor-popup {
+      position: absolute;
+      right: 34px;
+      bottom: 34px;
+      width: min(360px, calc(100% - 68px));
+      border: 1px solid rgba(34, 211, 238, 0.28);
+      border-radius: 20px;
+      background: rgba(7, 16, 20, 0.92);
+      box-shadow: 0 26px 70px rgba(0, 0, 0, 0.42);
+      padding: 14px;
+    }
+
+    .floor-popup h3 {
+      font-size: 16px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .detail-card,
+    .source-card,
+    .row-item {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 10px;
+    }
+
+    .detail-card span,
+    .source-card span,
+    .row-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .detail-card strong,
+    .source-card strong,
+    .row-item strong {
+      display: block;
+      color: #f8ffff;
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .queue-scroll {
+      max-height: min(62vh, 560px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+
+    .source-grid,
+    .process-grid,
+    .table-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .source-card.active {
+      border-color: rgba(34, 211, 238, 0.34);
+      background: rgba(34, 211, 238, 0.08);
+    }
+
+    .process-step {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 10px;
+    }
+
+    .step-no {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(34, 211, 238, 0.14);
+      color: #dffbff;
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .state-pill {
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: 10px;
+      font-weight: 950;
+      background: rgba(148, 163, 184, 0.12);
+      color: var(--muted);
+    }
+
+    .state-pill.good { background: rgba(74, 222, 128, 0.13); color: #bbf7d0; }
+    .state-pill.warn { background: rgba(251, 191, 36, 0.13); color: #fde68a; }
+    .state-pill.bad { background: rgba(251, 113, 133, 0.13); color: #fecdd3; }
+
+    .card-menu {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .card-menu summary {
+      list-style: none;
+      width: 36px;
+      min-height: 36px;
+      padding: 0;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: #f8ffff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 950;
+      line-height: 1;
+    }
+
+    .card-menu summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-menu[open] summary {
+      border-color: rgba(34, 211, 238, 0.45);
+      background: rgba(34, 211, 238, 0.12);
+    }
+
+    .card-menu-list {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      z-index: 20;
+      width: min(260px, calc(100vw - 36px));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.96);
+      box-shadow: var(--shadow);
+      padding: 8px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .card-menu-item {
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text);
+      padding: 9px 10px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .card-menu-item:hover {
+      background: rgba(255, 255, 255, 0.075);
+    }
+
+    .card-menu-item span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .card-menu-section {
+      display: grid;
+      gap: 7px;
+      padding: 8px;
+      border-top: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    .card-menu-section:first-child {
+      border-top: 0;
+    }
+
+    .card-menu-section label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .card-menu-section select {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      padding: 7px 9px;
+      outline: none;
+    }
+
+    .table-wrap {
+      max-height: 360px;
+      overflow: auto;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 10px 11px;
+      text-align: left;
+      font-size: 12px;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: rgba(7, 16, 20, 0.94);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    td strong { color: #f8ffff; }
+    td span { display: block; color: var(--muted); font-size: 11px; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--green);
+    }
+
+    .legend-dot.warn { background: var(--amber); }
+    .legend-dot.bad { background: var(--rose); }
+    .legend-dot.maintenance { background: var(--blue); }
+
+    .note-box {
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      border-radius: 18px;
+      background: rgba(34, 211, 238, 0.06);
+      color: #dffbff;
+      padding: 13px;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    @keyframes liveGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(74, 222, 128, 0); }
+      50% { box-shadow: 0 0 24px rgba(74, 222, 128, 0.26); }
+    }
+
+    @keyframes redBlink {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.25); }
+    }
+
+    @keyframes redPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+
+    @media (max-width: 1220px) {
+      .topbar,
+      .layout-grid { grid-template-columns: 1fr; }
+      .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .actions,
+      .card-actions { justify-content: flex-start; }
+      .floor-card { min-height: auto; }
+      .floor-workbench { min-height: 560px; }
+    }
+
+    @media (max-width: 760px) {
+      .app { width: min(100% - 18px, var(--max)); padding-top: 10px; }
+      .topbar { position: static; }
+      .filter-grid,
+      .mode-strip,
+      .detail-grid { grid-template-columns: 1fr; }
+      .floor-workbench { min-height: 520px; }
+      .floor-popup { position: relative; right: auto; bottom: auto; width: auto; margin: 12px; }
+      table { min-width: 760px; }
+    }
+  
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body>
+  <main class="app">
+    <div class="shell">
+      <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1>▦ SmartPole Floor Plan <span class="connection-badge"><span class="status-dot"></span>Live connected</span></h1>
+            <p class="subtitle">Indoor / factory layout mode for customers with <strong>account.form_type = FLOOR_PLAN</strong></p>
+          </div>
+        </div>
+        <div class="actions">
+          <span class="chip">▣ Portfolio UI · Platform/Dealer</span>
+          <a class="critical-error-badge" href="/faults/?view=floor_plan">⚠ 3 active indoor issues</a>
+          <span class="button">☾ Dark</span>
+          <span class="button primary">✓ Save layout</span>
+        </div>
+      </header>
+
+      <section class="panel" aria-label="Floor plan mode policy">
+        <div class="mode-strip">
+          <div class="mode-card">
+            <strong>Customer type</strong>
+            <span>FACTORY only suggests the layout. It must not force floor plan forever.</span>
+            <span class="state-pill warn">Suggestion source</span>
+          </div>
+          <div class="mode-card active">
+            <strong>Display mode</strong>
+            <span>account.form_type decides actual rendering: MAP or FLOOR_PLAN.</span>
+            <span class="state-pill good">FLOOR_PLAN active</span>
+          </div>
+          <div class="mode-card">
+            <strong>Zone / Tag</strong>
+            <span>Used as overlay, filter, and grouping. Not the source image/layout itself.</span>
+            <span class="state-pill">Logical layer</span>
+          </div>
+          <div class="mode-card">
+            <strong>Purchase Lot</strong>
+            <span>Commercial/inventory group: capacity, package, import/export, warranty, expiry.</span>
+            <span class="state-pill">Inventory layer</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Floor plan filters">
+        <div class="filter-grid">
+          
+          <div class="field"><label>Customer / Site</label><select><option>Factory AA · Main Plant</option><option>Factory AA · Warehouse 2</option><option>City BB · Depot</option></select></div>
+          <div class="field"><label>Floor</label><select><option>Floor 1 · Production</option><option>Floor 2 · Packing</option><option>Outdoor Yard</option></select></div>
+          <div class="field"><label>Area</label><select><option>All areas</option><option>Line A</option><option>Warehouse</option><option>QC Gate</option></select></div>
+          <div class="field"><label>Zone / Tag</label><select><option>All zones/tags</option><option>Zone A · Production</option><option>Tag: emergency-light</option><option>Tag: high-bay</option></select></div>
+          <div class="field"><label>Lot</label><select><option>All purchase lots</option><option>LOT-2026-001 · Basic 24m</option><option>LOT-2026-002 · Factory expansion</option><option>Expiring within 30d</option></select></div>
+          <div class="field"><label>State</label><select><option>All states</option><option>Fault / warning</option><option>Maintenance</option><option>Unplaced</option></select></div>
+          <button class="button primary" type="button">Apply</button>
+        </div>
+      </section>
+
+      <section class="layout-grid" aria-label="Floor plan workspace">
+        <article class="card floor-card">
+          <div class="card-inner">
+            <div class="card-header">
+              <div class="card-title">
+                <h2>Factory AA · Floor 1 Production Layout</h2>
+                <p>Source: structured Building -> Floor -> Zone -> Tag -> Device sections. Uploaded images are legacy/admin metadata, not the operator source.</p>
+              </div>
+              <div class="card-actions">
+                <span class="button">+ Upload plan</span>
+                <span class="button">Calibrate scale</span>
+                <span class="button">Place devices</span>
+                <span class="button green">Publish</span>
+              </div>
+            </div>
+
+            <div class="floor-workbench" aria-label="Floor plan canvas">
+              <div class="floor-image-layer" aria-hidden="true"></div>
+              <div class="floor-zone zone-a">Zone A · Production Line</div>
+              <div class="floor-zone zone-b">Zone B · Packing</div>
+              <div class="floor-zone zone-c">Zone C · QC Gate</div>
+              <div class="floor-zone zone-d">Warehouse</div>
+              <div class="floor-zone zone-e">Maintenance Bay</div>
+
+              <button class="device-node node-01" type="button">01</button>
+              <button class="device-node warn node-02" type="button">02</button>
+              <button class="device-node node-03" type="button">03</button>
+              <button class="device-node bad node-04" type="button">04</button>
+              <button class="device-node node-05" type="button">05</button>
+              <button class="device-node maintenance node-06" type="button">06</button>
+              <button class="device-node node-07" type="button">07</button>
+              <button class="device-node bad node-08" type="button">08</button>
+              <button class="device-node node-09" type="button">09</button>
+
+              <div class="floor-popup" aria-label="Selected device floor plan popup">
+                <h3>SP-088 · High Bay V2</h3>
+                <p class="subtitle">Selected from floor marker. QR/device detail opens the shared popup used by dashboard/map/device/faults.</p>
+                <div class="detail-grid">
+                <div class="detail-card"><span>Floor position</span><strong>F1 · x 61.2m · y 34.8m</strong></div>
+                <div class="detail-card"><span>Zone / Tag</span><strong>Maintenance Bay · high-bay</strong></div>
+                <div class="detail-card"><span>Purchase lot</span><strong>LOT-2026-001 · Basic 24m</strong></div>
+                <div class="detail-card"><span>State</span><strong class="rose">Promoted lamp-state fault</strong></div>
+                <div class="detail-card"><span>Source</span><strong>Actual x/y placement</strong></div>
+                </div>
+                <div class="chip-row" style="justify-content:flex-start;margin-top:12px">
+                  <a class="button rose" href="/faults/?device_id=SP-088">Open maintenance</a>
+                  <span class="button">QR detail</span>
+                  <span class="button">Move marker</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="legend">
+              <span class="legend-item"><i class="legend-dot"></i>Normal</span>
+              <span class="legend-item"><i class="legend-dot warn"></i>Warning</span>
+              <span class="legend-item"><i class="legend-dot bad"></i>Fault / issue</span>
+              <span class="legend-item"><i class="legend-dot maintenance"></i>Maintenance</span>
+            </div>
+          </div>
+        </article>
+
+        <aside class="side-stack">
+          <article class="card">
+            <div class="card-inner">
+              <div class="card-header">
+                <div class="card-title"><h3>Unplaced / Issue Queue</h3><p>รายการที่ต้องแก้ก่อน publish.</p></div>
+              </div>
+              <div class="source-grid queue-scroll" aria-label="Scrollable unplaced and issue queue">
+                <div class="row-item"><span>Unplaced device</span><strong>SP-103 · no floor_x/floor_y</strong><span>Imported from device-list but not placed on plan.</span></div>
+                <div class="row-item"><span>Conflict</span><strong>SP-117 · same position as SP-116</strong><span>Drag one marker or allow overlap group.</span></div>
+                <div class="row-item"><span>Active issue</span><strong class="rose">SP-088 · Promoted lamp-state fault</strong><span>Shown here after debounce because it is visible on selected floor.</span></div>
+                <div class="row-item"><span>Unplaced device</span><strong>SP-131 · auto layout only</strong><span>No confirmed x/y yet. Keep visible in auto layout until technician places marker.</span></div>
+                <div class="row-item"><span>Missing zone</span><strong>SP-144 · no floor zone</strong><span>Assign Floor 1 zone before publishing operator view.</span></div>
+                <div class="row-item"><span>Lot warning</span><strong>LOT-2026-002 · expires in 18d</strong><span>Show badge only. Lot is not a zone or floor source.</span></div>
+                <div class="row-item"><span>Active issue</span><strong class="rose">SP-177 · voltage sag</strong><span>Electrical issue from shared state engine. Click opens faults context.</span></div>
+                <div class="row-item"><span>Placement review</span><strong>SP-201 · outside calibrated area</strong><span>Coordinate is saved but outside floor image bounds.</span></div>
+              </div>
+              <span class="scroll-note">Scroll queue when many unplaced devices or active issues exist.</span>
+            </div>
+          </article>
+        </aside>
+      </section>
+
+      
+
+      <section class="card" aria-label="Floor plan device table">
+        <div class="card-inner">
+          <div class="card-header">
+            <div class="card-title"><h3>Floor Plan Device List</h3><p>Table view for the same visible floor. Use this before publish/export.</p></div>
+            <div class="card-actions">
+              <span class="chip">48 devices</span>
+              <span class="chip">25 / page</span>
+              <details class="card-menu">
+                <summary aria-label="Floor plan device list actions">⋮</summary>
+                <div class="card-menu-list" role="menu">
+                  <div class="card-menu-section">
+                    <label for="floor-device-page-size">Rows per page</label>
+                    <select id="floor-device-page-size" aria-label="Rows per page">
+                      <option>10 / page</option>
+                      <option selected>25 / page</option>
+                      <option>50 / page</option>
+                      <option>100 / page</option>
+                    </select>
+                  </div>
+                  <div class="card-menu-section">
+                    <button class="card-menu-item" type="button" role="menuitem">Import placement CSV<span>Upload floor_x/floor_y or auto order mapping.</span></button>
+                    <button class="card-menu-item" type="button" role="menuitem">Export CSV<span>Export current filters and visible columns.</span></button>
+                    <button class="card-menu-item" type="button" role="menuitem">Save staged changes<span>Commit pending placement edits.</span></button>
+                    <button class="card-menu-item" type="button" role="menuitem">Column settings<span>Show/hide lot, state, telemetry, and action columns.</span></button>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table data-sortable>
+              <thead>
+                <tr>
+                  <th>Device</th>
+                  <th>Lot</th>
+                  <th>Floor / Area</th>
+                  <th>Position</th>
+                  <th>Zone / Tag</th>
+                  <th>State</th>
+                  <th>Last telemetry</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>SP-088</strong><span>QR ready · High Bay V2</span></td><td>LOT-2026-001<span>SW ends 2028-06-10</span></td><td>F1 · Maintenance Bay</td><td>x 61.2m · y 34.8m</td><td>Zone E · high-bay</td><td><span class="state-pill bad">Fault</span></td><td>0A · 224V · 0W</td><td><a class="button rose" href="/faults/?device_id=SP-088">Maintenance</a></td></tr>
+                <tr><td><strong>SP-102</strong><span>QR ready · Street light V2</span></td><td>LOT-2026-001<span>Basic 24m</span></td><td>F1 · Production</td><td>x 14.4m · y 22.0m</td><td>Zone A · production</td><td><span class="state-pill good">Normal</span></td><td>0.42A · 220V · 92W</td><td><span class="button">Detail</span></td></tr>
+                <tr><td><strong>SP-103</strong><span>Unplaced after import</span></td><td>LOT-2026-002<span>Factory expansion</span></td><td>F1 · Unassigned</td><td>Auto order #12</td><td>tag: emergency-light</td><td><span class="state-pill warn">Unplaced</span></td><td>online · latest 2m</td><td><span class="button warn">Place</span></td></tr>
+                <tr><td><strong>SP-117</strong><span>Position conflict</span></td><td>LOT-2026-001<span>HW warning 30d</span></td><td>F1 · QC Gate</td><td>x 72.3m · y 25.7m</td><td>Zone C · qc</td><td><span class="state-pill warn">Review</span></td><td>PF 0.84 · watch</td><td><span class="button">Resolve</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="data-pager" data-pagination="true" aria-label="Floor plan device pagination">
+            <span>Showing 1-25 of 48 devices · Page size 25</span>
+            <span class="data-pager__actions">
+              <span class="data-pager__button">Prev</span>
+              <span class="data-pager__button" aria-current="page">1</span>
+              <span class="data-pager__button">2</span>
+              <span class="data-pager__button">Next</span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="note-box">
+        <strong>Implementation rule:</strong> Floor plan is a separate renderer from Leaflet/OSM and must not depend on uploaded blueprint/image files. It adds Building/Floor/position context, but it must reuse the same scoped customer, zone, tag, device, lot, issue, action, and table contracts as <code>maps.html</code>. Use the Building -> Floor -> Zone -> Tag -> Device section structure from the scoped device list. Lot is the inventory/commercial source for devices; floor/zone/tag is the operational placement layer. If no indoor x/y exists, render Auto Layout by Floor -> Zone -> Lot -> Device ID. MAP mode continues to use lat/lng and does not require building/floor, but MAP still shows Zone/Tag.
+      </section>
+    </div>
+
+    
+  </main>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

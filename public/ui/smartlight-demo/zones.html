@@ -1,0 +1,1365 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartPole Zone Overview</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: rgba(15, 23, 42, 0.88);
+      --panel-soft: rgba(15, 23, 42, 0.64);
+      --panel-raised: rgba(30, 41, 59, 0.96);
+      --line: rgba(148, 163, 184, 0.18);
+      --line-strong: rgba(148, 163, 184, 0.34);
+      --text: #e5edf7;
+      --muted: #93a4b8;
+      --faint: #64748b;
+      --cyan: #22d3ee;
+      --blue: #60a5fa;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      --radius: 24px;
+      --container: min(100% - 32px, 1680px);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      min-height: 100%;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 8%, rgba(34, 211, 238, 0.16), transparent 30%),
+        radial-gradient(circle at 86% 8%, rgba(96, 165, 250, 0.14), transparent 28%),
+        linear-gradient(145deg, #07111f 0%, #0f172a 58%, #111827 100%);
+    }
+
+    body[data-theme="light"] {
+      color-scheme: light;
+      --bg: #eef5fb;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-soft: rgba(255, 255, 255, 0.72);
+      --panel-raised: rgba(248, 250, 252, 0.98);
+      --line: rgba(51, 65, 85, 0.14);
+      --line-strong: rgba(51, 65, 85, 0.24);
+      --text: #0f172a;
+      --muted: #475569;
+      --faint: #64748b;
+      background:
+        radial-gradient(circle at 10% 8%, rgba(34, 211, 238, 0.2), transparent 30%),
+        radial-gradient(circle at 86% 8%, rgba(96, 165, 250, 0.16), transparent 28%),
+        linear-gradient(145deg, #eef5fb 0%, #f8fafc 70%, #e0f2fe 100%);
+    }
+
+    a { color: inherit; }
+    button, input, select, textarea { font: inherit; }
+    .page { width: var(--container); margin: 0 auto; padding: 20px 0 56px; }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: rgba(15, 23, 42, 0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+    }
+    body[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.82); }
+    .brand h1 { margin: 0; font-size: clamp(24px, 4vw, 42px); letter-spacing: -0.05em; line-height: 1; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .header-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+
+    .button, .chip, .status-pill, .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    .button.primary { border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.14); }
+    .button.green, .chip.green, .status-pill.good { border-color: rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: #bbf7d0; }
+    .button.warn, .chip.amber, .status-pill.warn { border-color: rgba(251, 191, 36, 0.46); background: rgba(251, 191, 36, 0.13); color: #fde68a; }
+    .button.rose, .chip.rose, .status-pill.bad { border-color: rgba(251, 113, 133, 0.48); background: rgba(251, 113, 133, 0.14); color: #fecdd3; }
+    .chip.blue, .status-pill.info { border-color: rgba(96, 165, 250, 0.42); background: rgba(96, 165, 250, 0.13); color: #bfdbfe; }
+    body[data-theme="light"] .button.green,
+    body[data-theme="light"] .chip.green,
+    body[data-theme="light"] .status-pill.good { color: #166534; }
+    body[data-theme="light"] .button.warn,
+    body[data-theme="light"] .chip.amber,
+    body[data-theme="light"] .status-pill.warn { color: #92400e; }
+    body[data-theme="light"] .button.rose,
+    body[data-theme="light"] .chip.rose,
+    body[data-theme="light"] .status-pill.bad { color: #9f1239; }
+    body[data-theme="light"] .chip.blue,
+    body[data-theme="light"] .status-pill.info { color: #1d4ed8; }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.16); animation: pulseGreen 1.6s infinite; }
+    .status-dot.bad { background: var(--rose); box-shadow: 0 0 0 6px rgba(251, 113, 133, 0.14); animation: pulseRed 1s infinite; }
+    @keyframes pulseGreen { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.78); opacity: 0.62; } }
+    @keyframes pulseRed { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: 0.58; } }
+
+    .popover-wrap { position: relative; }
+    .popover {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 10px);
+      width: min(360px, calc(100vw - 40px));
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-raised);
+      box-shadow: var(--shadow);
+      z-index: 30;
+    }
+    .popover-wrap.open .popover { display: block; }
+    .popover h3 { margin: 0 0 8px; font-size: 14px; }
+    .popover p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .popover-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+    .popover-row:first-of-type { border-top: 0; }
+
+    .panel, .filter-panel, .drawer-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-width: 0;
+    }
+    .panel-inner { padding: 16px; }
+    .section-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+    .section-title h2 { margin: 0; font-size: 18px; letter-spacing: -0.03em; }
+    .section-title p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .filter-panel { margin-top: 16px; padding: 14px; }
+    .filter-grid { display: grid; grid-template-columns: minmax(220px, 1.3fr) repeat(4, minmax(130px, 1fr)) auto auto; gap: 10px; align-items: end; }
+    .advanced-filters { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .advanced-filters.open { display: block; }
+    .advanced-grid { display: grid; grid-template-columns: repeat(5, minmax(130px, 1fr)); gap: 10px; }
+    .field { min-width: 0; }
+    .field label { display: block; margin: 0 0 5px; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .field input, .field select {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.58);
+      color: var(--text);
+      padding: 9px 11px;
+      outline: none;
+    }
+    body[data-theme="light"] .field input,
+    body[data-theme="light"] .field select { background: rgba(255, 255, 255, 0.75); }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+    .stat { border: 1px solid var(--line); border-radius: 20px; background: var(--panel-soft); padding: 13px; min-height: 92px; }
+    .stat span { color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat strong { display: block; margin-top: 9px; font-size: 27px; letter-spacing: -0.05em; }
+    .stat small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    .grid-12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; margin-top: 16px; align-items: stretch; }
+    .span-4 { grid-column: span 4; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: 1 / -1; }
+    .equal-height { height: 100%; }
+    .equal-height > .panel-inner { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+
+    .customer-workbench-row {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+      align-items: stretch;
+      min-height: clamp(520px, 62vh, 760px);
+    }
+    .customer-workbench-main {
+      grid-column: 1 / -1;
+      min-width: 0;
+      transition: grid-column 180ms ease;
+    }
+    .customer-workbench-main > .panel-inner {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .customer-issue-panel {
+      height: auto;
+      overflow: hidden;
+      align-self: start;
+    }
+    .customer-workbench-main .table-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
+    }
+    .customer-issue-float {
+      display: none;
+      position: sticky;
+      top: 92px;
+      z-index: 12;
+      margin-top: 12px;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .table-wrap {
+      max-height: min(60vh, 650px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    table { width: 100%; min-width: 1180px; border-collapse: collapse; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; font-size: 13px; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(15, 23, 42, 0.96); position: sticky; top: 0; z-index: 2; backdrop-filter: blur(10px); }
+    body[data-theme="light"] th { background: rgba(248, 250, 252, 0.96); }
+    tr:last-child td { border-bottom: 0; }
+    td span { color: var(--muted); font-size: 11px; display: block; margin-top: 3px; }
+    .sort-button { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+    .sort-button::after { content: "↕"; color: var(--faint); font-size: 10px; }
+    .sort-button[aria-sort="ascending"]::after { content: "↑"; color: var(--cyan); }
+    .sort-button[aria-sort="descending"]::after { content: "↓"; color: var(--cyan); }
+
+    .floor-hierarchy {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      display: grid;
+      gap: 12px;
+      padding-right: 4px;
+      align-content: start;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .floor-section {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .floor-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      min-width: 0;
+      padding: 2px 2px 11px;
+      border-bottom: 1px solid var(--line);
+    }
+    .floor-head h3 { margin: 0; font-size: 17px; letter-spacing: -0.03em; }
+    .floor-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .floor-head .row-actions { justify-content: flex-end; }
+    .zone-node-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      min-width: 0;
+      overflow: visible;
+      padding: 0;
+    }
+    .zone-node {
+      display: grid;
+      grid-template-columns: minmax(160px, 1fr) minmax(220px, 1.1fr) minmax(190px, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 10px;
+      background: rgba(15, 23, 42, 0.42);
+      min-height: 0;
+      min-width: 0;
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+    .zone-node:hover {
+      border-color: var(--line-strong);
+      background: rgba(255, 255, 255, 0.065);
+      transform: translateY(-1px);
+    }
+    body[data-theme="light"] .zone-node { background: rgba(255, 255, 255, 0.58); }
+    .zone-node h4 { margin: 0; font-size: 14px; }
+    .zone-node p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .zone-node-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .zone-node-meta .mini {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 7px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+    .zone-node-meta span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.07em; }
+    .zone-node-meta strong { display: block; margin-top: 3px; font-size: 13px; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0; }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tag-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); }
+    .tag-chip.warn::before { background: var(--amber); }
+    .tag-chip.bad::before { background: var(--rose); }
+    .tag-chip.good::before { background: var(--green); }
+    .zone-node > .row-actions { justify-content: flex-end; }
+
+    .row-actions { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .row-menu { position: relative; display: inline-block; }
+    .row-menu summary { list-style: none; }
+    .row-menu summary::-webkit-details-marker { display: none; }
+    .row-menu-panel {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: 230px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel-raised);
+      box-shadow: var(--shadow);
+      z-index: 10;
+    }
+    .row-menu-panel a, .row-menu-panel button {
+      width: 100%;
+      display: flex;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      padding: 9px 10px;
+      border-radius: 11px;
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .row-menu-panel a:hover, .row-menu-panel button:hover { background: rgba(255, 255, 255, 0.07); }
+
+    .mini-list { max-height: 310px; overflow: auto; padding-right: 4px; scrollbar-width: thin; scrollbar-color: rgba(148, 163, 184, 0.45) transparent; }
+    .mini-item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 11px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .mini-item[data-drawer-tab] { cursor: pointer; transition: border-color 160ms ease, background 160ms ease, transform 160ms ease; }
+    .mini-item[data-drawer-tab]:hover { border-color: rgba(251, 113, 133, 0.42); background: rgba(251, 113, 133, 0.08); transform: translateY(-1px); }
+    .mini-item + .mini-item { margin-top: 8px; }
+    .mini-item strong { display: block; font-size: 13px; }
+    .mini-item span { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; line-height: 1.4; }
+
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .data-pager__button { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.055); color: var(--text); white-space: nowrap; }
+    .data-pager__button[aria-current="page"] { border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.14); }
+    .scroll-note { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; color: var(--muted); font-size: 11px; font-weight: 850; letter-spacing: 0.02em; }
+
+    .drawer-backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.5); backdrop-filter: blur(4px); z-index: 40; }
+    .customer-drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(800px, 100vw); padding: 16px; z-index: 41; transform: translateX(0); transition: transform 180ms ease, opacity 180ms ease; }
+    body.drawer-closed .drawer-backdrop { display: none; }
+    body.drawer-closed .customer-drawer { transform: translateX(105%); opacity: 0; pointer-events: none; }
+    .drawer-panel { height: 100%; min-height: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr); border: 1px solid var(--line); border-radius: 24px; background: var(--panel-raised); box-shadow: var(--shadow); overflow: hidden; }
+    .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); min-width: 0; }
+    .drawer-head > div { min-width: 0; }
+    .drawer-head h2 { margin: 0; font-size: 18px; }
+    .drawer-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .drawer-head__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 8px;
+    }
+    .drawer-impact {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 24px;
+      padding: 4px 8px;
+      border: 1px solid rgba(254, 202, 202, 0.56);
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.42), rgba(127, 29, 29, 0.5));
+      color: #fff7f7;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    .drawer-impact--soft {
+      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+    }
+    .drawer-tabs {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 7px;
+      overflow-x: auto;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .drawer-tab {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .drawer-tab.is-active {
+      border-color: rgba(34, 211, 238, 0.42);
+      background: rgba(34, 211, 238, 0.12);
+      color: var(--text);
+    }
+    .drawer-tab__badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.24);
+      color: #fecdd3;
+      font-size: 10px;
+      font-weight: 950;
+    }
+    .drawer-scroll { min-height: 0; overflow: auto; padding: 14px 16px 16px; display: grid; align-content: start; gap: 12px; }
+    .drawer-card { padding: 13px; box-shadow: none; border-radius: 18px; }
+    .drawer-card[data-drawer-section] { display: none; }
+    .drawer-card[data-drawer-section].is-active { display: block; }
+    .drawer-card h3 { margin: 0 0 8px; font-size: 14px; }
+    .drawer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .drawer-field { border: 1px solid var(--line); border-radius: 14px; padding: 10px; background: rgba(255, 255, 255, 0.04); }
+    .drawer-field span { color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .drawer-field strong { display: block; margin-top: 5px; font-size: 14px; }
+
+
+
+    /* Issue rail: compact side panel used by dashboard/zones pattern. */
+    .issue-rail {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      height: 100%;
+      overflow: hidden;
+      border: 1px solid rgba(251, 113, 133, 0.28);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at 100% 0%, rgba(251, 113, 133, 0.16), transparent 12rem),
+        linear-gradient(150deg, rgba(15, 23, 42, 0.96), rgba(8, 18, 28, 0.94));
+      box-shadow: var(--shadow);
+      color: var(--text);
+    }
+    .issue-rail__header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      gap: 7px;
+      align-items: center;
+      padding: 8px 9px;
+      border-bottom: 1px solid rgba(251, 113, 133, 0.18);
+    }
+    .issue-rail.is-alerting .issue-rail__header {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.14), rgba(251, 113, 133, 0.035));
+    }
+    .issue-rail__toggle {
+      all: unset;
+      display: inline-grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 7px;
+      align-items: center;
+      min-width: 0;
+      cursor: pointer;
+    }
+    .issue-rail__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: rgba(251, 113, 133, 0.14);
+      color: #fecdd3;
+      font-size: 12px;
+      flex: 0 0 auto;
+    }
+    .issue-rail__title {
+      display: grid;
+      min-width: 0;
+      line-height: 1.1;
+    }
+    .issue-rail__title strong {
+      overflow: hidden;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: -0.02em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .issue-rail__title small {
+      margin-top: 2px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .issue-rail.is-alerting .issue-rail__title small {
+      color: #fecdd3;
+    }
+    .issue-rail__impact {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      white-space: nowrap;
+    }
+    .issue-impact {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 24px;
+      padding: 3px 7px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text);
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .issue-impact strong {
+      color: #fff;
+      font-size: 11px;
+      font-weight: 950;
+    }
+    .issue-impact span {
+      color: var(--muted);
+      font-weight: 850;
+    }
+    .issue-impact--critical {
+      border-color: rgba(254, 202, 202, 0.62);
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.58), rgba(127, 29, 29, 0.68));
+      color: #fff7f7;
+    }
+    .issue-impact--critical span {
+      color: #fee2e2;
+    }
+    .issue-impact--critical::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fecdd3;
+      box-shadow: 0 0 0 4px rgba(254, 202, 202, 0.1);
+    }
+    .issue-rail.is-alerting .issue-impact--critical {
+      animation: issueBlink 0.95s ease-in-out infinite, issuePulse 1.8s ease-in-out infinite;
+    }
+    @keyframes issueBlink { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.38); } }
+    @keyframes issuePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.22); } 50% { box-shadow: 0 0 0 7px rgba(251, 113, 133, 0.07); } }
+    .issue-rail__link,
+    .issue-rail__menu {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      min-height: 24px;
+      padding: 3px 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .issue-rail__menu {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1;
+    }
+    .issue-rail__list {
+      display: grid;
+      align-content: start;
+      gap: 8px;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 9px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .issue-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 9px;
+      align-items: start;
+      min-width: 0;
+      padding: 9px 9px 9px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.045);
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+    .issue-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      border-radius: 999px;
+      background: var(--cyan);
+    }
+    .issue-card--p1::before { background: var(--rose); }
+    .issue-card--p2::before { background: var(--amber); }
+    .issue-card:hover {
+      border-color: rgba(34, 211, 238, 0.36);
+      background: rgba(34, 211, 238, 0.07);
+      transform: translateY(-1px);
+    }
+    .issue-card__severity {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      min-height: 24px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: rgba(34, 211, 238, 0.15);
+      color: #cffafe;
+      font-size: 10px;
+      font-weight: 950;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .issue-card--p1 .issue-card__severity { background: rgba(251, 113, 133, 0.18); color: #fecdd3; }
+    .issue-card--p2 .issue-card__severity { background: rgba(251, 191, 36, 0.18); color: #fde68a; }
+    .issue-card__body {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+    .issue-card__body strong {
+      overflow: hidden;
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.32;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .issue-card__body span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .issue-card__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .issue-card__meta span {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.065);
+      color: var(--muted);
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 850;
+    }
+    .issue-card__meta .bad { color: #fecdd3; background: rgba(251, 113, 133, 0.15); }
+    .issue-card__meta .warn { color: #fde68a; background: rgba(251, 191, 36, 0.14); }
+
+
+    /* Keep side issue rail anchored to the top; do not stretch it to the full workbench height. */
+    .issue-layout-row .issue-layout-panel {
+      align-self: start;
+    }
+    .issue-layout-row .issue-rail.issue-side-panel {
+      height: auto;
+      max-height: min(62vh, 620px);
+      align-self: start;
+    }
+    .issue-layout-row .issue-rail__list {
+      flex: 0 1 auto;
+      max-height: calc(min(62vh, 620px) - 42px);
+    }
+
+    /* Dashboard Top Issues pattern: click issue count to show/hide the 9/3 issue list. */
+    .issue-layout-row {
+      --main-span: 12;
+      --issue-span: 0;
+      position: relative;
+      overflow: visible;
+    }
+    .issue-layout-main {
+      grid-column: span var(--main-span);
+      transition: grid-column 200ms ease;
+    }
+    .issue-layout-panel {
+      display: none;
+      grid-column: span var(--issue-span);
+      min-width: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(18px);
+      transition: opacity 180ms ease, transform 220ms ease;
+    }
+
+    .issue-layout-row.is-issue-hidden .issue-layout-panel {
+      display: none !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .issue-layout-row.is-issue-hidden .issue-layout-main {
+      grid-column: 1 / -1;
+    }
+
+    .issue-layout-row.is-issue-open,
+    .issue-layout-row.is-issue-auto.has-active-issues {
+      --main-span: 9;
+      --issue-span: 3;
+    }
+    .issue-layout-row.is-issue-open .issue-layout-panel,
+    .issue-layout-row.is-issue-auto.has-active-issues .issue-layout-panel {
+      display: grid;
+      opacity: 1;
+      pointer-events: auto;
+      transform: none;
+      animation: issueSlideIn 180ms ease-out;
+    }
+
+    .issue-layout-row.is-issue-open .issue-rail.issue-layout-panel,
+    .issue-layout-row.is-issue-auto.has-active-issues .issue-rail.issue-layout-panel {
+      display: flex;
+    }
+    .issue-floating-controls {
+      position: fixed;
+      top: 96px;
+      right: max(18px, calc((100vw - 1680px) / 2 + 18px));
+      z-index: 60;
+      display: none;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin: 0;
+      pointer-events: none;
+    }
+    .issue-layout-row.is-issue-hidden[data-issue-visible="false"] + .issue-floating-controls,
+    .issue-layout-row.is-issue-auto:not(.has-active-issues)[data-issue-visible="false"] + .issue-floating-controls {
+      display: flex;
+    }
+    .issue-floating-controls > * {
+      pointer-events: auto;
+    }
+    .issue-floating-trigger {
+      border: 1px solid rgba(254, 202, 202, 0.72);
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.94), rgba(153, 27, 27, 0.96));
+      color: #fff7f7;
+      box-shadow: 0 18px 52px rgba(0, 0, 0, 0.36);
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 950;
+      cursor: pointer;
+      animation: issueBlink 0.95s ease-in-out infinite, issuePulse 1.8s ease-in-out infinite;
+    }
+    @keyframes issueSlideIn {
+      from { opacity: 0; transform: translateX(18px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (max-width: 1240px) {
+      .customer-workbench-row {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .customer-workbench-main {
+        grid-column: 1 / -1;
+      }
+      .issue-layout-row {
+        --main-span: 1 !important;
+        --issue-span: 1 !important;
+      }
+      .issue-layout-main,
+      .issue-layout-panel {
+        grid-column: 1 / -1 !important;
+      }
+      .filter-grid, .advanced-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .zone-node {
+        grid-template-columns: minmax(170px, 1fr) minmax(220px, 1fr);
+        align-items: start;
+      }
+      .zone-node > .row-actions { justify-content: flex-start; }
+      .span-4, .span-8 { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 760px) {
+      :root { --container: min(100% - 20px, 1680px); }
+      .topbar { grid-template-columns: 1fr; position: static; border-radius: 20px; }
+      .header-actions { justify-content: flex-start; }
+      .filter-grid, .advanced-grid, .stat-grid, .zone-node-grid, .zone-node-meta, .drawer-grid { grid-template-columns: 1fr; }
+      .floor-head { flex-direction: column; align-items: stretch; }
+      .floor-head .row-actions { justify-content: flex-start; }
+      .zone-node { grid-template-columns: 1fr; }
+      .drawer-head { padding: 12px; }
+      .drawer-tabs { padding: 9px 12px; }
+      .drawer-scroll { padding: 12px; }
+      .drawer-scroll .section-title { flex-direction: column; gap: 8px; margin-bottom: 10px; }
+      .customer-drawer { padding: 8px; width: 100vw; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+      .table-wrap { max-height: 62vh; }
+    }
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body class="drawer-closed">
+  
+  <main class="page">
+    <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+      <div class="brand">
+        <h1>SmartPole Zone Overview <span class="chip green"><span class="status-dot"></span>Live connected</span></h1>
+        <p class="subtitle">/zones/control/ · platform/dealer customer zone hierarchy · floor / zone / tag · customer drill-down</p>
+      </div>
+      <div class="header-actions">
+        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
+        <span class="chip blue">Portfolio UI · Platform/Dealer</span>
+        <div class="popover-wrap" data-profile-menu>
+          <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+          <div class="popover">
+            <h3>Profile controls</h3>
+            <div class="popover-row"><p>Password, timezone, notification preferences.</p><span class="chip">Open</span></div>
+            <div class="popover-row"><p>Role and account tree scope are evaluated server-side.</p><span class="chip blue">Admin</span></div>
+          </div>
+        </div>
+        <button class="button primary" type="button">Save layout</button>
+      </div>
+    </header>
+
+    <section class="filter-panel" aria-label="Customer zone overview filters">
+      <div class="section-title">
+        <div>
+          <h2>⌕ Customer / Site Scope</h2>
+          <p>Platform Owner and Dealer choose dealer/customer first. The workspace then shows the selected customer's floor, zone, and tag hierarchy.</p>
+        </div>
+        <span class="chip blue">Dealer -> Customer -> Floor -> Zone -> Tag</span>
+      </div>
+      <div class="filter-grid">
+        <div class="field"><label>Dealer</label><select><option>All dealers</option><option>Dealer 01</option><option>Direct platform customer</option></select></div>
+        <div class="field"><label>Customer</label><input value="บริษัท BB" aria-label="Search customer" /></div>
+        <div class="field"><label>Customer type</label><select><option>All types</option><option>Factory</option><option>Government</option><option>Public lighting</option><option>Small business</option><option>Residential</option></select></div>
+        <div class="field"><label>Layout</label><select><option>All layouts</option><option>MAP</option><option>FLOOR_PLAN</option></select></div>
+        <div class="field"><label>Operational health</label><select><option>All states</option><option>Has zone issue</option><option>Unacknowledged</option><option>Maintenance active</option><option>Expired controls</option><option>Normal</option></select></div>
+        <button class="button" type="button" data-more-filters>More filters</button>
+        <button class="button primary" type="button">Apply</button>
+      </div>
+      <div class="advanced-filters" data-advanced-filters>
+        <div class="advanced-grid">
+          <div class="field"><label>Package</label><select><option>All packages</option><option>Active</option><option>เชื่อมต่อไม่เสถียร</option><option>ขาดการเชื่อมต่อ</option></select></div>
+          <div class="field"><label>Zone / tag</label><input value="Road B" aria-label="Search zone or tag across customers" /></div>
+          <div class="field"><label>Issue priority</label><select><option>Any priority</option><option>P1</option><option>P2</option><option>P3</option></select></div>
+          <div class="field"><label>Control state</label><select><option>All control states</option><option>Control enabled</option><option>Control locked</option><option>Schedule locked</option></select></div>
+          <div class="field"><label>Telemetry</label><select><option>Any telemetry</option><option>Fresh</option><option>Delayed / offline</option><option>Multiple devices offline too long</option></select></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stat-grid" aria-label="Customer zone summary stats">
+      <div class="stat"><span>Customers</span><strong>42</strong><small>visible in scope</small></div>
+      <div class="stat"><span>Dealers</span><strong>6</strong><small>including child dealers</small></div>
+      <div class="stat"><span>Zones</span><strong>128</strong><small>active customer zones</small></div>
+      <div class="stat"><span>Devices</span><strong>12,840</strong><small>assigned to zones/tags</small></div>
+      <div class="stat"><span>Open Issues</span><strong style="color: var(--rose)">37</strong><small>12 critical</small></div>
+      <div class="stat"><span>Expired Lock</span><strong style="color: var(--amber)">3</strong><small>controls read-only</small></div>
+    </section>
+
+    <section class="customer-workbench-row issue-layout-row has-active-issues is-issue-auto" data-issue-layout data-customer-workbench data-layout-state="auto" data-main-span="9" data-issue-span="3" data-issue-visible="true" aria-label="Portfolio zone overview workspace">
+      <article class="panel customer-workbench-main issue-layout-main">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>▤ Customer Zones Hierarchy</h2>
+              <p>Selected customer scope from the filters above. Show hierarchy in the same order as the real /zones/control/ flow: floor/site first, then zones, then tags.</p>
+            </div>
+            <div class="row-actions"><button class="button active">Hierarchy</button><button class="issue-count issue-count--button" type="button" data-issue-toggle>37 issues · 12 P1</button><a class="button primary" href="/zones/control/?customer=bb">Open customer workspace</a></div>
+          </div>
+
+          
+          <div class="floor-hierarchy" aria-label="Selected customer floor zone tag hierarchy">
+            <section class="floor-section">
+              <div class="floor-head">
+                <div>
+                  <h3>Floor 1 · Main Campus</h3>
+                  <p>Factory or floor-plan customers render by floor. MAP customers can render by site/area with the same hierarchy structure.</p>
+                </div>
+                <div class="row-actions"><span class="status-pill bad">2 P1</span><button class="button primary" data-open-customer-drawer data-drawer-tab="summary">Open floor</button></div>
+              </div>
+              <div class="zone-node-grid">
+                <article class="zone-node" data-open-customer-drawer data-drawer-tab="summary">
+                  <div><h4>Road B</h4><p>Outdoor road line · zone control enabled · 126 devices</p></div>
+                  <div class="zone-node-meta"><div class="mini"><span>Online</span><strong>119</strong></div><div class="mini"><span>Issues</span><strong style="color:var(--rose)">3</strong></div><div class="mini"><span>Schedule</span><strong>Sunset</strong></div></div>
+                  <div class="tag-list"><span class="tag-chip bad">Pole line · SP-088</span><span class="tag-chip warn">Junction</span><span class="tag-chip good">Gate</span></div>
+                  <div class="row-actions"><details class="row-menu"><summary class="icon-button">⋮</summary><div class="row-menu-panel"><button data-open-customer-drawer data-drawer-tab="issues">Open issues</button><button data-open-customer-drawer data-drawer-tab="map">Open map/floor plan</button><button data-open-customer-drawer data-drawer-tab="schedule">Open schedule</button><button data-open-customer-drawer data-drawer-tab="tags">Manage tags</button></div></details></div>
+                </article>
+                <article class="zone-node" data-open-customer-drawer data-drawer-tab="summary">
+                  <div><h4>Warehouse</h4><p>Indoor bay lighting · maintenance active · 84 devices</p></div>
+                  <div class="zone-node-meta"><div class="mini"><span>Online</span><strong>82</strong></div><div class="mini"><span>Issues</span><strong>0</strong></div><div class="mini"><span>Schedule</span><strong>18:00</strong></div></div>
+                  <div class="tag-list"><span class="tag-chip warn">Bay 1</span><span class="tag-chip warn">Bay 2</span><span class="tag-chip good">Loading</span></div>
+                  <div class="row-actions"><details class="row-menu"><summary class="icon-button">⋮</summary><div class="row-menu-panel"><button data-open-customer-drawer data-drawer-tab="maintenance">Open maintenance</button><button data-open-customer-drawer data-drawer-tab="devices">Device list</button><button data-open-customer-drawer data-drawer-tab="schedule">Open schedule</button><button data-open-customer-drawer data-drawer-tab="tags">Manage tags</button></div></details></div>
+                </article>
+                <article class="zone-node" data-open-customer-drawer data-drawer-tab="summary">
+                  <div><h4>Front Gate</h4><p>Entrance control · normal · 41 devices</p></div>
+                  <div class="zone-node-meta"><div class="mini"><span>Online</span><strong>41</strong></div><div class="mini"><span>Issues</span><strong>0</strong></div><div class="mini"><span>Schedule</span><strong>Default</strong></div></div>
+                  <div class="tag-list"><span class="tag-chip good">Main entry</span><span class="tag-chip good">Guard house</span></div>
+                  <div class="row-actions"><details class="row-menu"><summary class="icon-button">⋮</summary><div class="row-menu-panel"><button data-open-customer-drawer data-drawer-tab="tags">Manage tags</button><button data-open-customer-drawer data-drawer-tab="schedule">Open schedule</button><button data-open-customer-drawer data-drawer-tab="map">Open map/floor plan</button><button data-open-customer-drawer data-drawer-tab="devices">Device list</button></div></details></div>
+                </article>
+              </div>
+            </section>
+
+            <section class="floor-section">
+              <div class="floor-head">
+                <div>
+                  <h3>Floor 2 · Packing / Storage</h3>
+                  <p>Zones under the same floor share floor-plan context. Devices without x/y stay in assignment queue, not as separate floor rows.</p>
+                </div>
+                <div class="row-actions"><span class="status-pill warn">2 warnings</span><button class="button primary" data-open-customer-drawer data-drawer-tab="summary">Open floor</button></div>
+              </div>
+              <div class="zone-node-grid">
+                <article class="zone-node" data-open-customer-drawer data-drawer-tab="summary">
+                  <div><h4>Road C</h4><p>Feeder line 3 · voltage sag watch · 66 devices</p></div>
+                  <div class="zone-node-meta"><div class="mini"><span>Online</span><strong>64</strong></div><div class="mini"><span>Issues</span><strong style="color:var(--amber)">2</strong></div><div class="mini"><span>Schedule</span><strong>Sunset</strong></div></div>
+                  <div class="tag-list"><span class="tag-chip warn">Feeder 3</span><span class="tag-chip warn">Curve</span><span class="tag-chip good">East</span></div>
+                  <div class="row-actions"><details class="row-menu"><summary class="icon-button">⋮</summary><div class="row-menu-panel"><button data-open-customer-drawer data-drawer-tab="issues">Open warnings</button><button data-open-customer-drawer data-drawer-tab="map">Open map/floor plan</button><button data-open-customer-drawer data-drawer-tab="schedule">Open schedule</button><button data-open-customer-drawer data-drawer-tab="devices">Device list</button></div></details></div>
+                </article>
+                <article class="zone-node" data-open-customer-drawer data-drawer-tab="summary">
+                  <div><h4>Packing</h4><p>Line B / QC lighting · normal · 52 devices</p></div>
+                  <div class="zone-node-meta"><div class="mini"><span>Online</span><strong>52</strong></div><div class="mini"><span>Issues</span><strong>0</strong></div><div class="mini"><span>Schedule</span><strong>18:10</strong></div></div>
+                  <div class="tag-list"><span class="tag-chip good">Line B</span><span class="tag-chip good">QC</span><span class="tag-chip good">Exit</span></div>
+                  <div class="row-actions"><details class="row-menu"><summary class="icon-button">⋮</summary><div class="row-menu-panel"><button data-open-customer-drawer data-drawer-tab="schedule">Open schedule</button><button data-open-customer-drawer data-drawer-tab="tags">Manage tags</button><button data-open-customer-drawer data-drawer-tab="map">Open map/floor plan</button><button data-open-customer-drawer data-drawer-tab="devices">Device list</button></div></details></div>
+                </article>
+              </div>
+            </section>
+
+            <section class="floor-section">
+              <div class="floor-head">
+                <div>
+                  <h3>Unassigned / Needs Setup</h3>
+                  <p>Devices or tags that exist in the customer inventory but have no floor/zone/tag membership yet. Fix from device assignment mode.</p>
+                </div>
+                <div class="row-actions"><span class="status-pill warn">18 devices</span><button class="button primary" data-open-customer-drawer data-drawer-tab="assignment">Assign now</button></div>
+              </div>
+              <div class="zone-node-grid">
+                <article class="zone-node" data-open-customer-drawer data-drawer-tab="assignment">
+                  <div><h4>Unplaced devices</h4><p>Device list imported from lot but not assigned to a zone/tag.</p></div>
+                  <div class="zone-node-meta"><div class="mini"><span>Devices</span><strong>18</strong></div><div class="mini"><span>Lot</span><strong>2</strong></div><div class="mini"><span>Blocked</span><strong>0</strong></div></div>
+                  <div class="tag-list"><span class="tag-chip warn">SP-233</span><span class="tag-chip warn">SP-234</span><span class="tag-chip warn">SP-235</span></div>
+                  <div class="row-actions"><details class="row-menu"><summary class="icon-button">⋮</summary><div class="row-menu-panel"><button data-open-customer-drawer data-drawer-tab="devices">Device list</button><button data-open-customer-drawer data-drawer-tab="tags">Create zone/tag</button><button data-open-customer-drawer data-drawer-tab="assignment">Import from lot</button></div></details></div>
+                </article>
+              </div>
+            </section>
+          </div>
+        </div>
+      </article>
+
+      <aside class="issue-rail issue-side-panel customer-issue-panel issue-layout-panel is-alerting" data-card="customer-zone-issues" data-layout-area="customer-zone-issues">
+        <header class="issue-rail__header">
+          <button class="issue-rail__toggle" type="button" data-issue-toggle aria-label="Toggle customer zone issues">
+            <span class="issue-rail__icon" aria-hidden="true">⚠</span>
+            <span class="issue-rail__title"><strong>Customer Zone Issues</strong><small>9 customers · 214 devices affected</small></span>
+          </button>
+          <div class="issue-rail__impact" aria-label="Customer zone issue impact">
+            <span class="issue-impact issue-impact--critical"><strong>12</strong><span>P1</span></span>
+            <span class="issue-impact"><strong>37</strong><span>open</span></span>
+          </div>
+          <a class="issue-rail__link" href="/faults/?scope=zones">All</a>
+          <span class="issue-rail__menu" aria-label="Issue rail options">⋯</span>
+        </header>
+        <div class="issue-rail__list" aria-label="Cross customer zone issues">
+          <article class="issue-card issue-card--p1" data-open-customer-drawer data-drawer-tab="issues"><span class="issue-card__severity">P1</span><div class="issue-card__body"><strong>บริษัท BB · Road B</strong><span>FaultOccurrence · promoted lamp-state fault · SP-088 · active after debounce</span><div class="issue-card__meta"><span class="bad">Needs ack</span><span class="warn">fault_rule: custom/lamp_state_unconfirmed</span></div></div></article>
+          <article class="issue-card issue-card--p2" data-open-customer-drawer data-drawer-tab="issues"><span class="issue-card__severity">P2</span><div class="issue-card__body"><strong>Factory AA · Production F1</strong><span>FaultOccurrence · Device offline too long · 11 active devices · Dealer 01</span><div class="issue-card__meta"><span class="bad">offline_duration</span><span class="warn">grouped by zone</span></div></div></article>
+          <article class="issue-card issue-card--p2" data-open-customer-drawer data-drawer-tab="issues"><span class="issue-card__severity">P2</span><div class="issue-card__body"><strong>Municipality C · Highway West</strong><span>FaultOccurrence · Voltage Too Low · 4 active warnings · package notice separate</span><div class="issue-card__meta"><span class="warn">voltage_low</span></div></div></article>
+          <article class="issue-card issue-card--p3" data-open-customer-drawer data-drawer-tab="issues"><span class="issue-card__severity">P3</span><div class="issue-card__body"><strong>Road Lighting E · Bridge Zone</strong><span>FaultOccurrence · Signal Low · active · follow-up can create WorkOrder</span><div class="issue-card__meta"><span class="warn">signal_low</span></div></div></article>
+        </div>
+      </aside>
+    </section>
+
+    <div class="issue-floating-controls" aria-label="Collapsed customer zone issue controls">
+      <button class="issue-floating-trigger" type="button" data-issue-toggle>37 issues · 12 P1</button>
+      <a class="button rose" href="/faults/?scope=zones">↗ All</a>
+    </div>
+
+    <section class="grid-12" aria-label="Operational follow up">
+      <article class="panel span-12">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>▦ Follow-Up Queue</h2>
+              <p>Use this for dealer/platform operational follow-up, not direct zone editing.</p>
+            </div>
+            <div class="row-actions"><button class="button">Assign owner</button><button class="button">Export queue</button></div>
+          </div>
+          <div class="mini-list">
+            <article class="mini-item"><strong>Dealer 01 · Factory AA</strong><span>1 P1 floor-plan issue, 3 maintenance records active, 11 offline devices. Recommended action: open customer workspace and assign technician.</span></article>
+            <article class="mini-item"><strong>Direct platform · บริษัท BB</strong><span>Road B has active FaultOccurrence rows for lamp_state_unconfirmed and offline_duration. Recommended action: open faults, acknowledge, then inspect affected devices.</span></article>
+            <article class="mini-item"><strong>Dealer 02 · Municipality C</strong><span>Software renewal within 18 days. Controls still active. Recommended action: contact customer before visible_until cap applies.</span></article>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    
+  </main>
+
+
+
+  <div class="drawer-backdrop" data-close-customer-drawer></div>
+  <aside class="customer-drawer" aria-label="Zone detail drawer">
+    <section class="drawer-panel">
+      <header class="drawer-head">
+        <div>
+          <h2>Road B · Zone Detail</h2>
+          <p>บริษัท BB · Floor 1 / Main Campus · tags: Pole line, Junction, Gate</p>
+          <div class="drawer-head__meta" aria-label="Customer zone issue impact">
+            <span class="drawer-impact">3 open · 1 P1</span>
+            <span class="drawer-impact drawer-impact--soft">2 unacknowledged</span>
+            <span class="drawer-impact drawer-impact--soft">9 affected devices</span>
+          </div>
+        </div>
+        <button class="icon-button" type="button" data-close-customer-drawer aria-label="Close zone drawer">×</button>
+      </header>
+      <nav class="drawer-tabs" aria-label="Zone drawer sections">
+        <button class="drawer-tab is-active" type="button" data-drawer-tab-button="summary">Summary</button>
+        <button class="drawer-tab" type="button" data-drawer-tab-button="issues">Issues <span class="drawer-tab__badge">3</span></button>
+        <button class="drawer-tab" type="button" data-drawer-tab-button="issue-detail">Issue detail</button>
+        <button class="drawer-tab" type="button" data-drawer-tab-button="tags">Tags</button>
+        <button class="drawer-tab" type="button" data-drawer-tab-button="schedule">Schedule</button>
+        <button class="drawer-tab" type="button" data-drawer-tab-button="maintenance">Maint</button>
+        <button class="drawer-tab" type="button" data-drawer-tab-button="map">Map</button>
+        <button class="drawer-tab" type="button" data-drawer-tab-button="devices">Devices</button>
+        <button class="drawer-tab" type="button" data-drawer-tab-button="assignment">Assign</button>
+      </nav>
+      <div class="drawer-scroll">
+        <article class="drawer-card is-active" data-drawer-section="summary">
+          <div class="section-title"><h3>Zone Context</h3><span class="status-pill bad"><span class="status-dot bad"></span>Needs attention</span></div>
+          <div class="drawer-grid">
+            <div class="drawer-field"><span>Customer / Dealer</span><strong>บริษัท BB · Direct platform</strong></div>
+            <div class="drawer-field"><span>Floor / Site</span><strong>Floor 1 · Main Campus</strong></div>
+            <div class="drawer-field"><span>Zone</span><strong>Road B · 126 devices</strong></div>
+            <div class="drawer-field"><span>Tags</span><strong>Pole line · Junction · Gate</strong></div>
+            <div class="drawer-field"><span>Latest State</span><strong>119 online · 88 ON · 31 DIM · 7 OFF</strong></div>
+            <div class="drawer-field"><span>Schedule</span><strong>Sunset -15m / Sunrise +15m</strong></div>
+          </div>
+        </article>
+
+        <article class="drawer-card" data-drawer-section="issues">
+          <div class="section-title"><h3>FaultOccurrence List</h3><span class="status-pill bad">3 open · 1 P1</span></div>
+          <div class="mini-list">
+            <article class="mini-item" role="button" tabindex="0" data-open-customer-drawer data-drawer-tab="issue-detail"><strong>critical · SP-088 · Promoted lamp-state fault</strong><span>FaultOccurrence.active after debounce · field_path=lamp_state_unconfirmed · click to inspect this occurrence.</span></article>
+            <article class="mini-item" role="button" tabindex="0" data-open-customer-drawer data-drawer-tab="issue-detail"><strong>warning · SP-096 · Device offline too long</strong><span>FaultOccurrence.active · field_path=connection_state or online_status · click to inspect device and rule.</span></article>
+            <article class="mini-item" role="button" tabindex="0" data-open-customer-drawer data-drawer-tab="issue-detail"><strong>warning · SP-144 · Voltage Too Low</strong><span>FaultOccurrence.acknowledged · field_path=status_table.voltage/voltage · click to inspect threshold and timeline.</span></article>
+          </div>
+          <div class="drawer-grid" style="margin-top:10px">
+            <div class="drawer-field"><span>Open issue table</span><strong>Navigates to /faults/ filtered by customer, zone, status, severity, or device.</strong></div>
+            <div class="drawer-field"><span>Click issue row</span><strong>Stays in this drawer and loads one FaultOccurrence detail.</strong></div>
+          </div>
+          <div class="row-actions" style="margin-top:10px"><a class="button rose" href="/faults/?zone=road-b">Open issue table</a><a class="button" href="zone_customer.html?customer=bb&tab=issues">Open customer workspace</a></div>
+        </article>
+
+        <article class="drawer-card" data-drawer-section="issue-detail">
+          <div class="section-title"><h3>FaultOccurrence Detail · SP-088</h3><span class="status-pill bad">critical · active</span></div>
+          <div class="drawer-grid">
+            <div class="drawer-field"><span>Customer / Dealer</span><strong>บริษัท BB · Direct platform</strong></div>
+            <div class="drawer-field"><span>Device ID</span><strong>SP-088</strong></div>
+            <div class="drawer-field"><span>FaultRule</span><strong>lamp_state_unconfirmed · custom · after debounce</strong></div>
+            <div class="drawer-field"><span>Rule condition</span><strong>field_path=lamp_state_unconfirmed · eq 1 · duration 2m</strong></div>
+            <div class="drawer-field"><span>Trigger / threshold</span><strong>trigger_value=1.0 · threshold_value=1.0</strong></div>
+            <div class="drawer-field"><span>Timeline</span><strong>first_detected_at 2026-06-03 08:42 · last_detected_at 08:45</strong></div>
+            <div class="drawer-field"><span>Ack / resolved</span><strong>acknowledged_at empty · resolved_at empty</strong></div>
+            <div class="drawer-field"><span>AlertEvent</span><strong>Linked when notification delivery is created; otherwise empty.</strong></div>
+          </div>
+          
+          <div class="row-actions" style="margin-top:10px"><button class="button primary">Acknowledge</button><button class="button">Assign owner</button><a class="button" href="zone_customer.html?customer=bb&tab=issues&device=SP-088">Open customer workspace</a><a class="button rose" href="/faults/?device=SP-088">Open in issue table</a></div>
+        </article>
+
+        <article class="drawer-card" data-drawer-section="tags">
+          <div class="section-title"><h3>Manage Tags</h3><span class="chip blue">Road B scope</span></div>
+          <div class="drawer-grid">
+            <div class="drawer-field"><span>Pole line</span><strong>48 devices · 1 P1</strong></div>
+            <div class="drawer-field"><span>Junction</span><strong>37 devices · warning watch</strong></div>
+            <div class="drawer-field"><span>Gate</span><strong>41 devices · normal</strong></div>
+            <div class="drawer-field"><span>Unassigned</span><strong>0 devices</strong></div>
+          </div>
+          <div class="row-actions" style="margin-top:10px"><button class="button primary">Create tag</button><button class="button">Rename selected</button><button class="button rose">Archive empty tag</button></div>
+        </article>
+
+        <article class="drawer-card" data-drawer-section="schedule">
+          <div class="section-title"><h3>Schedule</h3><span class="chip blue">Tag overrides zone</span></div>
+          <div class="drawer-grid">
+            <div class="field"><label>ON rule</label><select><option>Sunset -15m</option><option>Fixed time</option></select></div>
+            <div class="field"><label>OFF rule</label><select><option>Sunrise +15m</option><option>Fixed time</option></select></div>
+            <div class="field"><label>Location source</label><select><option>Account coordinate</option><option>Zone coordinate</option><option>Preset location</option></select></div>
+            <div class="field"><label>Timezone</label><select><option>Asia/Bangkok</option></select></div>
+          </div>
+          <div class="row-actions" style="margin-top:10px"><button class="button primary">Save schedule</button><button class="button">Preview tonight</button></div>
+        </article>
+
+        <article class="drawer-card" data-drawer-section="maintenance">
+          <div class="section-title"><h3>Maintenance</h3><a class="button" href="/faults/?zone=road-b&maintenance=1">Open maintenance page</a></div>
+          <div class="mini-list">
+            <article class="mini-item"><strong>WO-2026-0042 · SP-088</strong><span>Driver/wiring inspection · assigned Technician A · due today.</span></article>
+            <article class="mini-item"><strong>Preventive inspection</strong><span>2 devices in Warehouse tag require follow-up after recovery.</span></article>
+          </div>
+        </article>
+
+        <article class="drawer-card" data-drawer-section="map">
+          <div class="section-title"><h3>Map / Floor Plan</h3><a class="button primary" href="/map/?zone=road-b">Open full map</a></div>
+          <div class="drawer-grid">
+            <div class="drawer-field"><span>Layout mode</span><strong>FLOOR_PLAN if factory · MAP if site/outdoor</strong></div>
+            <div class="drawer-field"><span>Marker state</span><strong>1 P1 blinking · 7 offline markers</strong></div>
+            <div class="drawer-field"><span>Floor plan source</span><strong>Floor 1 · Main Campus · auto layout by zone/tag</strong></div>
+            <div class="drawer-field"><span>Next action</span><strong>Click full map to inspect physical position</strong></div>
+          </div>
+        </article>
+
+        <article class="drawer-card" data-drawer-section="devices">
+          <div class="section-title"><h3>Device List</h3><a class="button primary" href="/device-list/?zone=road-b">Open device list</a></div>
+          <div class="mini-list">
+            <article class="mini-item"><strong>SP-088</strong><span>Pole line · active critical FaultOccurrence · QR available.</span></article>
+            <article class="mini-item"><strong>SP-091</strong><span>Pole line · online · 78% brightness.</span></article>
+            <article class="mini-item"><strong>SP-096</strong><span>Gate · active offline_duration FaultOccurrence · last_seen_at exceeds rule threshold.</span></article>
+          </div>
+        </article>
+
+        <article class="drawer-card" data-drawer-section="assignment">
+          <div class="section-title"><h3>Device Assignment</h3><span class="chip amber">unassigned queue</span></div>
+          <div class="drawer-grid">
+            <div class="drawer-field"><span>Unassigned devices</span><strong>18 from LOT-2026-003</strong></div>
+            <div class="drawer-field"><span>Required target</span><strong>Floor -> Zone -> Tag</strong></div>
+            <div class="drawer-field"><span>Safe rule</span><strong>Lot stays commercial layer; assignment changes only zone/tag membership</strong></div>
+            <div class="drawer-field"><span>Batch action</span><strong>Preview before save</strong></div>
+          </div>
+          <div class="row-actions" style="margin-top:10px"><a class="button primary" href="/device-list/?unassigned=1">Open assignment workspace</a><button class="button">Import from lot</button></div>
+        </article>
+      </div>
+    </section>
+  </aside>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+    const profileToggle = document.querySelector('[data-profile-toggle]');
+    const profileMenu = document.querySelector('[data-profile-menu]');
+    const moreFiltersButton = document.querySelector('[data-more-filters]');
+    const advancedFilters = document.querySelector('[data-advanced-filters]');
+    const openDrawerButtons = document.querySelectorAll('[data-open-customer-drawer]');
+    const closeDrawerButtons = document.querySelectorAll('[data-close-customer-drawer]');
+    const drawerTabs = document.querySelectorAll('[data-drawer-tab-button]');
+    const drawerSections = document.querySelectorAll('[data-drawer-section]');
+    const issueLayout = document.querySelector('[data-issue-layout]');
+    const issueToggleButtons = document.querySelectorAll('[data-issue-toggle]');
+
+    function setIssueMode(mode) {
+      if (!issueLayout) return;
+
+      const hasIssue = issueLayout.classList.contains('has-active-issues');
+      const issueVisible = mode === 'drawer' || (mode === 'auto' && hasIssue);
+      const issuePushesLayout = mode === 'drawer' || (mode === 'auto' && hasIssue);
+      issueLayout.dataset.layoutState = mode;
+      issueLayout.dataset.mainSpan = issuePushesLayout ? '9' : '12';
+      issueLayout.dataset.issueSpan = issuePushesLayout ? '3' : '0';
+      issueLayout.dataset.issueVisible = issueVisible ? 'true' : 'false';
+      issueLayout.style.setProperty('--main-span', issuePushesLayout ? '9' : '12');
+      issueLayout.style.setProperty('--issue-span', issuePushesLayout ? '3' : '0');
+      issueLayout.classList.remove('is-issue-open', 'is-issue-hidden', 'is-issue-auto', 'issues-hidden');
+
+      if (mode === 'hidden') {
+        issueLayout.classList.add('is-issue-hidden');
+      } else if (mode === 'auto') {
+        issueLayout.classList.add('is-issue-auto');
+      } else {
+        issueLayout.classList.add('is-issue-open');
+      }
+
+    }
+
+    function setDrawerTab(tab = 'summary') {
+      const target = tab || 'summary';
+      drawerTabs.forEach((button) => {
+        button.classList.toggle('is-active', button.dataset.drawerTabButton === target);
+      });
+      drawerSections.forEach((section) => {
+        section.classList.toggle('is-active', section.dataset.drawerSection === target);
+      });
+    }
+
+    themeToggle?.addEventListener('click', () => {
+      const isLight = body.dataset.theme === 'light';
+      body.dataset.theme = isLight ? 'dark' : 'light';
+      themeToggle.textContent = isLight ? '☾ Dark' : '☼ Light';
+      themeToggle.setAttribute('aria-pressed', String(!isLight));
+    });
+
+    profileToggle?.addEventListener('click', () => profileMenu?.classList.toggle('open'));
+    moreFiltersButton?.addEventListener('click', () => advancedFilters?.classList.toggle('open'));
+    issueToggleButtons.forEach((button) => button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const visible = issueLayout?.dataset.issueVisible === 'true';
+      setIssueMode(visible ? 'hidden' : 'drawer');
+    }));
+    document.querySelectorAll('.row-menu').forEach((menu) => {
+      menu.addEventListener('click', (event) => event.stopPropagation());
+    });
+    drawerTabs.forEach((button) => button.addEventListener('click', (event) => {
+      event.preventDefault();
+      setDrawerTab(button.dataset.drawerTabButton || 'summary');
+    }));
+    openDrawerButtons.forEach((button) => button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      document.querySelectorAll('.row-menu[open]').forEach((menu) => menu.removeAttribute('open'));
+      setDrawerTab(button.dataset.drawerTab || 'summary');
+      body.classList.remove('drawer-closed');
+    }));
+    closeDrawerButtons.forEach((button) => button.addEventListener('click', () => body.classList.add('drawer-closed')));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        body.classList.add('drawer-closed');
+        profileMenu?.classList.remove('open');
+      }
+    });
+    document.addEventListener('click', (event) => {
+      document.querySelectorAll('.row-menu[open]').forEach((menu) => {
+        if (!menu.contains(event.target)) menu.removeAttribute('open');
+      });
+      if (profileMenu && !profileMenu.contains(event.target) && !event.target.closest('[data-profile-toggle]')) {
+        profileMenu.classList.remove('open');
+      }
+    });
+
+    setIssueMode(issueLayout?.dataset.layoutState || 'auto');
+    setDrawerTab('summary');
+  </script>
+
+  <script>
+    (() => {
+      const parseValue = (value) => {
+        const clean = value.trim().replace(/,/g, '');
+        const number = parseFloat(clean);
+        return Number.isNaN(number) ? clean.toLowerCase() : number;
+      };
+
+      document.querySelectorAll('table[data-sortable]').forEach((table) => {
+        const headers = table.querySelectorAll('thead th');
+        headers.forEach((th, index) => {
+          if (/Action|Actions|QR|Open/i.test(th.textContent)) return;
+          const label = th.textContent.trim();
+          th.textContent = '';
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.textContent = label;
+          button.setAttribute('aria-sort', 'none');
+          th.appendChild(button);
+
+          button.addEventListener('click', () => {
+            const current = button.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            table.querySelectorAll('.sort-button').forEach((item) => item.setAttribute('aria-sort', 'none'));
+            button.setAttribute('aria-sort', next);
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            rows.sort((a, b) => {
+              const av = parseValue(a.children[index]?.innerText || '');
+              const bv = parseValue(b.children[index]?.innerText || '');
+              if (typeof av === 'number' && typeof bv === 'number') return next === 'ascending' ? av - bv : bv - av;
+              return next === 'ascending' ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+            });
+            rows.forEach((row) => tbody.appendChild(row));
+          });
+        });
+      });
+
+      document.querySelectorAll('.table-wrap').forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>
+        `;
+        container.insertAdjacentElement('afterend', pager);
+      });
+    })();
+  </script>
+</body>
+</html>

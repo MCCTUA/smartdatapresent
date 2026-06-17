@@ -1,0 +1,1733 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartPole Map - Realtime Device Markers</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #071014;
+      --panel: rgba(10, 24, 31, 0.92);
+      --panel-2: rgba(15, 34, 43, 0.86);
+      --ink: #ecfeff;
+      --muted: #8aa7aa;
+      --line: rgba(148, 163, 184, 0.22);
+      --cyan: #22d3ee;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --blue: #60a5fa;
+      --violet: #a78bfa;
+      --shadow: 0 24px 76px rgba(0, 0, 0, 0.38);
+      --radius: 24px;
+      --max: 1540px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(34, 211, 238, 0.16), transparent 32rem),
+        radial-gradient(circle at 92% 12%, rgba(251, 113, 133, 0.12), transparent 30rem),
+        linear-gradient(145deg, #071014 0%, #0b171e 55%, #10131d 100%);
+      color: var(--ink);
+      font-family: Aptos, "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      width: min(var(--max), calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 56px;
+    }
+
+    .shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .topbar,
+    .panel,
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(14, 30, 38, 0.94), rgba(8, 20, 27, 0.9));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 16px;
+    }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      border-radius: 15px;
+      background: conic-gradient(from 210deg, var(--cyan), var(--green), var(--blue), var(--rose), var(--cyan));
+      box-shadow: 0 0 34px rgba(34, 211, 238, 0.38);
+    }
+
+    .brand-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .brand-meta p {
+      margin: 0;
+    }
+
+    .connection-badge {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      border: 1px solid rgba(74, 222, 128, 0.38);
+      border-radius: 999px;
+      background: rgba(74, 222, 128, 0.1);
+      color: #dcfce7;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .connection-badge.is-connected {
+      animation: liveGlow 1.8s ease-in-out infinite;
+    }
+
+    .critical-error-badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid rgba(254, 202, 202, 0.78);
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.92), rgba(153, 27, 27, 0.96));
+      color: #fff7f7;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 950;
+      white-space: nowrap;
+      text-decoration: none;
+      animation: redBlink 0.95s ease-in-out infinite;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.72);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1;
+      letter-spacing: -0.055em;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .actions,
+    .chip-row,
+    .card-actions,
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .button,
+    .chip,
+    .tab {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #dff7f7;
+      padding: 8px 12px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .profile-menu,
+    .widget-menu {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .profile-popover,
+    .widget-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 30;
+      display: none;
+      width: min(520px, calc(100vw - 28px));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(34, 211, 238, 0.08), transparent 18rem),
+        rgba(7, 16, 20, 0.96);
+      box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48);
+      padding: 14px;
+      text-align: left;
+    }
+
+    .profile-popover {
+      width: min(320px, calc(100vw - 28px));
+    }
+
+    .profile-menu:hover .profile-popover,
+    .widget-menu:hover .widget-popover,
+    .profile-menu:focus-within .profile-popover,
+    .widget-menu:focus-within .widget-popover,
+    .profile-menu.is-open .profile-popover,
+    .widget-menu.is-open .widget-popover {
+      display: grid;
+      gap: 12px;
+    }
+
+    .profile-popover-head,
+    .widget-popover-head {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      padding-bottom: 10px;
+    }
+
+    .profile-popover-head strong,
+    .widget-popover-head strong {
+      color: #f8ffff;
+      font-size: 14px;
+    }
+
+    .profile-popover-head span,
+    .widget-popover-head span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .profile-actions,
+    .card-library {
+      display: grid;
+      gap: 8px;
+    }
+
+    .profile-action,
+    .library-card {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #dff7f7;
+      padding: 9px 10px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .profile-action span,
+    .library-card p {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .button.primary,
+    .tab.active {
+      border-color: rgba(34, 211, 238, 0.62);
+      background: rgba(34, 211, 238, 0.14);
+      color: #f1fdff;
+    }
+
+    .theme-mode-toggle {
+      min-width: 68px;
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.1);
+    }
+
+    .button.rose,
+    .chip.rose {
+      border-color: rgba(251, 113, 133, 0.45);
+      background: rgba(251, 113, 133, 0.12);
+      color: #fecdd3;
+    }
+
+    .button.green,
+    .chip.green {
+      border-color: rgba(74, 222, 128, 0.42);
+      background: rgba(74, 222, 128, 0.12);
+      color: #bbf7d0;
+    }
+
+    .button.warn,
+    .chip.warn {
+      border-color: rgba(251, 191, 36, 0.42);
+      background: rgba(251, 191, 36, 0.12);
+      color: #fde68a;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid rgba(74, 222, 128, 0.42);
+      border-radius: 999px;
+      background: rgba(74, 222, 128, 0.1);
+      color: #dcfce7;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 950;
+      animation: liveGlow 1.8s ease-in-out infinite;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.65);
+    }
+
+    .dot.bad {
+      background: var(--rose);
+      box-shadow: 0 0 18px rgba(251, 113, 133, 0.72);
+      animation: redBlink 0.8s ease-in-out infinite;
+    }
+
+    .filter-panel {
+      padding: 16px;
+    }
+
+    .filter-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: end;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .field select,
+    .field input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.055);
+      color: #f1fdff;
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 14px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .map-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 16px;
+      align-items: stretch;
+    }
+    .map-layout > .card,
+    .map-layout > .side-rail {
+      height: 100%;
+      min-width: 0;
+    }
+
+
+    .map-card {
+      min-height: 720px;
+      overflow: hidden;
+    }
+
+    .map-header,
+    .side-header {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px 16px 12px;
+    }
+
+    .map-stage {
+      position: relative;
+      min-height: 610px;
+      margin: 0 16px 16px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 22px;
+      background:
+        linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 30% 26%, rgba(34, 211, 238, 0.14), transparent 16rem),
+        radial-gradient(circle at 70% 68%, rgba(74, 222, 128, 0.12), transparent 18rem),
+        #09202a;
+      background-size: 42px 42px, 42px 42px, auto, auto, auto;
+    }
+
+    .map-stage:fullscreen {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .map-stage:fullscreen .map-tooltip {
+      width: min(460px, calc(100% - 36px));
+    }
+
+    .map-road {
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.16);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    }
+
+    .map-road.r1 { left: -8%; top: 26%; width: 118%; height: 34px; transform: rotate(-8deg); }
+    .map-road.r2 { left: 12%; top: -8%; width: 34px; height: 122%; transform: rotate(18deg); }
+    .map-road.r3 { left: 48%; top: 8%; width: 28px; height: 92%; transform: rotate(-14deg); }
+    .map-road.r4 { left: 10%; top: 70%; width: 86%; height: 28px; transform: rotate(5deg); }
+
+    .zone-shape {
+      position: absolute;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      border-radius: 26px;
+      background: rgba(34, 211, 238, 0.045);
+      color: rgba(207, 250, 254, 0.7);
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .zone-shape.z1 { left: 9%; top: 12%; width: 32%; height: 28%; }
+    .zone-shape.z2 { right: 9%; top: 15%; width: 31%; height: 30%; border-color: rgba(251, 191, 36, 0.24); background: rgba(251, 191, 36, 0.05); }
+    .zone-shape.z3 { left: 18%; bottom: 12%; width: 55%; height: 24%; border-color: rgba(74, 222, 128, 0.2); background: rgba(74, 222, 128, 0.045); }
+
+    .marker {
+      --outer: var(--green);
+      --inner: var(--green);
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+    }
+
+    .marker::before,
+    .marker::after,
+    .marker i {
+      position: absolute;
+      border-radius: 999px;
+      content: "";
+    }
+
+    .marker::before {
+      inset: 0;
+      background: var(--outer);
+      opacity: 0.22;
+      animation: markerPulse 1.8s infinite;
+    }
+
+    .marker::after {
+      inset: 5px;
+      background: var(--outer);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.16), 0 0 22px color-mix(in srgb, var(--outer), transparent 45%);
+    }
+
+    .marker i {
+      inset: 11px;
+      z-index: 1;
+      background: var(--inner);
+      border: 2px solid #fff;
+    }
+
+    .marker small {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 6px);
+      z-index: 2;
+      transform: translateX(-50%);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+      background: rgba(7, 16, 20, 0.88);
+      color: #eaffff;
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .marker.on { --outer: var(--green); --inner: var(--green); }
+    .marker.off { --outer: var(--green); --inner: #6b7280; }
+    .marker.fault { --outer: var(--green); --inner: var(--rose); }
+    .marker.fault::before { animation: markerFault 0.85s infinite; }
+    .marker.offline { --outer: var(--rose); --inner: #94a3b8; }
+    .marker.maintenance { --outer: var(--amber); --inner: var(--amber); }
+    .marker.disabled { --outer: var(--green); --inner: var(--violet); }
+
+    .map-tooltip {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      width: min(420px, calc(100% - 36px));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 20px;
+      background: rgba(7, 16, 20, 0.88);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.36);
+      padding: 14px;
+    }
+
+    .device-title {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .device-title strong {
+      font-size: 15px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 9px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 14px;
+    }
+
+    .map-tools {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: grid;
+      gap: 8px;
+      z-index: 5;
+    }
+
+    .osm-attribution {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      z-index: 3;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+      background: rgba(7, 16, 20, 0.86);
+      color: #dff7f7;
+      padding: 5px 9px;
+      font-size: 10px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .map-engine-badge {
+      position: absolute;
+      right: 16px;
+      top: 124px;
+      z-index: 3;
+      border: 1px solid rgba(34, 211, 238, 0.28);
+      border-radius: 14px;
+      background: rgba(7, 16, 20, 0.84);
+      color: #b9f8ff;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .zoom-control {
+      display: grid;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 14px;
+      background: rgba(7, 16, 20, 0.84);
+    }
+
+    .zoom-control button {
+      border: 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      background: transparent;
+      color: #eaffff;
+      padding: 9px 12px;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .zoom-control button:last-child {
+      border-bottom: 0;
+    }
+
+    .fullscreen-control {
+      border: 1px solid rgba(34, 211, 238, 0.24);
+      border-radius: 14px;
+      background: rgba(7, 16, 20, 0.84);
+      color: #b9f8ff;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .legend {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 276px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 18px;
+      background: rgba(7, 16, 20, 0.84);
+      padding: 12px;
+    }
+
+    .legend h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+    }
+
+    .legend-row {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      gap: 9px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 7px;
+    }
+
+    .legend-row strong {
+      display: block;
+      color: #f2ffff;
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .legend-row em {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-style: normal;
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+
+    .legend-dot {
+      --outer: var(--green);
+      --inner: var(--green);
+      position: relative;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--outer), transparent 70%);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--outer), transparent 86%);
+    }
+
+    .legend-dot::before {
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: var(--outer);
+      content: "";
+    }
+
+    .legend-dot::after {
+      position: absolute;
+      inset: 8px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: var(--inner);
+      content: "";
+    }
+
+    .legend-dot.off { --outer: var(--green); --inner: #6b7280; }
+    .legend-dot.fault { --outer: var(--green); --inner: var(--rose); animation: markerFault 0.85s infinite; }
+    .legend-dot.offline { --outer: var(--rose); --inner: #94a3b8; }
+    .legend-dot.maintenance { --outer: var(--amber); --inner: var(--amber); }
+    .legend-dot.disabled { --outer: var(--green); --inner: var(--violet); }
+
+    .side-rail {
+      display: grid;
+      gap: 16px;
+    }
+
+    .alert-card {
+      border: 1px solid rgba(251, 113, 133, 0.24);
+      border-radius: 18px;
+      background: rgba(251, 113, 133, 0.06);
+      padding: 12px;
+    }
+
+    .alert-count {
+      display: inline-flex;
+      border: 1px solid rgba(251, 113, 133, 0.58);
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.28);
+      color: #fff7f7;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 950;
+      animation: redBlink 0.95s infinite;
+    }
+
+    .alert-list,
+    .device-list,
+    .event-feed {
+      display: grid;
+      gap: 10px;
+      padding: 0 14px 14px;
+    }
+
+    .alert-list,
+    .event-feed {
+      max-height: 270px;
+      overflow: auto;
+      padding-right: 10px;
+    }
+
+    .alert-row,
+    .device-row,
+    .event-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 11px 12px;
+    }
+
+    .alert-row strong,
+    .device-row strong,
+    .event-row strong {
+      display: block;
+      color: #f2ffff;
+      font-size: 13px;
+    }
+
+    .alert-row span,
+    .device-row span,
+    .event-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .status-pill {
+      border-radius: 999px;
+      padding: 4px 8px;
+      color: #dcfce7;
+      background: rgba(74, 222, 128, 0.12);
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .status-pill.bad { color: #fecdd3; background: rgba(251, 113, 133, 0.14); }
+    .status-pill.warn { color: #fde68a; background: rgba(251, 191, 36, 0.14); }
+    .status-pill.off { color: #d1d5db; background: rgba(107, 114, 128, 0.18); }
+    .status-pill.violet { color: #ddd6fe; background: rgba(167, 139, 250, 0.15); }
+
+    .device-table-card {
+      padding-bottom: 16px;
+    }
+
+    .device-table-card .side-header {
+      padding-bottom: 14px;
+    }
+
+    .table-scroll {
+      max-height: 480px;
+      margin: 0 16px;
+      overflow: auto;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .map-device-table {
+      width: 100%;
+      min-width: 1120px;
+      border-collapse: collapse;
+    }
+
+    .map-device-table th,
+    .map-device-table td {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 12px;
+    }
+
+    .map-device-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .map-device-table th {
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.035);
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .map-device-table tbody tr:hover {
+      background: rgba(34, 211, 238, 0.05);
+    }
+
+    .map-device-table td strong {
+      display: block;
+      color: #f2ffff;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .map-device-table td span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      margin-top: 3px;
+    }
+
+    .device-link {
+      color: #b9f8ff;
+      font-weight: 950;
+      text-decoration: none;
+    }
+
+    .device-link:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    .coord {
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .table-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .table-actions .button {
+      padding: 5px 8px;
+      font-size: 10px;
+    }
+
+    .device-qr-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 11px;
+    }
+
+    .device-qr-card.compact {
+      margin-top: 10px;
+    }
+
+    .qr-code {
+      width: 86px;
+      height: 86px;
+      border: 7px solid #f8fafc;
+      border-radius: 12px;
+      background:
+        linear-gradient(90deg, #071014 8px, transparent 8px 15px, #071014 15px 24px, transparent 24px 34px, #071014 34px 42px, transparent 42px),
+        linear-gradient(#071014 8px, transparent 8px 15px, #071014 15px 24px, transparent 24px 34px, #071014 34px 42px, transparent 42px),
+        #f8fafc;
+      background-size: 42px 42px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+    }
+
+    .qr-detail {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .qr-detail h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .qr-detail p,
+    .qr-detail span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.42;
+    }
+
+    .qr-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .qr-meta {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 10px;
+      background: rgba(7, 16, 20, 0.28);
+      padding: 7px;
+    }
+
+    .qr-meta span,
+    .qr-meta strong {
+      display: block;
+    }
+
+    .qr-meta strong {
+      color: var(--text);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .contract-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    .contract-card {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 14px;
+    }
+
+    .contract-card h3 {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .contract-card p,
+    .contract-card li {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .contract-card ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    @keyframes markerPulse {
+      from { opacity: 0.56; transform: scale(1); }
+      to { opacity: 0; transform: scale(2.28); }
+    }
+
+    @keyframes markerFault {
+      0%, 100% { opacity: 0.52; transform: scale(1); }
+      50% { opacity: 0.05; transform: scale(2.35); }
+    }
+
+    @keyframes redBlink {
+      0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+      50% { box-shadow: 0 0 28px rgba(239, 68, 68, 0.56); transform: scale(1.035); }
+    }
+
+    @keyframes liveGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(74, 222, 128, 0); }
+      50% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.34); }
+    }
+
+    @media (max-width: 1220px) {
+      .topbar,
+      .map-layout { grid-template-columns: 1fr; }
+      .filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .contract-grid { grid-template-columns: 1fr; }
+      .actions { justify-content: flex-start; }
+    }
+
+    @media (max-width: 720px) {
+      .app { width: min(100% - 18px, var(--max)); padding-top: 10px; }
+      .filter-grid,
+      .stats-grid,
+      .metric-grid { grid-template-columns: 1fr; }
+      .map-card { min-height: auto; }
+      .map-stage { min-height: 620px; margin: 0 10px 10px; }
+      .legend { width: calc(100% - 32px); }
+      .map-tooltip { width: calc(100% - 36px); }
+    }
+      .table-scroll th { position: sticky; top: 0; z-index: 1; }
+
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body>
+  <main class="app">
+    <div class="shell">
+      <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1>🗺 SmartPole Map <span class="connection-badge is-connected"><span class="status-dot"></span>Live connected</span></h1>
+            <div class="brand-meta">
+              <p class="subtitle">/map/ · Leaflet + OpenStreetMap · realtime device markers</p>
+            </div>
+          </div>
+        </div>
+        <div class="actions top-actions">
+          <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
+          <span class="chip">▣ Portfolio UI · Platform/Dealer</span>
+          <a class="critical-error-badge" href="/faults/?source=map">⚠ 37 active issues · 12 P1</a>
+          <div class="profile-menu" data-profile-menu>
+            <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+            <div class="profile-popover" aria-label="Profile controls">
+              <div class="profile-popover-head">
+                <strong>◉ Manager Profile</strong>
+                <span>goodten</span>
+              </div>
+              <div class="profile-actions">
+                <a class="profile-action" href="/profile/">◉ Profile <span>name, email, language</span></a>
+                <a class="profile-action" href="/password_change/">◆ Password <span>change password</span></a>
+                <a class="profile-action" href="/settings/">⚙ Preferences <span>timezone, layout</span></a>
+                <a class="profile-action" href="/logout/">↪ Sign out <span>end session</span></a>
+              </div>
+            </div>
+          </div>
+          <div class="widget-menu" data-widget-menu>
+            <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+            <div class="widget-popover" aria-label="Widget visibility controls">
+              <div class="widget-popover-head">
+                <strong>▦ Map widget visibility</strong>
+                <span>Show or hide map workspace panels.</span>
+              </div>
+              <div class="card-library">
+                <div class="library-card"><label><input type="checkbox" checked> ◉ Live Map Canvas</label><p>Leaflet/OpenStreetMap marker workspace.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ⚠ Realtime Error Rail</label><p>Active system-detected issue rail.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ▣ Marker Popup</label><p>Selected marker context shown inside the map canvas.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ↯ Live Event Feed</label><p>Realtime audit/observability stream.</p></div>
+                <div class="library-card"><label><input type="checkbox" checked> ▤ Devices on Map</label><p>Visible marker table aligned to filters.</p></div>
+              </div>
+            </div>
+          </div>
+          <span class="button primary">✓ Save layout</span>
+        </div>
+      </header>
+
+      <section class="panel filter-panel" aria-label="Map filters">
+        <div class="filter-head">
+          <div>
+            <h2>⌕ Map Filters</h2>
+            <p class="subtitle">Focus by account scope, zone, marker state, connection, device_id, and active issue condition. Maintenance is filterable through marker state, not the error rail.</p>
+          </div>
+          <div class="chip-row">
+            <span class="button primary">✓ Apply</span>
+            <span class="button">× Reset</span>
+            <span class="button">⛶ Fullscreen</span>
+            <span class="button">↻ Fit markers</span>
+          </div>
+        </div>
+        <div class="filter-grid">
+          
+          <div class="field"><label>UI mode</label><select><option>Portfolio UI · Platform/Dealer</option><option>Customer UI · Site operation</option></select></div>
+          <div class="field"><label>Scope</label><select><option>All visible accounts</option><option>Dealer A subtree</option><option>Customer Factory AA</option></select></div>
+          <div class="field"><label>Site</label><select><option>All sites</option><option>Main campus</option><option>Factory AA Site 1</option></select></div>
+          <div class="field"><label>Search / device_id</label><input value="SP-088" aria-label="Search device id"></div>
+          <div class="field"><label>Zone</label><select><option>All zones</option><option>Road B</option><option>Warehouse</option><option>Parking</option></select></div>
+          <div class="field"><label>Device Set</label><select><option>All device sets</option><option>Street light V2</option><option>Gateway group</option></select></div>
+          <div class="field"><label>Connection</label><select><option>All</option><option>Online</option><option>Offline</option><option>Unreachable</option></select></div>
+          <div class="field"><label>Marker</label><select><option>All marker states</option><option>online-normal-on</option><option>online-normal-off</option><option>online-fault</option><option>offline-unreachable</option><option>maintenance</option></select></div>
+          <div class="field"><label>Active issue</label><select><option>Any</option><option>Active issue only</option><option>Promoted lamp-state fault</option><option>Offline over 15m</option><option>Voltage sag</option></select></div>
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Map status summary">
+        <div class="stat"><span>Total devices</span><strong>1,240</strong></div>
+        <div class="stat"><span>Mapped</span><strong class="cyan">1,182</strong></div>
+        <div class="stat"><span>Unmapped</span><strong class="amber">58</strong></div>
+        <div class="stat"><span>Online</span><strong class="green">1,184</strong></div>
+        <div class="stat"><span>Lamp ON</span><strong class="blue">816</strong></div>
+        <div class="stat"><span>Active errors</span><strong class="rose">37</strong></div>
+      </section>
+
+      <section class="map-layout" aria-label="Realtime map workspace">
+        <article class="card map-card">
+          <div class="map-header">
+            <div>
+              <h2>◉ Live Map Canvas</h2>
+              <p class="subtitle">Leaflet canvas on OpenStreetMap tiles; existing ops/realtime events update marker state, device_id popup, and active errors.</p>
+            </div>
+            <div class="tabs">
+              <span class="tab active">Map</span>
+              <span class="tab">Satellite</span>
+              <span class="tab">Floor plan</span>
+              <span class="tab">Heat layer</span>
+            </div>
+          </div>
+
+          <div class="map-stage" aria-label="Leaflet OpenStreetMap canvas">
+            <div class="map-engine-badge">Leaflet 1.9.4 · OpenStreetMap tiles</div>
+            <div class="zone-shape z1">Zone: Road B</div>
+            <div class="zone-shape z2">Zone: Warehouse</div>
+            <div class="zone-shape z3">Zone: Parking</div>
+            <div class="map-road r1"></div>
+            <div class="map-road r2"></div>
+            <div class="map-road r3"></div>
+            <div class="map-road r4"></div>
+
+            <div class="legend">
+              <h4>Marker Legend</h4>
+              <div class="legend-row"><span class="legend-dot"></span><span><strong>Online + ON</strong><em>Green pulse, green lamp core</em></span></div>
+              <div class="legend-row"><span class="legend-dot off"></span><span><strong>Online + OFF</strong><em>Green pulse, gray lamp core</em></span></div>
+              <div class="legend-row"><span class="legend-dot fault"></span><span><strong>Online + Fault</strong><em>Green connection, red blinking error core</em></span></div>
+              <div class="legend-row"><span class="legend-dot offline"></span><span><strong>Offline / unreachable</strong><em>Red pulse, offline/unreachable state core</em></span></div>
+              <div class="legend-row"><span class="legend-dot maintenance"></span><span><strong>Maintenance</strong><em>Amber marker, planned work state</em></span></div>
+              <div class="legend-row"><span class="legend-dot disabled"></span><span><strong>Disabled</strong><em>Green scope, violet admin-disabled core</em></span></div>
+            </div>
+
+            <div class="map-tools">
+              <div class="zoom-control" aria-label="Map controls">
+                <button>+</button>
+                <button>-</button>
+                <button>⌖</button>
+              </div>
+              <button class="fullscreen-control" type="button" data-fullscreen-map>⛶</button>
+            </div>
+
+            <button class="marker on" style="left:22%;top:36%" data-device="SP-041"><i></i><small>SP-041</small></button>
+            <button class="marker off" style="left:34%;top:28%" data-device="SP-052"><i></i><small>SP-052</small></button>
+            <button class="marker fault" style="left:48%;top:41%" data-device="SP-088"><i></i><small>SP-088</small></button>
+            <button class="marker offline" style="left:63%;top:34%" data-device="SP-103"><i></i><small>SP-103</small></button>
+            <button class="marker maintenance" style="left:72%;top:61%" data-device="SP-117"><i></i><small>SP-117</small></button>
+            <button class="marker disabled" style="left:39%;top:70%" data-device="SP-131"><i></i><small>SP-131</small></button>
+            <button class="marker fault" style="left:78%;top:78%" data-device="SP-144"><i></i><small>SP-144</small></button>
+            <button class="marker on" style="left:18%;top:78%" data-device="SP-151"><i></i><small>SP-151</small></button>
+
+            
+            <div class="map-tooltip" aria-label="Selected device popup">
+              <div class="device-title">
+                <strong>⚠ SP-088 · Promoted lamp-state fault</strong>
+                <span class="status-pill bad">online-fault</span>
+              </div>
+              <div class="metric-grid">
+                <div class="metric"><span>Device ID</span><strong>SP-088</strong></div>
+                <div class="metric"><span>Zone</span><strong>Road B</strong></div>
+                <div class="metric"><span>Last seen</span><strong>8s ago</strong></div>
+                <div class="metric"><span>Voltage</span><strong>220V</strong></div>
+                <div class="metric"><span>Current</span><strong class="rose">0.00A</strong></div>
+                <div class="metric"><span>Power</span><strong class="rose">0W</strong></div>
+                <div class="metric"><span>Ack / Owner</span><strong>Operator A / Technician A</strong></div>
+              </div>
+              <div class="device-qr-card compact">
+                <div class="qr-code" aria-label="QR code for SP-088"></div>
+                <div class="qr-detail">
+                  <h3>QR · SP-088</h3>
+                  <p>Clicking a marker opens QR + device details. If the side panel has no space, keep this compact popup.</p>
+                  <div class="qr-meta-grid">
+                    <div class="qr-meta"><span>Serial</span><strong>SL-088</strong></div>
+                    <div class="qr-meta"><span>Account</span><strong>Factory AA</strong></div>
+                  </div>
+                </div>
+              </div>
+              <div class="chip-row" style="justify-content:flex-start;margin-top:12px">
+                <span class="button rose">Open maintenance</span>
+                <span class="button">Device history</span>
+                <span class="button">⇩ QR</span>
+                <span class="button">⌕ Filter this zone</span>
+                <a class="button warn" href="/faults/?device_id=SP-088">Command center</a>
+              </div>
+            </div>
+            <div class="osm-attribution">Leaflet | © OpenStreetMap contributors</div>
+          </div>
+        </article>
+
+        <aside class="side-rail">
+          
+          <section class="card">
+            <div class="side-header">
+              <div>
+                <h2>⚠ Realtime Error Rail</h2>
+                <p class="subtitle">Active system-detected issues only. Click item to center marker and update marker popup context.</p>
+              </div>
+              <span class="alert-count">37</span>
+            </div>
+            <div class="alert-list">
+              <div class="alert-row"><div><strong>SP-088 · Promoted lamp-state fault</strong><span>Road B · command ON unconfirmed after debounce · open 18m</span></div><span class="status-pill bad">P1</span></div>
+              <div class="alert-row"><div><strong>Warehouse · Multiple devices offline too long</strong><span>9 devices affected · grouped from offline_duration FaultOccurrence rows · 32m</span></div><span class="status-pill bad">P1</span></div>
+              <div class="alert-row"><div><strong>SP-177 · Over voltage</strong><span>Road C · max 252V · 34m ago</span></div><span class="status-pill warn">P2</span></div>
+              <div class="alert-row"><div><strong>SP-205 · Schedule mismatch</strong><span>Front Gate · ON outside schedule · 48m</span></div><span class="status-pill warn">P2</span></div>
+              <div class="alert-row"><div><strong>SP-221 · Poor PF</strong><span>Depot F · PF 0.71 · load quality</span></div><span class="status-pill warn">P3</span></div>
+              <div class="alert-row"><div><strong>SP-144 · Voltage sag</strong><span>Parking · min 188V · 2m ago</span></div><span class="status-pill warn">P2</span></div>
+              <div class="alert-row"><div><strong>SP-052 · Command timeout</strong><span>Road B · ON command not acknowledged · 4m ago</span></div><span class="status-pill warn">P2</span></div>
+            </div>
+          </section>
+
+          
+          <section class="card">
+            <div class="side-header">
+              <div>
+                <h2>↯ Live Event Feed</h2>
+                <p class="subtitle">Realtime event log only. Events may update marker/context/rail, but this panel is not the action queue.</p>
+              </div>
+            </div>
+            <div class="event-feed">
+              <div class="event-row"><div><strong>08:42:18 · marker updated</strong><span>SP-088 online-normal-on -> online-fault</span>
+              <div class="event-row"><div><strong>08:39:44 · alert acknowledged</strong><span>SP-144 voltage sag acknowledged by Operator B</span></div><span class="status-pill">audit</span></div>
+              <div class="event-row"><div><strong>08:38:22 · marker drag staged</strong><span>SP-205 moved 11m by Manager B; not saved yet</span></div><span class="status-pill warn">stage</span></div>
+              <div class="event-row"><div><strong>08:37:50 · telemetry</strong><span>SP-177 voltage=252V current=0.88A power=198W</span></div><span class="status-pill">data</span></div>
+              <div class="event-row"><div><strong>08:36:04 · repair completed</strong><span>SP-041 driver replacement verified normal</span></div><span class="status-pill">wo</span></div>
+</div><span class="status-pill bad">live</span></div>
+              <div class="event-row"><div><strong>08:42:11 · telemetry</strong><span>SP-088 current_a=0, power_w=0</span></div><span class="status-pill">data</span></div>
+              <div class="event-row"><div><strong>08:41:58 · command ACK</strong><span>ON command acknowledged but load is missing</span></div><span class="status-pill warn">cmd</span></div>
+              <div class="event-row"><div><strong>08:40:02 · work order created</strong><span>SP-117 preventive inspection created by Manager B</span></div><span class="status-pill">wo</span></div>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="card device-table-card" aria-label="Devices currently visible on map">
+        <div class="side-header">
+          <div>
+            <h2>▤ Devices on Map</h2>
+            <p class="subtitle">Table list for markers currently rendered in the Leaflet/OpenStreetMap canvas. Operational state can be normal, active issue, maintenance, disabled, or offline; only active issues count in the realtime error rail.</p>
+          </div>
+          <div class="chip-row">
+            <span class="chip">8 markers</span>
+            <span class="chip rose">2 active faults</span>
+            <span class="chip amber">1 offline</span>
+            <span class="button">↓ CSV</span>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="map-device-table" data-sortable>
+            <thead>
+              <tr>
+                <th>Device ID</th>
+                <th>Marker state</th>
+                <th>Zone / Tag</th>
+                <th>Location</th>
+                <th>Telemetry</th>
+                <th>Operational state</th>
+                <th>Last seen</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a class="device-link" href="#">SP-041</a><span>Street light node</span></td>
+                <td><span class="status-pill">online-normal-on</span><span>Lamp ON</span></td>
+                <td><strong>Road B</strong><span>North row</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.756900, 100.501100</span></td>
+                <td><strong>221V · 0.82A · 180W</strong><span>PF 0.94 · 18.2 kWh today</span></td>
+                <td><span class="status-pill">Normal</span><span>No active issue</span></td>
+                <td><strong>5s ago</strong><span>live telemetry</span></td>
+                <td><div class="table-actions"><span class="button">↗ Open</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              </tr>
+              <tr>
+                <td><a class="device-link" href="#">SP-052</a><span>Street light node</span></td>
+                <td><span class="status-pill off">online-normal-off</span><span>Lamp OFF</span></td>
+                <td><strong>Road B</strong><span>North row</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.756600, 100.501600</span></td>
+                <td><strong>220V · 0.00A · 0W</strong><span>PF - · 9.6 kWh today</span></td>
+                <td><span class="status-pill off">Lamp off</span><span>Expected off state</span></td>
+                <td><strong>12s ago</strong><span>live telemetry</span></td>
+                <td><div class="table-actions"><span class="button">↗ Open</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              </tr>
+              <tr>
+                <td><a class="device-link" href="#">SP-088</a><span>Street light node</span></td>
+                <td><span class="status-pill bad">online-fault</span><span>Command ON mismatch</span></td>
+                <td><strong>Road B</strong><span>Critical segment</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.756300, 100.501800</span></td>
+                <td><strong>220V · 0.00A · 0W</strong><span>PF - · 0.0 kWh current cycle</span></td>
+                <td><span class="status-pill bad">Promoted lamp-state fault</span><span>P1 · ack Operator A · owner Technician A</span></td>
+                <td><strong>8s ago</strong><span>live telemetry</span></td>
+                <td><div class="table-actions"><span class="button rose">Open maintenance</span><span class="button">▦ QR</span><span class="button">⌖ Center</span><a class="button" href="/faults/?device_id=SP-088">Command center</a></div></td>
+              </tr>
+              <tr>
+                <td><a class="device-link" href="#">SP-103</a><span>Street light node</span></td>
+                <td><span class="status-pill bad">offline-unreachable</span><span>No telemetry</span></td>
+                <td><strong>Warehouse</strong><span>Multiple devices offline too long</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.757100, 100.502700</span></td>
+                <td><strong>Last packet 32m ago</strong><span>Previous: 219V · 0.76A · 166W</span></td>
+                <td><span class="status-pill bad">Offline over threshold</span><span>P1 · 9 nearby devices affected</span></td>
+                <td><strong>32m ago</strong><span>offline/unreachable state</span></td>
+                <td><div class="table-actions"><span class="button rose">⚠ Ticket</span><span class="button">▦ QR</span><span class="button">⌕ Group</span></div></td>
+              </tr>
+              <tr>
+                <td><a class="device-link" href="#">SP-117</a><span>Street light node</span></td>
+                <td><span class="status-pill warn">maintenance</span><span>Technician assigned</span></td>
+                <td><strong>Parking</strong><span>MA lane</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.755800, 100.503000</span></td>
+                <td><strong>219V · 0.45A · 98W</strong><span>PF 0.91 · dimmed 55%</span></td>
+                <td><span class="status-pill warn">Maintenance window</span><span>Planned work; not counted as realtime error</span></td>
+                <td><strong>2m ago</strong><span>live telemetry</span></td>
+                <td><div class="table-actions"><span class="button warn">▣ Work order</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              </tr>
+              <tr>
+                <td><a class="device-link" href="#">SP-131</a><span>Street light node</span></td>
+                <td><span class="status-pill violet">disabled</span><span>Admin disabled</span></td>
+                <td><strong>Parking</strong><span>Disabled marker</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.755400, 100.501900</span></td>
+                <td><strong>Device disabled</strong><span>No command allowed</span></td>
+                <td><span class="status-pill violet">Disabled</span><span>Excluded from live operation</span></td>
+                <td><strong>1m ago</strong><span>state sync</span></td>
+                <td><div class="table-actions"><span class="button">↗ Open</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              </tr>
+              <tr>
+                <td><a class="device-link" href="#">SP-144</a><span>Street light node</span></td>
+                <td><span class="status-pill bad">online-fault</span><span>Electrical anomaly</span></td>
+                <td><strong>Parking</strong><span>Critical segment</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.755100, 100.503700</span></td>
+                <td><strong>188V · 1.10A · 206W</strong><span>PF 0.82 · sag detected</span></td>
+                <td><span class="status-pill warn">Voltage sag</span><span>P2 · below configured range</span></td>
+                <td><strong>2m ago</strong><span>live telemetry</span></td>
+                <td><div class="table-actions"><span class="button warn">⚠ Inspect</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              </tr>
+              <tr>
+                <td><a class="device-link" href="#">SP-151</a><span>Street light node</span></td>
+                <td><span class="status-pill">online-normal-on</span><span>Lamp ON</span></td>
+                <td><strong>Parking</strong><span>South row</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.754800, 100.500900</span></td>
+                <td><strong>222V · 0.78A · 172W</strong><span>PF 0.95 · 16.8 kWh today</span></td>
+                <td><span class="status-pill">Normal</span><span>No active issue</span></td>
+                <td><strong>6s ago</strong><span>live telemetry</span></td>
+                <td><div class="table-actions"><span class="button">↗ Open</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              </tr>
+            
+              <tr>
+                <td><a class="device-link" href="#">SP-177</a><span>Street light node</span></td>
+                <td><span class="status-pill warn">online-warning</span><span>Over voltage</span></td>
+                <td><strong>Road C</strong><span>Feeder 3</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.758000, 100.504100</span></td>
+                <td><strong>252V · 0.88A · 198W</strong><span>PF 0.88 · 21.4 kWh today</span></td>
+                <td><span class="status-pill warn">Over voltage</span><span>P2 · feeder review</span></td>
+                <td><strong>16s ago</strong><span>live telemetry</span></td>
+                <td><div class="table-actions"><span class="button warn">Inspect</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              </tr>
+              <tr>
+                <td><a class="device-link" href="#">SP-205</a><span>Street light node</span></td>
+                <td><span class="status-pill warn">schedule-warning</span><span>Runtime mismatch</span></td>
+                <td><strong>Front Gate</strong><span>Main entry</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.754200, 100.499700</span></td>
+                <td><strong>221V · 0.44A · 96W</strong><span>PF 0.93 · outside schedule</span></td>
+                <td><span class="status-pill warn">Schedule mismatch</span><span>P2 · check override</span></td>
+                <td><strong>21s ago</strong><span>live telemetry</span></td>
+                <td><div class="table-actions"><span class="button warn">Inspect</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              </tr>
+              <tr>
+                <td><a class="device-link" href="#">SP-221</a><span>Street light node</span></td>
+                <td><span class="status-pill warn">online-anomaly</span><span>Poor PF</span></td>
+                <td><strong>Loading</strong><span>Dock 2</span></td>
+                <td><strong>Bangkok site</strong><span class="coord">13.759300, 100.506200</span></td>
+                <td><strong>219V · 1.42A · 304W</strong><span>PF 0.71 · 28.7 kWh today</span></td>
+                <td><span class="status-pill warn">Power factor low</span><span>P3 · watchlist</span></td>
+                <td><strong>42s ago</strong><span>live telemetry</span></td>
+                <td><div class="table-actions"><span class="button">Watch</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+              </tr>
+</tbody>
+          </table>
+        </div>
+      </section>
+
+    
+
+      
+    
+
+
+      
+    
+
+    </div>
+  
+    
+
+  
+    
+
+  </main>
+
+  <script>
+    const markers = document.querySelectorAll('.marker');
+    const mapStage = document.querySelector('.map-stage');
+    const fullscreenButton = document.querySelector('[data-fullscreen-map]');
+    const tooltipTitle = document.querySelector('.map-tooltip .device-title strong');
+    const tooltipStatus = document.querySelector('.map-tooltip .device-title .status-pill');
+
+    markers.forEach((marker) => {
+      marker.addEventListener('click', () => {
+        const deviceId = marker.dataset.device;
+        const state = marker.classList.contains('fault')
+          ? 'online-fault'
+          : marker.classList.contains('offline')
+            ? 'offline-unreachable'
+            : marker.classList.contains('maintenance')
+              ? 'maintenance'
+              : marker.classList.contains('disabled')
+                ? 'online-disabled'
+                : marker.classList.contains('off')
+                  ? 'online-normal-off'
+                  : 'online-normal-on';
+
+        tooltipTitle.textContent = `${state === 'online-fault' ? '⚠' : '◉'} ${deviceId} · ${state}`;
+        tooltipStatus.textContent = state;
+        tooltipStatus.className = `status-pill ${state.includes('fault') || state.includes('offline') ? 'bad' : state.includes('maintenance') ? 'warn' : state.includes('disabled') ? 'violet' : ''}`;
+      });
+    });
+
+    fullscreenButton?.addEventListener('click', async () => {
+      if (!document.fullscreenElement) {
+        await mapStage?.requestFullscreen?.();
+        fullscreenButton.textContent = '×';
+      } else {
+        await document.exitFullscreen?.();
+        fullscreenButton.textContent = '⛶';
+      }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+      fullscreenButton.textContent = document.fullscreenElement ? '×' : '⛶';
+    });
+  </script>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartPole Remote Control Workspace</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: rgba(15, 23, 42, 0.86);
+      --panel-soft: rgba(15, 23, 42, 0.62);
+      --panel-raised: rgba(30, 41, 59, 0.78);
+      --line: rgba(148, 163, 184, 0.18);
+      --line-strong: rgba(148, 163, 184, 0.34);
+      --text: #e5edf7;
+      --muted: #93a4b8;
+      --faint: #64748b;
+      --cyan: #22d3ee;
+      --blue: #60a5fa;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --violet: #a78bfa;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      --radius: 24px;
+      --container: min(100% - 32px, 1680px);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      min-height: 100%;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(34, 211, 238, 0.16), transparent 28%),
+        radial-gradient(circle at 84% 12%, rgba(251, 113, 133, 0.13), transparent 24%),
+        linear-gradient(145deg, #07111f 0%, #0f172a 56%, #111827 100%);
+    }
+
+    body[data-theme="light"] {
+      color-scheme: light;
+      --bg: #eef5fb;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-soft: rgba(255, 255, 255, 0.72);
+      --panel-raised: rgba(248, 250, 252, 0.96);
+      --line: rgba(51, 65, 85, 0.14);
+      --line-strong: rgba(51, 65, 85, 0.24);
+      --text: #0f172a;
+      --muted: #475569;
+      --faint: #64748b;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(34, 211, 238, 0.2), transparent 30%),
+        radial-gradient(circle at 84% 12%, rgba(251, 113, 133, 0.14), transparent 26%),
+        linear-gradient(145deg, #eef5fb 0%, #f8fafc 68%, #e0f2fe 100%);
+    }
+
+    a { color: inherit; }
+    button, input, select, textarea { font: inherit; }
+    .page { width: var(--container); margin: 0 auto; padding: 20px 0 56px; }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: rgba(15, 23, 42, 0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+    }
+
+    body[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.82); }
+    .brand h1 { margin: 0; font-size: clamp(24px, 4vw, 42px); letter-spacing: -0.05em; line-height: 1; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .header-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+
+    .button, .chip, .status-pill, .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .button.primary { border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.14); }
+    .button.green, .chip.green, .status-pill.good { border-color: rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: #bbf7d0; }
+    .button.warn, .chip.amber, .status-pill.warn { border-color: rgba(251, 191, 36, 0.46); background: rgba(251, 191, 36, 0.13); color: #fde68a; }
+    .button.rose, .chip.rose, .status-pill.bad { border-color: rgba(251, 113, 133, 0.48); background: rgba(251, 113, 133, 0.14); color: #fecdd3; }
+    .chip.blue, .status-pill.info { border-color: rgba(96, 165, 250, 0.42); background: rgba(96, 165, 250, 0.13); color: #bfdbfe; }
+    .button.locked { cursor: not-allowed; color: var(--faint); background: rgba(15, 23, 42, 0.38); border-color: rgba(148, 163, 184, 0.2); }
+
+    body[data-theme="light"] .button.green,
+    body[data-theme="light"] .chip.green,
+    body[data-theme="light"] .status-pill.good { color: #166534; }
+    body[data-theme="light"] .button.warn,
+    body[data-theme="light"] .chip.amber,
+    body[data-theme="light"] .status-pill.warn { color: #92400e; }
+    body[data-theme="light"] .button.rose,
+    body[data-theme="light"] .chip.rose,
+    body[data-theme="light"] .status-pill.bad { color: #9f1239; }
+    body[data-theme="light"] .chip.blue,
+    body[data-theme="light"] .status-pill.info { color: #1d4ed8; }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.16); animation: pulseGreen 1.6s infinite; }
+    .status-dot.bad { background: var(--rose); box-shadow: 0 0 0 6px rgba(251, 113, 133, 0.14); animation: pulseRed 1s infinite; }
+    @keyframes pulseGreen { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.78); opacity: 0.62; } }
+    @keyframes pulseRed { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: 0.58; } }
+
+    .popover-wrap { position: relative; }
+    .popover {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 10px);
+      width: min(340px, calc(100vw - 40px));
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-raised);
+      box-shadow: var(--shadow);
+      z-index: 30;
+    }
+    .popover-wrap.open .popover { display: block; }
+    .popover h3 { margin: 0 0 8px; font-size: 14px; }
+    .popover p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .popover-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+    .popover-row:first-of-type { border-top: 0; }
+
+    .hero { margin-top: 18px; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr); gap: 16px; }
+    .panel, .card, .filter-panel, .drawer-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-inner, .card-inner { padding: 16px; }
+    .section-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+    .section-title h2, .card h3 { margin: 0; letter-spacing: -0.03em; }
+    .section-title h2 { font-size: 18px; }
+    .section-title p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .safety-note {
+      margin-top: 16px;
+      border: 1px solid rgba(251, 191, 36, 0.38);
+      border-radius: 22px;
+      background: rgba(251, 191, 36, 0.1);
+      padding: 14px 16px;
+      color: #fde68a;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+    body[data-theme="light"] .safety-note { color: #92400e; }
+    .safety-note strong { display: block; font-size: 14px; }
+    .safety-note span { color: inherit; opacity: 0.82; font-size: 12px; }
+
+    .filter-panel { margin-top: 16px; padding: 14px; }
+    .filter-grid { display: grid; grid-template-columns: 1.3fr 1.15fr repeat(5, minmax(130px, 1fr)) auto; gap: 10px; align-items: end; }
+    .field { min-width: 0; }
+    .field label { display: block; margin: 0 0 5px; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.58);
+      color: var(--text);
+      padding: 9px 11px;
+      outline: none;
+    }
+    body[data-theme="light"] .field input,
+    body[data-theme="light"] .field select,
+    body[data-theme="light"] .field textarea { background: rgba(255, 255, 255, 0.75); }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+    .stat { border: 1px solid var(--line); border-radius: 20px; background: var(--panel-soft); padding: 13px; min-height: 92px; }
+    .stat span { color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat strong { display: block; margin-top: 9px; font-size: 27px; letter-spacing: -0.05em; }
+    .stat small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    .grid-12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; margin-top: 16px; align-items: stretch; }
+
+    .grid-12 > .panel,
+    .grid-12 > .card,
+    .grid-12 > .side-rail {
+      height: 100%;
+      min-width: 0;
+    }
+
+    .grid-12 > .panel > .panel-inner,
+    .grid-12 > .card > .card-inner,
+    .grid-12 > .side-rail > .panel > .panel-inner {
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .side-rail {
+      display: grid;
+      gap: 16px;
+      align-content: stretch;
+    }
+
+    .side-rail > .panel {
+      height: 100%;
+      min-width: 0;
+    }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-9 { grid-column: span 9; }
+    .span-12 { grid-column: 1 / -1; }
+
+    .command-form { display: grid; gap: 12px; }
+    .command-target {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 13px;
+    }
+    .command-target h3 { margin: 0; font-size: 14px; }
+    .command-target p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .command-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }
+    .command-tile {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 11px;
+      background: rgba(15, 23, 42, 0.42);
+      cursor: pointer;
+    }
+    body[data-theme="light"] .command-tile { background: rgba(248, 250, 252, 0.78); }
+    .command-tile strong { display: block; font-size: 15px; }
+    .command-tile span { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .command-tile.active { border-color: rgba(34, 211, 238, 0.52); box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.18); }
+
+    .verification-flow { display: grid; gap: 10px; }
+    .flow-step { display: grid; grid-template-columns: auto 1fr auto; gap: 11px; align-items: center; border: 1px solid var(--line); border-radius: 16px; padding: 11px; background: rgba(255, 255, 255, 0.04); }
+    .step-index { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: rgba(34, 211, 238, 0.14); color: var(--cyan); font-weight: 950; }
+    .flow-step strong { display: block; font-size: 13px; }
+    .flow-step span { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+
+    .table-wrap { max-height: 430px; overflow: auto; border: 1px solid var(--line); border-radius: 20px; }
+    table { width: 100%; min-width: 1120px; border-collapse: collapse; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; font-size: 13px; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255, 255, 255, 0.035); }
+    tr:last-child td { border-bottom: 0; }
+    td span { color: var(--muted); font-size: 11px; display: block; margin-top: 3px; }
+    .row-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .evidence-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .evidence { border: 1px solid var(--line); border-radius: 14px; padding: 8px; background: rgba(255, 255, 255, 0.04); }
+    .evidence span { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 900; }
+    .evidence strong { display: block; margin-top: 5px; font-size: 13px; }
+
+    .alert-count { display: inline-flex; align-items: center; gap: 7px; color: #fecdd3; font-weight: 950; }
+    .alert-count i { width: 9px; height: 9px; border-radius: 50%; background: var(--rose); box-shadow: 0 0 0 7px rgba(251, 113, 133, 0.14); animation: pulseRed 1s infinite; }
+    .issue-item { border: 1px solid var(--line); border-radius: 16px; padding: 11px; background: rgba(251, 113, 133, 0.07); }
+    .issue-item + .issue-item { margin-top: 8px; }
+    .issue-item strong { display: block; font-size: 13px; }
+    .issue-item span { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
+
+    .qr-code {
+      width: 96px;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      border: 1px solid var(--line-strong);
+      background:
+        linear-gradient(90deg, var(--text) 12px, transparent 12px) 0 0/24px 24px,
+        linear-gradient(var(--text) 12px, transparent 12px) 0 0/24px 24px,
+        rgba(255, 255, 255, 0.82);
+      box-shadow: inset 0 0 0 10px white;
+      flex: 0 0 auto;
+    }
+    .qr-layout { display: flex; gap: 12px; align-items: center; }
+    .qr-meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 12px; }
+    .qr-meta span { color: var(--muted); }
+
+    .drawer-backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.48); backdrop-filter: blur(4px); z-index: 40; }
+    .control-drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(620px, 100vw); padding: 16px; z-index: 41; transform: translateX(0); transition: transform 180ms ease, opacity 180ms ease; }
+    body.drawer-closed .drawer-backdrop { display: none; }
+    body.drawer-closed .control-drawer { transform: translateX(105%); opacity: 0; pointer-events: none; }
+    .drawer-panel { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+    .drawer-head { display: flex; justify-content: space-between; gap: 12px; padding: 16px; border-bottom: 1px solid var(--line); }
+    .drawer-head h2 { margin: 0; font-size: 18px; }
+    .drawer-scroll { overflow: auto; padding: 16px; display: grid; gap: 12px; }
+    .drawer-card { padding: 13px; box-shadow: none; }
+    .drawer-card h3 { margin: 0 0 8px; font-size: 14px; }
+
+    .contract-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .contract-card { border: 1px solid var(--line); border-radius: 18px; padding: 13px; background: rgba(255, 255, 255, 0.04); }
+    .contract-card h3 { margin: 0 0 8px; font-size: 14px; }
+    .contract-card ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .contract-card pre { margin: 0; white-space: pre-wrap; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    @media (max-width: 1240px) {
+      .hero { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .span-3, .span-4, .span-5, .span-6, .span-7, .span-8, .span-9 { grid-column: 1 / -1; }
+      .contract-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      :root { --container: min(100% - 20px, 1680px); }
+      .topbar { grid-template-columns: 1fr; position: static; border-radius: 20px; }
+      .header-actions { justify-content: flex-start; }
+      .filter-grid, .stat-grid, .command-options, .evidence-grid, .contract-grid { grid-template-columns: 1fr; }
+      .safety-note { grid-template-columns: 1fr; }
+      .control-drawer { padding: 8px; width: 100vw; }
+    }
+      .table-wrap th { position: sticky; top: 0; z-index: 1; }
+
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body class="drawer-closed">
+  
+  <main class="page">
+    <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+      <div class="brand">
+        <h1>SmartPole Remote Control <span class="chip green"><span class="status-dot"></span>Live connected</span></h1>
+        <p class="subtitle">/backoffice/control/ · scoped direct command workspace · single device · group command · live verification · command history</p>
+      </div>
+      <div class="header-actions">
+        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
+        <span class="chip blue">Portfolio UI · Platform/Dealer</span>
+        <div class="popover-wrap" data-profile-menu>
+          <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+          <div class="popover">
+            <h3>Profile controls</h3>
+            <div class="popover-row"><p>Password, timezone, notification preferences.</p><span class="chip">Open</span></div>
+            <div class="popover-row"><p>Role must include device control permission.</p><span class="chip blue">Operator</span></div>
+          </div>
+        </div>
+        <div class="popover-wrap" data-widget-menu>
+          <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+          <div class="popover">
+            <h3>Layout widgets</h3>
+            <div class="popover-row"><p>Show command composer.</p><input type="checkbox" checked /></div>
+            <div class="popover-row"><p>Show issue rail.</p><input type="checkbox" checked /></div>
+            <div class="popover-row"><p>Show command history.</p><input type="checkbox" checked /></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="safety-note" aria-label="Remote control safety note">
+      <strong>⚠ Safety note</strong>
+      <span>Command accepted/sent means the server submitted a request to runtime/provider service. It does not prove the lamp changed. Verify with connection, lamp state, brightness evidence, telemetry timestamp, and command history.</span>
+      <a class="button warn" href="/map/">Map & alerts</a>
+    </section>
+
+    <section class="hero">
+      <article class="panel">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div>
+              <h2>Remote Command Composer</h2>
+              <p>Direct command workspace. Keep this separate from `/zones/control/` because this page sends commands and needs stronger safety, audit, and verification behavior.</p>
+            </div>
+            <div class="row-actions"><a class="button" href="/zones/control/">Zone control</a><a class="button" href="/device-list/">Devices</a></div>
+          </div>
+
+          
+          <div class="command-form">
+            <div class="command-target">
+              <h3>Target</h3>
+              <p>Scope: บริษัท BB · device: SP-088 · Road B / Pole line · runtime online · QR available.</p>
+              <div class="command-options" aria-label="Command target type">
+                <div class="command-tile active"><strong>Single</strong><span>one device_id</span></div>
+                <div class="command-tile"><strong>Zone</strong><span>group by zone</span></div>
+                <div class="command-tile"><strong>Tag</strong><span>group by tag</span></div>
+                <div class="command-tile"><strong>Filtered</strong><span>future bulk set</span></div>
+              </div>
+            </div>
+
+            <div class="command-target">
+              <h3>Command</h3>
+              <p>ON/OFF/DIM are submitted server-side. Buttons should show confirmation for group/bulk and dangerous scopes.</p>
+              <div class="command-options" aria-label="Command action">
+                <div class="command-tile"><strong>ON</strong><span>target_level 100</span></div>
+                <div class="command-tile"><strong>OFF</strong><span>target_level 0</span></div>
+                <div class="command-tile active"><strong>DIM 55%</strong><span>level 1-100</span></div>
+                <div class="command-tile"><strong>Refresh</strong><span>read latest state</span></div>
+              </div>
+              <div class="row-actions" style="margin-top:12px"><button class="button primary" type="button" data-open-control-drawer>Send command</button><button class="button">Dry-run preview</button><button class="button warn">Require confirm</button></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-inner">
+          <div class="section-title"><div><h2>Verification Flow</h2><p>The UI must never update current lamp state just because command was sent.</p></div><span class="chip amber">accepted != verified</span></div>
+          <div class="verification-flow">
+            <div class="flow-step"><span class="step-index">1</span><div><strong>Submit command</strong><span>Server validates สิทธิ์ ขอบเขต และความสามารถของอุปกรณ์.</span></div><span class="chip blue">POST</span></div>
+            <div class="flow-step"><span class="step-index">2</span><div><strong>Provider/runtime response</strong><span>DeviceCommand status becomes SENT/FAILED with raw response.</span></div><span class="chip amber">accepted</span></div>
+            <div class="flow-step"><span class="step-index">3</span><div><strong>Live verification</strong><span>Channels/latest snapshot updates connection, lamp state, brightness/current/power. <code>state-not-yet-confirmed</code> stays pending.</span></div><span class="chip amber">verifying</span></div>
+            <div class="flow-step"><span class="step-index">4</span><div><strong>Promote only after debounce</strong><span>Command timeout is immediate command failure. Lamp state unconfirmed becomes issue only if follow-up telemetry still fails after threshold.</span></div><span class="chip rose">issue</span></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="filter-panel" aria-label="Remote control filters">
+      <div class="section-title">
+        <div><h2>⌕ Scoped Filters</h2><p>Filters use the same visual filter state as map/device views, with account scope isolation from AccountScopeService.</p></div>
+        <span class="chip blue">AccountScopeService.resolve()</span>
+      </div>
+      <div class="filter-grid">
+        
+        <div class="field"><label>UI mode</label><select><option>Portfolio UI · Platform/Dealer</option><option>Customer UI · Site operation</option></select></div>
+        <div class="field"><label>Search</label><input value="SP-088" aria-label="Search device serial zone tag customer" /></div>
+        <div class="field"><label>Account scope</label><select><option>All visible accounts</option><option>บริษัท BB</option><option>Customer AA</option></select></div>
+        <div class="field"><label>Site</label><select><option>All sites</option><option>Main campus</option><option>Factory AA Site 1</option></select></div>
+        <div class="field"><label>Zone</label><select><option>All zones</option><option>Road B</option><option>Warehouse</option></select></div>
+        <div class="field"><label>Tag</label><select><option>All tags</option><option>Pole line</option><option>Bay 2</option></select></div>
+        <div class="field"><label>Connection</label><select><option>All</option><option>Online</option><option>Offline</option><option>Unreachable</option></select></div>
+        <div class="field"><label>Marker</label><select><option>All</option><option>online-normal-on</option><option>online-normal-off</option><option>online-fault</option><option>offline-unreachable</option></select></div>
+        <div class="field"><label>Command</label><select><option>Any history</option><option>Failed last command</option><option>Pending verify</option><option>Manual override active</option></select></div>
+        <button class="button primary" type="button">Apply</button>
+      </div>
+    </section>
+
+    <section class="stat-grid" aria-label="Remote control stats">
+      <div class="stat"><span>Filtered</span><strong>126</strong><small>devices in command scope</small></div>
+      <div class="stat"><span>Online</span><strong style="color: var(--green)">119</strong><small>eligible for command</small></div>
+      <div class="stat"><span>Lamp ON</span><strong style="color: var(--cyan)">88</strong><small>from live evidence</small></div>
+      <div class="stat"><span>Fault</span><strong style="color: var(--rose)">3</strong><small>do not hide before command</small></div>
+    </section>
+
+    <section class="grid-12" aria-label="Control table and issue rail">
+      <article class="panel span-8">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div><h2>▤ Scoped Devices</h2><p>Current state columns are evidence only. Command buttons submit forms; they must not mutate UI state until live telemetry confirms.</p></div>
+            <span class="chip blue">build_backoffice_control_device_rows()</span>
+          </div>
+          
+          <div class="table-wrap">
+            <table data-sortable>
+              <thead><tr><th>Device</th><th>Customer</th><th>Zone / Tag</th><th>Live evidence</th><th>Brightness</th><th>Command</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><strong>SP-088</strong><span>Street light V2 · QR available</span></td>
+                  <td>บริษัท BB<span>Dealer scope visible</span></td>
+                  <td>Road B<span>Pole line</span></td>
+                  <td><div class="evidence-grid"><div class="evidence"><span>Conn</span><strong>Online</strong></div><div class="evidence"><span>Lamp</span><strong>ON</strong></div><div class="evidence"><span>A</span><strong style="color:var(--rose)">0.00</strong></div><div class="evidence"><span>W</span><strong>0</strong></div></div></td>
+                  <td>55%<span>runtime · mismatch issue</span></td>
+                  <td><div class="row-actions"><button class="button green" data-open-control-drawer>ON</button><button class="button">OFF</button><button class="button primary">DIM</button><button class="button">▦ QR</button></div></td>
+                </tr>
+                <tr>
+                  <td><strong>SP-103</strong><span>Street light V2</span></td>
+                  <td>บริษัท BB<span>Customer scope</span></td>
+                  <td>Warehouse<span>Bay 2</span></td>
+                  <td><div class="evidence-grid"><div class="evidence"><span>Conn</span><strong>Offline</strong></div><div class="evidence"><span>Lamp</span><strong>Unknown</strong></div><div class="evidence"><span>A</span><strong>-</strong></div><div class="evidence"><span>W</span><strong>-</strong></div></div></td>
+                  <td>Unknown<span>no live telemetry</span></td>
+                  <td><div class="row-actions"><button class="button locked">ON</button><button class="button locked">OFF</button><button class="button">▦ QR</button><a class="button rose" href="/faults/?device_id=SP-103">Issue</a></div></td>
+                </tr>
+                <tr>
+                  <td><strong>SP-117</strong><span>Street light V1</span></td>
+                  <td>Customer AA<span>Visible descendant</span></td>
+                  <td>Parking<span>North</span></td>
+                  <td><div class="evidence-grid"><div class="evidence"><span>Conn</span><strong>Online</strong></div><div class="evidence"><span>Lamp</span><strong>OFF</strong></div><div class="evidence"><span>A</span><strong>0.02</strong></div><div class="evidence"><span>W</span><strong>1</strong></div></div></td>
+                  <td>0%<span>provider snapshot</span></td>
+                  <td><div class="row-actions"><button class="button green">ON</button><button class="button">OFF</button><button class="button locked">DIM unsupported</button><button class="button">▦ QR</button></div></td>
+                </tr>
+              
+                <tr>
+                  <td><strong>SP-177</strong><span>Street light V2 · QR available</span></td>
+                  <td>Factory Delta<span>Dealer North</span></td>
+                  <td>Road C<span>Feeder 3</span></td>
+                  <td><div class="evidence-grid"><div class="evidence"><span>Conn</span><strong>Online</strong></div><div class="evidence"><span>Lamp</span><strong>ON</strong></div><div class="evidence"><span>V</span><strong style="color:var(--amber)">252</strong></div><div class="evidence"><span>W</span><strong>198</strong></div></div></td>
+                  <td>70%<span>runtime snapshot</span></td>
+                  <td><div class="row-actions"><button class="button green">ON</button><button class="button">OFF</button><button class="button primary">DIM</button><button class="button">▦ QR</button></div></td>
+                </tr>
+                <tr>
+                  <td><strong>SP-205</strong><span>Street light V1</span></td>
+                  <td>School Lighting E<span>customer scope</span></td>
+                  <td>Front Gate<span>Main entry</span></td>
+                  <td><div class="evidence-grid"><div class="evidence"><span>Conn</span><strong>Online</strong></div><div class="evidence"><span>Lamp</span><strong>ON</strong></div><div class="evidence"><span>A</span><strong>0.44</strong></div><div class="evidence"><span>Sched</span><strong style="color:var(--amber)">Mismatch</strong></div></div></td>
+                  <td>45%<span>manual override active</span></td>
+                  <td><div class="row-actions"><button class="button green">ON</button><button class="button">OFF</button><button class="button primary">DIM</button><button class="button">▦ QR</button></div></td>
+                </tr>
+</tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel span-4">
+        <div class="panel-inner">
+          <div class="section-title">
+            <div><h2><span class="alert-count"><i></i>Command Issues</span></h2><p>System-detected command timeout/mismatch only. Manual maintenance stays in `/faults/` records.</p></div>
+            <a class="button rose" href="/faults/?source=remote_control">Open faults</a>
+          </div>
+          
+          <div class="issue-item"><strong>SP-088 · lamp state unconfirmed after ON</strong><span>Provider accepted · device_verified=false · state-not-yet-confirmed · promote to P1 only after debounce</span><div class="row-actions" style="margin-top:9px"><button class="button rose" data-open-control-drawer>Open drawer</button><span class="button">▦ QR</span></div></div>
+          <div class="issue-item"><strong>SP-103 · command timeout</strong><span>Last command failed · no ACK · Multiple devices offline too long candidate</span><div class="row-actions" style="margin-top:9px"><a class="button rose" href="/faults/?device_id=SP-103">Command center</a><span class="button">⌖ Map</span></div></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid-12" aria-label="Group command and history">
+      <article class="panel span-5">
+        <div class="panel-inner">
+          <div class="section-title"><div><h2>▣ Zone / Tag Group Command</h2><p>Backoffice group command is direct remote control. It can target zone/tag, but schedules remain in `/zones/control/`.</p></div><span class="chip amber">confirm required</span></div>
+          
+          <div class="command-target">
+            <h3>Target group</h3>
+            <p>Road B · 126 devices · 119 online · 3 active issues. Group command should show affected count and excluded/offline count before submit.</p>
+            <div class="command-options"><div class="command-tile active"><strong>Zone</strong><span>Road B</span></div><div class="command-tile"><strong>Tag</strong><span>Pole line</span></div><div class="command-tile"><strong>DIM 55%</strong><span>level 55</span></div><div class="command-tile"><strong>Confirm</strong><span>operator ack</span></div></div>
+            <div class="logic-note" style="margin-top:12px">Schedule context: Road B uses ON sunset -15m / OFF sunrise +15m from /zones/control/. Manual command is temporary; final state must be verified by command ACK and telemetry.</div>
+            <div class="row-actions" style="margin-top:12px"><button class="button primary" data-open-control-drawer>Send group command</button><a class="button" href="/zones/control/">Edit schedules</a></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel span-7">
+        <div class="panel-inner">
+          <div class="section-title"><div><h2>◷ Recent Command Submissions</h2><p>Audit trail from DeviceCommand. Shows submission state, not final live verification by itself.</p></div><span class="chip blue">last 10</span></div>
+          <div class="table-wrap">
+            <table data-sortable>
+              <thead><tr><th>When</th><th>Device / Group</th><th>Command</th><th>Submitted by</th><th>Status</th><th>Verification</th></tr></thead>
+              <tbody>
+                <tr><td>2026-06-04 19:42</td><td>860549070313080<span>Provider device 02</span></td><td>turn_on {brightness: 100}</td><td>api</td><td><span class="status-pill warn">ACCEPTED</span></td><td><span class="status-pill warn">state-not-yet-confirmed</span><span>open_led_status=1 but brightness/current/voltage/power=0</span></td></tr>
+                <tr><td>2026-06-03 09:20</td><td>SP-088<span>Road B / Pole line</span></td><td>turn_on {brightness: 100}</td><td>operator_a</td><td><span class="status-pill good">SENT</span></td><td><span class="status-pill bad">Active issue · after debounce</span></td></tr>
+                <tr><td>2026-06-03 09:12</td><td>Road B<span>zone command</span></td><td>dim {brightness: 55}</td><td>goodten</td><td><span class="status-pill warn">91/126 sent</span></td><td><span class="status-pill warn">35 pending</span></td></tr>
+                <tr><td>2026-06-03 08:58</td><td>SP-117<span>Parking / North</span></td><td>turn_off {}</td><td>operator_b</td><td><span class="status-pill good">SENT</span></td><td><span class="status-pill good">Verified OFF</span></td></tr>
+              
+                <tr><td>2026-06-03 09:44</td><td>SP-177<span>Road C / Feeder 3</span></td><td>dim {brightness: 70}</td><td>operator_b</td><td><span class="status-pill good">SENT</span></td><td><span class="status-pill warn">Voltage high</span></td></tr>
+                <tr><td>2026-06-03 09:38</td><td>Front Gate<span>tag command</span></td><td>turn_off {}</td><td>manager01</td><td><span class="status-pill warn">32/38 sent</span></td><td><span class="status-pill warn">6 pending</span></td></tr>
+                <tr><td>2026-06-03 09:31</td><td>SP-205<span>Front Gate</span></td><td>turn_on {}</td><td>schedule_engine</td><td><span class="status-pill good">SENT</span></td><td><span class="status-pill warn">Outside schedule</span></td></tr>
+</tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    
+    
+
+
+    
+    
+
+  
+    
+
+  </main>
+
+  <div class="drawer-backdrop" data-close-control-drawer></div>
+  <aside class="control-drawer" aria-label="Selected command detail">
+    
+    
+
+  </aside>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+    const profileToggle = document.querySelector('[data-profile-toggle]');
+    const widgetToggle = document.querySelector('[data-widget-toggle]');
+    const profileMenu = document.querySelector('[data-profile-menu]');
+    const widgetMenu = document.querySelector('[data-widget-menu]');
+    const openDrawerButtons = document.querySelectorAll('[data-open-control-drawer]');
+    const closeDrawerButtons = document.querySelectorAll('[data-close-control-drawer]');
+
+    themeToggle?.addEventListener('click', () => {
+      const isLight = body.dataset.theme === 'light';
+      body.dataset.theme = isLight ? 'dark' : 'light';
+      themeToggle.textContent = isLight ? '☾ Dark' : '☼ Light';
+      themeToggle.setAttribute('aria-pressed', String(isLight));
+    });
+
+    profileToggle?.addEventListener('click', () => {
+      profileMenu?.classList.toggle('open');
+      widgetMenu?.classList.remove('open');
+    });
+
+    widgetToggle?.addEventListener('click', () => {
+      widgetMenu?.classList.toggle('open');
+      profileMenu?.classList.remove('open');
+    });
+
+    openDrawerButtons.forEach((button) => button.addEventListener('click', () => body.classList.remove('drawer-closed')));
+    closeDrawerButtons.forEach((button) => button.addEventListener('click', () => body.classList.add('drawer-closed')));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        body.classList.add('drawer-closed');
+        profileMenu?.classList.remove('open');
+        widgetMenu?.classList.remove('open');
+      }
+    });
+  </script>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
