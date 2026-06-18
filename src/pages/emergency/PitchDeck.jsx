@@ -259,6 +259,11 @@ function ScaledSlide({ children }) {
 
   useEffect(() => {
     const apply = () => {
+      // Don't refit while the user is pinch-zoomed. iOS Safari reports a changed
+      // window.innerWidth during a pinch gesture, which slips past the width guard
+      // below and resizes the slide mid-zoom — the slide visibly jumps and fights
+      // the pinch. Skip refits unless the visual viewport is back at 1:1.
+      if (window.visualViewport && Math.abs(window.visualViewport.scale - 1) > 0.01) return;
       if (window.innerWidth === lastWidthRef.current) return;
       lastWidthRef.current = window.innerWidth;
       setScale(computeScale());
