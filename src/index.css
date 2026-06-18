@@ -65,6 +65,17 @@ a {
   scrollbar-width: none;
 }
 
+/* iOS/iPadOS Safari fix — a position:fixed element with backdrop-filter:blur()
+   forces Safari to re-rasterize the blurred backdrop every scroll/zoom frame,
+   which makes the whole page shimmer/jitter during scroll and pinch-zoom.
+   The deck slide-navigation rail (.scroll-dots) is fixed and sets blur(8px)
+   inline in every deck; this !important rule overrides all of them at once.
+   The rail keeps its semi-opaque dark pill background, so it stays legible. */
+.scroll-dots {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 /* =========================================================================
  * CCTV + AI · Presenter mode + Print stylesheet
  * Used by cool meeting pitch (15-20 นาที) — toggle with 'P' key or 🎤 button
