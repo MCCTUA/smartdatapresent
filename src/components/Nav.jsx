@@ -25,9 +25,13 @@ export default function Nav() {
       <nav
         className="fixed top-0 left-0 right-0 z-50 h-12"
         style={{
-          background: 'rgba(31, 42, 36, 0.92)',
-          backdropFilter: 'saturate(180%) blur(20px)',
-          WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+          // Solid (near-opaque) background — NO backdrop-filter.
+          // A position:fixed element with backdrop-filter:blur() triggers an
+          // iOS/iPadOS Safari compositing bug that makes the whole page
+          // shimmer/jitter during scroll and pinch-zoom. The previous bg was
+          // already 92% opaque, so the blur was barely visible; dropping it
+          // removes the jitter with no meaningful change to appearance.
+          background: 'rgba(31, 42, 36, 0.97)',
           fontFamily: "'Sarabun', system-ui, sans-serif",
         }}
       >
