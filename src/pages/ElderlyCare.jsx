@@ -1894,46 +1894,48 @@ function Toolbar() {
   const [open, setOpen] = useState(false);
   // Pain · Benefit · Demo framing — ชื่อช่วยให้ sales รู้จุดประสงค์แต่ละสไลด์
   const titles = [
-    // องก์ 1 — HOOK
+    // องก์ 1 — HOOK + คุณค่าสำหรับผู้บริหาร (5 สไลด์ front-load)
     '1 · 🚨 Pain · ผู้สูงอายุล้มในบ้านลำพัง',
-    '2 · 🚨 Pain · 5 ปัญหาที่ผู้บริหารนอนไม่หลับ',
-    '3 · 🧭 Bridge · ภาพรวมวิธีแก้ 1 หน้า',
-    // องก์ 2 — CONCEPT
-    '4 · ✨ Concept · ขาย "ระบบ" ไม่ใช่ "อุปกรณ์"',
-    '5 · 🧱 Model · ระบบเป็นชั้น เริ่มน้อยก่อน',
-    '6 · 🔧 How · 3 จุดข้อมูล สู่ศูนย์ใน 1 นาที',
+    '2 · 🎯 ทำไมสำคัญ · 3 ฝ่ายได้อะไร (ผู้บริหาร·คนทำงาน·ประชาชน)',
+    '3 · 🖥️ Demo · เห็นระบบจริงใน 30 วินาที (กดเล่นได้)',
+    '4 · 📞 Trust · ระบบทำงานจนมีผู้รับสายจริง',
+    '5 · 🧭 Bridge · ภาพรวมวิธีแก้ 1 หน้า',
+    // องก์ 2 — เจาะลึกปัญหา + CONCEPT
+    '6 · 🚨 Pain · 5 ปัญหาที่ผู้บริหารนอนไม่หลับ',
+    '7 · ✨ Concept · ขาย "ระบบ" ไม่ใช่ "อุปกรณ์"',
+    '8 · 🧱 Model · ระบบเป็นชั้น เริ่มน้อยก่อน',
+    '9 · 🔧 How · 3 จุดข้อมูล สู่ศูนย์ใน 1 นาที',
     // องก์ 3 — HOW + DEVICES (proof ติด ECG)
-    '7 · 🔄 Flow · 5 ขั้น + ซูมแจ้งไล่ลำดับ 3 ชั้น',
-    '8 · 📡 Infra · ตัวรับกลาง 1 จุด ครอบหมู่บ้าน',
-    '9 · 🛡️ Device · ตัวจับการล้มติดเพดาน (เรดาร์)',
-    '10 · ⚙️ How · ตัวจับการล้มทำงานอย่างไร',
-    '11 · 🎥 Device · การล้ม: กล้อง AI + อุปกรณ์สวมใส่',
-    '12 · ⌚ Device · นาฬิกาวัด ECG',
-    '13 · ❤️ Proof · เห็นคลื่นหัวใจจริงทุกจังหวะ',
-    '14 · 🔬 Proof · วิเคราะห์ 3 ชั้น + ไฟสถานะ + รับรอง',
-    '15 · 🩺 Benefit · แพทย์เห็นแนวโน้มล่วงหน้า',
-    '16 · 🆘 Device · ปุ่มฉุกเฉินอัจฉริยะ (SOS)',
-    '17 · 🚪 Option · ตัวจับประตู-หน้าต่าง',
-    '18 · 🧩 Option · เซนเซอร์เสริมอื่น ๆ',
-    '19 · 🔌 Infra · เน็ตหลุดข้อมูลไม่หาย',
+    '10 · 🔄 Flow · 5 ขั้น + ซูมแจ้งไล่ลำดับ 3 ชั้น',
+    '11 · 📡 Infra · ตัวรับกลาง 1 จุด ครอบหมู่บ้าน',
+    '12 · 🛡️ Device · ตัวจับการล้มติดเพดาน (เรดาร์)',
+    '13 · ⚙️ How · ตัวจับการล้มทำงานอย่างไร',
+    '14 · 🎥 Device · การล้ม: กล้อง AI + อุปกรณ์สวมใส่',
+    '15 · ⌚ Device · นาฬิกาวัด ECG',
+    '16 · ❤️ Proof · เห็นคลื่นหัวใจจริงทุกจังหวะ',
+    '17 · 🔬 Proof · วิเคราะห์ 3 ชั้น + ไฟสถานะ + รับรอง',
+    '18 · 🩺 Benefit · แพทย์เห็นแนวโน้มล่วงหน้า',
+    '19 · 🆘 Device · ปุ่มฉุกเฉินอัจฉริยะ (SOS)',
+    '20 · 🚪 Option · ตัวจับประตู-หน้าต่าง',
+    '21 · 🧩 Option · เซนเซอร์เสริมอื่น ๆ',
+    '22 · 🔌 Infra · เน็ตหลุดข้อมูลไม่หาย',
     // องก์ 4 — SOFTWARE + TRUST
-    '20 · 💻 Section · Features ของ software',
-    '21 · 📊 Demo · Dashboard ทำงานจริง (เทศบาล & อสม.)',
-    '22 · 💬 Channels · Web + LINE Mini App',
-    '23 · 📱 Software · แอป OCR · ถ่ายไม่ต้องจด',
-    '24 · ♻️ Workflow · ยืม-คืนหมุนเวียน',
-    '25 · 🤝 Roles · ช่วยแต่ละบทบาท 6 ฝ่าย',
-    '26 · 📞 Trust · เลือกเวลาผู้รับสายได้',
-    '27 · 🎯 Roles · ใครทำหน้าที่อะไร (RACI)',
-    '28 · 🔒 Trust · ความเป็นส่วนตัว & ความรับผิด',
-    '29 · ❓ Objection · 4 คำถามในใจผู้บริหาร',
+    '23 · 💻 Section · Features ของ software',
+    '24 · 📊 Demo · Dashboard ทำงานจริง (เทศบาล & อสม.)',
+    '25 · 💬 Channels · Web + LINE Mini App',
+    '26 · 📱 Software · แอป OCR · ถ่ายไม่ต้องจด',
+    '27 · ♻️ Workflow · ยืม-คืนหมุนเวียน',
+    '28 · 🤝 Roles · ช่วยแต่ละบทบาท 6 ฝ่าย',
+    '29 · 🎯 Roles · ใครทำหน้าที่อะไร (RACI)',
+    '30 · 🔒 Trust · ความเป็นส่วนตัว & ความรับผิด',
+    '31 · ❓ Objection · 4 คำถามในใจผู้บริหาร',
     // องก์ 5 — CLOSE + APPENDIX
-    '30 · 🛠️ Support · เราอยู่ดูแลต่อเนื่อง',
-    '31 · 🚀 Next · เริ่มอย่างไร 4 ขั้น',
-    '32 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
-    '33 · 📎 ภาคผนวก · Appendix',
-    '34 · 📖 Glossary · ศัพท์ ECG/จังหวะหัวใจ',
-    '35 · 📖 Glossary · ศัพท์ HRV/หลอดเลือด',
+    '32 · 🛠️ Support · เราอยู่ดูแลต่อเนื่อง',
+    '33 · 🚀 Next · เริ่มอย่างไร 4 ขั้น',
+    '34 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
+    '35 · 📎 ภาคผนวก · Appendix',
+    '36 · 📖 Glossary · ศัพท์ ECG/จังหวะหัวใจ',
+    '37 · 📖 Glossary · ศัพท์ HRV/หลอดเลือด',
   ];
   const goTo = (i) => {
     const el = document.getElementById(`slide-${i + 1}`);
@@ -2049,21 +2051,128 @@ function ScrollDots({ count }) {
 // Main export
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// NEW · องก์ 1 — "3 ฝ่ายได้อะไร" (win slide สำหรับผู้บริหารที่เวลาน้อย)
+// Outcome-framed: ผู้บริหารได้ "ผลงาน" — ปล่อยให้เชื่อมโยงเชิงการเมืองเอง
+// (เลี่ยงคำเชิงเลือกตั้ง/ฐานเสียงบนสไลด์ ตามกฎ sensitive-framing)
+// ---------------------------------------------------------------------------
+function SlideWinThreeParties() {
+  const parties = [
+    {
+      icon: '🏛️',
+      who: 'ผู้บริหาร อปท.',
+      head: 'ผลงานเชิงรุกที่จับต้องได้',
+      points: [
+        'ดูแลผู้สูงวัยถึงบ้าน — ลดเหตุเศร้าในพื้นที่ก่อนเกิด',
+        'มีข้อมูล & เรื่องราวจริงไว้สื่อสารกับชุมชน',
+        'ภาพลักษณ์ทันสมัย ใส่ใจคุณภาพชีวิตประชาชน',
+      ],
+    },
+    {
+      icon: '👷',
+      who: 'เจ้าหน้าที่ & อสม.',
+      head: 'เบาแรง ทำงานตรงจุด',
+      points: [
+        'ระบบชี้ว่าใครต้องเยี่ยมก่อน ไม่ต้องเดินตรวจทุกหลังทุกวัน',
+        'ถ่ายรูปแทนการจด — ลดงานเอกสาร',
+        'รับเหตุเฉพาะที่ระบบคัดกรองแล้วว่าจริง',
+      ],
+    },
+    {
+      icon: '👵',
+      who: 'ประชาชน & ครอบครัว',
+      head: 'อุ่นใจ ปลอดภัยแม้อยู่ลำพัง',
+      points: [
+        'ล้ม / ฉุกเฉิน มีคนรู้และช่วยได้ทัน',
+        'ลูกหลานที่อยู่ไกลสบายใจ',
+        'ได้รับการดูแลต่อเนื่อง ไม่ตกหล่น',
+      ],
+    },
+  ];
+  return (
+    <Slide num={2}>
+      <Eyebrow>ทำไมเรื่องนี้สำคัญกับผู้บริหาร</Eyebrow>
+      <Title size={36}>ดูแลผู้สูงวัย "ก่อน" เกิดเหตุ — ได้ประโยชน์พร้อมกันทั้ง 3 ฝ่าย</Title>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginTop: 22, flex: 1, minHeight: 0 }}>
+        {parties.map((p, i) => (
+          <div key={i} style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 18, padding: '22px 22px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ fontSize: 40, lineHeight: 1 }}>{p.icon}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1, color: C.primary, marginTop: 12, textTransform: 'uppercase' }}>{p.who}</div>
+            <h3 style={{ fontSize: 20, fontWeight: 800, color: C.primaryDeep, marginTop: 4, lineHeight: 1.3 }}>{p.head}</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '14px 0 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {p.points.map((pt, j) => (
+                <li key={j} style={{ display: 'flex', gap: 9, fontSize: 14.5, color: C.text, lineHeight: 1.5 }}>
+                  <span style={{ color: C.primary, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                  <span>{pt}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 18, background: C.primaryDeep, color: '#FFF', borderRadius: 14, padding: '14px 22px', fontSize: 16, fontWeight: 600, textAlign: 'center', lineHeight: 1.5 }}>
+        เมื่อทั้งสามฝ่ายได้ประโยชน์พร้อมกัน ความสำเร็จของระบบก็กลายเป็น "ผลงานของผู้บริหาร" เอง
+      </div>
+    </Slide>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// NEW · องก์ 1 — Demo CTA (เปิด mockup ระบบจริงตั้งแต่ต้น เพื่อสร้าง wow)
+// ใช้ AppDemoModal เดิม (iframe ui/elderly_app.html · กดเล่นได้)
+// ---------------------------------------------------------------------------
+function SlideDemoCTA() {
+  const [showDemo, setShowDemo] = useState(false);
+  return (
+    <Slide num={3}>
+      {showDemo && <AppDemoModal onClose={() => setShowDemo(false)} />}
+      <Eyebrow accent>เห็นของจริงก่อนตัดสินใจ</Eyebrow>
+      <Title size={38}>ไม่ต้องจินตนาการ — เปิดระบบจริงดูได้ใน 30 วินาที</Title>
+      <Lead style={{ marginTop: 12, maxWidth: 980 }}>
+        นี่คือหน้าตาระบบที่ใช้งานจริง กดเล่นได้เลยตอนนี้ — เห็นว่าเจ้าหน้าที่และ อสม. ทำงานบนระบบนี้อย่างไร
+      </Lead>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 22 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, width: '100%', maxWidth: 980 }}>
+          {[
+            { ic: '🗺️', t: 'แดชบอร์ดเทศบาล', d: 'ภาพรวมสุขภาพชุมชนรายพื้นที่' },
+            { ic: '📲', t: 'แอป อสม. ภาคสนาม', d: 'เยี่ยมบ้าน · ถ่ายไม่ต้องจด' },
+            { ic: '🔔', t: 'แจ้งเตือนเหตุจริง', d: 'ล้ม / ฉุกเฉิน ส่งถึงคนรับผิดชอบ' },
+          ].map((c, i) => (
+            <div key={i} style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 14, padding: '18px 18px', textAlign: 'center' }}>
+              <div style={{ fontSize: 34, lineHeight: 1 }}>{c.ic}</div>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: C.primaryDeep, marginTop: 10 }}>{c.t}</h4>
+              <p style={{ fontSize: 13, color: C.textMuted, marginTop: 4, lineHeight: 1.45 }}>{c.d}</p>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => setShowDemo(true)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, background: C.primary, color: '#FFF', border: 'none', borderRadius: 14, padding: '18px 44px', fontFamily: 'inherit', fontSize: 20, fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(31,107,76,0.32)' }}
+        >
+          🖥️ เปิดดูระบบจริง (กดเล่นได้)
+        </button>
+        <p style={{ fontSize: 13, color: C.textMuted }}>กดปุ่มในระบบเพื่อทดลองได้ · ปิดแล้วกลับสู่การนำเสนอทันที</p>
+      </div>
+    </Slide>
+  );
+}
+
 export default function ElderlyCare() {
   // Render order = page order. Page numbers run automatically (SlideCtx) from this array,
   // so inserting/reordering a slide only needs an edit here + titles[] below.
   const slides = [
-    // องก์ 1 — HOOK (pain → bridge)
-    Slide01, Slide02, SlideOverview,
-    // องก์ 2 — CONCEPT (กรอบความคิดก่อนลงอุปกรณ์)
-    Slide03, Slide04, Slide05Arch,
+    // องก์ 1 — HOOK + คุณค่าสำหรับผู้บริหารที่เวลาน้อย (front-load 5 สไลด์)
+    // Pain → 3 ฝ่ายได้อะไร → เห็นระบบจริง (demo) → ระบบมีผู้รับสายจริง → ภาพรวม 1 หน้า
+    Slide01, SlideWinThreeParties, SlideDemoCTA, Slide19Answer, SlideOverview,
+    // องก์ 2 — เจาะลึกปัญหา + CONCEPT (สำหรับคนที่มีเวลาฟังต่อ)
+    Slide02, Slide03, Slide04, Slide05Arch,
     // องก์ 3 — HOW + DEVICES (proof ติดกับ ECG)
     Slide06, Slide07, Slide08, Slide08bWork, Slide09Fall,
     Slide10Watch, Slide11Evidence, Slide12Analysis, Slide13Signals, SlideSosButton,
     Slide16Door, Slide17Optional, Slide18Infra,
-    // องก์ 4 — SOFTWARE + TRUST (objection ย้ายมาท้ายกลุ่ม)
+    // องก์ 4 — SOFTWARE + TRUST
     SlideFeatures, Slide27Dash, Slide20, Slide21App, Slide22,
-    Slide24, Slide19Answer, Slide23Raci, Slide25, Slide26,
+    Slide24, Slide23Raci, Slide25, Slide26,
     // องก์ 5 — CLOSE + APPENDIX
     Slide32Support, SlideHowToStart, Slide33Cta,
     SlideAppendix, Slide34Glossary, Slide35Glossary,
