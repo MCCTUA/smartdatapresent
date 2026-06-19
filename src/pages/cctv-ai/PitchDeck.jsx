@@ -1119,6 +1119,65 @@ function Slide15({ num }) {
 // SLIDE 16 — Plans · 3 แบบ
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Real-install proof — over-height vehicle detection @ Central World (video)
+// ---------------------------------------------------------------------------
+function SlideRealInstall({ num }) {
+  const V = import.meta.env.BASE_URL + 'videos/over-height/';
+  const points = [
+    'ตรวจจับความสูงของรถแบบเรียลไทม์จากกล้องหน้างาน',
+    'บันทึกภาพ + อ่านป้ายทะเบียนอัตโนมัติเข้าสู่ log',
+    'แจ้งเตือนทันทีเมื่อพบรถสูงเกินกำหนด',
+  ];
+  return (
+    <Slide num={num}>
+      <Eyebrow accent>ผลงานติดตั้งจริง · หน้างานจริง</Eyebrow>
+      <Title size={29}>ตรวจจับรถสูงเกินกำหนด — ติดตั้งใช้งานจริงที่ Central World กรุงเทพฯ</Title>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 20, marginTop: 14, flex: 1, minHeight: 0 }}>
+        <div style={{ borderRadius: 14, overflow: 'hidden', background: '#000', border: `1px solid ${C.surfaceSoft}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <video
+            src={`${V}main.mp4`}
+            controls
+            muted
+            loop
+            autoPlay
+            playsInline
+            preload="metadata"
+            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#000' }}
+          />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0 }}>
+          <div style={{ background: '#FFF', border: `1px solid ${C.surfaceSoft}`, borderRadius: 14, padding: '14px 16px' }}>
+            <h3 style={{ fontSize: 15, fontWeight: 800, color: C.primaryDeep, marginBottom: 8 }}>ระบบทำอะไรในคลิป</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {points.map((p, i) => (
+                <li key={i} style={{ display: 'flex', gap: 8, fontSize: 13.5, color: C.text, lineHeight: 1.45 }}>
+                  <span style={{ color: C.primary, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div style={{ flex: 1, minHeight: 0, borderRadius: 12, overflow: 'hidden', background: '#000', border: `1px solid ${C.surfaceSoft}`, position: 'relative' }}>
+            <video
+              src={`${V}scene.mp4`}
+              controls
+              muted
+              playsInline
+              preload="metadata"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', background: '#000' }}
+            />
+            <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 11, fontWeight: 700, color: '#FFF', background: 'rgba(0,0,0,0.55)', padding: '3px 8px', borderRadius: 100 }}>ภาพหน้างานจริง</span>
+          </div>
+        </div>
+      </div>
+      <p style={{ fontSize: 12, color: C.textMuted, marginTop: 8 }}>
+        ภาพจากระบบขณะใช้งานจริง · สถานที่ติดตั้ง: บริเวณ Central World กรุงเทพฯ
+      </p>
+    </Slide>
+  );
+}
+
 function Slide16({ num }) {
   const menus = [
     {
@@ -1279,11 +1338,12 @@ function Toolbar() {
     '13 · 🅿️ App · บริหารลานจอด',
     '14 · 👥 App · นับคน · ความหนาแน่น',
     '15 · 🌉 App · สะพาน · อุโมงค์',
-    '16 · 🛡️ Privacy · PDPA · ภาพในไทย',
-    '17 · 🏆 Why us · 3 จุดต่าง',
-    '18 · 💵 Plans · 3 แบบ + แหล่งงบ',
-    '19 · 🏛️ Outcome · KPI ตอบสภาฯ ได้',
-    '20 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
+    '16 · 🎥 ของจริง · ตรวจจับรถสูงเกิน @ Central World',
+    '17 · 🛡️ Privacy · PDPA · ภาพในไทย',
+    '18 · 🏆 Why us · 3 จุดต่าง',
+    '19 · 💵 Plans · 3 แบบ + แหล่งงบ',
+    '20 · 🏛️ Outcome · KPI ตอบสภาฯ ได้',
+    '21 · 🤝 Close · 3 คำถาม + ขั้นต่อไป',
   ];
   const goTo = (i) => {
     const el = document.getElementById(`slide-${i + 1}`);
@@ -1405,6 +1465,7 @@ export default function PitchDeck() {
     SlideInstallAB, SlideLPRUseCase,
     Slide06, Slide07, Slide08, Slide09, Slide10,
     Slide11, Slide12, Slide13, Slide14, Slide15,
+    SlideRealInstall,
     Slide16, Slide19, Slide20,
   ];
   return (
