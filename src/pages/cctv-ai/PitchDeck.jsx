@@ -1137,6 +1137,7 @@ function SlideRealInstall({ num }) {
         <div style={{ borderRadius: 14, overflow: 'hidden', background: '#000', border: `1px solid ${C.surfaceSoft}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <video
             src={`${V}main.mp4`}
+            poster={`${V}main_poster.jpg`}
             controls
             muted
             loop
@@ -1161,6 +1162,7 @@ function SlideRealInstall({ num }) {
           <div style={{ flex: 1, minHeight: 0, borderRadius: 12, overflow: 'hidden', background: '#000', border: `1px solid ${C.surfaceSoft}`, position: 'relative' }}>
             <video
               src={`${V}scene.mp4`}
+              poster={`${V}scene_poster.jpg`}
               controls
               muted
               playsInline
