@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart B2G — เรื่องของสองทีมที่มาบรรจบกัน</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#0F6E56; --primary-hover:#1D9E75; --primary-deep:#0B5544;
+    --surface:#FAF7EE; --surface-soft:#F5F1E4; --text:#1F2A24; --muted:#5F6B65;
+    --accent:#BA7517; --accent-soft:#FAEEDA; --success:#639922;
+    --border:rgba(15,110,86,0.12);
+    --hw:#BA7517; --sw:#0F6E56;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Sarabun',system-ui,sans-serif;color:var(--text);background:#e8e6dd;line-height:1.6;}
+  .deck{max-width:1040px;margin:0 auto;padding:32px 16px;}
+  .slide{background:var(--surface);border-radius:22px;margin-bottom:26px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);position:relative;}
+  .pad{padding:52px 56px;}
+  .chap{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .chap .cn{font-size:12px;font-weight:700;color:#fff;background:var(--accent);padding:5px 14px;border-radius:999px;flex-shrink:0;letter-spacing:.5px;}
+  .chap .cn.sw{background:var(--primary);}
+  .chap .ct{font-size:13px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);}
+  h1{font-size:39px;font-weight:700;line-height:1.18;letter-spacing:-0.5px;}
+  h2{font-size:29px;font-weight:700;color:var(--primary-deep);line-height:1.25;}
+  .story{font-size:18.5px;color:var(--text);line-height:1.8;margin-top:16px;max-width:790px;}
+  .story.muted{color:var(--muted);}
+  .story .hl{color:var(--primary);font-weight:600;}
+  .story .hlA{color:var(--accent);font-weight:600;}
+  .big{font-size:24px;font-weight:600;color:var(--primary-deep);line-height:1.5;margin-top:16px;max-width:770px;}
+  .bridge{text-align:center;margin:-8px 0 18px;color:var(--muted);font-size:15px;font-style:italic;}
+  .bridge .arrow{display:block;font-size:22px;color:var(--accent);margin-bottom:2px;}
+  .ph{border:2px dashed var(--border);background:var(--surface-soft);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;color:var(--muted);min-height:150px;}
+  .ph .pid{font-weight:600;font-size:13px;color:var(--primary);margin-bottom:8px;letter-spacing:.5px;}
+  .ph .pdesc{font-size:13.5px;color:var(--muted);max-width:440px;}
+  .hero{background:linear-gradient(135deg,var(--primary-deep),var(--primary));color:#fff;}
+  .hero h1{color:#fff;} .hero .story{color:rgba(255,255,255,0.92);}
+  .sect-hw{border-top:5px solid var(--hw);}
+  .sect-sw{border-top:5px solid var(--sw);}
+  .brandmark{font-size:20px;font-weight:700;letter-spacing:1.5px;margin-bottom:20px;display:flex;align-items:center;gap:10px;opacity:.96;}
+  .brandmark .dot{width:26px;height:26px;border-radius:7px;background:var(--accent);display:inline-block;}
+  .factrow{display:flex;gap:14px;margin-top:22px;flex-wrap:wrap;}
+  .fact{background:#fff;border-radius:12px;padding:14px 20px;border:1px solid var(--border);}
+  .fact .fv{font-size:21px;font-weight:700;color:var(--primary);}
+  .fact .fl{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px;}
+  .work{background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden;}
+  .work .wimg{min-height:150px;border-bottom:1px solid var(--border);}
+  .work .wbody{padding:16px 18px;}
+  .work h4{font-size:16px;color:var(--primary-deep);margin-bottom:5px;}
+  .work p{font-size:13px;color:var(--muted);line-height:1.55;}
+  .work .badge{display:inline-block;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:2px 10px;border-radius:999px;margin-top:8px;}
+  .casegrid{display:grid;grid-template-columns:1.05fr 0.95fr;gap:28px;align-items:center;margin-top:22px;}
+  .casebody h3{font-size:22px;color:var(--primary-deep);margin-bottom:6px;}
+  .casebody .place{font-size:14px;color:var(--accent);font-weight:600;margin-bottom:12px;}
+  .casebody p{font-size:15px;color:var(--text);line-height:1.7;}
+  .metrics{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;}
+  .metric{background:var(--surface-soft);border-radius:12px;padding:12px 16px;border:1px solid var(--border);}
+  .metric .mv{font-size:21px;font-weight:700;color:var(--primary);}
+  .metric .ml{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .quote{font-size:14.5px;color:var(--muted);font-style:italic;margin-top:16px;border-left:3px solid var(--accent);padding-left:14px;}
+  .bullets{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .bullet{background:#fff;border-radius:12px;padding:16px;border:1px solid var(--border);}
+  .bullet .bt{font-weight:600;color:var(--primary-deep);font-size:15px;margin-bottom:4px;}
+  .bullet p{font-size:13px;color:var(--muted);}
+  .merge{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;margin-top:26px;}
+  .mergecard{background:#fff;border-radius:16px;border:1px solid var(--border);padding:22px;text-align:center;}
+  .mergecard .mt{font-size:12px;font-weight:600;letter-spacing:.5px;color:#fff;padding:4px 12px;border-radius:999px;display:inline-block;margin-bottom:10px;}
+  .mergecard.hw .mt{background:var(--hw);}
+  .mergecard.sw .mt{background:var(--sw);}
+  .mergecard h4{font-size:18px;color:var(--primary-deep);margin-bottom:6px;}
+  .mergecard p{font-size:13px;color:var(--muted);}
+  .plus{font-size:34px;color:var(--accent);font-weight:700;}
+  .logos{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px;}
+  .secthead{font-weight:600;color:var(--primary-deep);margin-top:20px;margin-bottom:6px;font-size:15px;}
+  .cta{background:linear-gradient(135deg,var(--primary-deep),var(--primary));color:#fff;text-align:center;}
+  .cta h1{color:#fff;} .cta .story{color:rgba(255,255,255,0.92);margin-left:auto;margin-right:auto;}
+  .btn{display:inline-block;background:var(--accent);color:#fff;font-weight:600;padding:14px 36px;border-radius:999px;margin-top:24px;font-size:16px;}
+  @media(max-width:720px){
+    .grid2,.grid3,.casegrid,.bullets,.logos,.merge{grid-template-columns:1fr;}
+    .pad{padding:32px 24px;} h1{font-size:28px;} h2{font-size:22px;} .story{font-size:16.5px;}
+    .merge .plus{transform:rotate(90deg);}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- บทเปิด -->
+  <section class="slide hero">
+    <div class="pad">
+      <div class="brandmark"><span class="dot"></span>Smart B2G</div>
+      <h1>เบื้องหลังระบบของเรา<br>คือสองทีมที่เดินทางคนละสาย<br>แล้วมาบรรจบกัน</h1>
+      <p class="story">ทีมหนึ่งเริ่มจากโรงงานอิเล็กทรอนิกส์ อีกทีมเริ่มจากการเขียนระบบให้หน่วยงานระดับประเทศ — วันนี้ทั้งสองมารวมกันเพื่อท้องถิ่นไทย</p>
+      <p class="story" style="font-size:16px;opacity:.85;">ขอเล่าให้ฟังว่าแต่ละทีมเป็นใคร และทำไมการมาเจอกันจึงสำคัญกับท่าน</p>
+    </div>
+  </section>
+
+  <div class="bridge"><span class="arrow">↓</span>เริ่มจากทีมแรก — ทีมที่ลงมือผลิตด้วยมือตัวเอง</div>
+
+  <!-- องก์ 1: GISMO คือใคร -->
+  <section class="slide sect-hw">
+    <div class="pad">
+      <div class="chap"><span class="cn">ทีมที่ 1 · ฮาร์ดแวร์</span><span class="ct">Genius Gismo</span></div>
+      <h2>จากโรงงานอิเล็กทรอนิกส์ สู่ผู้ผลิตโคมไฟ LED</h2>
+      <p class="story">Genius Gismo เริ่มต้นจากการเป็น <span class="hlA">โรงงานประกอบแผงวงจรอิเล็กทรอนิกส์ (PCBA)</span> — งานที่ต้องการความละเอียดและการควบคุมคุณภาพระดับสูง</p>
+      <p class="story">ตั้งแต่ปี <span class="hlA">2553</span> เราต่อยอดความเชี่ยวชาญนั้นมาสู่การ <span class="hlA">ออกแบบและผลิตโคมไฟ LED</span> ด้วยตัวเอง ตั้งแต่แผงวงจรจนถึงตัวโคมสำเร็จ — ไม่ใช่แค่ซื้อมาขายไป แต่ผลิตเองในโรงงานของเรา</p>
+      <div class="factrow">
+        <div class="fact"><div class="fv">PCBA</div><div class="fl">รากฐานงานอิเล็กทรอนิกส์</div></div>
+        <div class="fact"><div class="fv">ตั้งแต่ปี 2553</div><div class="fl">ผลิตโคมไฟ LED เอง</div></div>
+        <div class="fact"><div class="fv">โรงงานของเราเอง</div><div class="fl">ควบคุมคุณภาพทุกขั้นตอน</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="bridge"><span class="arrow">↓</span>และเพราะผลิตเอง เราจึงควบคุมคุณภาพได้ตั้งแต่ต้นทาง</div>
+
+  <!-- องก์ 1b: เครื่องจักร + มอก -->
+  <section class="slide sect-hw">
+    <div class="pad">
+      <div class="chap"><span class="cn">ทีมที่ 1 · ฮาร์ดแวร์</span><span class="ct">โรงงาน &amp; มาตรฐาน</span></div>
+      <h2>โรงงานจริง เครื่องจักรจริง มาตรฐานรับรองจริง</h2>
+      <p class="story muted">สิ่งที่ทำให้ลูกค้าองค์กรใหญ่ไว้ใจ คือเราพิสูจน์ได้ทุกขั้นตอน</p>
+      <div class="grid2">
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #1 ]</span><span class="pdesc">สายการผลิตในโรงงาน (STM / ReFlow / Production Line)</span></div>
+          <div class="wbody"><h4>เครื่องจักรผลิตในโรงงาน</h4><p>ผลิตแผงวงจรและประกอบโคมไฟเองครบวงจร พร้อมตรวจคุณภาพแสงทุกล็อต</p></div>
+        </div>
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #2 ]</span><span class="pdesc">ใบรับรอง มอก. 1955-2551 + ตรา มอก. (ใช้ได้ — ของโรงงานเรา)</span></div>
+          <div class="wbody"><h4>มาตรฐาน มอก. 1955-2551</h4><p>ผ่านการรับรองมาตรฐานผลิตภัณฑ์อุตสาหกรรม พร้อมทดสอบ LM-79 / LM-80</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="bridge"><span class="arrow">↓</span>ด้วยพื้นฐานนี้ เราจึงรับงานยาก ๆ ที่คนอื่นทำไม่ได้</div>
+
+  <!-- องก์ 1c: งานยาก (โชว์ผลงาน) -->
+  <section class="slide sect-hw">
+    <div class="pad">
+      <div class="chap"><span class="cn">ทีมที่ 1 · ฮาร์ดแวร์</span><span class="ct">ผลงานที่พิสูจน์ความเชี่ยวชาญ</span></div>
+      <h2>งานที่ยาก คือสนามที่เราถนัด</h2>
+      <div class="grid3">
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #3 ]</span><span class="pdesc">High Mast ลานจอด MMTH (แหลมฉบัง)</span></div>
+          <div class="wbody"><h4>High Mast — MMTH</h4><p>ลานจอดรถส่งออก เสาสูง 25 ม. ระยะห่าง 160 ม. ลดพลังงาน 2000W→450W สว่างทั่วถึงไม่มีจุดมืด</p><span class="badge">งานออกแบบพิเศษ</span></div>
+        </div>
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #4 ]</span><span class="pdesc">งาน High Bay / Canopy การไฟฟ้าฝ่ายผลิต (EGAT)</span></div>
+          <div class="wbody"><h4>การไฟฟ้าฝ่ายผลิต (EGAT)</h4><p>งานแสงสว่างให้หน่วยงานพลังงานระดับประเทศ มาตรฐานที่พลาดไม่ได้</p><span class="badge">หน่วยงานรัฐ</span></div>
+        </div>
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #5 ]</span><span class="pdesc">ปรับปรุงไฟถนน เขตห้วยขวาง กทม.</span></div>
+          <div class="wbody"><h4>ไฟถนน เขตห้วยขวาง</h4><p>ปรับปรุงแสงสว่างถนนสาธารณะในเขตเมือง — งานท้องถิ่นจริง</p><span class="badge">งานท้องถิ่น</span></div>
+        </div>
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #6 ]</span><span class="pdesc">Solar Street Light ลานจอด TOA</span></div>
+          <div class="wbody"><h4>Solar Street Light — TOA</h4><p>ไฟถนนโซลาร์ในพื้นที่โรงงาน ออกแบบตามมาตรฐานความสว่างราชกิจจาฯ</p><span class="badge">พลังงานสะอาด</span></div>
+        </div>
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #7 ]</span><span class="pdesc">งานแสงสว่าง Panasonic</span></div>
+          <div class="wbody"><h4>Panasonic</h4><p>งานไฟถนนและไฟลานในพื้นที่โรงงานของผู้ผลิตข้ามชาติ</p><span class="badge">องค์กรข้ามชาติ</span></div>
+        </div>
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #8 ]</span><span class="pdesc">สนามฟุตบอล ร.ร.โสมาภาพัฒนา</span></div>
+          <div class="wbody"><h4>สนามฟุตบอล โสมาภาพัฒนา</h4><p>ออกแบบแสงสว่างสนามตามมาตรฐาน <strong>FIFA Grade 2</strong> (Match Practice)</p><span class="badge">มาตรฐาน FIFA</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="bridge"><span class="arrow">↓</span>นั่นคือทีมฮาร์ดแวร์ — ทีนี้ขอแนะนำอีกทีมหนึ่ง</div>
+
+  <!-- องก์ 2: CODECUBE คือใคร -->
+  <section class="slide sect-sw">
+    <div class="pad">
+      <div class="chap"><span class="cn sw">ทีมที่ 2 · ซอฟต์แวร์</span><span class="ct">CodeCube</span></div>
+      <h2>ทีมที่ดูแลระบบให้หน่วยงานระดับประเทศ</h2>
+      <p class="story">CodeCube คือผู้เชี่ยวชาญด้าน <span class="hl">ซอฟต์แวร์ แพลตฟอร์ม และการจัดการข้อมูล</span> ที่สั่งสมประสบการณ์มากว่า 20 ปี — พัฒนาและดูแลระบบให้หน่วยงานที่หยุดทำงานไม่ได้</p>
+      <div class="grid2">
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #9 ]</span><span class="pdesc">ระบบ Big Data กระทรวงยุติธรรม</span></div>
+          <div class="wbody"><h4>กระทรวงยุติธรรม</h4><p>ระบบข้อมูลขนาดใหญ่เชื่อมหลายหน่วยงานในกระบวนการยุติธรรม</p></div>
+        </div>
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #10 ]</span><span class="pdesc">ระบบจองพื้นที่ True Digital Park</span></div>
+          <div class="wbody"><h4>True Digital Park</h4><p>ระบบบริหารจัดการพื้นที่และแดชบอร์ดสรุปผลแบบเรียลไทม์</p></div>
+        </div>
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #11 ]</span><span class="pdesc">ระบบ GISTDA (ภาพถ่ายดาวเทียม)</span></div>
+          <div class="wbody"><h4>GISTDA</h4><p>ระบบให้บริการข้อมูลภูมิสารสนเทศและภาพถ่ายดาวเทียม</p></div>
+        </div>
+        <div class="work">
+          <div class="ph wimg"><span class="pid">[ รูป #12 ]</span><span class="pdesc">ระบบภายใต้ NT (โทรคมนาคมแห่งชาติ)</span></div>
+          <div class="wbody"><h4>NT — โทรคมนาคมแห่งชาติ</h4><p>พัฒนาซอฟต์แวร์ร่วมกับระบบคลาวด์ของหน่วยงานรัฐ</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="bridge"><span class="arrow">↓</span>และจากงานเหล่านั้น เราได้รับความไว้วางใจให้ทำสิ่งที่ยากขึ้น</div>
+
+  <!-- องก์ 2b: เหตุฉุกเฉินมาบตาพุด (custom) -->
+  <section class="slide sect-sw">
+    <div class="pad">
+      <div class="chap"><span class="cn sw">ทีมที่ 2 · ซอฟต์แวร์</span><span class="ct">งานออกแบบเฉพาะ (Custom)</span></div>
+      <h2>ระบบดูแลเหตุฉุกเฉิน ที่ออกแบบขึ้นเฉพาะพื้นที่</h2>
+      <p class="story">เราได้รับความไว้วางใจให้พัฒนา <span class="hl">ซอฟต์แวร์บริหารจัดการเหตุฉุกเฉินแบบ Custom Made</span> ให้กับ <span class="hl">เทศบาลเมืองมาบตาพุด</span> และ <span class="hl">พื้นที่นิคมอุตสาหกรรมมาบตาพุด</span> — พื้นที่ที่ความปลอดภัยคือเรื่องใหญ่ที่สุด</p>
+      <p class="story muted">ระบบที่ออกแบบให้ตรงกับสภาพพื้นที่จริง ไม่ใช่ระบบสำเร็จรูป — นี่คือสิ่งที่เราถนัด</p>
+      <div class="ph" style="min-height:170px;margin-top:18px;"><span class="pid">[ รูป #13 ]</span><span class="pdesc">หน้าจอระบบบริหารเหตุฉุกเฉิน (มาบตาพุด) — ใช้ภาพหน้าจอระบบ ไม่มีแบรนด์ supplier</span></div>
+    </div>
+  </section>
+
+  <div class="bridge"><span class="arrow">↓</span>และนี่คือตัวอย่างที่เห็นภาพชัดที่สุด ว่าระบบของเราทำงานจริงอย่างไร</div>
+
+  <!-- องก์ 2c: คลิป Central World -->
+  <section class="slide sect-sw">
+    <div class="pad">
+      <div class="chap"><span class="cn sw">ทีมที่ 2 · ซอฟต์แวร์</span><span class="ct">ระบบที่ทำงานในวินาทีจริง</span></div>
+      <h2>ระบบแจ้งเตือนความสูงของรถ ที่ Central World</h2>
+      <p class="story muted">ดูได้ว่าระบบจับภาพและตัดสินใจอย่างไรในวินาทีจริง ก่อนรถเข้าพื้นที่อาคาร</p>
+      <div style="margin-top:18px;">
+        <div class="ph" style="min-height:300px;"><span class="pid">[ วิดีโอ #14 ]</span><span class="pdesc">คลิปการทำงานจริงที่ Central World — crop watermark กล้อง/IP/แบรนด์ supplier ออกก่อนใช้</span></div>
+      </div>
+      <div class="bullets">
+        <div class="bullet"><div class="bt">ปัญหา</div><p>รถสูงเกินพิกัดชนโครงสร้างอาคาร เกิดความเสียหาย</p></div>
+        <div class="bullet"><div class="bt">ระบบทำอะไร</div><p>จับภาพและแจ้งเตือนล่วงหน้าก่อนรถเข้าพื้นที่ พร้อมบันทึกหลักฐาน</p></div>
+        <div class="bullet"><div class="bt">นำไปใช้ต่อ</div><p>หลักการเดียวกัน ใช้ปกป้องสะพานและอุโมงค์ของท้องถิ่นได้</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="bridge"><span class="arrow">↓</span>และงานข้อมูลที่ใหญ่ที่สุดของเรา อยู่บนทางด่วน</div>
+
+  <!-- องก์ 2d: IoT การทางพิเศษ -->
+  <section class="slide sect-sw">
+    <div class="pad">
+      <div class="chap"><span class="cn sw">ทีมที่ 2 · ซอฟต์แวร์</span><span class="ct">งานข้อมูลขนาดใหญ่ &amp; IoT</span></div>
+      <h2>ดูแลข้อมูลจากอุปกรณ์ทุกตัวบนทางด่วน</h2>
+      <div class="casegrid">
+        <div class="casebody">
+          <h3>การทางพิเศษแห่งประเทศไทย</h3>
+          <div class="place">งาน IoT &amp; Big Data บนด่านเก็บเงินทุกด่าน</div>
+          <p>เราพัฒนาระบบที่รับข้อมูลจาก <span class="hl">เซนเซอร์ทุกตัวในด่านเก็บเงิน</span> ทุกด่านบนทางด่วน — ทั้งเซนเซอร์ใต้พื้น ไม้กั้น ระบบเก็บเงิน และอื่น ๆ เมื่ออุปกรณ์ตัวใดผิดปกติ ระบบ <strong>แจ้งเตือนแบบเรียลไทม์</strong> ให้ทีมซ่อมบำรุงเข้าแก้ไขได้ทัน</p>
+          <p class="quote">งานนี้คือบทพิสูจน์ว่าเราดูแลระบบ IoT ขนาดใหญ่ที่ทำงานตลอด 24 ชั่วโมงได้จริง</p>
+        </div>
+        <div class="ph" style="min-height:260px;"><span class="pid">[ รูป #15 ]</span><span class="pdesc">ภาพระบบ/แดชบอร์ด IoT ด่านเก็บเงินทางด่วน</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="bridge"><span class="arrow">↓</span>และเมื่อสองทีมที่แข็งแกร่งคนละด้าน มาเจอกัน…</div>
+
+  <!-- องก์ 3: จุดบรรจบ -->
+  <section class="slide">
+    <div class="pad" style="text-align:center;">
+      <div class="chap" style="justify-content:center;"><span class="cn">จุดบรรจบ</span></div>
+      <h2>เราจึงจับมือกัน สร้างระบบที่ครบทั้งฮาร์ดแวร์และซอฟต์แวร์</h2>
+      <p class="story" style="margin-left:auto;margin-right:auto;text-align:center;">เมื่อทีมที่ผลิตอุปกรณ์เองได้ มาเจอกับทีมที่ดูแลข้อมูลระดับชาติ — ผลลัพธ์คือระบบที่ออกแบบ ผลิต ติดตั้ง และดูแลได้โดยทีมเดียว</p>
+      <div class="merge">
+        <div class="mergecard hw">
+          <span class="mt">Genius Gismo</span>
+          <h4>ฮาร์ดแวร์</h4>
+          <p>โคมไฟ อุปกรณ์ เซนเซอร์ ผลิตในโรงงานมาตรฐาน มอก.</p>
+        </div>
+        <div class="plus">+</div>
+        <div class="mergecard sw">
+          <span class="mt">CodeCube</span>
+          <h4>ซอฟต์แวร์</h4>
+          <p>แพลตฟอร์ม ข้อมูล แดชบอร์ด ระบบแจ้งเตือนเรียลไทม์</p>
+        </div>
+      </div>
+      <p class="big" style="margin-left:auto;margin-right:auto;text-align:center;">งานแรกที่เราทำร่วมกันคือ <span class="hlA">Smart Street Light</span> — โดย Gismo ดูแลฮาร์ดแวร์ และ CodeCube ดูแลซอฟต์แวร์</p>
+    </div>
+  </section>
+
+  <div class="bridge"><span class="arrow">↓</span>และนี่คือหน่วยงานที่ไว้วางใจเราตลอดเส้นทาง</div>
+
+  <!-- บทปิด: LOGO ลูกค้า -->
+  <section class="slide">
+    <div class="pad">
+      <div class="chap"><span class="cn">ปิดท้าย</span><span class="ct">คนที่ไว้วางใจเราแล้ว</span></div>
+      <h2>หน่วยงานและองค์กรที่เลือกใช้ผลงานของเรา</h2>
+      <div class="secthead">ภาครัฐ &amp; รัฐวิสาหกิจ</div>
+      <div class="logos">
+        <div class="ph"><span class="pid">[ โลโก้ #16a ]</span><span class="pdesc">การไฟฟ้าฝ่ายผลิต (EGAT)</span></div>
+        <div class="ph"><span class="pid">[ โลโก้ #16b ]</span><span class="pdesc">กระทรวงยุติธรรม / สนง.กิจการยุติธรรม</span></div>
+        <div class="ph"><span class="pid">[ โลโก้ #16c ]</span><span class="pdesc">GISTDA</span></div>
+        <div class="ph"><span class="pid">[ โลโก้ #16d ]</span><span class="pdesc">NT / การทางพิเศษ</span></div>
+      </div>
+      <div class="secthead">องค์กรขนาดใหญ่ &amp; ท้องถิ่น</div>
+      <div class="logos">
+        <div class="ph"><span class="pid">[ โลโก้ #17a ]</span><span class="pdesc">เทศบาลเมือง / นิคมมาบตาพุด</span></div>
+        <div class="ph"><span class="pid">[ โลโก้ #17b ]</span><span class="pdesc">Panasonic / MMTH</span></div>
+        <div class="ph"><span class="pid">[ โลโก้ #17c ]</span><span class="pdesc">TOA</span></div>
+        <div class="ph"><span class="pid">[ โลโก้ #17d ]</span><span class="pdesc">True Digital Park</span></div>
+      </div>
+      <p class="story" style="margin-top:26px;">นี่คือ <span class="hl">Smart B2G</span> — สองทีมที่เดินทางคนละสาย มาบรรจบกันเพื่อท้องถิ่นไทย</p>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

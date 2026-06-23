@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartLight Device Management - Device List Placement</title>
+  <style>
+    :root {
+      --bg: #071014;
+      --panel: rgba(15, 23, 42, 0.82);
+      --panel-2: rgba(30, 41, 59, 0.68);
+      --line: rgba(148, 163, 184, 0.16);
+      --text: #eaffff;
+      --muted: #94a3b8;
+      --green: #4ade80;
+      --cyan: #22d3ee;
+      --blue: #60a5fa;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --violet: #a78bfa;
+      --max: 1480px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(34, 211, 238, 0.16), transparent 28rem),
+        radial-gradient(circle at 86% 16%, rgba(74, 222, 128, 0.14), transparent 24rem),
+        radial-gradient(circle at 42% 82%, rgba(96, 165, 250, 0.12), transparent 28rem),
+        var(--bg);
+    }
+
+    a { color: inherit; }
+
+    .app {
+      width: min(100% - 32px, var(--max));
+      margin: 0 auto;
+      padding: 18px 0 40px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(14, 30, 38, 0.92), rgba(8, 20, 27, 0.88));
+      box-shadow: 0 22px 80px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(18px);
+      padding: 14px 16px 14px 18px;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 35% 32%, #fff 0 8%, transparent 9%),
+        linear-gradient(135deg, var(--cyan), var(--green));
+      box-shadow: 0 18px 48px rgba(34, 211, 238, 0.18);
+    }
+
+    .brand-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .brand-meta p {
+      margin: 0;
+    }
+
+    .connection-badge {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      border: 1px solid rgba(74, 222, 128, 0.38);
+      border-radius: 999px;
+      background: rgba(74, 222, 128, 0.1);
+      color: #dcfce7;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.72);
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(26px, 3vw, 40px);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    h2 {
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    .actions,
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .chip,
+    .button,
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #dff7f7;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .button {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .critical-error-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(251, 113, 133, 0.5);
+      border-radius: 999px;
+      background: rgba(251, 113, 133, 0.16);
+      color: #fecdd3;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 950;
+      text-decoration: none;
+      animation: redBlink 1.35s ease-in-out infinite;
+    }
+
+    .profile-menu,
+    .widget-menu {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .profile-popover,
+    .widget-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 30;
+      display: none;
+      width: min(520px, calc(100vw - 28px));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(34, 211, 238, 0.08), transparent 18rem),
+        rgba(7, 16, 20, 0.96);
+      box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48);
+      padding: 14px;
+      text-align: left;
+    }
+
+    .profile-popover {
+      width: min(320px, calc(100vw - 28px));
+    }
+
+    .profile-menu:hover .profile-popover,
+    .widget-menu:hover .widget-popover,
+    .profile-menu:focus-within .profile-popover,
+    .widget-menu:focus-within .widget-popover,
+    .profile-menu.is-open .profile-popover,
+    .widget-menu.is-open .widget-popover {
+      display: grid;
+      gap: 12px;
+    }
+
+    .profile-popover-head,
+    .widget-popover-head {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      padding-bottom: 10px;
+    }
+
+    .profile-popover-head strong,
+    .widget-popover-head strong {
+      color: #f8ffff;
+      font-size: 14px;
+    }
+
+    .profile-popover-head span,
+    .widget-popover-head span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .profile-actions,
+    .card-library {
+      display: grid;
+      gap: 8px;
+    }
+
+    .profile-action,
+    .library-card {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #dff7f7;
+      padding: 9px 10px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .profile-action span,
+    .library-card p {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .button.primary {
+      border-color: rgba(34, 211, 238, 0.38);
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.22), rgba(74, 222, 128, 0.16));
+      color: #efffff;
+    }
+
+    .button.rose,
+    .chip.rose,
+    .status-pill.bad {
+      border-color: rgba(251, 113, 133, 0.32);
+      background: rgba(251, 113, 133, 0.12);
+      color: #fecdd3;
+    }
+
+    .button.warn,
+    .chip.amber,
+    .status-pill.warn {
+      border-color: rgba(251, 191, 36, 0.34);
+      background: rgba(251, 191, 36, 0.12);
+      color: #fde68a;
+    }
+
+    .chip.green,
+    .status-pill.ok {
+      border-color: rgba(74, 222, 128, 0.3);
+      background: rgba(74, 222, 128, 0.12);
+      color: #bbf7d0;
+    }
+
+    .status-pill.off {
+      color: #d1d5db;
+      background: rgba(107, 114, 128, 0.18);
+    }
+
+    .status-pill.violet {
+      color: #ddd6fe;
+      background: rgba(167, 139, 250, 0.15);
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(74, 222, 128, 0.24);
+      border-radius: 999px;
+      background: rgba(74, 222, 128, 0.1);
+      color: #dcfce7;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: livePulse 1.4s infinite;
+    }
+
+    .panel,
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.035));
+      box-shadow: 0 22px 80px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(16px);
+    }
+
+    .filter-panel {
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .filter-head,
+    .card-head {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1.25fr repeat(5, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(7, 16, 20, 0.78);
+      color: var(--text);
+      padding: 10px 11px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 14px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+    }
+
+    .green { color: var(--green); }
+    .cyan { color: var(--cyan); }
+    .amber { color: var(--amber); }
+    .rose { color: var(--rose); }
+    .blue { color: var(--blue); }
+
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+    .workspace-grid > .card,
+    .workspace-grid > .side-stack {
+      height: 100%;
+      min-width: 0;
+    }
+
+
+    .map-card {
+      min-height: 690px;
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 16px 16px 0;
+    }
+
+    .map-stage {
+      position: relative;
+      min-height: 590px;
+      margin: 14px 16px 16px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 22px;
+      background:
+        linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 26% 24%, rgba(34, 211, 238, 0.16), transparent 15rem),
+        radial-gradient(circle at 72% 72%, rgba(74, 222, 128, 0.12), transparent 18rem),
+        #09202a;
+      background-size: 42px 42px, 42px 42px, auto, auto, auto;
+    }
+
+    .map-stage.drag-mode {
+      border-color: rgba(251, 191, 36, 0.44);
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.16), 0 0 36px rgba(251, 191, 36, 0.08);
+    }
+
+    .map-stage:fullscreen {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .road {
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.16);
+    }
+
+    .road.r1 { left: -10%; top: 30%; width: 120%; height: 34px; transform: rotate(-7deg); }
+    .road.r2 { left: 15%; top: -10%; width: 32px; height: 125%; transform: rotate(17deg); }
+    .road.r3 { left: 55%; top: 8%; width: 28px; height: 92%; transform: rotate(-13deg); }
+    .road.r4 { left: 10%; top: 72%; width: 88%; height: 28px; transform: rotate(4deg); }
+
+    .zone {
+      position: absolute;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      border-radius: 26px;
+      background: rgba(34, 211, 238, 0.045);
+      color: rgba(207, 250, 254, 0.72);
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .zone.z1 { left: 8%; top: 12%; width: 35%; height: 28%; }
+    .zone.z2 { right: 9%; top: 14%; width: 31%; height: 31%; border-color: rgba(251, 191, 36, 0.24); background: rgba(251, 191, 36, 0.05); }
+    .zone.z3 { left: 18%; bottom: 10%; width: 58%; height: 25%; border-color: rgba(74, 222, 128, 0.22); background: rgba(74, 222, 128, 0.045); }
+
+    .map-badge,
+    .osm-attribution,
+    .drag-badge {
+      position: absolute;
+      z-index: 5;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+      background: rgba(7, 16, 20, 0.86);
+      color: #dff7f7;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .map-badge { right: 16px; top: 78px; color: #b9f8ff; border-color: rgba(34, 211, 238, 0.26); }
+    .osm-attribution { right: 16px; bottom: 16px; }
+    .drag-badge { left: 16px; bottom: 16px; color: #fde68a; border-color: rgba(251, 191, 36, 0.28); display: none; }
+    .map-stage.drag-mode .drag-badge { display: inline-flex; }
+
+    .map-tools {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 8;
+      display: grid;
+      gap: 8px;
+    }
+
+    .zoom-control {
+      display: grid;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 14px;
+      background: rgba(7, 16, 20, 0.84);
+    }
+
+    .zoom-control button,
+    .fullscreen-control {
+      border: 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      background: transparent;
+      color: #eaffff;
+      padding: 9px 12px;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .zoom-control button:last-child { border-bottom: 0; }
+
+    .fullscreen-control {
+      border: 1px solid rgba(34, 211, 238, 0.24);
+      border-radius: 14px;
+      background: rgba(7, 16, 20, 0.84);
+      color: #b9f8ff;
+    }
+
+    .marker {
+      --outer: var(--green);
+      --inner: var(--green);
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      background: transparent;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+    }
+
+    .map-stage.drag-mode .marker {
+      cursor: move;
+    }
+
+    .marker::before,
+    .marker::after,
+    .marker i {
+      position: absolute;
+      border-radius: 999px;
+      content: "";
+    }
+
+    .marker::before {
+      inset: 0;
+      background: var(--outer);
+      opacity: 0.24;
+      animation: markerPulse 1.8s infinite;
+    }
+
+    .marker::after {
+      inset: 5px;
+      background: var(--outer);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.16), 0 0 22px color-mix(in srgb, var(--outer), transparent 45%);
+    }
+
+    .marker i {
+      inset: 11px;
+      z-index: 1;
+      background: var(--inner);
+      border: 2px solid #fff;
+    }
+
+    .marker small {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 6px);
+      z-index: 2;
+      transform: translateX(-50%);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+      background: rgba(7, 16, 20, 0.88);
+      color: #eaffff;
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .marker.on { --outer: var(--green); --inner: var(--green); }
+    .marker.off { --outer: var(--green); --inner: #6b7280; }
+    .marker.fault { --outer: var(--green); --inner: var(--rose); }
+    .marker.fault::before { animation: markerFault 0.85s infinite; }
+    .marker.offline { --outer: var(--rose); --inner: #94a3b8; }
+    .marker.pending { --outer: var(--amber); --inner: var(--amber); }
+
+    .placement-line {
+      position: absolute;
+      left: 42%;
+      top: 42%;
+      width: 150px;
+      border-top: 2px dashed rgba(251, 191, 36, 0.74);
+      transform: rotate(22deg);
+      transform-origin: left center;
+      display: none;
+    }
+
+    .map-stage.drag-mode .placement-line {
+      display: block;
+    }
+
+    .map-tooltip {
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      z-index: 6;
+      width: min(390px, calc(100% - 36px));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 20px;
+      background: rgba(7, 16, 20, 0.88);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.36);
+      padding: 14px;
+    }
+
+    .device-title {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .device-title strong {
+      font-size: 15px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 9px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 13px;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 14px;
+      min-height: 690px;
+    }
+
+    .side-card {
+      padding: 15px;
+    }
+
+    .placement-queue-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    .placement-queue-card .action-list {
+      flex: 1;
+      align-content: start;
+    }
+
+    .queue-group-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .queue-group-label:first-of-type {
+      margin-top: 12px;
+    }
+
+    .action-list {
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 4px;
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 11px 12px;
+    }
+
+    .action-row strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .action-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .table-card {
+      padding-bottom: 16px;
+      margin-bottom: 14px;
+    }
+
+    .table-scroll {
+      max-height: 480px;
+      margin: 0 16px;
+      overflow: auto;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .device-table {
+      width: 100%;
+      min-width: 1260px;
+      border-collapse: collapse;
+    }
+
+    .device-table th,
+    .device-table td {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 12px;
+    }
+
+    .device-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .device-table th {
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.035);
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .device-table tbody tr:hover {
+      background: rgba(34, 211, 238, 0.05);
+    }
+
+    .device-table td strong {
+      display: block;
+      color: #f2ffff;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .device-table td span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      margin-top: 3px;
+    }
+
+    .device-link {
+      color: #b9f8ff;
+      font-weight: 950;
+      text-decoration: none;
+    }
+
+    .device-link:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .row-actions .button {
+      padding: 5px 8px;
+      font-size: 10px;
+    }
+
+    .device-qr-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 11px;
+    }
+
+    .device-qr-card.compact {
+      margin-top: 10px;
+    }
+
+    .qr-code {
+      width: 88px;
+      height: 88px;
+      border: 7px solid #f8fafc;
+      border-radius: 12px;
+      background:
+        linear-gradient(90deg, #071014 8px, transparent 8px 15px, #071014 15px 24px, transparent 24px 34px, #071014 34px 42px, transparent 42px),
+        linear-gradient(#071014 8px, transparent 8px 15px, #071014 15px 24px, transparent 24px 34px, #071014 34px 42px, transparent 42px),
+        #f8fafc;
+      background-size: 42px 42px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+    }
+
+    .qr-detail {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .qr-detail h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .qr-detail p,
+    .qr-detail span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.42;
+    }
+
+    .qr-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .qr-meta {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 10px;
+      background: rgba(7, 16, 20, 0.28);
+      padding: 7px;
+    }
+
+    .qr-meta span,
+    .qr-meta strong {
+      display: block;
+    }
+
+    .qr-meta strong {
+      color: var(--text);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .contract-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 14px;
+    }
+
+    .contract-card {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 14px;
+    }
+
+    .contract-card h3 {
+      margin-bottom: 8px;
+    }
+
+    .contract-card li,
+    .contract-card p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .contract-card ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    @keyframes markerPulse {
+      from { opacity: 0.56; transform: scale(1); }
+      to { opacity: 0; transform: scale(2.28); }
+    }
+
+    @keyframes markerFault {
+      0%, 100% { opacity: 0.52; transform: scale(1); }
+      50% { opacity: 0.05; transform: scale(2.35); }
+    }
+
+    @keyframes livePulse {
+      0%, 100% { box-shadow: 0 0 0 rgba(74, 222, 128, 0); }
+      50% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.5); }
+    }
+
+    @keyframes redBlink {
+      0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+      50% { box-shadow: 0 0 26px rgba(239, 68, 68, 0.48); transform: scale(1.025); }
+    }
+
+    @media (max-width: 1240px) {
+      .topbar,
+      .workspace-grid { grid-template-columns: 1fr; }
+      .filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .actions,
+      .chip-row { justify-content: flex-start; }
+    }
+
+    @media (max-width: 720px) {
+      .app { width: min(100% - 18px, var(--max)); padding-top: 10px; }
+      .filter-grid,
+      .stats-grid,
+      .metric-grid { grid-template-columns: 1fr; }
+      .map-card { min-height: auto; }
+      .map-stage { min-height: 620px; margin: 0 10px 10px; }
+      .map-tooltip { width: calc(100% - 36px); }
+    }
+      .table-scroll th { position: sticky; top: 0; z-index: 1; }
+
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>▣ SmartLight Devices <span class="connection-badge"><span class="status-dot"></span>Live connected</span></h1>
+          <div class="brand-meta">
+            <p class="subtitle">/device-list/ · device inventory · map placement · drag marker</p>
+          </div>
+        </div>
+      </div>
+      <div class="actions top-actions">
+        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
+        <span class="chip">▣ Portfolio UI · Platform/Dealer</span>
+        <a class="critical-error-badge" href="/faults/?source=device-list">⚠ 2 unacknowledged · 12 timeout</a>
+        <div class="profile-menu" data-profile-menu>
+          <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+          <div class="profile-popover" aria-label="Profile controls">
+            <div class="profile-popover-head">
+              <strong>◉ Manager Profile</strong>
+              <span>goodten</span>
+            </div>
+            <div class="profile-actions">
+              <a class="profile-action" href="/profile/">◉ Profile <span>name, email, language</span></a>
+              <a class="profile-action" href="/password_change/">◆ Password <span>change password</span></a>
+              <a class="profile-action" href="/settings/">⚙ Preferences <span>timezone, layout</span></a>
+              <a class="profile-action" href="/logout/">↪ Sign out <span>end session</span></a>
+            </div>
+          </div>
+        </div>
+        <div class="widget-menu" data-widget-menu>
+          <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+          <div class="widget-popover" aria-label="Widget visibility controls">
+            <div class="widget-popover-head">
+              <strong>▦ Widget visibility</strong>
+              <span>Show or hide cards in this device workspace.</span>
+            </div>
+            <div class="card-library">
+              <div class="library-card"><label><input type="checkbox" checked> ⌖ Placement Map</label><p>Leaflet/OpenStreetMap drag marker workspace.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▤ Device Table</label><p>Inventory rows, QR, ping, and command-center links.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ⚠ Unacknowledged Issues</label><p>System issues with no ack_by/ack_at only.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▦ QR Popup</label><p>Shared device QR and detail popup.</p></div>
+            </div>
+          </div>
+        </div>
+        <span class="button primary">✓ Save layout</span>
+      </div>
+    </header>
+
+    <section class="panel filter-panel" aria-label="Device filters">
+      <div class="filter-head">
+        <div>
+          <h2>⌕ Device Filters</h2>
+          <p class="subtitle">Device list should filter inventory and placement together. Search device_id first, then narrow by account, layout mode, floor/site, zone/tag, lot, placement, marker state, and ping result.</p>
+        </div>
+        <div class="chip-row">
+          <span class="button primary">✓ Apply</span>
+          <span class="button">× Reset</span>
+          <span class="button">↻ Fit markers</span>
+          <span class="button" data-fullscreen-map>⛶ Fullscreen map</span>
+        </div>
+      </div>
+      <div class="filter-grid">
+        <!-- LOGIC: Portfolio UI exposes account/customer hierarchy. Customer UI hides account hierarchy and starts from own site/zone/tag/device inventory. -->
+        <div class="field"><label>UI mode</label><select><option>Portfolio UI · Platform/Dealer</option><option>Customer UI · Site operation</option></select></div>
+        <div class="field"><label>Search device_id</label><input value="SP-088" aria-label="Search device ID"></div>
+        <div class="field"><label>Account scope</label><select><option>All visible accounts</option><option>Dealer A subtree</option><option>Customer Factory AA</option></select></div>
+        <div class="field"><label>Site</label><select><option>All sites</option><option>Main campus</option><option>Factory AA Site 1</option></select></div>
+        <div class="field"><label>Layout</label><select><option>All layouts</option><option>MAP · lat/lng</option><option>FLOOR_PLAN · floor layout</option></select></div>
+        <div class="field"><label>Floor / Area</label><select><option>All floors / areas</option><option>Floor 1 · Production</option><option>Floor 2 · Warehouse</option><option>Outdoor · Road B</option></select></div>
+        <div class="field"><label>Zone</label><select><option>All zones</option><option>Road B</option><option>Warehouse</option><option>Parking</option></select></div>
+        <div class="field"><label>Tag</label><select><option>All tags</option><option>North row</option><option>Feeder 3</option><option>Critical segment</option></select></div>
+        <div class="field"><label>Purchase lot</label><select><option>All purchase lots</option><option>LOT-2026-001 · Basic 24m</option><option>LOT-2026-002 · Expansion</option><option>Expiring within 30d</option></select></div>
+        <div class="field"><label>Placement</label><select><option>All</option><option>Mapped</option><option>Unmapped</option><option>Needs position</option><option>Pending save</option></select></div>
+        <div class="field"><label>Marker state</label><select><option>All states</option><option>online-normal-on</option><option>online-normal-off</option><option>online-fault</option><option>offline-unreachable</option></select></div>
+        <div class="field"><label>Ping</label><select><option>Any</option><option>Ping OK</option><option>Timeout</option><option>Not tested</option></select></div>
+      </div>
+    </section>
+
+    <section class="stats-grid" aria-label="Device management summary">
+      <div class="stat"><span>Total devices</span><strong>1,240</strong></div>
+      <div class="stat"><span>Mapped</span><strong class="cyan">1,182</strong></div>
+      <div class="stat"><span>Needs position</span><strong class="amber">58</strong></div>
+      <div class="stat"><span>Online</span><strong class="green">1,184</strong></div>
+      <div class="stat"><span>Ping timeout</span><strong class="rose">12</strong></div>
+      <div class="stat"><span>Pending save</span><strong class="amber">3</strong></div>
+    </section>
+
+    <section class="workspace-grid" aria-label="Device placement workspace">
+      <article class="card map-card">
+        <div class="card-head">
+          <div>
+            <h2>⌖ Device Placement Map</h2>
+            <p class="subtitle">Leaflet + OpenStreetMap map for placement management. Operators can enable drag mode, drag markers, review pending coordinates, then save location changes.</p>
+          </div>
+          <div class="chip-row">
+            <label class="button warn"><input id="drag-toggle" type="checkbox"> Enable drag mode</label>
+            <span class="button primary">✓ Save 3 changes</span>
+            <span class="button">↩ Discard</span>
+          </div>
+        </div>
+
+        <div id="device-map-stage" class="map-stage" aria-label="Device placement map">
+          <div class="map-badge">Leaflet 1.9.4 · OpenStreetMap · draggable markers</div>
+          <div class="zone z1">Zone: Road B</div>
+          <div class="zone z2">Zone: Warehouse</div>
+          <div class="zone z3">Zone: Parking</div>
+          <div class="road r1"></div>
+          <div class="road r2"></div>
+          <div class="road r3"></div>
+          <div class="road r4"></div>
+          <div class="placement-line"></div>
+
+          <div class="map-tools">
+            <div class="zoom-control" aria-label="Map controls">
+              <button>+</button>
+              <button>-</button>
+              <button>⌖</button>
+            </div>
+            <button class="fullscreen-control" type="button" data-fullscreen-map>⛶</button>
+          </div>
+
+          <button class="marker on" style="left:24%;top:39%" data-device="SP-041"><i></i><small>SP-041</small></button>
+          <button class="marker off" style="left:34%;top:30%" data-device="SP-052"><i></i><small>SP-052</small></button>
+          <button class="marker fault" style="left:48%;top:42%" data-device="SP-088"><i></i><small>SP-088</small></button>
+          <button class="marker offline" style="left:65%;top:36%" data-device="SP-103"><i></i><small>SP-103</small></button>
+          <button class="marker pending" style="left:74%;top:64%" data-device="SP-117"><i></i><small>SP-117</small></button>
+          <button class="marker pending" style="left:42%;top:72%" data-device="SP-131"><i></i><small>SP-131</small></button>
+          <button class="marker on" style="left:18%;top:80%" data-device="SP-151"><i></i><small>SP-151</small></button>
+
+          <div class="map-tooltip">
+            <div class="device-title">
+              <strong>⚠ SP-088 · selected device</strong>
+              <span class="status-pill bad">online-fault</span>
+            </div>
+            <div class="metric-grid">
+              <div class="metric"><span>Current lat/lng</span><strong>13.756300</strong></div>
+              <div class="metric"><span>New lat/lng</span><strong class="amber">13.756510</strong></div>
+              <div class="metric"><span>Placement</span><strong class="amber">pending</strong></div>
+              <div class="metric"><span>Ping</span><strong class="green">ACK 420ms</strong></div>
+              <div class="metric"><span>Zone</span><strong>Road B</strong></div>
+              <div class="metric"><span>Last seen</span><strong>8s ago</strong></div>
+            </div>
+            <div class="device-qr-card compact">
+              <div class="qr-code" aria-label="QR code for SP-088"></div>
+              <div class="qr-detail">
+                <h3>QR · SP-088</h3>
+                <p>Device click opens QR + details. Use compact popup when the table/map layout has no spare space.</p>
+                <div class="qr-meta-grid">
+                  <div class="qr-meta"><span>Serial</span><strong>SL-088</strong></div>
+                  <div class="qr-meta"><span>Payload</span><strong>smartlight://device/SP-088</strong></div>
+                </div>
+              </div>
+            </div>
+            <div class="chip-row" style="justify-content:flex-start;margin-top:12px">
+              <span class="button primary">✓ Save location</span>
+              <span class="button">↯ Ping node</span>
+              <span class="button">▦ QR</span>
+              <span class="button warn">↩ Revert marker</span>
+            </div>
+          </div>
+
+          <div class="drag-badge">Drag mode ON · marker movement is staged until Save</div>
+          <div class="osm-attribution">Leaflet | © OpenStreetMap contributors</div>
+        </div>
+      </article>
+
+      <aside class="side-stack">
+        <section class="card side-card placement-queue-card">
+          <!--
+            DEVICE RIGHT RAIL LOGIC:
+            Placement Queue = staged location changes only.
+            Unacknowledged issues = system-detected active issues that have no ack_by/ack_at.
+            Do NOT place acknowledged/owned issues in the Unacknowledged group.
+            Preventive/manual maintenance belongs to WorkOrder/Maintenance Records.
+          -->
+          <h2>⌖ Placement Queue</h2>
+          <p class="subtitle">Right rail stays the same height as the map. It tracks staged marker edits and unacknowledged issues that need action from this device workspace.</p>
+          <div class="queue-group-label"><span>Staged location changes</span><span>3</span></div>
+          <div class="action-list">
+            <div class="action-row"><div><strong>SP-088</strong><span>moved 23m · 13.756300 -> 13.756510</span></div><span class="status-pill warn">pending</span></div>
+            <div class="action-row"><div><strong>SP-117</strong><span>new location from technician map click</span></div><span class="status-pill warn">pending</span></div>
+            <div class="action-row"><div><strong>SP-131</strong><span>zone changed Parking -> Road B</span></div><span class="status-pill warn">review</span></div>
+          </div>
+          <div class="queue-group-label"><span>Unacknowledged issues</span><span>2</span></div>
+          <div class="action-list">
+            <div class="action-row"><div><strong>SP-103 · offline timeout</strong><span>not acknowledged · no telemetry 32m · click opens maintenance drawer</span></div><span class="status-pill bad">P1</span></div>
+            <div class="action-row"><div><strong>SP-144 · voltage sag</strong><span>not acknowledged · min 188V · Warehouse feeder review</span></div><span class="status-pill bad">P1</span></div>
+          </div>
+          <div class="chip-row" style="justify-content:flex-start;margin-top:auto;padding-top:14px">
+            <span class="button primary">✓ Save 3 locations</span>
+            <span class="button rose">Open maintenance</span>
+            <a class="button" href="/faults/">Command center</a>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="card table-card" aria-label="Device list table">
+      <div class="card-head">
+        <div>
+          <h2>▤ Device Inventory Table</h2>
+          <p class="subtitle">This table should drive the map. Selecting a row centers the marker, ping updates row status, and drag edits update location state.</p>
+        </div>
+        <div class="chip-row">
+          <span class="chip">7 visible</span>
+          <span class="chip amber">3 pending location</span>
+          <span class="button">↓ CSV</span>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="device-table" data-sortable>
+          <thead>
+            <tr>
+              <th>Device ID</th>
+              <th>Account / Zone</th>
+              <th>Connection</th>
+              <th>Lamp / Marker</th>
+              <th>Location</th>
+              <th>Ping</th>
+              <th>Placement state</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-row-device="SP-041">
+              <td><a class="device-link" href="#">SP-041</a><span>Street light V2 · serial SL-041</span></td>
+              <td><strong>Factory AA</strong><span>Road B · North row · LOT-2026-001</span></td>
+              <td><span class="status-pill ok">online</span><span>last seen 5s ago</span></td>
+              <td><span class="status-pill ok">ON</span><span>online-normal-on</span></td>
+              <td><strong>13.756900, 100.501100</strong><span>MAP · source: manual map pin</span></td>
+              <td><span class="status-pill ok">ACK 310ms</span><span>tested 1m ago</span></td>
+              <td><span class="status-pill ok">mapped</span><span>no pending change</span></td>
+              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><span class="button">↗ Open</span></div></td>
+            </tr>
+            <tr data-row-device="SP-052">
+              <td><a class="device-link" href="#">SP-052</a><span>Street light V2 · serial SL-052</span></td>
+              <td><strong>Factory AA</strong><span>Road B · North row · LOT-2026-001</span></td>
+              <td><span class="status-pill ok">online</span><span>last seen 12s ago</span></td>
+              <td><span class="status-pill off">OFF</span><span>online-normal-off</span></td>
+              <td><strong>13.756600, 100.501600</strong><span>MAP · source: import CSV</span></td>
+              <td><span class="status-pill">not tested</span><span>available</span></td>
+              <td><span class="status-pill ok">mapped</span><span>no pending change</span></td>
+              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><span class="button">✎ Edit</span></div></td>
+            </tr>
+            <tr data-row-device="SP-088">
+              <td><a class="device-link" href="#">SP-088</a><span>Street light V2 · serial SL-088</span></td>
+              <td><strong>Factory AA</strong><span>Road B · Critical segment · LOT-2026-001</span></td>
+              <td><span class="status-pill ok">online</span><span>last seen 8s ago</span></td>
+              <td><span class="status-pill bad">fault</span><span>Promoted lamp-state fault · ack Operator A · owner Technician A</span></td>
+              <td><strong>13.756300 -> 13.756510</strong><span>MAP · pending drag move · 23m</span></td>
+              <td><span class="status-pill ok">ACK 420ms</span><span>command channel OK</span></td>
+              <td><span class="status-pill warn">pending save</span><span>requires commit</span></td>
+              <td><div class="row-actions"><span class="button primary">✓ Save</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><span class="button rose">Open maintenance</span><a class="button" href="/faults/?device_id=SP-088">Command center</a><span class="button warn">↩ Revert</span></div></td>
+            </tr>
+            <tr data-row-device="SP-103">
+              <td><a class="device-link" href="#">SP-103</a><span>Street light V2 · serial SL-103</span></td>
+              <td><strong>Factory AA</strong><span>Warehouse · Multiple devices offline too long · LOT-2026-002</span></td>
+              <td><span class="status-pill bad">offline</span><span>last seen 32m ago</span></td>
+              <td><span class="status-pill bad">unknown</span><span>offline-unreachable</span></td>
+              <td><strong>13.757100, 100.502700</strong><span>MAP · source: device import</span></td>
+              <td><span class="status-pill bad">timeout</span><span>no response</span></td>
+              <td><span class="status-pill ok">mapped</span><span>location is present</span></td>
+              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button rose">⚠ Ticket</span><span class="button">▦ QR</span><span class="button">↯ Retry</span></div></td>
+            </tr>
+            <tr data-row-device="SP-117">
+              <td><a class="device-link" href="#">SP-117</a><span>Street light V2 · serial SL-117</span></td>
+              <td><strong>Factory AA</strong><span>Floor 1 · Parking · MA lane · LOT-2026-002</span></td>
+              <td><span class="status-pill ok">online</span><span>last seen 2m ago</span></td>
+              <td><span class="status-pill warn">maintenance</span><span>dimmed 55%</span></td>
+              <td><strong>x 64%, y 72%</strong><span>FLOOR_PLAN · pending technician update</span></td>
+              <td><span class="status-pill warn">pending</span><span>waiting ACK</span></td>
+              <td><span class="status-pill warn">pending save</span><span>needs review</span></td>
+              <td><div class="row-actions"><span class="button primary">✓ Save</span><span class="button">▣ Work order</span><span class="button">▦ QR</span><span class="button">⌖ Center</span></div></td>
+            </tr>
+            <tr data-row-device="SP-131">
+              <td><a class="device-link" href="#">SP-131</a><span>Street light V2 · serial SL-131</span></td>
+              <td><strong>Factory AA</strong><span>Floor 1 · Parking · LOT-2026-001</span></td>
+              <td><span class="status-pill violet">disabled</span><span>admin disabled</span></td>
+              <td><span class="status-pill violet">disabled</span><span>control not allowed</span></td>
+              <td><strong>auto layout</strong><span>FLOOR_PLAN · no x/y · pending zone review</span></td>
+              <td><span class="status-pill off">blocked</span><span>disabled device</span></td>
+              <td><span class="status-pill warn">review</span><span>zone changed</span></td>
+              <td><div class="row-actions"><span class="button">✎ Edit</span><span class="button warn">↩ Revert</span><span class="button">▦ QR</span><span class="button">↗ Open</span></div></td>
+            </tr>
+            <tr data-row-device="SP-151">
+              <td><a class="device-link" href="#">SP-151</a><span>Street light V2 · serial SL-151</span></td>
+              <td><strong>Factory AA</strong><span>Parking · South row · LOT-2026-001</span></td>
+              <td><span class="status-pill ok">online</span><span>last seen 6s ago</span></td>
+              <td><span class="status-pill ok">ON</span><span>online-normal-on</span></td>
+              <td><strong>13.754800, 100.500900</strong><span>MAP · source: map pin</span></td>
+              <td><span class="status-pill ok">ACK 290ms</span><span>tested 3m ago</span></td>
+              <td><span class="status-pill ok">mapped</span><span>no pending change</span></td>
+              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><span class="button">↗ Open</span></div></td>
+            </tr>
+          
+            <tr data-row-device="SP-177">
+              <td><a class="device-link" href="#">SP-177</a><span>Street light V2 · serial SL-177</span></td>
+              <td><strong>Factory Delta</strong><span>Road C · Feeder 3 · LOT-2026-003</span></td>
+              <td><span class="status-pill ok">online</span><span>last seen 16s ago</span></td>
+              <td><span class="status-pill warn">warning</span><span>over-voltage candidate</span></td>
+              <td><strong>13.758000, 100.504100</strong><span>MAP · source: technician placement</span></td>
+              <td><span class="status-pill ok">ACK 285ms</span><span>tested 4m ago</span></td>
+              <td><span class="status-pill warn">review</span><span>moved 9m from import</span></td>
+              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><a class="button warn" href="/faults/?device_id=SP-177">Inspect</a></div></td>
+            </tr>
+            <tr data-row-device="SP-205">
+              <td><a class="device-link" href="#">SP-205</a><span>Street light V1 · serial SL-205</span></td>
+              <td><strong>School Lighting E</strong><span>Front Gate · Main entry</span></td>
+              <td><span class="status-pill ok">online</span><span>last seen 21s ago</span></td>
+              <td><span class="status-pill warn">schedule mismatch</span><span>actual ON outside schedule</span></td>
+              <td><strong>13.754200, 100.499700</strong><span>source: map drag staged</span></td>
+              <td><span class="status-pill ok">ACK 344ms</span><span>tested 7m ago</span></td>
+              <td><span class="status-pill warn">pending save</span><span>new gate marker</span></td>
+              <td><div class="row-actions"><span class="button primary">✓ Save</span><span class="button">▦ QR</span><a class="button" href="/map/?device_id=SP-205">Map</a></div></td>
+            </tr>
+            <tr data-row-device="SP-221">
+              <td><a class="device-link" href="#">SP-221</a><span>Street light V2 · serial SL-221</span></td>
+              <td><strong>Depot F</strong><span>Loading · Dock 2</span></td>
+              <td><span class="status-pill ok">online</span><span>last seen 42s ago</span></td>
+              <td><span class="status-pill warn">poor PF</span><span>PF 0.71 · load review</span></td>
+              <td><strong>13.759300, 100.506200</strong><span>source: CSV import</span></td>
+              <td><span class="status-pill">pending</span><span>queued ping</span></td>
+              <td><span class="status-pill ok">mapped</span><span>no pending change</span></td>
+              <td><div class="row-actions"><span class="button">⌖ Center</span><span class="button">↯ Ping</span><span class="button">▦ QR</span><a class="button warn" href="/faults/?device_id=SP-221">Inspect</a></div></td>
+            </tr>
+</tbody>
+        </table>
+      </div>
+    </section>
+
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (device.html / Device Card Logic Matrix): Device Card Logic Matrix Every device workspace card must have a clear source, state rule, action rule, and entitlement rule. Device Filters Source: device registry, account hierarchy, layout mode/form_type, floor/site area, zone/tag, purchase lot, placement state, ping state Shows: device search and operational filters for table/map/floor plan Action: filters only; does not change device state Expiry: filters remain visible; results are capped by entitlement.visible_until Layout rule: MAP rows use lat/lng and Leaflet marker placement. FLOOR_PLAN rows use floor/zone/tag and optional x/y; if x/y missing, show auto layout instead of forcing map coordinates. Lot rule: purchase lot is inventory/package/expiry context and never replaces zone/floor/tag. Device Summary Stats Source: latest allowed device state, placement state, ping result, issue count Shows: total, mapped, needs position, online, timeout, pending save Action: click narrows table/map filter Expiry: software expired shows historical state up to visible_until and current expiry notice Device Placement Map Source: Leaflet/OpenStreetMap + stored device coordinates + staged drag changes Shows: marker location, marker state, selected device QR, pending coordinate preview Action: enable drag, stage marker, save batch, revert, ping, open QR Expiry: software expired disables drag save, ping, command, and maintenance actions; QR/details remain read-only Placement Queue Source: client/server staged marker changes + system issues with no ack_by/ack_at Shows: staged location changes and unacknowledged issues only Action: save/discard locations, open maintenance drawer for issue if allowed Expiry: software expired keeps staged preview readable but save/issue actions are disabled Device Inventory Table Source: device registry joined with latest allowed state, placement, lot, ping, issue/work-order state Shows: device id, account, lot, layout mode, zone/tag, status, lamp, location/floor placement, ping, placement, row actions Action: center, ping, QR, edit, save, open maintenance, command center Expiry: software expired makes row actions read-only except QR/profile/renewal path Package Expiry Applied To Devices Every device-list query/control endpoint must call EntitlementPolicy.apply(scope, requested_time_range) Software active: drag, ping, control, work-order actions follow role permission Software near expiry: actions still work; show warning badges Software expired: API ingestion continues, UI shows data only up to visible_until, actions disabled Lamp/hardware expired: show lifecycle/maintenance warning; do not cap telemetry if software is active -->
+
+
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (device.html / ⚙ Implementation Contract): ⚙ Implementation Contract Use the existing `/device-list/` code path. This document describes the intended UX and data contract for improving that page. Existing Files Template: templates/devices/list.html Map init: static/js/devices/list-map.js Drag/location helper: static/js/devices/list-map-utils.js Ping/control helper: static/js/devices/list-controls.js Styles: static/css/devices/list.css Drag Marker Flow Enable drag mode from toolbar Marker becomes draggable and popup editing mode starts Drag result becomes staged location, not immediately final Save calls POST /devices/{deviceId}/location/ with CSRF After save, table row and map marker return to mapped state Leaflet Drag Behavior Marker drag is native Leaflet: L.marker(latlng, { draggable: true, autoPan: true }) Use marker.dragging.enable() / marker.dragging.disable() when toggling drag mode Popup drag is optional custom UX using L.Draggable on the popup DOM Only marker drag can update device lat/lng; popup drag is visual screen position only Ping Node Flow Ping uses existing device control endpoint with action: ping Show status per row using data-ping-status-for Map popup should show ACK, timeout, or unavailable Timeout should not auto-move marker; it only flags diagnosis Shared Device QR Popup Click device_id or QR action from any row/marker opens shared QR popup Minimum details: device_id, QR payload, serial, account, zone, location, marker state, ping state, active issue owner If map/table has no spare space, render compact overlay popup Actions: open maintenance drawer, download QR, center map, ping node, open fault/maintenance command center Realtime State Use existing WebSocket /ws/devices/ Update lamp pill, active control button, and map marker state. If command_status=accepted and verification_status=state-not-yet-confirmed, show amber pending/unconfirmed and do not mark lamp ON or create a repair row until IssueRuleEngine promotes it after debounce. Do not overwrite staged drag position from realtime updates Keep table and selected marker panel in sync by device_id Fault / Maintenance Cross Page State Device row must show active fault/maintenance status from shared FaultOccurrence + WorkOrder state Rows should show ack_by, owner/technician, SLA, and latest work-order step when an active issue exists Click Work order or fault badge -> opens shared maintenance drawer immediately; command-center link goes to /faults/?device_id=... Ping timeout can create/suggest a fault, but it must not automatically become a repair until acknowledged or converted to work order Completing a fault-linked repair updates device-list state, marker color, map popup, and removes/resolves the matching dashboard Top Issue when the source issue is cleared Preventive/manual maintenance updates device-list, marker state, popup, and maintenance history, but it must not create a dashboard Top Issue by itself Shared Header Include Header markup must match the dashboard header pattern and use data-shared-header-include="frontend-dashboard-header" Implement as one shared include, for example templates/includes/frontend_dashboard_header.html Include owns white-label title, page title, account type, profile, theme toggle, widget control, save layout, and live status Use the same include for /dashboard/, /map/, /device-list/, and /faults/ so responsive order stays consistent Leaflet / OSM Map Continue using Leaflet + OpenStreetMap resources Fit bounds should use filtered visible devices Fullscreen should call map.invalidateSize() after enter/exit Marker color must match /map/ legend and map_marker_state -->
+
+  
+    <!-- SHARED DEVICE STATE ENGINE REFERENCE:
+      Source plan: docs/html/device_state_engine.html
+      Implementation rule: this page must read normalized DeviceLatestState + ActiveIssue from backend APIs.
+      UI must not infer OK/warning/error/fault from raw telemetry locally.
+      Cases such as commanded ON + lamp telemetry mismatch must be detected by DeviceStateEngine/IssueRuleEngine,
+      then rendered here according to role, scope, package entitlement, and selected filters.
+    -->
+
+  
+    <!-- PACKAGE TELEMETRY POLICY REFERENCE:
+      Source plan: docs/html/device_state_engine.html#package-telemetry-policy
+      PackageTier polling interval, data retention, software expiry, and hardware warranty must be resolved server-side.
+      This page must not hardcode telemetry cadence, data visibility, export range, or expiry behavior.
+      Apply PackageTelemetryPolicy + EntitlementPolicy before dashboard/map/device/fault/report/notification queries.
+    -->
+
+  </main>
+
+  <script>
+    const dragToggle = document.getElementById('drag-toggle');
+    const mapStage = document.getElementById('device-map-stage');
+    const markers = document.querySelectorAll('.marker');
+    const fullscreenButtons = document.querySelectorAll('[data-fullscreen-map]');
+    const tooltipTitle = document.querySelector('.map-tooltip .device-title strong');
+    const tooltipStatus = document.querySelector('.map-tooltip .device-title .status-pill');
+
+    dragToggle?.addEventListener('change', (event) => {
+      mapStage.classList.toggle('drag-mode', event.target.checked);
+    });
+
+    markers.forEach((marker) => {
+      marker.addEventListener('click', () => {
+        const deviceId = marker.dataset.device;
+        const state = marker.classList.contains('fault')
+          ? 'online-fault'
+          : marker.classList.contains('offline')
+            ? 'offline-unreachable'
+            : marker.classList.contains('pending')
+              ? 'pending-save'
+              : marker.classList.contains('off')
+                ? 'online-normal-off'
+                : 'online-normal-on';
+
+        tooltipTitle.textContent = `${state === 'online-fault' ? '⚠' : '⌖'} ${deviceId} · selected device`;
+        tooltipStatus.textContent = state;
+        tooltipStatus.className = `status-pill ${state.includes('fault') || state.includes('offline') ? 'bad' : state.includes('pending') ? 'warn' : ''}`;
+      });
+    });
+
+    fullscreenButtons.forEach((button) => {
+      button.addEventListener('click', async () => {
+        if (!document.fullscreenElement) {
+          await mapStage?.requestFullscreen?.();
+        } else {
+          await document.exitFullscreen?.();
+        }
+      });
+    });
+  </script>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

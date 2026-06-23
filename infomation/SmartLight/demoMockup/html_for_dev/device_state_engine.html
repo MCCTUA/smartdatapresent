@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartLight Device State Engine Plan</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f8f7;
+      --panel: #ffffff;
+      --panel-soft: #eef7f4;
+      --ink: #10211d;
+      --muted: #60746f;
+      --line: #d8e5e1;
+      --primary: #0f766e;
+      --cyan: #0891b2;
+      --green: #16a34a;
+      --amber: #d97706;
+      --rose: #dc2626;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+      --shadow: 0 22px 58px rgba(15, 23, 42, 0.08);
+      --radius: 24px;
+      --max: 1360px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 7% 0%, rgba(8, 145, 178, 0.16), transparent 30rem),
+        radial-gradient(circle at 95% 8%, rgba(22, 163, 74, 0.12), transparent 32rem),
+        linear-gradient(180deg, #fbfefd 0%, var(--bg) 48%, #eaf2ef 100%);
+      color: var(--ink);
+      font-family: "Aptos", "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+      line-height: 1.62;
+    }
+
+    .page {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 72px;
+    }
+
+    .topbar,
+    .panel,
+    .card,
+    .flow-node,
+    .rule-card,
+    .table-wrap {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 14px;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      border-radius: 999px;
+      padding: 10px 14px 10px 18px;
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-weight: 950;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 13px;
+      background: conic-gradient(from 220deg, var(--primary), var(--green), var(--cyan), var(--primary));
+      box-shadow: 0 12px 28px rgba(15, 118, 110, 0.24);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .nav a,
+    .pill,
+    .badge {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: #28443e;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .panel,
+    .card,
+    .flow-node,
+    .rule-card,
+    .table-wrap {
+      border-radius: var(--radius);
+    }
+
+    .panel { padding: clamp(22px, 4vw, 38px); }
+    .card,
+    .rule-card { padding: 20px; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      background: #ccfbf1;
+      color: #115e59;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p { margin: 0; }
+    h1 {
+      max-width: 900px;
+      font-size: clamp(36px, 5.5vw, 72px);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+    }
+    h2 {
+      font-size: clamp(25px, 3.2vw, 40px);
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+    }
+    h3 { font-size: 18px; line-height: 1.18; letter-spacing: -0.018em; }
+    p { color: var(--muted); }
+
+    .lead {
+      margin-top: 16px;
+      max-width: 880px;
+      color: #526a64;
+      font-size: clamp(16px, 2vw, 19px);
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4,
+    .flow-grid,
+    .rule-grid {
+      display: grid;
+      gap: 14px;
+    }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .flow-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .rule-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .section { margin-top: 18px; }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card span,
+    .small-label,
+    .flow-node span,
+    .rule-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.055em;
+      text-transform: uppercase;
+    }
+
+    .card strong,
+    .flow-node strong,
+    .rule-card strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink);
+      font-size: 20px;
+      line-height: 1.12;
+    }
+
+    .card p,
+    .flow-node p,
+    .rule-card p { margin-top: 8px; font-size: 13px; }
+
+    .flow-node {
+      position: relative;
+      min-height: 150px;
+      padding: 18px;
+      background: linear-gradient(145deg, #fff 0%, #f0fbf8 100%);
+    }
+
+    .flow-node:after {
+      content: "->";
+      position: absolute;
+      top: 18px;
+      right: 14px;
+      color: var(--primary);
+      font-weight: 950;
+    }
+
+    .flow-node:last-child:after { content: "✓"; color: var(--green); }
+
+    .rule-card.critical { border-color: rgba(220, 38, 38, 0.28); background: #fff7f7; }
+    .rule-card.warn { border-color: rgba(217, 119, 6, 0.28); background: #fffbeb; }
+    .rule-card.good { border-color: rgba(22, 163, 74, 0.28); background: #f0fdf4; }
+    .rule-card.blue { border-color: rgba(37, 99, 235, 0.24); background: #eff6ff; }
+
+    .state-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .state-pill {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: #2b4842;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+    th {
+      background: #eef7f4;
+      color: #31554d;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    td code,
+    pre {
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    }
+    code {
+      border-radius: 6px;
+      background: #eef7f4;
+      color: #0f766e;
+      padding: 2px 5px;
+      font-size: 12px;
+    }
+    pre {
+      margin: 14px 0 0;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #0f172a;
+      color: #dff7ff;
+      padding: 16px;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .callout {
+      border: 1px solid rgba(15, 118, 110, 0.22);
+      border-radius: 20px;
+      background: linear-gradient(145deg, #ecfdf5, #f0fdfa);
+      padding: 18px;
+    }
+
+    .callout strong { color: #115e59; }
+
+    @media (max-width: 980px) {
+      .hero,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .flow-grid,
+      .rule-grid { grid-template-columns: 1fr; }
+      .topbar { border-radius: 22px; }
+    }
+  
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>SmartLight Logic Plan</span></div>
+      <nav class="nav" aria-label="Page links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="maps.html">Map</a>
+        <a href="device.html">Device</a>
+        <a href="faults.html">Faults</a>
+        <a href="logic_flow.html">Logic Flow</a>
+        <a href="influx.html">InfluxDB Plan</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="panel">
+        <span class="eyebrow">Central source of truth</span>
+        <h1>Device State Engine + Issue Rule Engine</h1>
+        <p class="lead">เอกสารนี้เป็นแผนกลางสำหรับตอนลง code จริง: ข้อมูลจาก MQTT, Node-RED, Provider API, Django Ninja, Channels หรือ future InfluxDB ต้องถูกรวมและตัดสินสถานะที่ backend จุดเดียว ก่อนส่งให้ UI ทุกหน้าแสดงผล.</p>
+      </div>
+      <aside class="panel">
+        <span class="small-label">Core rule</span>
+        <h2>UI never decides device health.</h2>
+        <p class="lead">Dashboard, Map, Device List, Faults, Notifications และ Audit Logs ต้อง render จาก normalized state + active issue เดียวกันเท่านั้น.</p>
+        <p class="lead">UI มี 2 mode หลัก: Portfolio UI สำหรับ Platform Owner/Dealer และ Customer UI สำหรับ site operation. ทั้งสอง mode ใช้ state engine เดียวกัน ต่างกันเฉพาะ scope/filter/card visibility.</p>
+      </aside>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Architecture</span>
+          <h2>6-layer implementation flow</h2>
+        </div>
+        <span class="badge">Normalize -> State -> Issue -> API -> UI</span>
+      </div>
+      <div class="flow-grid">
+        <div class="flow-node"><span>1</span><strong>Ingestion</strong><p>รับ raw telemetry, command ACK, provider event, manual import, Node-RED payload โดยยังไม่ตัดสินว่า OK หรือ fault.</p></div>
+        <div class="flow-node"><span>2</span><strong>Normalize</strong><p>แปลงข้อมูลเป็น normalized event ที่ field/หน่วย/เวลา/source ตรงกัน.</p></div>
+        <div class="flow-node"><span>3</span><strong>Device State Engine</strong><p>คำนวณ latest state: online, command, lamp, electrical, overall, severity.</p></div>
+        <div class="flow-node"><span>4</span><strong>Issue Rule Engine</strong><p>ตรวจ rule เช่น lamp_state_unconfirmed after debounce, command timeout, voltage sag แล้วสร้าง/อัปเดต issue.</p></div>
+        <div class="flow-node"><span>5</span><strong>Read Model + API</strong><p>เก็บ latest state, active issue, event timeline แล้ว expose ผ่าน API กลาง.</p></div>
+        <div class="flow-node"><span>6</span><strong>UI Renderer</strong><p>ทุกหน้าอ่าน state เดียวกันและแสดงตาม role/package/scope.</p></div>
+      </div>
+    </section>
+
+
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Package telemetry policy</span>
+          <h2>Package ต้องเป็นตัวกำหนด sampling, visibility, retention และ action gate</h2>
+        </div>
+        <span class="badge">PackageTier -> TelemetryPolicy</span>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Package fields ที่มีอยู่แล้วในระบบ</h3>
+          <div class="state-pill-row">
+            <span class="state-pill">data_polling_interval_seconds</span>
+            <span class="state-pill">data_polling_interval_minutes</span>
+            <span class="state-pill">data_polling_interval_display</span>
+            <span class="state-pill">data_retention_months</span>
+            <span class="state-pill">data_retention_days</span>
+            <span class="state-pill">platform_included_months</span>
+            <span class="state-pill">software_extend_days</span>
+            <span class="state-pill">hardware_warranty_months</span>
+            <span class="state-pill">hardware_extend_days</span>
+          </div>
+          <p class="lead">ตอนลง code จริงต้อง resolve policy จาก package/account ก่อน query, stream, aggregate, export หรือแสดงผลทุกครั้ง.</p>
+        </div>
+        <div class="panel">
+          <h3>TelemetryPolicy example</h3>
+          <pre>{
+  "account_id": "customer-uuid",
+  "package_id": "basic-uuid",
+  "sampling_interval_seconds": 180,
+  "expected_points_per_day": 4800,
+  "frontend_visible_from": "2026-03-04",
+  "frontend_visible_until": "2028-06-10T23:59:59+07:00",
+  "software_state": "active",
+  "raw_retention": "30d",
+  "downsample": ["1m", "5m", "1h"],
+  "actions_read_only": false
+}</pre>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top:14px">
+        <table data-sortable>
+          <thead>
+            <tr><th>Policy</th><th>Source</th><th>Effect on stream</th><th>Effect on UI / report</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Sampling interval</td><td><code>PackageTier.data_polling_interval_seconds</code></td><td>ใช้เป็น expected cadence, debounce window, anomaly window และ over-sampling guard. Device/gateway อาจส่งถี่กว่า แต่ worker ต้อง aggregate/drop/mark ตาม policy.</td><td>Graph default bucket และ realtime freshness threshold ต้องอ้างอิง interval นี้ ไม่ hardcode ทุก 1 วินาที.</td></tr>
+            <tr><td>Frontend data window</td><td><code>data_retention_months + data_retention_days</code></td><td>ไม่จำเป็นต้องลบ raw telemetry ทันที; เป็น visibility/query policy.</td><td>Dashboard, map table, reports, export ต้อง query เฉพาะ allowed visible range.</td></tr>
+            <tr><td>Software expiry</td><td><code>platform_included_months + software_extend_days</code></td><td>Ingestion ยังรับต่อเพื่อไม่ให้ข้อมูลหาย.</td><td>UI แสดงข้อมูลถึง <code>visible_until</code>; command/ack/repair/export ถูก lock ตาม entitlement.</td></tr>
+            <tr><td>Hardware/lamp expiry</td><td><code>hardware_warranty_months + hardware_extend_days</code></td><td>ไม่ cap telemetry ถ้า software ยัง active.</td><td>แสดง lifecycle/maintenance risk และ replacement recommendation.</td></tr>
+            <tr><td>InfluxDB retention</td><td>Derived storage policy จาก package + ops policy</td><td>Raw 1s/fast data เก็บระยะสั้น, downsample ระยะยาว. ห้ามให้ Influx retention ขัดกับ paid visibility ที่ต้องแสดง.</td><td>ถ้า raw หมดแล้วใช้ aggregate bucket ตาม period/report ที่เลือก.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout" style="margin-top:14px">
+        <strong>Implementation rule</strong>
+        <p>Package ไม่ควรแปลว่า device ส่งข้อมูลเท่าไรก็เขียน raw ลงฐานทั้งหมดเสมอ. Package คือ policy ว่าเราคาดหวัง/คิดค่าบริการ/แสดงผล/เก็บละเอียดแค่ไหน ส่วน ingest pipeline ต้องรองรับ over-sampling, late event, duplicate event และ downsampling.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Code gap found from real response</span>
+          <h2>ต้อง align command verification, Device.lamp_state และ FaultDetectionService</h2>
+        </div>
+        <span class="badge">before roadmap implementation</span>
+      </div>
+      <div class="callout">
+        <strong>Observed behavior from real API response</strong>
+        <p><code>open_led_status=1</code>, <code>normalized_online_status=true</code>, แต่ <code>brightness=0</code>, <code>current_a=0</code>, <code>voltage=0</code>, <code>power_w=0</code>, <code>device_verified=false</code>, <code>verification_status=state-not-yet-confirmed</code>. ดังนั้น UI ต้องแสดง pending/unconfirmed ก่อน ไม่ใช่ success และไม่ใช่ active fault ทันที.</p>
+      </div>
+      <div class="table-wrap" style="margin-top:14px">
+        <table data-sortable>
+          <thead><tr><th>Layer</th><th>Current source</th><th>Required rule</th><th>Risk if skipped</th></tr></thead>
+          <tbody>
+            <tr><td>Runtime command API</td><td><code>build_command_status()</code> returns accepted for <code>state-not-yet-confirmed</code>.</td><td>Expose <code>provider_command_accepted</code>, <code>device_verified</code>, <code>overall_success</code>, <code>verification_status</code> to UI.</td><td>Operator sees green success even when lamp state is not verified.</td></tr>
+            <tr><td>Device state</td><td><code>Device.lamp_state</code> tests already force zero metrics to override <code>open_led_status=1</code>.</td><td>Use this normalized state for marker/table/QR popup.</td><td>Map/dashboard can show ON while electrical evidence is OFF.</td></tr>
+            <tr><td>Fault engine</td><td><code>FaultDetectionService._observed_lamp_state()</code> must prioritize load evidence before <code>open_led_status</code>.</td><td>Implemented M1 rule: <code>lamp_state_unconfirmed</code> uses load evidence + command-age debounce before notifications/UI promotion.</td><td>Prevents raw provider switch payload from becoming a false green success or premature fault.</td></tr>
+            <tr><td>UI issue rails</td><td>Dashboard/map/faults read active issue rows.</td><td>Pending verification markers are amber and separate from Top Issues until backend promotion.</td><td>Issue count is inflated and Telegram sends false alarms.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Scale telemetry architecture</span>
+          <h2>Production ingest ต้องแยกจาก Django Ninja firehose</h2>
+        </div>
+        <span class="badge">500k devices ready pattern</span>
+      </div>
+      <div class="grid-3">
+        <div class="card"><span>Small/dev path</span><strong>Django Ninja ingest</strong><p>ใช้ได้สำหรับ dev, simulator, manual import, gateway batch ขนาดเล็ก หรือ operational API ที่ต้อง validate synchronous.</p></div>
+        <div class="card"><span>Production path</span><strong>EMQX + consumers</strong><p>ใช้รับ telemetry จำนวนมาก, batch write InfluxDB, update latest state เฉพาะ delta/state change.</p></div>
+        <div class="card"><span>Query path</span><strong>Django Ninja API</strong><p>UI ยังเรียก Django API เพื่อ enforce tenant, package, role, visible range และ report/export rules.</p></div>
+      </div>
+      <pre>Devices/Gateways
+-> MQTT/EMQX topics
+-> Telemetry consumer workers
+-> resolve Package TelemetryPolicy
+-> normalize + idempotency check
+-> batch write InfluxDB raw/aggregate
+-> Device State Engine updates PostgreSQL latest state
+-> Issue Rule Engine creates/updates ActiveIssue
+-> Channels broadcasts device_state_changed / issue_updated
+-> UI reads Django Ninja APIs only</pre>
+
+      <div class="table-wrap" style="margin-top:14px">
+        <table data-sortable>
+          <thead>
+            <tr><th>Docker service</th><th>Purpose</th><th>Required env</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>influxdb</code></td><td>Time-series telemetry storage for raw/downsampled voltage/current/power/kWh/PF.</td><td><code>INFLUXDB_URL</code>, <code>INFLUXDB_ORG</code>, <code>INFLUXDB_BUCKET</code>, <code>INFLUXDB_TOKEN</code></td><td>Added to docker-compose with persistent <code>influxdb_data</code> and <code>influxdb_config</code> volumes.</td></tr>
+            <tr><td><code>web</code> / <code>celery_worker</code></td><td>Django business APIs and future telemetry services.</td><td>Receive InfluxDB env but should not become the high-volume raw telemetry firehose.</td><td>Use for dashboard query APIs, report/export, package policy, and small/dev ingest.</td></tr>
+            <tr><td><code>emqx</code> + consumers</td><td>Production ingest path for large-scale device telemetry.</td><td>MQTT topic credentials + package policy resolver.</td><td>Consumers batch write InfluxDB and update PostgreSQL latest state/issue only when needed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Canonical state</span>
+          <h2>Device latest state contract</h2>
+        </div>
+        <span class="badge">Single read source for UI</span>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>State fields ที่ UI ใช้</h3>
+          <div class="state-pill-row">
+            <span class="state-pill">online_state</span>
+            <span class="state-pill">command_state</span>
+            <span class="state-pill">commanded_state</span>
+            <span class="state-pill">reported_state</span>
+            <span class="state-pill">lamp_state</span>
+            <span class="state-pill">electrical_state</span>
+            <span class="state-pill">overall_state</span>
+            <span class="state-pill">severity</span>
+            <span class="state-pill">active_issue_id</span>
+            <span class="state-pill">last_command_at</span>
+            <span class="state-pill">last_telemetry_at</span>
+          </div>
+          <p class="lead">ถ้า state นี้เปลี่ยน Dashboard, Map, Device List, Faults และ Notifications ต้องเปลี่ยนตามเหมือนกัน.</p>
+        </div>
+        <div class="panel">
+          <h3>Example: command ON accepted แต่ยังยืนยันไฟติดไม่ได้</h3>
+          <pre>{
+  "device_id": "860549070313080",
+  "provider_command_accepted": true,
+  "device_verified": false,
+  "overall_success": false,
+  "command_status": "accepted",
+  "verification_status": "state-not-yet-confirmed",
+  "requested_state": "ON",
+  "requested_brightness": 100,
+  "provider_snapshot": {
+    "online_state": "online",
+    "open_led_status": true,
+    "decoded_metrics": {
+      "brightness": 0,
+      "current_a": 0,
+      "voltage": 0,
+      "power_w": 0,
+      "energy_kwh": 0.246
+    },
+    "has_unpowered_evidence": true,
+    "snapshot_stale": false
+  },
+  "ui_state": "verification_pending",
+  "map_marker_state": "online-normal-off",
+  "active_issue_id": null
+}</pre>
+          <p class="lead">สถานะนี้ต้องแสดงเป็น pending/unconfirmed ก่อน ไม่ใช่ fault ทันที. ถ้า follow-up snapshot ยังยืนยันไม่ได้เกิน debounce/threshold ค่อย promote เป็น active issue.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Rules</span>
+          <h2>Issue detection rules ที่ต้องทำก่อน UI</h2>
+        </div>
+        <span class="badge">Backend-owned logic</span>
+      </div>
+      <div class="rule-grid">
+        <div class="rule-card critical"><span>Electrical P1/P2</span><strong>LAMP_STATE_UNCONFIRMED</strong><p>Provider accepted ON/OFF command แต่ verification_status เป็น state-not-yet-confirmed หรือ snapshot มี has_unpowered_evidence ต่อเนื่องเกิน debounce window. แสดงเป็น active issue หลังพ้น pending window เท่านั้น.</p></div>
+        <div class="rule-card warn"><span>Electrical warning</span><strong>LOW_CURRENT_WHILE_ON</strong><p>Command ON แต่ current ต่ำกว่า threshold ตาม device model/spec. ยังไม่ฟันธงว่าดับ แต่อยู่ใน issue queue.</p></div>
+        <div class="rule-card critical"><span>Command</span><strong>COMMAND_TIMEOUT</strong><p>ส่ง command แล้ว provider/runtime ไม่ยอมรับ หรือไม่มี ACK ภายใน timeout. เป็นคนละปัญหากับ state-not-yet-confirmed เพราะกรณีนั้น provider รับคำสั่งแล้วแต่ telemetry ยังไม่ยืนยัน.</p></div>
+        <div class="rule-card critical"><span>Connection</span><strong>OFFLINE_OVER_THRESHOLD</strong><p>ไม่มี telemetry เกิน threshold. ต้องขึ้น map marker, dashboard issue, notification และ device-list row.</p></div>
+        <div class="rule-card warn"><span>Power quality</span><strong>VOLTAGE_SAG / OVER_VOLTAGE</strong><p>แรงดันผิดช่วงตาม threshold/site policy. ใช้ใน Electrical Health, heatmap, graph marker, faults.</p></div>
+        <div class="rule-card warn"><span>Performance</span><strong>POWER_SPIKE / POWER_DROP / POOR_PF</strong><p>ใช้ตรวจ anomaly, maintenance risk, expected vs actual watt และ zone load imbalance.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Cross-page display</span>
+          <h2>แต่ละหน้าต้องอ่าน state เดียวกันอย่างไร</h2>
+        </div>
+        <span class="badge">No duplicated UI logic</span>
+      </div>
+      <div class="table-wrap">
+        <table data-sortable>
+          <thead>
+            <tr><th>Page</th><th>Reads from</th><th>Shows</th><th>Must not do</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>/dashboard/</code></td><td>DeviceLatestState, ActiveIssue, time-series aggregate</td><td>KPI, Top Issues, graph markers, Electrical Health, Heatmap</td><td>ห้ามคำนวณเองว่า current=0 คือ fault</td></tr>
+            <tr><td><code>/map/</code></td><td>Same marker state from DeviceLatestState + ActiveIssue</td><td>Marker color/blink, error rail, popup context</td><td>ห้ามให้ map marker มี status ไม่ตรงกับ dashboard</td></tr>
+            <tr><td><code>/device-list/</code></td><td>Device registry joined with latest state</td><td>Row status, lamp state, electrical state, ping/command state</td><td>ห้ามแปลง issue เองจาก raw telemetry</td></tr>
+            <tr><td><code>/faults/</code></td><td>ActiveIssue, FaultOccurrence, WorkOrder</td><td>Issue queue, acknowledge, assign, repair, close</td><td>ห้ามเอา preventive maintenance ไปปนกับ system issue queue</td></tr>
+            <tr><td><code>/backoffice/notifications/</code></td><td>Notification created by Issue Rule Engine</td><td>Alert list with link to fault/device/map context</td><td>ห้าม notification สร้าง issue เองโดยไม่ผ่าน engine</td></tr>
+            <tr><td><code>/backoffice/audit-logs/</code></td><td>Command/event/action audit records</td><td>Who sent command, ACK/timeout, acknowledge, repair actions</td><td>ห้ามเก็บ secret/token/body sensitive data</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">API contract</span>
+          <h2>Endpoint pattern สำหรับตอนลง code</h2>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card"><span>State</span><strong>GET /api/devices/state</strong><p>List latest state ตาม account scope, filter, package visible_until.</p></div>
+        <div class="card"><span>Device detail</span><strong>GET /api/devices/{id}/state</strong><p>ใช้กับ QR popup, map popup, device drawer, fault context.</p></div>
+        <div class="card"><span>Issues</span><strong>GET /api/faults/issues</strong><p>Active issue list จาก engine เท่านั้น ไม่รวม manual/preventive maintenance.</p></div>
+        <div class="card"><span>Dashboard</span><strong>GET /api/dashboard/summary</strong><p>KPI counts จาก latest state + active issue + aggregate.</p></div>
+        <div class="card"><span>Timeseries</span><strong>GET /api/dashboard/timeseries</strong><p>D3 series + overlays ที่ผ่าน entitlement/time filter แล้ว.</p></div>
+        <div class="card"><span>Realtime</span><strong>Channels event</strong><p>device_state_changed, issue_created, issue_updated, command_ack.</p></div>
+        <div class="card"><span>Package policy</span><strong>GET /api/telemetry/policy</strong><p>Resolved sampling, retention, visible range, entitlement, and allowed actions per account/package.</p></div>
+        <div class="card"><span>Reports/export</span><strong>Policy-clamped export</strong><p>Every CSV/PDF/API export must apply package visibility, retention, role, and software expiry gates.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Implementation checklist</span>
+          <h2>ลำดับทำจริงเพื่อกันพลาด</h2>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="callout">
+          <strong>Build order</strong>
+          <p>1. PackageTelemetryPolicy resolver<br>2. Normalized event schema<br>3. DeviceLatestState model/read model<br>4. DeviceStateEngine service<br>5. IssueRuleEngine service<br>6. InfluxDB raw/downsample write policy<br>7. Notification + audit creation<br>8. API กลาง<br>9. UI ทุกหน้าอ่าน API เดียวกัน<br>10. Channels sync event</p>
+        </div>
+        <div class="callout">
+          <strong>Critical tests</strong>
+          <p>ON accepted + state-not-yet-confirmed past debounce -> LAMP_STATE_UNCONFIRMED<br>ON + no ACK -> COMMAND_TIMEOUT<br>No telemetry -> OFFLINE_OVER_THRESHOLD<br>Voltage low -> VOLTAGE_SAG<br>Repair closed + telemetry normal -> issue resolved<br>Package expired -> ingest continues but UI/actions locked</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPLEMENTATION NOTE:
+      This document is the central logic plan for device health, issue detection, and cross-page rendering.
+      Every real UI page should treat backend normalized DeviceLatestState + ActiveIssue as source of truth.
+      UI must not infer OK/error/fault from raw telemetry locally.
+    -->
+  </main>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

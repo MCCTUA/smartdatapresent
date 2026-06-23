@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart B2G — แนะนำกลุ่มของเรา</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#0F6E56; --primary-hover:#1D9E75; --primary-deep:#0B5544;
+    --surface:#FAF7EE; --surface-soft:#F5F1E4; --text:#1F2A24; --muted:#5F6B65;
+    --accent:#BA7517; --accent-soft:#FAEEDA; --success:#639922;
+    --border:rgba(15,110,86,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Sarabun',system-ui,sans-serif;color:var(--text);background:#e8e6dd;line-height:1.55;}
+  .deck{max-width:1080px;margin:0 auto;padding:32px 16px;}
+  .slide{background:var(--surface);border-radius:20px;margin-bottom:28px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);position:relative;}
+  .pad{padding:48px 52px;}
+  h1{font-size:40px;font-weight:700;line-height:1.15;letter-spacing:-0.5px;}
+  h2{font-size:29px;font-weight:700;color:var(--primary-deep);margin-bottom:8px;}
+  .kicker{font-size:14px;font-weight:600;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+  .sub{font-size:18px;color:var(--muted);margin-top:14px;max-width:700px;}
+  /* placeholder (กลางๆ — บอกแค่ว่าต้องใส่รูปอะไร) */
+  .ph{border:2px dashed var(--border);background:var(--surface-soft);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);min-height:160px;}
+  .ph .pid{font-weight:600;font-size:13px;color:var(--primary);margin-bottom:8px;letter-spacing:.5px;}
+  .ph .pdesc{font-size:14px;color:var(--muted);max-width:420px;}
+  .hero{background:linear-gradient(135deg,var(--primary-deep),var(--primary));color:#fff;}
+  .hero h1{color:#fff;} .hero .sub{color:rgba(255,255,255,0.9);}
+  .brandmark{font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+  .brandmark .dot{width:30px;height:30px;border-radius:8px;background:var(--accent);display:inline-block;}
+  .proofbar{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .proof{text-align:center;padding:24px 14px;background:#fff;border-radius:14px;border:1px solid var(--border);}
+  .proof .num{font-size:32px;font-weight:700;color:var(--primary);}
+  .proof .lbl{font-size:14px;color:var(--muted);margin-top:8px;}
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px;}
+  .pillar{background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden;}
+  .pillar .body{padding:18px;}
+  .pillar h3{color:var(--primary-deep);font-size:19px;margin-bottom:8px;}
+  .pillar p{font-size:14px;color:var(--muted);}
+  .logos{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px;}
+  .apps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px;}
+  .appcard{background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;}
+  .appcard .img{height:96px;background:var(--surface-soft);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;}
+  .appcard .t{padding:10px 12px;font-size:14px;font-weight:600;color:var(--primary-deep);}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px;}
+  .step{text-align:center;padding:22px 14px;background:#fff;border-radius:14px;border:1px solid var(--border);}
+  .step .n{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin:0 auto 12px;font-size:18px;}
+  .step h4{font-size:16px;color:var(--primary-deep);margin-bottom:6px;}
+  .step p{font-size:13px;color:var(--muted);}
+  .stds{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px;}
+  .cta{background:linear-gradient(135deg,var(--primary-deep),var(--primary));color:#fff;text-align:center;}
+  .cta h1{color:#fff;} .cta .sub{color:rgba(255,255,255,0.92);margin:14px auto 0;}
+  .btn{display:inline-block;background:var(--accent);color:#fff;font-weight:600;padding:14px 34px;border-radius:999px;margin-top:24px;font-size:16px;}
+  .q3{margin-top:26px;text-align:left;max-width:580px;margin-left:auto;margin-right:auto;}
+  .q3 li{background:rgba(255,255,255,0.12);padding:12px 18px;border-radius:10px;margin-bottom:8px;font-size:15px;list-style:none;}
+  .bullets{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .bullet{background:#fff;border-radius:12px;padding:18px;border:1px solid var(--border);}
+  .bullet .bt{font-weight:600;color:var(--primary-deep);font-size:15px;margin-bottom:4px;}
+  .bullet p{font-size:13px;color:var(--muted);}
+  .secthead{font-weight:600;color:var(--primary-deep);margin-top:20px;margin-bottom:2px;font-size:16px;}
+  /* story / case */
+  .lead{font-size:19px;color:var(--text);max-width:760px;margin-top:16px;line-height:1.7;}
+  .lead .hl{color:var(--primary);font-weight:600;}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:26px;}
+  .branchcard{background:#fff;border-radius:16px;border:1px solid var(--border);padding:24px;}
+  .branchcard .tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.5px;color:#fff;background:var(--primary);padding:4px 12px;border-radius:999px;margin-bottom:12px;}
+  .branchcard .tag.amber{background:var(--accent);}
+  .branchcard h3{font-size:20px;color:var(--primary-deep);margin-bottom:8px;}
+  .branchcard p{font-size:14px;color:var(--muted);line-height:1.65;}
+  .branchcard ul{list-style:none;margin-top:12px;}
+  .branchcard li{font-size:13.5px;color:var(--text);padding-left:22px;position:relative;margin-bottom:7px;}
+  .branchcard li:before{content:"✓";position:absolute;left:0;color:var(--success);font-weight:700;}
+  .casegrid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:26px;align-items:center;margin-top:22px;}
+  .casebody h3{font-size:23px;color:var(--primary-deep);margin-bottom:6px;}
+  .casebody .place{font-size:14px;color:var(--accent);font-weight:600;margin-bottom:14px;}
+  .casebody p{font-size:15px;color:var(--text);line-height:1.7;}
+  .metrics{display:flex;gap:14px;margin-top:18px;flex-wrap:wrap;}
+  .metric{background:var(--surface-soft);border-radius:12px;padding:14px 18px;border:1px solid var(--border);}
+  .metric .mv{font-size:24px;font-weight:700;color:var(--primary);}
+  .metric .ml{font-size:12px;color:var(--muted);margin-top:2px;}
+  .quote{font-size:15px;color:var(--muted);font-style:italic;margin-top:18px;border-left:3px solid var(--accent);padding-left:14px;}
+  @media(max-width:720px){
+    .proofbar,.pillars,.logos,.apps,.steps,.stds,.bullets{grid-template-columns:1fr 1fr;}
+    .pad{padding:30px 24px;} h1{font-size:29px;}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1. HERO -->
+  <section class="slide hero">
+    <div class="pad">
+      <div class="brandmark"><span class="dot"></span>Smart B2G</div>
+      <h1>เทคโนโลยีที่ออกแบบ ผลิต<br>และดูแลด้วยทีมเดียว เพื่อท้องถิ่นไทย</h1>
+      <p class="sub">Smart B2G รวมความเชี่ยวชาญด้านฮาร์ดแวร์จากโรงงานของเราเอง เข้ากับทีมซอฟต์แวร์ที่ดูแลระบบให้หน่วยงานระดับประเทศ — ส่งมอบโซลูชันครบวงจรที่ใช้งานได้จริงทุกวัน</p>
+      <div style="margin-top:28px;">
+        <div class="ph" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.4);color:#fff;min-height:120px;">
+          <span class="pid" style="color:#fff;">[ รูป #1 ]</span>
+          <span class="pdesc" style="color:rgba(255,255,255,.92);">ภาพหลัก: งานติดตั้งจริง / เมืองยามค่ำที่มีไฟถนนของเรา (โทนเขียว Smart B2G)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. PROOF BAR -->
+  <section class="slide">
+    <div class="pad">
+      <h2>ประสบการณ์ที่พิสูจน์แล้ว</h2>
+      <div class="proofbar">
+        <div class="proof"><div class="num">ตั้งแต่ปี 2553</div><div class="lbl">ออกแบบ ผลิต และติดตั้งระบบแสงสว่าง &amp; ฮาร์ดแวร์</div></div>
+        <div class="proof"><div class="num">20+ ปี</div><div class="lbl">ประสบการณ์พัฒนาซอฟต์แวร์ &amp; ดาต้าแพลตฟอร์ม</div></div>
+        <div class="proof"><div class="num">มอก. / LM-79 / LM-80</div><div class="lbl">ผลิตในโรงงานมาตรฐาน ทดสอบทุกล็อต</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. CAPABILITY PILLARS -->
+  <section class="slide">
+    <div class="pad">
+      <div class="kicker">ความเชี่ยวชาญของเรา</div>
+      <h2>ทีมเดียว ครบตั้งแต่ต้นน้ำถึงปลายน้ำ</h2>
+      <div class="pillars">
+        <div class="pillar">
+          <div class="ph"><span class="pid">[ รูป #2 ]</span><span class="pdesc">สายการผลิตในโรงงาน + การควบคุมคุณภาพแสง</span></div>
+          <div class="body"><h3>ฮาร์ดแวร์ &amp; โรงงาน</h3><p>ออกแบบและผลิตโคมไฟ LED, อุปกรณ์เซนเซอร์ และอุปกรณ์ IoT ในโรงงานมาตรฐานของเราเอง</p></div>
+        </div>
+        <div class="pillar">
+          <div class="ph"><span class="pid">[ รูป #3 ]</span><span class="pdesc">หน้าจอแดชบอร์ดระบบจริง (มีไฟล์แล้ว)</span></div>
+          <div class="body"><h3>ซอฟต์แวร์ &amp; ดาต้า</h3><p>แพลตฟอร์มบริหารข้อมูล, แดชบอร์ดเรียลไทม์ และระบบรับ-ส่งข้อมูลจากเซนเซอร์ทุกชนิด</p></div>
+        </div>
+        <div class="pillar">
+          <div class="ph"><span class="pid">[ รูป #4 ]</span><span class="pdesc">ทีมงานติดตั้งจริงหน้างาน (มีไฟล์แล้ว)</span></div>
+          <div class="body"><h3>ติดตั้ง &amp; ดูแลภาคสนาม</h3><p>สำรวจหน้างาน ออกแบบเฉพาะพื้นที่ ติดตั้ง จูนระบบ และดูแลบำรุงรักษาต่อเนื่อง</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. บริษัทในเครือ — STORY -->
+  <section class="slide">
+    <div class="pad">
+      <div class="kicker">เบื้องหลัง Smart B2G</div>
+      <h2>เราไม่ได้เพิ่งเริ่มต้น — เรานำสองความเชี่ยวชาญมารวมกัน</h2>
+      <p class="lead">
+        หลายปีที่ผ่านมา ทีมหนึ่งของเราปั้นงานอยู่ใน <span class="hl">โรงงานผลิตอุปกรณ์ไฟฟ้าและแสงสว่าง</span>
+        ส่งมอบงานให้องค์กรใหญ่ที่ต้องการความแม่นยำและความทนทาน
+        ขณะที่อีกทีมหนึ่งดูแล <span class="hl">ระบบซอฟต์แวร์และข้อมูล</span> ให้หน่วยงานระดับประเทศที่พลาดไม่ได้
+      </p>
+      <p class="lead">
+        วันนี้เรานำทั้งสองมารวมกันในชื่อ <span class="hl">Smart B2G</span> —
+        เพื่อให้ท้องถิ่นได้สิ่งที่หาได้ยาก คือทีมเดียวที่ <span class="hl">ผลิตอุปกรณ์เองได้ และเขียนระบบเองได้</span>
+        ดูแลให้ตั้งแต่เสาไฟต้นแรก จนถึงหน้าจอข้อมูลที่ผู้บริหารใช้ตัดสินใจ
+      </p>
+      <div class="twocol">
+        <div class="branchcard">
+          <span class="tag amber">สายฮาร์ดแวร์</span>
+          <div class="ph" style="min-height:90px;margin-bottom:14px;"><span class="pid">[ รูป #5a ]</span><span class="pdesc">โลโก้ Genius Gismo</span></div>
+          <h3>Genius Gismo</h3>
+          <p>โรงงานผลิตโคมไฟและอุปกรณ์ LED &amp; IoT ของเราเอง เปิดดำเนินการมาตั้งแต่ปี 2553</p>
+          <ul>
+            <li>ผลิตในโรงงานมาตรฐาน มอก. 1955-2551</li>
+            <li>ทดสอบคุณภาพแสงทุกล็อต (LM-79 / LM-80)</li>
+            <li>ออกแบบแสงสว่างเฉพาะงานได้เอง</li>
+          </ul>
+        </div>
+        <div class="branchcard">
+          <span class="tag">สายซอฟต์แวร์ &amp; ดาต้า</span>
+          <div class="ph" style="min-height:90px;margin-bottom:14px;"><span class="pid">[ รูป #5b ]</span><span class="pdesc">โลโก้ CodeCube</span></div>
+          <h3>CodeCube</h3>
+          <p>ผู้เชี่ยวชาญแพลตฟอร์มและการจัดการข้อมูล ประสบการณ์กว่า 20 ปี</p>
+          <ul>
+            <li>พัฒนา &amp; ดูแลระบบให้หน่วยงานภาครัฐและรัฐวิสาหกิจ</li>
+            <li>เชี่ยวชาญงานข้อมูลปริมาณมากแบบเรียลไทม์</li>
+            <li>ดูแลระบบต่อเนื่อง ไม่ใช่แค่ส่งมอบแล้วจบ</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4a. CASE — Gismo -->
+  <section class="slide">
+    <div class="pad">
+      <div class="kicker">ผลงานจริง · สายฮาร์ดแวร์</div>
+      <h2>เมื่อโจทย์ยาก เราออกแบบให้ใหม่ทั้งระบบ</h2>
+      <div class="casegrid">
+        <div class="casebody">
+          <h3>ลานจอดรถส่งออก ท่าเรือแหลมฉบัง</h3>
+          <div class="place">งานออกแบบแสงสว่างพื้นที่กว้างพิเศษ</div>
+          <p>
+            พื้นที่นี้มีเสาสูงถึง 25 เมตร และวางห่างกันถึง 160 เมตร — กว้างกว่าปกติมาก
+            ทำให้แสงตกไม่ทั่วและมักเกิดจุดมืดใต้เสา ทีมเราออกแบบโคมและการกระจายแสงขึ้นใหม่
+            จนได้ความสว่างทั่วถึงทั้งลาน โดย<strong>ใช้พลังงานน้อยลงอย่างมาก</strong>
+          </p>
+          <div class="metrics">
+            <div class="metric"><div class="mv">2000W → 450W</div><div class="ml">ลดการใช้พลังงานต่อโคม</div></div>
+            <div class="metric"><div class="mv">25 ม. / 160 ม.</div><div class="ml">เสาสูง / ระยะห่างพิเศษ</div></div>
+            <div class="metric"><div class="mv">สว่างทั่วถึง</div><div class="ml">ไม่มีจุดมืดใต้เสา</div></div>
+          </div>
+          <p class="quote">งานนี้ส่งมอบให้พื้นที่ส่งออกรถยนต์ของผู้ผลิตข้ามชาติ — มาตรฐานที่พลาดไม่ได้</p>
+        </div>
+        <div class="ph" style="min-height:280px;"><span class="pid">[ รูป #5c ]</span><span class="pdesc">ภาพ High Mast / ลานจอดที่ติดตั้งจริง</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4b. CASE — CodeCube -->
+  <section class="slide">
+    <div class="pad">
+      <div class="kicker">ผลงานจริง · สายซอฟต์แวร์ &amp; ดาต้า</div>
+      <h2>ระบบที่ต้องทำงานทุกวินาที เราดูแลมาแล้ว</h2>
+      <div class="casegrid">
+        <div class="ph" style="min-height:280px;"><span class="pid">[ รูป #5d ]</span><span class="pdesc">ภาพหน้าจอแดชบอร์ด/ระบบรัฐที่ทีมดูแล</span></div>
+        <div class="casebody">
+          <h3>ระบบข้อมูลให้หน่วยงานระดับประเทศ</h3>
+          <div class="place">ภาครัฐ · รัฐวิสาหกิจ · งานข้อมูลขนาดใหญ่</div>
+          <p>
+            ทีมของเราพัฒนาและดูแลระบบให้หน่วยงานที่ <strong>หยุดทำงานไม่ได้แม้แต่นาทีเดียว</strong> —
+            ตั้งแต่ระบบรับ-ส่งข้อมูลจากอุปกรณ์หน้างานแบบเรียลไทม์ ไปจนถึงแดชบอร์ดที่ผู้บริหารใช้ดูภาพรวม
+            และระบบฐานข้อมูลที่เชื่อมหลายหน่วยงานเข้าด้วยกัน
+          </p>
+          <ul style="list-style:none;margin-top:16px;">
+            <li style="padding-left:22px;position:relative;margin-bottom:8px;font-size:14.5px;"><span style="position:absolute;left:0;color:var(--success);font-weight:700;">✓</span> ระบบแจ้งเตือนเรียลไทม์เมื่ออุปกรณ์ผิดปกติ</li>
+            <li style="padding-left:22px;position:relative;margin-bottom:8px;font-size:14.5px;"><span style="position:absolute;left:0;color:var(--success);font-weight:700;">✓</span> แดชบอร์ดข้อมูลสำหรับผู้บริหารตัดสินใจ</li>
+            <li style="padding-left:22px;position:relative;margin-bottom:8px;font-size:14.5px;"><span style="position:absolute;left:0;color:var(--success);font-weight:700;">✓</span> เชื่อมและบริหารข้อมูลข้ามหน่วยงาน</li>
+          </ul>
+          <p class="quote">ประสบการณ์ดูแลระบบของหน่วยงานรัฐหลายแห่ง คือหลักประกันว่าระบบของท้องถิ่นจะอยู่ในมือที่ไว้ใจได้</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. REFERENCE CUSTOMER -->
+  <section class="slide">
+    <div class="pad">
+      <h2>หน่วยงานที่ไว้วางใจให้เราดูแลระบบจริง</h2>
+      <p class="sub" style="margin-top:6px;">องค์กรเหล่านี้เลือกใช้ผลงานของกลุ่มเราในงานที่ต้องทำงานได้จริงทุกวัน</p>
+      <div class="secthead">ภาครัฐ &amp; รัฐวิสาหกิจ</div>
+      <div class="logos">
+        <div class="ph"><span class="pid">[ รูป #6a ]</span><span class="pdesc">โลโก้กรมอนามัย</span></div>
+        <div class="ph"><span class="pid">[ รูป #6b ]</span><span class="pdesc">โลโก้ สนง.กิจการยุติธรรม</span></div>
+        <div class="ph"><span class="pid">[ รูป #6c ]</span><span class="pdesc">โลโก้ GISTDA</span></div>
+        <div class="ph"><span class="pid">[ รูป #6d ]</span><span class="pdesc">โลโก้ NT / การทางพิเศษ</span></div>
+      </div>
+      <div class="secthead">องค์กรขนาดใหญ่ &amp; ข้ามชาติ</div>
+      <div class="logos">
+        <div class="ph"><span class="pid">[ รูป #7a ]</span><span class="pdesc">โลโก้ การไฟฟ้าฝ่ายผลิต</span></div>
+        <div class="ph"><span class="pid">[ รูป #7b ]</span><span class="pdesc">โลโก้ Mitsubishi / Nissan</span></div>
+        <div class="ph"><span class="pid">[ รูป #7c ]</span><span class="pdesc">โลโก้ Panasonic / PTT</span></div>
+        <div class="ph"><span class="pid">[ รูป #7d ]</span><span class="pdesc">โลโก้ Kubota</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. คลิปผลงาน -->
+  <section class="slide">
+    <div class="pad">
+      <div class="kicker">ผลงานที่เห็นได้ว่าทำงานจริง</div>
+      <h2>ระบบเฝ้าระวังและเตือนความสูงของรถ ก่อนเข้าพื้นที่อาคาร</h2>
+      <p class="sub" style="margin-top:6px;">ติดตั้งและใช้งานจริงที่ศูนย์การค้าใจกลางเมือง</p>
+      <div style="margin-top:20px;">
+        <div class="ph" style="min-height:300px;">
+          <span class="pid">[ วิดีโอ #8 ]</span>
+          <span class="pdesc">คลิปการทำงานจริง: ระบบจับภาพรถและแจ้งเตือนความสูงก่อนเข้าพื้นที่</span>
+        </div>
+      </div>
+      <div class="bullets">
+        <div class="bullet"><div class="bt">ปัญหา</div><p>รถสูงเกินพิกัดชนโครงสร้างอาคารหรือสะพาน เกิดความเสียหาย</p></div>
+        <div class="bullet"><div class="bt">ระบบทำอะไร</div><p>จับภาพและเตือนล่วงหน้าก่อนรถเข้าพื้นที่ พร้อมบันทึกหลักฐานไว้</p></div>
+        <div class="bullet"><div class="bt">นำไปใช้ต่อ</div><p>หลักการเดียวกันนี้ ใช้ปกป้องสะพานและอุโมงค์ของท้องถิ่นได้</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. APPLICATIONS -->
+  <section class="slide">
+    <div class="pad">
+      <h2>ระบบของเรา ดูการทำงานจริงได้ทันที</h2>
+      <div class="apps">
+        <div class="appcard"><div class="img">[ รูป #9a ]</div><div class="t">ไฟถนนอัจฉริยะ</div></div>
+        <div class="appcard"><div class="img">[ รูป #9b ]</div><div class="t">ไฟถนนโซลาร์</div></div>
+        <div class="appcard"><div class="img">[ รูป #9c ]</div><div class="t">จัดเก็บค่าธรรมเนียม</div></div>
+        <div class="appcard"><div class="img">[ รูป #9d ]</div><div class="t">เฝ้าระวังสะพาน/เขตจำกัด</div></div>
+        <div class="appcard"><div class="img">[ รูป #9e ]</div><div class="t">จราจรอัจฉริยะ</div></div>
+        <div class="appcard"><div class="img">[ รูป #9f ]</div><div class="t">ดูแลผู้สูงอายุ</div></div>
+        <div class="appcard"><div class="img">[ รูป #9g ]</div><div class="t">ศูนย์บริหารเหตุฉุกเฉิน</div></div>
+        <div class="appcard"><div class="img">[ รูป #9h ]</div><div class="t">ที่จอดรถ / อื่นๆ</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. วิธีทำงาน -->
+  <section class="slide">
+    <div class="pad">
+      <h2>เราทำงานกับท้องถิ่นอย่างไร</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><h4>สำรวจหน้างาน</h4><p>ลงพื้นที่จริงก่อนเสนอ</p></div>
+        <div class="step"><div class="n">2</div><h4>ออกแบบเฉพาะพื้นที่</h4><p>ไม่ใช่แพ็กเกจสำเร็จรูป</p></div>
+        <div class="step"><div class="n">3</div><h4>ติดตั้ง + จูนจริง</h4><p>ทีมเราลงมือเอง</p></div>
+        <div class="step"><div class="n">4</div><h4>ดูแลต่อเนื่อง</h4><p>ฮาร์ดแวร์ผลิตเอง ซ่อม/เปลี่ยนได้</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. มาตรฐาน -->
+  <section class="slide">
+    <div class="pad">
+      <h2>มาตรฐานและการรับรอง</h2>
+      <p class="sub" style="margin-top:6px;">ฮาร์ดแวร์ของเราผลิตและทดสอบตามมาตรฐานที่รับรองได้</p>
+      <div class="stds">
+        <div class="ph"><span class="pid">[ รูป #10a ]</span><span class="pdesc">ใบรับรอง มอก. 1955-2551</span></div>
+        <div class="ph"><span class="pid">[ รูป #10b ]</span><span class="pdesc">รายงานทดสอบ LM-79 / LM-80</span></div>
+        <div class="ph"><span class="pid">[ รูป #10c ]</span><span class="pdesc">ตรา มอก.</span></div>
+        <div class="ph"><span class="pid">[ รูป #10d ]</span><span class="pdesc">มาตรฐานการคุ้มครองข้อมูล (PDPA)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. CTA -->
+  <section class="slide cta">
+    <div class="pad">
+      <h1>เริ่มจากปัญหาที่ท่านเจออยู่ตอนนี้</h1>
+      <p class="sub">เราพร้อมรับฟัง — นัดคุยหรือขอดูตัวอย่างระบบจริงได้</p>
+      <a class="btn" href="#">นัดคุย / ดูระบบจริง</a>
+      <ul class="q3">
+        <li>1. แนวคิดที่เรานำเสนอ ตรงกับปัญหาที่ท่านเจอจริงแค่ไหน?</li>
+        <li>2. สิ่งที่ท่านกังวลที่สุดในการเริ่มต้น คืออะไร?</li>
+        <li>3. ถ้าจะเริ่มนำร่อง — เงื่อนไขสำคัญที่สุดของท่านคืออะไร?</li>
+      </ul>
+      <div style="margin-top:24px;">
+        <div class="ph" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.4);display:inline-flex;min-height:90px;padding:16px 30px;">
+          <span class="pid" style="color:#fff;">[ รูป #11 ]</span>
+          <span class="pdesc" style="color:rgba(255,255,255,.92);">QR LINE OA + เบอร์ติดต่อ + อีเมล</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

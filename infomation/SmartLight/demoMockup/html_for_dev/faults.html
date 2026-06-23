@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartLight Faults & Maintenance Workspace</title>
+  <style>
+    :root {
+      --bg: #071014;
+      --panel: rgba(15, 23, 42, 0.82);
+      --line: rgba(148, 163, 184, 0.16);
+      --text: #eaffff;
+      --muted: #94a3b8;
+      --green: #4ade80;
+      --cyan: #22d3ee;
+      --blue: #60a5fa;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --violet: #a78bfa;
+      --max: 1480px;
+      --gap: 14px;
+      --card-pad: 16px;
+      --radius-card: 22px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(251, 113, 133, 0.14), transparent 26rem),
+        radial-gradient(circle at 86% 12%, rgba(251, 191, 36, 0.14), transparent 24rem),
+        radial-gradient(circle at 42% 82%, rgba(34, 211, 238, 0.11), transparent 28rem),
+        var(--bg);
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(26px, 3vw, 40px);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    h2 {
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .app {
+      width: min(100% - 32px, var(--max));
+      margin: 0 auto;
+      padding: 18px 0 42px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(14, 30, 38, 0.92), rgba(8, 20, 27, 0.88));
+      box-shadow: 0 22px 80px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(18px);
+      padding: 14px 16px 14px 18px;
+      margin-bottom: var(--gap);
+    }
+
+    .brand {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 35% 32%, #fff 0 8%, transparent 9%),
+        linear-gradient(135deg, var(--rose), var(--amber));
+      box-shadow: 0 18px 48px rgba(251, 113, 133, 0.18);
+    }
+
+    .brand-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .brand-meta p {
+      margin: 0;
+    }
+
+    .connection-badge {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      border: 1px solid rgba(74, 222, 128, 0.38);
+      border-radius: 999px;
+      background: rgba(74, 222, 128, 0.1);
+      color: #dcfce7;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.72);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+
+    .actions,
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .chip,
+    .button,
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #dff7f7;
+      padding: 6px 9px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .button {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .critical-error-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(251, 113, 133, 0.5);
+      border-radius: 999px;
+      background: rgba(251, 113, 133, 0.16);
+      color: #fecdd3;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 950;
+      text-decoration: none;
+      animation: redBlink 1.35s ease-in-out infinite;
+    }
+
+    .profile-menu,
+    .widget-menu {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .profile-popover,
+    .widget-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 30;
+      display: none;
+      width: min(520px, calc(100vw - 28px));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(34, 211, 238, 0.08), transparent 18rem),
+        rgba(7, 16, 20, 0.96);
+      box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48);
+      padding: 14px;
+      text-align: left;
+    }
+
+    .profile-popover {
+      width: min(320px, calc(100vw - 28px));
+    }
+
+    .profile-menu:hover .profile-popover,
+    .widget-menu:hover .widget-popover,
+    .profile-menu:focus-within .profile-popover,
+    .widget-menu:focus-within .widget-popover,
+    .profile-menu.is-open .profile-popover,
+    .widget-menu.is-open .widget-popover {
+      display: grid;
+      gap: 12px;
+    }
+
+    .profile-popover-head,
+    .widget-popover-head {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      padding-bottom: 10px;
+    }
+
+    .profile-popover-head strong,
+    .widget-popover-head strong {
+      color: #f8ffff;
+      font-size: 14px;
+    }
+
+    .profile-popover-head span,
+    .widget-popover-head span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .profile-actions,
+    .card-library {
+      display: grid;
+      gap: 8px;
+    }
+
+    .profile-action,
+    .library-card {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #dff7f7;
+      padding: 9px 10px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .profile-action span,
+    .library-card p {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .button.primary {
+      border-color: rgba(34, 211, 238, 0.38);
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.22), rgba(74, 222, 128, 0.16));
+      color: #efffff;
+    }
+
+    .button.rose,
+    .chip.rose,
+    .status-pill.critical {
+      border-color: rgba(251, 113, 133, 0.34);
+      background: rgba(251, 113, 133, 0.12);
+      color: #fecdd3;
+    }
+
+    .button.warn,
+    .chip.amber,
+    .status-pill.warning {
+      border-color: rgba(251, 191, 36, 0.34);
+      background: rgba(251, 191, 36, 0.12);
+      color: #fde68a;
+    }
+
+    .chip.green,
+    .status-pill.resolved,
+    .status-pill.completed {
+      border-color: rgba(74, 222, 128, 0.3);
+      background: rgba(74, 222, 128, 0.12);
+      color: #bbf7d0;
+    }
+
+    .status-pill.maintenance,
+    .chip.blue {
+      border-color: rgba(96, 165, 250, 0.3);
+      background: rgba(96, 165, 250, 0.12);
+      color: #bfdbfe;
+    }
+
+    .status-pill.progress {
+      border-color: rgba(167, 139, 250, 0.3);
+      background: rgba(167, 139, 250, 0.13);
+      color: #ddd6fe;
+    }
+
+    .status-pill.suppressed {
+      color: #d1d5db;
+      background: rgba(107, 114, 128, 0.18);
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(74, 222, 128, 0.24);
+      border-radius: 999px;
+      background: rgba(74, 222, 128, 0.1);
+      color: #dcfce7;
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: livePulse 1.4s infinite;
+    }
+
+    .panel,
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.035));
+      box-shadow: 0 22px 80px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(16px);
+    }
+
+    .filter-panel {
+      padding: var(--card-pad);
+      margin-bottom: var(--gap);
+    }
+
+    .filter-head {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .card-head {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: var(--card-pad) var(--card-pad) 0;
+      margin-bottom: 14px;
+    }
+
+    .filter-head > div:first-child,
+    .card-head > div:first-child,
+    .drawer-head > div:first-child {
+      min-width: 0;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1.2fr repeat(5, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(7, 16, 20, 0.78);
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 13px 14px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 21px;
+      letter-spacing: -0.03em;
+    }
+
+    .green { color: var(--green); }
+    .cyan { color: var(--cyan); }
+    .amber { color: var(--amber); }
+    .rose { color: var(--rose); }
+    .blue { color: var(--blue); }
+
+    .workspace-grid {
+      display: grid;
+      position: relative;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: var(--gap);
+      align-items: stretch;
+      margin-bottom: var(--gap);
+    }
+
+    .queue-card {
+      grid-column: span 4;
+    }
+
+    .map-card {
+      grid-column: span 8;
+    }
+
+
+    .workspace-grid > .card {
+      height: 100%;
+      min-width: 0;
+    }
+
+    .workspace-grid .map-card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .workspace-grid .map-card .map-stage {
+      flex: 1;
+    }
+
+    .queue-card,
+    .form-card,
+    .map-card,
+    .table-card {
+      padding-bottom: var(--card-pad);
+      margin-bottom: var(--gap);
+    }
+
+    .queue-list {
+      max-height: 520px;
+      overflow: auto;
+      padding-right: 4px;
+      display: grid;
+      gap: 10px;
+      margin: 0 var(--card-pad);
+    }
+
+    .queue-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 12px;
+    }
+
+    .priority {
+      display: inline-grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .priority.p1 { background: rgba(251, 113, 133, 0.16); color: #fecdd3; }
+    .priority.p2 { background: rgba(251, 191, 36, 0.16); color: #fde68a; }
+    .priority.ma { background: rgba(96, 165, 250, 0.16); color: #bfdbfe; }
+
+    .queue-main strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .queue-main span,
+    .queue-main p {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.38;
+      margin-top: 3px;
+    }
+
+    .mini-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .mini-meta span {
+      display: inline-flex;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 999px;
+      background: rgba(7, 16, 20, 0.28);
+      padding: 3px 6px;
+      color: #dff7f7;
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .timeline-row {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+    }
+
+    .timeline-dot {
+      width: 13px;
+      height: 13px;
+      margin-top: 4px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 0 5px rgba(34, 211, 238, 0.1);
+    }
+
+    .timeline-dot.rose { background: var(--rose); box-shadow: 0 0 0 5px rgba(251, 113, 133, 0.12); }
+    .timeline-dot.amber { background: var(--amber); box-shadow: 0 0 0 5px rgba(251, 191, 36, 0.12); }
+    .timeline-dot.green { background: var(--green); box-shadow: 0 0 0 5px rgba(74, 222, 128, 0.12); }
+
+    .timeline-row strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .timeline-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .map-stage {
+      position: relative;
+      min-height: 560px;
+      margin: 0 var(--card-pad);
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 20px;
+      background:
+        linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 26% 24%, rgba(251, 113, 133, 0.14), transparent 14rem),
+        radial-gradient(circle at 72% 72%, rgba(96, 165, 250, 0.12), transparent 18rem),
+        #09202a;
+      background-size: 42px 42px, 42px 42px, auto, auto, auto;
+    }
+
+    .map-road {
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.16);
+    }
+
+    .map-road.r1 { left: -8%; top: 32%; width: 118%; height: 30px; transform: rotate(-8deg); }
+    .map-road.r2 { left: 17%; top: -10%; width: 30px; height: 122%; transform: rotate(18deg); }
+    .map-road.r3 { left: 52%; top: 8%; width: 26px; height: 92%; transform: rotate(-14deg); }
+    .map-road.r4 { left: 10%; top: 74%; width: 86%; height: 26px; transform: rotate(5deg); }
+
+    .marker {
+      --outer: var(--green);
+      --inner: var(--green);
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      background: transparent;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+    }
+
+    .marker::before,
+    .marker::after,
+    .marker i {
+      position: absolute;
+      border-radius: 999px;
+      content: "";
+    }
+
+    .marker::before {
+      inset: 0;
+      background: var(--outer);
+      opacity: 0.24;
+      animation: markerPulse 1.8s infinite;
+    }
+
+    .marker::after {
+      inset: 5px;
+      background: var(--outer);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.16), 0 0 22px color-mix(in srgb, var(--outer), transparent 45%);
+    }
+
+    .marker i {
+      inset: 11px;
+      z-index: 1;
+      background: var(--inner);
+      border: 2px solid #fff;
+    }
+
+    .marker small {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 6px);
+      z-index: 2;
+      transform: translateX(-50%);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+      background: rgba(7, 16, 20, 0.88);
+      color: #eaffff;
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .marker.critical { --outer: var(--rose); --inner: var(--rose); }
+    .marker.warning { --outer: var(--amber); --inner: var(--amber); }
+    .marker.maintenance { --outer: var(--blue); --inner: var(--blue); }
+    .marker.progress { --outer: var(--violet); --inner: var(--violet); }
+    .marker.completed { --outer: var(--green); --inner: var(--green); }
+    .marker.suppressed { --outer: #94a3b8; --inner: #64748b; }
+
+    .map-legend {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 4;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 16px;
+      background: rgba(7, 16, 20, 0.84);
+      padding: 8px;
+    }
+
+    .map-legend h3 {
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .legend-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 6px;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .legend-dot.critical { background: var(--rose); }
+    .legend-dot.warning { background: var(--amber); }
+    .legend-dot.maintenance { background: var(--blue); }
+    .legend-dot.progress { background: var(--violet); }
+    .legend-dot.completed { background: var(--green); }
+
+    .map-popup {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      z-index: 5;
+      width: min(360px, calc(100% - 32px));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 20px;
+      background: rgba(7, 16, 20, 0.9);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.36);
+      padding: 14px;
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 38;
+      background: rgba(2, 6, 23, 0.46);
+      backdrop-filter: blur(3px);
+      opacity: 1;
+      transition: opacity 180ms ease;
+    }
+
+    .maintenance-drawer {
+      position: fixed;
+      inset: 16px 16px 16px auto;
+      z-index: 40;
+      width: min(560px, calc(100vw - 32px));
+      display: flex;
+      flex-direction: column;
+      transform: translateX(0);
+      transition: transform 220ms ease;
+      will-change: transform;
+    }
+
+    body.drawer-closed .drawer-backdrop {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    body.drawer-closed .maintenance-drawer {
+      transform: translateX(calc(100% + 32px));
+      pointer-events: none;
+    }
+
+    .maintenance-drawer .drawer-panel {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-color: rgba(34, 211, 238, 0.2);
+      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.32);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: var(--card-pad);
+    }
+
+    .drawer-section {
+      border-top: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 14px;
+    }
+
+    .drawer-section:first-child {
+      border-top: 0;
+    }
+
+    .drawer-head {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: var(--card-pad);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      padding: var(--card-pad) var(--card-pad) 0;
+    }
+
+    .drawer-grid .drawer-section {
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .drawer-grid .span-3 { grid-column: span 3; }
+    .drawer-grid .span-4 { grid-column: span 6; }
+    .drawer-grid .span-5 { grid-column: span 6; }
+    .drawer-grid .span-6 { grid-column: span 6; }
+    .drawer-grid .span-12 { grid-column: 1 / -1; }
+
+    .drawer-close {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      justify-content: center;
+      padding: 0;
+      font-size: 16px;
+    }
+
+    .qr-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    .qr-code {
+      width: 86px;
+      height: 86px;
+      border: 7px solid #f8fafc;
+      border-radius: 12px;
+      background:
+        linear-gradient(90deg, #071014 8px, transparent 8px 15px, #071014 15px 24px, transparent 24px 34px, #071014 34px 42px, transparent 42px),
+        linear-gradient(#071014 8px, transparent 8px 15px, #071014 15px 24px, #071014 24px 34px, transparent 34px 42px),
+        #f8fafc;
+      background-size: 42px 42px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+    }
+
+    .drawer-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .drawer-form h3,
+    .drawer-form .chip-row,
+    .drawer-form .field-wide {
+      grid-column: 1 / -1;
+    }
+
+    .audit-list {
+      display: grid;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .audit-row {
+      display: grid;
+      grid-template-columns: minmax(108px, 0.8fr) minmax(0, 1.2fr);
+      gap: 8px;
+      align-items: start;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 12px;
+      background: rgba(7, 16, 20, 0.26);
+      padding: 7px 8px;
+    }
+
+    .audit-row span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .audit-row strong {
+      color: #eefcff;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .table-scroll {
+      max-height: 480px;
+      margin: 0 var(--card-pad);
+      overflow: auto;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .fault-table {
+      width: 100%;
+      min-width: 1180px;
+      border-collapse: collapse;
+    }
+
+    .fault-table th,
+    .fault-table td {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 12px;
+    }
+
+    .fault-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .fault-table tbody tr[data-open-maintenance] {
+      cursor: pointer;
+    }
+
+    .fault-table tbody tr[data-open-maintenance]:hover {
+      background: rgba(34, 211, 238, 0.055);
+    }
+
+    .fault-table th {
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.035);
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .fault-table td strong,
+    .fault-table td span {
+      display: block;
+    }
+
+    .fault-table td span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      margin-top: 3px;
+    }
+
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .row-actions .button {
+      padding: 5px 8px;
+      font-size: 10px;
+    }
+
+    .contract-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+    }
+
+    .contract-card {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 14px;
+    }
+
+    .contract-card h3 {
+      margin-bottom: 8px;
+    }
+
+    .contract-card li,
+    .contract-card p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .contract-card ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    @keyframes markerPulse {
+      from { opacity: 0.56; transform: scale(1); }
+      to { opacity: 0; transform: scale(2.28); }
+    }
+
+    @keyframes livePulse {
+      0%, 100% { box-shadow: 0 0 0 rgba(74, 222, 128, 0); }
+      50% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.5); }
+    }
+
+    @keyframes redBlink {
+      0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+      50% { box-shadow: 0 0 26px rgba(239, 68, 68, 0.48); transform: scale(1.025); }
+    }
+
+    @media (max-width: 1240px) {
+      .topbar,
+      .workspace-grid { grid-template-columns: 1fr; }
+      .queue-card,
+      .map-card { grid-column: auto; }
+      .filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .drawer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .drawer-grid .span-3,
+      .drawer-grid .span-4,
+      .drawer-grid .span-5,
+      .drawer-grid .span-6,
+      .drawer-grid .span-12 { grid-column: span 1; }
+      .drawer-form { grid-template-columns: 1fr; }
+      .actions,
+      .chip-row { justify-content: flex-start; }
+    }
+
+    @media (max-width: 720px) {
+      .app { width: min(100% - 18px, var(--max)); padding-top: 10px; }
+      .filter-grid,
+      .stats-grid { grid-template-columns: 1fr; }
+      .drawer-grid { grid-template-columns: 1fr; }
+      .map-stage { min-height: 520px; margin: 0 10px 10px; }
+      .queue-row { grid-template-columns: 1fr; }
+      .maintenance-drawer {
+        inset: auto 0 0;
+        width: 100%;
+        height: min(86vh, 760px);
+      }
+      .drawer-panel {
+        border-radius: 24px 24px 0 0;
+      }
+    }
+      .table-scroll th { position: sticky; top: 0; z-index: 1; }
+
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+  <link rel="stylesheet" href="./_shared_theme.css" />
+</head>
+<body class="drawer-closed">
+  <main class="app">
+    <header class="topbar" data-shared-header-include="frontend-dashboard-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>⚠ Faults & Maintenance <span class="connection-badge"><span class="status-dot"></span>Live connected</span></h1>
+          <div class="brand-meta">
+            <p class="subtitle">/faults/ · issue queue · maintenance command center</p>
+          </div>
+        </div>
+      </div>
+      <div class="actions top-actions">
+        <button class="button theme-mode-toggle" type="button" data-theme-toggle aria-pressed="true">☾ Dark</button>
+        <span class="chip">▣ Portfolio UI · Platform/Dealer</span>
+        <a class="critical-error-badge" href="/faults/?state=active">⚠ 37 active issues · 12 P1</a>
+        <div class="profile-menu" data-profile-menu>
+          <button class="button" type="button" data-profile-toggle>◉ Profile</button>
+          <div class="profile-popover" aria-label="Profile controls">
+            <div class="profile-popover-head">
+              <strong>◉ Manager Profile</strong>
+              <span>goodten</span>
+            </div>
+            <div class="profile-actions">
+              <a class="profile-action" href="/profile/">◉ Profile <span>name, email, language</span></a>
+              <a class="profile-action" href="/password_change/">◆ Password <span>change password</span></a>
+              <a class="profile-action" href="/settings/">⚙ Preferences <span>timezone, layout</span></a>
+              <a class="profile-action" href="/logout/">↪ Sign out <span>end session</span></a>
+            </div>
+          </div>
+        </div>
+        <div class="widget-menu" data-widget-menu>
+          <button class="button" type="button" data-widget-toggle>▦ Widget</button>
+          <div class="widget-popover" aria-label="Widget visibility controls">
+            <div class="widget-popover-head">
+              <strong>▦ Widget visibility</strong>
+              <span>Show or hide cards in this command center.</span>
+            </div>
+            <div class="card-library">
+              <div class="library-card"><label><input type="checkbox" checked> ▤ Issue Queue</label><p>System-detected active issues only.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▤ Maintenance Records</label><p>Fault-linked, manual, and preventive work orders.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ▣ Maintenance Drawer</label><p>Shared repair form, QR, owner, timeline.</p></div>
+              <div class="library-card"><label><input type="checkbox" checked> ⎇ Operating Process</label><p>State machine and cross-page effects.</p></div>
+            </div>
+          </div>
+        </div>
+        <span class="button primary">✓ Save layout</span>
+      </div>
+    </header>
+
+    <section class="panel filter-panel" aria-label="Fault filters">
+      <div class="filter-head">
+        <div>
+          <h2>⌕ Fault / Maintenance Filters</h2>
+          <p class="subtitle">This page is the operational continuation from dashboard Top Issues. It is not only broken lamps; it also manages repair, planned maintenance, suppressed faults, and completion history.</p>
+        </div>
+        <div class="chip-row">
+          <span class="button primary">✓ Apply</span>
+          <span class="button">× Reset</span>
+          <span class="button rose">+ Create work order</span>
+        </div>
+      </div>
+      <div class="filter-grid">
+        <!-- LOGIC: Portfolio UI can triage across child customers. Customer UI only sees its own site/zone/tag/device faults and maintenance records. -->
+        <div class="field"><label>UI mode</label><select><option>Portfolio UI · Platform/Dealer</option><option>Customer UI · Site operation</option></select></div>
+        <div class="field"><label>Search device_id</label><input value="SP-088" aria-label="Search device ID"></div>
+        <div class="field"><label>Account scope</label><select><option>All visible accounts</option><option>Dealer A subtree</option><option>Customer Factory AA</option></select></div>
+        <div class="field"><label>Site / zone</label><select><option>All sites/zones</option><option>Main campus / Road B</option><option>Factory AA / Warehouse</option></select></div>
+        <div class="field"><label>Status</label><select><option>Active + acknowledged</option><option>Open work orders</option><option>In progress</option><option>Completed</option><option>Suppressed</option></select></div>
+        <div class="field"><label>Severity / Priority</label><select><option>All</option><option>Critical / P1</option><option>Warning / P2</option><option>Connectivity</option></select></div>
+        <div class="field"><label>Issue type</label><select><option>All system issues</option><option>Fault Alert</option><option>Power Issue</option><option>Hardware Failure</option><option>Connectivity</option><option>Command timeout</option></select></div>
+        <div class="field"><label>Time range</label><select><option>Today</option><option>Last 7 days</option><option>This month</option><option>Custom range</option></select></div>
+      </div>
+    </section>
+
+    <section class="stats-grid" aria-label="Fault summary">
+      <div class="stat"><span>Critical</span><strong class="rose">12</strong></div>
+      <div class="stat"><span>Warning</span><strong class="amber">25</strong></div>
+      <div class="stat"><span>Maintenance</span><strong class="blue">9</strong></div>
+      <div class="stat"><span>In progress</span><strong style="color:var(--violet)">7</strong></div>
+      <div class="stat"><span>Resolved today</span><strong class="green">18</strong></div>
+      <div class="stat"><span>SLA risk</span><strong class="rose">4</strong></div>
+    </section>
+
+    <!--
+      ISSUE QUEUE LOGIC:
+      This queue must show system-detected issues only.
+      Valid sources: FaultOccurrence, telemetry anomaly, command timeout, offline timeout,
+      voltage/current/power rule, anomaly engine, or provider/device status alert.
+      Provider command accepted with device_verified=false is not an Issue Queue row yet.
+      It stays verification pending until debounce/threshold promotes it into FaultOccurrence.
+
+      Do NOT put manual/preventive maintenance in this queue.
+      Maintenance is human-created operational work and belongs in Maintenance Records
+      after the user creates or converts it into a WorkOrder.
+
+      Flow:
+      system detects issue -> Issue Queue -> acknowledge/triage -> create WorkOrder or suppress/monitor.
+      manual maintenance need -> create WorkOrder -> Maintenance Records, not Issue Queue.
+    -->
+    <section class="workspace-grid" aria-label="Fault and maintenance workspace">
+      <article class="card queue-card">
+        <div class="card-head">
+          <div>
+            <h2>▤ Issue Queue</h2>
+            <p class="subtitle">System-detected issues only. Manual or preventive maintenance belongs in Maintenance Records after a WorkOrder exists.</p>
+          </div>
+          <div class="chip-row">
+            <span class="chip rose">4 system issues</span>
+            <span class="chip amber">3 SLA warning</span>
+          </div>
+        </div>
+        <div class="queue-list">
+          <div class="queue-row">
+            <span class="priority p1">P1</span>
+            <div class="queue-main">
+              <strong>SP-088 · Promoted lamp-state fault</strong>
+              <span>Fault Alert · Road B · command ON unconfirmed after debounce · open 18m</span>
+              <p>Clicking this opens the shared maintenance drawer with QR, timeline, fault context, and maintenance actions.</p>
+              <div class="mini-meta"><span>Detected: 2026-06-03 08:42</span><span>SLA: 42m left</span><span>FaultOccurrence</span></div>
+            </div>
+            <div class="row-actions"><button class="button rose" type="button" data-open-maintenance>Open maintenance</button><span class="button">▦ QR</span><span class="button">⌖ Map</span></div>
+          </div>
+          <div class="queue-row">
+            <span class="priority p1">P1</span>
+            <div class="queue-main">
+              <strong>SP-103 · Offline timeout</strong>
+              <span>Connectivity · no telemetry for 32m · last command status unknown</span>
+              <p>System detected a delayed/offline device state. User can acknowledge, inspect on map, or convert to maintenance work order.</p>
+              <div class="mini-meta"><span>Detected: 2026-06-03 08:55</span><span>Not acknowledged</span><span>FaultOccurrence</span></div>
+            </div>
+            <div class="row-actions"><button class="button rose" type="button" data-open-maintenance>Open issue</button><span class="button">▦ QR</span><span class="button">⌖ Map</span></div>
+          </div>
+          <div class="queue-row">
+            <span class="priority p2">P2</span>
+            <div class="queue-main">
+              <strong>SP-144 · Voltage sag</strong>
+              <span>Power Issue · Parking · min 188V · open 2h</span>
+              <p>Open maintenance overlay to acknowledge, create work order, or compare affected zone on the map.</p>
+              <div class="mini-meta"><span>Detected: 2026-06-03 07:35</span><span>Response overdue</span><span>FaultOccurrence</span></div>
+            </div>
+            <div class="row-actions"><span class="button warn">Acknowledge</span><span class="button rose">Create WO</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card map-card">
+        <div class="card-head">
+          <div>
+            <h2>🗺 Fault / Maintenance Map Status</h2>
+            <p class="subtitle">Map uses the larger 7-column space. Marker color reflects current repair/fault state across dashboard, map, and device-list.</p>
+          </div>
+          <div class="chip-row">
+            <span class="button">↻ Fit affected</span>
+            <span class="button">⛶ Fullscreen</span>
+          </div>
+        </div>
+        <div class="map-stage" aria-label="Fault maintenance map">
+          <div class="map-road r1"></div>
+          <div class="map-road r2"></div>
+          <div class="map-road r3"></div>
+          <div class="map-road r4"></div>
+          <div class="map-legend">
+            <h3>Status Color</h3>
+            <div class="legend-row"><span class="legend-dot critical"></span><span>Critical fault</span></div>
+            <div class="legend-row"><span class="legend-dot warning"></span><span>Warning fault</span></div>
+            <div class="legend-row"><span class="legend-dot maintenance"></span><span>Maintenance</span></div>
+            <div class="legend-row"><span class="legend-dot progress"></span><span>Repair in progress</span></div>
+            <div class="legend-row"><span class="legend-dot completed"></span><span>Resolved/completed</span></div>
+          </div>
+          <button class="marker critical" style="left:48%;top:42%" data-device="SP-088"><i></i><small>SP-088</small></button>
+          <button class="marker maintenance" style="left:72%;top:62%" data-device="SP-117"><i></i><small>SP-117</small></button>
+          <button class="marker warning" style="left:78%;top:78%" data-device="SP-144"><i></i><small>SP-144</small></button>
+          <button class="marker progress" style="left:62%;top:34%" data-device="SP-103"><i></i><small>SP-103</small></button>
+          <button class="marker completed" style="left:22%;top:36%" data-device="SP-041"><i></i><small>SP-041</small></button>
+          <div class="map-popup">
+            <h3>SP-088 · P1 Fault</h3>
+            <p class="subtitle">Promoted lamp-state fault · Road B · created 2026-06-03 08:42</p>
+            <div class="mini-meta">
+              <span>Color: critical red</span>
+              <span>Repair: not started</span>
+              <span>QR available</span>
+            </div>
+            <div class="chip-row" style="justify-content:flex-start;margin-top:10px">
+              <button class="button rose" type="button" data-open-maintenance>Open maintenance</button>
+              <span class="button">▦ QR</span>
+              <span class="button">Device history</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div class="drawer-backdrop" aria-hidden="true" data-close-maintenance></div>
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (faults.html / Shared Maintenance Drawer: SP-088): Shared Maintenance Drawer opens only after selected fault_id, work_order_id, device_id, notification_id, QR scan, or zone/tag maintenance scope has context. Provider accepted command with verification_status=state-not-yet-confirmed stays pending and must not open a repair form until backend debounce promotes it. After promotion: P1 fault, Device ID SP-088, QR smartlight://device/SP-088, Road B, current state promoted lamp-state fault, Command ON unconfirmed after debounce, open 18m. Timeline: command accepted -> verification pending -> FaultOccurrence created -> notification acknowledged -> WorkOrder assigned -> repair -> close after verification telemetry. -->
+
+
+    <!--
+      MAINTENANCE RECORDS LOGIC:
+      This table is the operational work record list.
+      It includes WorkOrder records from two paths:
+      1) issue converted to maintenance/repair work
+      2) manual or preventive maintenance created by users
+
+      Preventive maintenance appears here, not in Issue Queue, because the system
+      cannot assume it is a fault unless a rule/alert detects an abnormal condition.
+    -->
+    <section class="card table-card" aria-label="Fault and maintenance records">
+      <div class="card-head">
+        <div>
+          <h2>▤ Fault / Maintenance Records</h2>
+          <p class="subtitle">Combined operational view. FaultOccurrence rows and WorkOrder maintenance rows should be visually distinct but searchable together by device_id.</p>
+        </div>
+        <div class="chip-row">
+          <span class="chip">46 records</span>
+          <span class="button">↓ CSV</span>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="fault-table" data-sortable>
+          <thead>
+            <tr data-open-maintenance>
+              <th>Record</th>
+              <th>Device / Scope</th>
+              <th>Type</th>
+              <th>Status color</th>
+              <th>Ack / Owner</th>
+              <th>Created / Detected</th>
+              <th>Completed / Resolved</th>
+              <th>Repair detail</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>WO-2026-0042</strong><span>From fault SP-088</span></td>
+              <td><strong>SP-088</strong><span>Factory AA · Road B</span></td>
+              <td><span class="status-pill critical">Fault Alert</span><span>Promoted lamp-state fault after debounce</span></td>
+              <td><span class="status-pill critical">critical red</span><span>map/device/dashboard</span></td>
+              <td><strong>Operator A ack</strong><span>Owner: Technician A</span></td>
+              <td><strong>2026-06-03 08:42</strong><span>created by fault engine</span></td>
+              <td><strong>-</strong><span>not completed</span></td>
+              <td><span>Master: Promoted lamp-state fault</span><span>Custom: inspect driver/wiring</span></td>
+              <td><div class="row-actions"><button class="button rose" type="button" data-open-maintenance>Open</button><span class="button">▦ QR</span><span class="button">⌖ Map</span></div></td>
+            </tr>
+            <tr data-open-maintenance>
+              <td><strong>WO-2026-0039</strong><span>Planned maintenance</span></td>
+              <td><strong>SP-117</strong><span>Factory AA · Parking</span></td>
+              <td><span class="status-pill maintenance">Preventive</span><span>Scheduled inspection</span></td>
+              <td><span class="status-pill maintenance">maintenance blue</span><span>fault suppression optional</span></td>
+              <td><strong>Manager B</strong><span>Assigned: Technician C</span></td>
+              <td><strong>2026-06-03 09:10</strong><span>created manually</span></td>
+              <td><strong>-</strong><span>active maintenance</span></td>
+              <td><span>Master: Preventive inspection</span><span>Technician assigned</span></td>
+              <td><div class="row-actions"><button class="button primary" type="button" data-open-maintenance>Update</button><span class="button">History</span><span class="button">⌖ Map</span></div></td>
+            </tr>
+            <tr data-open-maintenance>
+              <td><strong>FO-Voltage-144</strong><span>FaultOccurrence</span></td>
+              <td><strong>SP-144</strong><span>Factory AA · Parking</span></td>
+              <td><span class="status-pill warning">Power Issue</span><span>Voltage sag</span></td>
+              <td><span class="status-pill warning">warning amber</span><span>requires review</span></td>
+              <td><strong>Not acked</strong><span>Owner: unassigned</span></td>
+              <td><strong>2026-06-03 07:35</strong><span>first detected</span></td>
+              <td><strong>-</strong><span>acknowledged only</span></td>
+              <td><span>Master: Low voltage supply</span><span>Check feeder and load</span></td>
+              <td><div class="row-actions"><button class="button warn" type="button" data-open-maintenance>Acknowledge</button><button class="button rose" type="button" data-open-maintenance>Create WO</button></div></td>
+            </tr>
+            <tr data-open-maintenance>
+              <td><strong>WO-2026-0031</strong><span>Completed repair</span></td>
+              <td><strong>SP-041</strong><span>Factory AA · Road B</span></td>
+              <td><span class="status-pill completed">Completed</span><span>Driver replacement</span></td>
+              <td><span class="status-pill completed">green resolved</span><span>no active fault</span></td>
+              <td><strong>Technician A</strong><span>Verified: Manager B</span></td>
+              <td><strong>2026-06-02 15:12</strong><span>created manually</span></td>
+              <td><strong>2026-06-03 10:05</strong><span>repair completed</span></td>
+              <td><span>Resolution: replaced LED driver</span><span>Verified current and power normal</span></td>
+              <td><div class="row-actions"><button class="button" type="button" data-open-maintenance>Open</button><span class="button">Report</span></div></td>
+            </tr>
+          
+            <tr data-open-maintenance>
+              <td><strong>WO-2026-0048</strong><span>Fault-linked repair</span></td>
+              <td><strong>SP-177</strong><span>Factory Delta · Road C</span></td>
+              <td><span class="status-pill warning">Electrical</span><span>Over voltage</span></td>
+              <td><span class="status-pill warning">warning amber</span><span>map overlay</span></td>
+              <td><strong>Operator B ack</strong><span>Owner: Technician D</span></td>
+              <td><strong>2026-06-03 10:18</strong><span>created by anomaly engine</span></td>
+              <td><strong>-</strong><span>investigating</span></td>
+              <td><span>Master: Over voltage</span><span>Check feeder regulator and neutral</span></td>
+              <td><div class="row-actions"><button class="button warn" type="button" data-open-maintenance>Update</button><span class="button">▦ QR</span><span class="button">⌖ Map</span></div></td>
+            </tr>
+            <tr data-open-maintenance>
+              <td><strong>FO-SCHED-205</strong><span>FaultOccurrence</span></td>
+              <td><strong>SP-205</strong><span>School Lighting E · Front Gate</span></td>
+              <td><span class="status-pill warning">Schedule</span><span>Runtime mismatch</span></td>
+              <td><span class="status-pill warning">warning amber</span><span>schedule overlay</span></td>
+              <td><strong>Not acked</strong><span>Owner: unassigned</span></td>
+              <td><strong>2026-06-03 10:07</strong><span>detected by schedule engine</span></td>
+              <td><strong>-</strong><span>open</span></td>
+              <td><span>Master: Schedule mismatch</span><span>Verify timezone and override state</span></td>
+              <td><div class="row-actions"><button class="button warn" type="button" data-open-maintenance>Acknowledge</button><button class="button rose" type="button" data-open-maintenance>Create WO</button></div></td>
+            </tr>
+            <tr data-open-maintenance>
+              <td><strong>WO-2026-0046</strong><span>Preventive maintenance</span></td>
+              <td><strong>Road B zone</strong><span>48 devices · Pole line</span></td>
+              <td><span class="status-pill maintenance">Preventive</span><span>Quarterly inspection</span></td>
+              <td><span class="status-pill maintenance">maintenance blue</span><span>not active issue</span></td>
+              <td><strong>Manager B</strong><span>Owner: Technician Team 2</span></td>
+              <td><strong>2026-06-04 09:00</strong><span>planned start</span></td>
+              <td><strong>-</strong><span>scheduled</span></td>
+              <td><span>Master: Preventive inspection</span><span>Thermal check and terminal torque</span></td>
+              <td><div class="row-actions"><button class="button primary" type="button" data-open-maintenance>Open</button><span class="button">Plan</span></div></td>
+            </tr>
+</tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid-12" aria-label="Predictive maintenance and MTBF workspace">
+      <article class="card span-6">
+        <div class="card-inner">
+          <div class="section-title"><div><h2>◷ Predictive Maintenance</h2><p>7-day maintenance risk from repeated faults, runtime hours, electrical anomaly trend, weather context, and last repair result.</p></div><span class="chip amber">package gated</span></div>
+          <!-- LOGIC: predictive rows are recommendations, not active issues. They do not enter Issue Queue until a real FaultOccurrence/anomaly/command/offline rule creates an active issue. -->
+          <div class="issue-queue">
+            <div class="issue-row"><span class="issue-priority p2">RISK</span><div class="issue-main"><strong>SP-221 · Poor PF pattern</strong><span>PF below 0.75 on 4 nights · recommend inspection within 7d.</span><div class="issue-meta"><span class="delta warn">confidence 78%</span><span class="delta">not active issue</span></div></div><div class="issue-actions"><a class="button" href="/device-list/?search=SP-221">Device</a><span class="button warn">Create PM</span></div></div>
+            <div class="issue-row"><span class="issue-priority p2">RISK</span><div class="issue-main"><strong>Road B feeder group</strong><span>Repeat voltage sag after rain windows; check weather/electrical correlation.</span><div class="issue-meta"><span class="delta warn">weather linked</span><span class="delta">zone scope</span></div></div><div class="issue-actions"><a class="button" href="/map/?zone=road-b">Map</a><span class="button warn">Plan work</span></div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card span-6">
+        <div class="card-inner">
+          <div class="section-title"><div><h2>⌁ MTBF / Recurrence</h2><p>Mean time between failures by device, zone, model, and customer. Used for warranty, replacement, and maintenance planning.</p></div><span class="chip blue">analysis</span></div>
+          <!-- LOGIC: MTBF uses resolved FaultOccurrence history only. Preventive maintenance should improve next risk score but must not inflate failure count. -->
+          <div class="table-scroll">
+            <table data-sortable>
+              <thead><tr><th>Scope</th><th>Failures</th><th>MTBF</th><th>Last fault</th><th>Recommendation</th></tr></thead>
+              <tbody>
+                <tr><td>SP-088<span>Street light V2</span></td><td>4</td><td>41 days</td><td>Lamp telemetry mismatch</td><td><span class="status-pill critical">replace driver if repeat</span></td></tr>
+                <tr><td>Road B<span>126 lamps</span></td><td>19</td><td>22 days</td><td>Multiple devices offline too long</td><td><span class="status-pill warning">inspect network/power</span></td></tr>
+                <tr><td>Factory Delta<span>92 lamps</span></td><td>6</td><td>78 days</td><td>Over voltage</td><td><span class="status-pill info">monitor</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (faults.html / ⎇ Fault / Maintenance Operating Process): ⎇ Fault / Maintenance Operating Process This is the shared operational state machine. Every step changes what dashboard, map, device-list, device QR drawer, and faults table display. 1. Detect / Report System-detected abnormal conditions create FaultOccurrence / active issue records from telemetry, command, offline, schedule, or electrical rules Manual or preventive maintenance creates a WorkOrder / Maintenance Record with source, scope, device/zone/tag, and planned reason Dashboard Top Issues and Realtime Error Rail become visible only for active critical/warning system issues, not for preventive maintenance by itself 2. Notify / Acknowledge Notification is sent to responsible operator/manager/team in account scope Someone must click acknowledge so the system records notification_ack_by and notification_ack_at Unacknowledged issues stay visually stronger on dashboard, map, and faults queue 3. Identify / Assign Operator or technician selects master problem code or writes custom problem text Manager/admin assigns technician/team, due time, SLA, and priority Device popup shows owner and latest diagnosis so field users know who is responsible 4. Repair / Maintain Technician records action, parts, notes, photos, and repair result Preventive maintenance uses the same workflow but starts without a broken-equipment fault In-progress state changes map/dashboard/device marker to repair/maintenance color 5. Verify / Close System or manager verifies telemetry, photo, or manual inspection result Close writes completed_at, verified_by, closed_by, and resolution summary Completed state removes active issue count and keeps history/report visible 6. Cross Page Display Dashboard: Top Issues, graph markers, KPI issue counts, and drilldown links Map: marker color, popup owner, fault/maintenance action, and realtime rail count Device-list: row badge, owner, ping context, QR popup, maintenance drawer action, and command-center link All entry points can open the shared maintenance drawer immediately; /faults/ is the full command center when deeper queue/table/history work is needed -->
+
+
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (faults.html / Fault / Maintenance Card Logic Matrix): Fault / Maintenance Card Logic Matrix Every card separates system-detected issues, fault-linked work orders, and manual/preventive maintenance. Entitlement Policy Applied To Faults Every faults/work-order query and mutation must call EntitlementPolicy.apply(scope, requested_time_range) Software expired: show issue/expiry alerts and historical rows up to visible_until Software expired: disable acknowledge, assign, create/close work order, suppress, retry, repair update, and export Hardware/lamp expired: create replacement recommendation if software is active; otherwise show read-only warning only Fault / Maintenance Filters Source: FaultOccurrence, WorkOrder, device registry, account hierarchy, status, priority Shows: filters for issue queue, records table, map status, and drawer context Action: narrows list/map/table only Expiry: filters remain visible; result detail is capped by entitlement.visible_until except current alert notices Fault Summary Source: active issue count, unacknowledged count, work-order status, SLA timers Shows: P1/P2, unacknowledged, assigned, completed, overdue maintenance Action: click narrows queue/table Expiry: software expired still shows alert/expiry counts, but action buttons are disabled Issue Queue Source: active system-detected FaultOccurrence/anomaly/command/offline records only Shows: urgent issues that require acknowledge/triage/repair decision Action: open drawer, acknowledge, assign, create work order, suppress, inspect Expiry: software expired shows issue rows but disables acknowledge/assign/create/suppress/close/fix Fault / Maintenance Map Status Source: active fault state, work-order state, maintenance status, device coordinates Shows: where issues/maintenance are located and the state color applied to map/device pages Action: select marker, open drawer, center map Expiry: read-only map remains; repair/control actions are disabled if software expired Shared Maintenance Drawer Source: selected fault_id, work_order_id, device_id, notification_id, QR scan, or zone/tag scope Shows: QR/device context, current state, people/audit, timeline, maintenance form Action: update problem, assign owner, save repair note, close after verification Expiry: software expired opens drawer read-only; only renewal/contact-admin path remains active Fault / Maintenance Records Source: FaultOccurrence history + WorkOrder history, including manual/preventive maintenance Shows: full command-center table; not limited to active issues Action: open/update record, view history/report, map, QR Expiry: history rows are capped by visible_until; manual/preventive actions disabled when software expired -->
+
+
+    
+    <!-- GUIDANCE MOVED OUT OF VISIBLE UI (faults.html / ⚙ Implementation Contract): ⚙ Implementation Contract Use the existing faults and maintenance models. This document defines how the UX should connect fault detection, work orders, repair form, and map colors. Existing Code Path Template: templates/faults/list.html Fault model: apps.faults.models.FaultOccurrence Maintenance model: apps.maintenance.models.WorkOrder Master data: WorkOrderProblemCode Status audit: WorkOrderStatusHistory Fault To Maintenance Flow Dashboard Top Issues -> open shared maintenance drawer or /faults/?device_id=... Issue Queue shows only system-detected issues from FaultOccurrence, telemetry anomaly, command timeout, offline timeout, or anomaly engine FaultOccurrence can create or link WorkOrder via fault_alert WorkOrder can be device, zone, tag, fault, or alert scoped Manual/preventive maintenance starts as WorkOrder and appears in Maintenance Records, not Issue Queue Maintenance is not always broken; preventive work uses maintenance color only after user-created work exists Repair Form Fields Form lives inside a shared maintenance drawer/modal, not a permanent right column and not only on device detail device_id, work_order_id, issue_type, priority, status problem_code from WorkOrderProblemCode or custom problem text notification_ack_by, notification_ack_at, problem_identified_by, assigned_by, assigned_to notes, evidence/photos, resolution, due dates, SLA dates created_at/first_detected_at and completed_at/resolved_at People & Responsibility System creates detection; user must acknowledge notification before it becomes owned work Reporter/problem identifier can be system rule, operator, technician, manager, or customer user Assigner chooses technician/team and due time; technician records diagnosis and repair result Verifier closes only after repair evidence or telemetry returns to normal Every transition writes actor, timestamp, source page, and note to the audit trail Selected Context Rule Default page shows queue, map, and records without a permanent repair form Shared maintenance drawer opens after selecting fault_id, work_order_id, device_id, notification_id, QR scan, or zone/tag maintenance scope Selection can come from queue, records table, map marker, dashboard issue, device-list, notification, or QR scan Desktop drawer must be fixed right-side overlay; it must not be a grid item that pushes content down Mobile drawer becomes bottom sheet or full-screen sheet so users do not scroll to find it Completed records open read-only/history mode unless user adds follow-up note Status Color Sync critical fault -> red marker/card/table status warning fault -> amber marker/card/table status maintenance active -> blue marker; suppress faults only when configured in_progress -> violet marker; completed/resolved -> green marker suppressed/cancelled -> gray marker and excluded from active issue count Cross Page Effects Dashboard Top Issues reads active FaultOccurrence and fault-linked WorkOrder state only; preventive/manual work orders stay in Maintenance Records Map marker color and popup action update when ack, assignment, repair, or completion changes Device-list row shows active issue/maintenance owner and exposes QR + work-order actions Shared maintenance drawer shows current fault, ack status, owner, form, and maintenance timeline Channels event should broadcast state changes to dashboard, map, device-list, and faults page Shared Device QR Popup Click device_id from faults opens the same QR popup as dashboard/map/device-list Include fault/work-order context inside the popup Actions: open shared maintenance drawer, center map, download QR, create/update work order Shared Header Include Header markup must match the dashboard header pattern and use data-shared-header-include="frontend-dashboard-header" Implement as one shared include, for example templates/includes/frontend_dashboard_header.html Include owns white-label title, page title, account type, profile, theme toggle, widget control, save layout, and live status Use the same include for /dashboard/, /map/, /device-list/, and /faults/ so responsive order stays consistent -->
+
+  
+    <!-- SHARED DEVICE STATE ENGINE REFERENCE:
+      Source plan: docs/html/device_state_engine.html
+      Implementation rule: this page must read normalized DeviceLatestState + ActiveIssue from backend APIs.
+      UI must not infer OK/warning/error/fault from raw telemetry locally.
+      Cases such as commanded ON + lamp telemetry mismatch must be detected by DeviceStateEngine/IssueRuleEngine,
+      then rendered here according to role, scope, package entitlement, and selected filters.
+    -->
+
+  
+    <!-- PACKAGE TELEMETRY POLICY REFERENCE:
+      Source plan: docs/html/device_state_engine.html#package-telemetry-policy
+      PackageTier polling interval, data retention, software expiry, and hardware warranty must be resolved server-side.
+      This page must not hardcode telemetry cadence, data visibility, export range, or expiry behavior.
+      Apply PackageTelemetryPolicy + EntitlementPolicy before dashboard/map/device/fault/report/notification queries.
+    -->
+
+  </main>
+  <script>
+    const pageBody = document.body;
+    document.querySelectorAll('[data-open-maintenance]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        pageBody.classList.remove('drawer-closed');
+      });
+    });
+    document.querySelectorAll('[data-close-maintenance]').forEach((button) => {
+      button.addEventListener('click', () => {
+        pageBody.classList.add('drawer-closed');
+      });
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        pageBody.classList.add('drawer-closed');
+      }
+    });
+  </script>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

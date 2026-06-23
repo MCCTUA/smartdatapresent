@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartLight Layout Migration Diagram</title>
+  <style>
+    :root {
+      --bg: #f5f8f7;
+      --panel: #ffffff;
+      --soft: #edf7f4;
+      --soft-blue: #eef6ff;
+      --ink: #10211d;
+      --muted: #64756f;
+      --line: #d8e5e1;
+      --primary: #0f766e;
+      --blue: #2563eb;
+      --green: #15803d;
+      --amber: #b45309;
+      --red: #b91c1c;
+      --shadow: 0 18px 48px rgba(15, 23, 42, 0.07);
+      --radius: 18px;
+      --max: 1260px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(15, 118, 110, 0.13), transparent 28rem),
+        radial-gradient(circle at 92% 6%, rgba(37, 99, 235, 0.10), transparent 30rem),
+        linear-gradient(180deg, #fbfefd, var(--bg));
+      color: var(--ink);
+      font-family: "Aptos", "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+      line-height: 1.58;
+    }
+
+    main {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 76px;
+    }
+
+    header,
+    section,
+    .card,
+    .flow-step,
+    .lane,
+    .decision,
+    .checklist {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+    }
+
+    header,
+    section {
+      border-radius: var(--radius);
+    }
+
+    header {
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    section {
+      padding: 22px;
+      margin-top: 16px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 860px;
+      font-size: clamp(30px, 4.2vw, 54px);
+      line-height: 1;
+      letter-spacing: -0.045em;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+      font-size: 24px;
+      letter-spacing: -0.025em;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 17px;
+    }
+
+    p,
+    li,
+    td {
+      color: var(--muted);
+    }
+
+    code {
+      border-radius: 7px;
+      background: var(--soft);
+      color: var(--primary);
+      padding: 2px 6px;
+      font-size: 12px;
+    }
+
+    ul,
+    ol {
+      margin: 10px 0 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--soft);
+      color: #30443e;
+      font-weight: 900;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--primary);
+      padding: 6px 11px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .lead {
+      max-width: 860px;
+      margin-top: 12px;
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card,
+    .checklist {
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .card strong {
+      color: var(--ink);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(140px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .flow-step {
+      position: relative;
+      min-height: 190px;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .flow-step::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -12px;
+      width: 12px;
+      border-top: 2px solid var(--line);
+    }
+
+    .flow-step:last-child::after {
+      display: none;
+    }
+
+    .step-no {
+      display: inline-grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .flow-step h3 {
+      margin-top: 12px;
+    }
+
+    .swimlane {
+      display: grid;
+      grid-template-columns: 0.8fr repeat(4, 1fr);
+      gap: 10px;
+      align-items: stretch;
+      overflow-x: auto;
+    }
+
+    .lane {
+      min-width: 170px;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .lane-title {
+      background: var(--ink);
+      color: #fff;
+      font-weight: 950;
+    }
+
+    .lane small {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--primary);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .decision-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .decision {
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .decision.yes {
+      border-color: rgba(21, 128, 61, 0.28);
+      background: #f0fbf4;
+    }
+
+    .decision.wait {
+      border-color: rgba(180, 83, 9, 0.28);
+      background: #fff8ed;
+    }
+
+    .decision.no {
+      border-color: rgba(185, 28, 28, 0.25);
+      background: #fff1f2;
+    }
+
+    .tag {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .tag.ok {
+      background: #dcfce7;
+      color: var(--green);
+    }
+
+    .tag.wait {
+      background: #fef3c7;
+      color: var(--amber);
+    }
+
+    .tag.no {
+      background: #fee2e2;
+      color: var(--red);
+    }
+
+    .artifact-map {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+    }
+
+    .artifact {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 14px;
+    }
+
+    .artifact.docs { grid-column: span 3; background: var(--soft-blue); }
+    .artifact.template { grid-column: span 3; }
+    .artifact.assets { grid-column: span 3; }
+    .artifact.tests { grid-column: span 3; background: var(--soft); }
+    .artifact.full { grid-column: 1 / -1; }
+
+    .warning {
+      border-left: 5px solid var(--amber);
+      background: #fffaf0;
+    }
+
+    .danger {
+      border-left: 5px solid var(--red);
+      background: #fff5f5;
+    }
+
+    .success {
+      border-left: 5px solid var(--green);
+      background: #f3fbf5;
+    }
+
+    @media (max-width: 980px) {
+      .grid-2,
+      .grid-3,
+      .decision-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .artifact.docs,
+      .artifact.template,
+      .artifact.assets,
+      .artifact.tests {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 760px) {
+      header,
+      section {
+        padding: 18px;
+      }
+
+      .flow {
+        grid-template-columns: 1fr;
+        overflow: visible;
+      }
+
+      .flow-step::after {
+        top: auto;
+        right: 50%;
+        bottom: -12px;
+        height: 12px;
+        border-top: 0;
+        border-left: 2px solid var(--line);
+      }
+
+      .swimlane {
+        grid-template-columns: 1fr;
+        overflow: visible;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="badge">Layout migration playbook</span>
+    <h1>SmartLight Layout Diagram</h1>
+    <p class="lead">เอกสารนี้คือวิธีแก้ layout ให้ถูกทางก่อนลงมือแก้ production: อ่าน <code>docs/html/*.html</code> ของหน้าที่จะแก้, map ไป route/template จริง, ตรวจว่า data และเมนูสะท้อน workflow ที่มีประโยชน์ต่อการวิเคราะห์หรือไม่, แล้วค่อยแก้โดยใช้สี production และ header component เดิม.</p>
+  </header>
+
+  <section>
+    <h2>North Star</h2>
+    <div class="grid grid-3">
+      <article class="card success">
+        <h3>เริ่มจาก docs ของหน้านั้น</h3>
+        <p>เปิด <code>docs/html/*.html</code> เฉพาะหน้าที่กำลังจะแก้ เพื่ออ่าน order, grouping, class vocabulary, menu intent, และ analysis intent.</p>
+      </article>
+      <article class="card warning">
+        <h3>route และ data คือความจริง</h3>
+        <p>เช็ก route/template/view/service จริงก่อนเสมอ. ข้อมูล, permission, package gate, form action, และ device/account scope ต้องมาจาก production.</p>
+      </article>
+      <article class="card danger">
+        <h3>คง shell เดิม</h3>
+        <p>สีใช้ production theme เดิม, header ใช้ shared component ที่ทำไว้แล้ว, และห้าม copy fake rows, mock colors, CDN script, หรือ browser-side authorization.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Main Flow</h2>
+    <div class="flow" aria-label="Layout migration flow">
+      <article class="flow-step">
+        <span class="step-no">1</span>
+        <h3>เลือก slice เดียว</h3>
+        <p>เลือก route เดียว เช่น <code>/backoffice/energy/</code> หรือ <code>/dashboard/</code>. อย่าแก้หลายหน้าในรอบเดียวถ้าไม่ได้จำเป็น.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">2</span>
+        <h3>จับคู่ route จริง</h3>
+        <p>ดู mapping ใน <code>apps/core/tests/test_template_shell_guard.py</code> แล้วเปิด route, template, CSS, JS, view, service, และ tests ที่เกี่ยวข้อง.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">3</span>
+        <h3>ตรวจ data และเมนู</h3>
+        <p>ถามก่อนว่า data ที่จะแสดงสะท้อนเมนู/route นี้ไหม, ช่วยวิเคราะห์หรือจัดการงานจริงไหม, และมี backend owner หรือ permission gate ไหน.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">4</span>
+        <h3>แก้ layout แบบ minimal</h3>
+        <p>ปรับ DOM order, wrappers, grid, spacing, reusable classes, และใช้ shared header component โดยคง route/form/query/action เดิมไว้.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">5</span>
+        <h3>ล็อก contract</h3>
+        <p>เพิ่ม non-visible markers, static guards, route assertions, และ negative tests กัน mock-only blocks หลุดเข้า runtime.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">6</span>
+        <h3>ตรวจภาพและ tests</h3>
+        <p>เช็ก desktop/mobile, no overlap, no fake data, focused tests, <code>manage.py check</code>, และ <code>git diff --check</code>.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Report / Export Concept</h2>
+    <p class="lead">Report export ต้องเป็น purpose-first workflow: เลือก scope และวัตถุประสงค์การบริหารก่อน, ให้ Output Preview Table แสดง row set จริงจาก filters ปัจจุบัน, แล้ว export current preview เป็นไฟล์เดียวกัน.</p>
+    <div class="flow" aria-label="Report export purpose-first flow">
+      <article class="flow-step">
+        <span class="step-no">1</span>
+        <h3>เลือก scope</h3>
+        <p>Platform Owner เลือก all, dealer subtree, หรือ customer. Dealer เลือก all customers ใต้ตัวเองหรือ customer เดียว. Customer เป็น fixed own account.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">2</span>
+        <h3>เลือก purpose</h3>
+        <p>เลือกว่าจะ export เพื่ออะไร: operations overview, device operations, zone/map coverage, fault/maintenance, energy/carbon, package/license, หรือ raw payload diagnostics. ถ้าไม่เลือก ให้ default เป็น operations overview.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">3</span>
+        <h3>filter รายการ</h3>
+        <p>ใช้ account scope, time range, และ search เป็น filter หลัก. Zone, tag, และ device set เป็น context columns ในตารางที่เกี่ยวข้อง ไม่ใช่ primary filter ซ้ำบนหน้า export.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">4</span>
+        <h3>Apply แล้วเห็น preview</h3>
+        <p>Output Preview Table ต้องแสดง rows จริงจาก backend query หลัง scope/filter. ผู้ใช้ต้องตรวจข้อมูลบนหน้าก่อน export ได้.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">5</span>
+        <h3>Export current preview</h3>
+        <p>Export ต้องหมายถึง preview ที่กำลังเห็นอยู่พร้อม filters เดิม. ห้ามโชว์ package/device/fault export buttons คู่ขนานจนทำให้คนไม่รู้ว่าจะได้ข้อมูลอะไร.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">6</span>
+        <h3>เลือก file type</h3>
+        <p>หลังเห็น preview แล้ว export เป็นไฟล์ที่ต้องการ. Production Report Export ตอนนี้รองรับ CSV และ PDF จาก current filters.</p>
+      </article>
+    </div>
+    <div class="grid grid-3" style="margin-top:12px">
+      <article class="card success">
+        <h3>Source of truth</h3>
+        <p>Preview query และ export query ต้องใช้ scope/filter/purpose contract เดียวกัน. Export ไม่ควรมี hidden filter logic ที่ตารางไม่ได้สะท้อน.</p>
+      </article>
+      <article class="card warning">
+        <h3>Role behavior</h3>
+        <p>Platform Owner/Dealer ใช้ <code>AccountScopeService</code> เพื่อ resolve visible tree/subtree/customer. Customer scope ต้อง fixed ที่ account ตัวเอง. Columns ต้องต่างกัน: Platform Owner เห็น Dealer + Customer, Dealer เห็น Customer, Customer ไม่ต้องเห็นทั้งสอง column เพราะเป็น own scope.</p>
+      </article>
+      <article class="card danger">
+        <h3>Regression guard</h3>
+        <p>Template ต้องมี marker ว่า export is current-purpose/current-preview. Tests ต้องกันไม่ให้กลับไปเป็น three parallel export buttons หรือ raw payload default.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Map / Floor Plan Display Contract</h2>
+    <p class="lead"><code>/admin/accounts/account/&lt;id&gt;/change/</code> เป็นจุดเลือก <code>Account.form_type</code> ผ่าน field <strong>Map / floor</strong>. Field นี้เลือก renderer เท่านั้น: <code>MAP</code> ใช้ Leaflet/OSM และ <code>FLOOR_PLAN</code> ใช้ structured floor-plan renderer. ทั้งสอง mode ต้องแชร์ operational layer เดียวกันคือ customer/site scope, zone, tag, device id, device set/lot, marker state, selected device context, table, และ active issue rail. ห้ามตีความว่า MAP ไม่มี zone/tag หรือ FLOOR_PLAN เป็น workflow คนละระบบ.</p>
+    <div class="flow" aria-label="Map and floor plan mode flow">
+      <article class="flow-step">
+        <span class="step-no">0</span>
+        <h3>Admin source</h3>
+        <p>ใน Django admin ส่วน <strong>Customer / site profile</strong> ต้องเรียง <code>Customer type</code>, <code>Map / floor</code>, <code>Customer size</code>. <code>customer_type</code> เป็น business classification เท่านั้น ส่วน <code>form_type = MAP | FLOOR_PLAN</code> คือ source of truth สำหรับ renderer. ถ้าเป็น <code>MAP</code> ไม่ต้องมี building/floor; ถ้าเป็น <code>FLOOR_PLAN</code> จึงใช้ building/floor/position เพิ่มเติม.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">1</span>
+        <h3>Resolve scope</h3>
+        <p>เริ่มจาก account/customer scope, zone, tag, device set/lot, connection, marker state, active issue, และ search ผ่าน <code>backoffice_map_view</code>. Platform Owner/Dealer เห็น visible tree; Customer เห็น own scope. Scope และ filters เป็นชุดเดียวกันทั้ง Map และ Floor plan.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">2</span>
+        <h3>Choose display mode</h3>
+        <p>ผู้ใช้เลือก renderer: Geo Map หรือ Floor Plan. Production เปิดสองตัวนี้ก่อน; Satellite/Heat ต้อง gated จนกว่าจะมี source จริง. ถ้า <code>form_type=MAP</code> ให้ default เป็น Geo Map แต่ยังมี zone/tag/table. ถ้า <code>form_type=FLOOR_PLAN</code> ให้ default เป็น Floor Plan และเพิ่ม building/floor context.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">3</span>
+        <h3>Build shared payload</h3>
+        <p>Backend สร้าง payload ชุดเดียวสำหรับ rows, zone/tag grouping, active alerts, selected device, device context drawer, และ state legend. Geo Map เพิ่ม lat/lng marker. Floor Plan เพิ่ม building/floor/position หรือ auto layout. Zone/tag/device ไม่แยก source ตาม renderer.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">4</span>
+        <h3>Render chosen canvas</h3>
+        <p>Geo Map render ด้วย Leaflet/OpenStreetMap และไม่ require building/floor. Floor Plan render เป็น structured board จาก building/floor + zone/tag/device placement และไม่ require uploaded image. นอก canvas/table column ที่เกี่ยวกับ building/floor แล้ว action, issue, QR, และ state logic ต้องเหมือนกัน.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">5</span>
+        <h3>Sync context</h3>
+        <p>คลิก marker, floor-plan node, alert rail item, หรือ table row ต้องเลือก device context เดียวกัน: center/highlight canvas, เปิด popup/drawer, QR, device detail, history, fault command center, หรือ work-order action ตาม permission.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">6</span>
+        <h3>Guard mutations</h3>
+        <p>Filter และ mode switch ไม่ mutate placement. Drag/edit/save placement ต้องเป็น explicit action และต้องมี backend permission/service/test ก่อน. Read-only users เห็น map/floor/table แต่ไม่เห็น placement mutation controls.</p>
+      </article>
+    </div>
+
+    <div class="grid grid-3" style="margin-top:12px">
+      <article class="card success">
+        <h3>Role columns</h3>
+        <p>Platform Owner เห็น account scope เป็น dealer/customer tree และ table ต้องมี <code>Dealer</code> + <code>Customer</code>. Dealer เห็น customer scope ใต้ตัวเองและ table มี <code>Customer</code> เท่านั้น. Customer เป็น fixed own scope ไม่มี account selector และไม่มี Dealer/Customer columns.</p>
+      </article>
+      <article class="card success">
+        <h3>Realtime rail layout</h3>
+        <p><code>/map/</code> ใช้ component pattern เดียวกับ Dashboard Top Issues: workspace เป็น 12-column row, canvas = 9 และ realtime rail = 3 เมื่อเปิดอยู่. ถ้าผู้ใช้เลือก hide when clear ให้ canvas กลับเป็น 12; ถ้ามี active fault หรือ maintenance/work-order priority event ต้อง auto show rail อีกครั้ง.</p>
+      </article>
+      <article class="card warning">
+        <h3>Error vs feed</h3>
+        <p>Realtime Error Rail แสดงเฉพาะ system-detected active issues จาก backend fault/alert state. Live Event Feed เป็น observability stream และให้ maintenance/work-order events ขึ้นก่อน; repair completed แสดงประมาณ 5 นาทีแล้วไปอยู่ใน work-order/fault history.</p>
+      </article>
+      <article class="card">
+        <h3>Map type tabs</h3>
+        <p>Header ต้องมี Map, Satellite, Floor plan, Heat layer ตาม mock. Production เปิด Map และ Floor Plan ก่อน; Satellite/Heat ต้อง disabled หรือ gated จนกว่าจะมี tile/source/renderer จริง ห้ามใส่ fake renderer เพื่อให้เหมือน mock.</p>
+      </article>
+    </div>
+
+    <div class="flow" aria-label="Floor plan setup flow" style="margin-top:12px">
+      <article class="flow-step">
+        <span class="step-no">A</span>
+        <h3>Building mode</h3>
+        <p>เริ่มด้วย radio/segmented control ว่า account/site นี้เป็น single building หรือ multi building. Single building ใช้ default building อัตโนมัติ; multi building เปิด feature เพิ่ม building.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">B</span>
+        <h3>Create building</h3>
+        <p>ถ้าเป็น multi building ให้สร้าง building ก่อน เช่น ชื่ออาคาร, site/account, optional description. Building เป็น container ของ floor ไม่ใช่ device scope โดยตรง.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">C</span>
+        <h3>Create floor</h3>
+        <p>สร้าง floor ใต้ building หรือ default building เช่น Floor 1, Floor 2, Parking, Warehouse. Floor เป็น display/layout boundary ของ floor-plan mode.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">D</span>
+        <h3>Create zone</h3>
+        <p>สร้าง zone ใต้ floor แล้ว add device id จาก scoped device list เหมือน map view. Device ที่อยู่ใน zone นี้จะเป็น candidate สำหรับ canvas/table/alert rail ของ floor นั้น.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">E</span>
+        <h3>Split tag</h3>
+        <p>Tag เป็น subset ของ zone. ถ้าแยก tag ให้เลือกเฉพาะ device id ที่อยู่ใน zone นั้นเท่านั้น แล้วย้าย/assign device เข้า tag; ห้ามเลือก device นอก zone.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">F</span>
+        <h3>Show live lighting</h3>
+        <p>View mode แสดง device light/node บน floor/zone board พร้อม flash/color ตาม legend เดียวกับ map: online-on, online-off, fault, offline, maintenance, disabled.</p>
+      </article>
+    </div>
+
+    <div class="swimlane" aria-label="Map floor plan ownership swimlane" style="margin-top:12px">
+      <div class="lane lane-title">Concern</div>
+      <div class="lane lane-title">Geo Map</div>
+      <div class="lane lane-title">Floor Plan</div>
+      <div class="lane lane-title">Shared</div>
+      <div class="lane lane-title">Do Not Do</div>
+
+      <div class="lane"><strong>Canvas</strong></div>
+      <div class="lane"><small>Renderer</small><p>Leaflet/OpenStreetMap from scoped devices with valid latitude/longitude.</p></div>
+      <div class="lane"><small>Renderer</small><p>Structured building/floor/zone/tag board. No image upload dependency; render from hierarchy and scoped device placement.</p></div>
+      <div class="lane"><small>State</small><p>Same marker state vocabulary: online-normal-on/off, online-fault, offline-unreachable, maintenance, disabled.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>Do not require uploaded floor-plan images, and do not show Leaflet map behind/alongside floor plan unless the selected mode explicitly requests split view.</p></div>
+
+      <div class="lane"><strong>Realtime errors</strong></div>
+      <div class="lane"><small>Rail</small><p>Active system-detected issues scoped to visible map markers.</p></div>
+      <div class="lane"><small>Rail</small><p>Active issues scoped to devices in selected floor/layout.</p></div>
+      <div class="lane"><small>Click</small><p>Rail item centers/highlights the current canvas and updates selected device context.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>Do not mix preventive maintenance, completed history, or placement drafts into realtime error rail.</p></div>
+
+      <div class="lane"><strong>Device table</strong></div>
+      <div class="lane"><small>Rows</small><p>Devices currently visible on geo map after shared filters. Include zone/tag/state/action; omit building/floor columns unless backend has meaningful values.</p></div>
+      <div class="lane"><small>Rows</small><p>Devices in selected building/floor plus the same zone/tag filters. Zone rows come from device list; tag rows are a subset of the selected zone.</p></div>
+      <div class="lane"><small>Actions</small><p>Open device, QR/context drawer, center/highlight, command center/work-order links.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>Do not build separate table/filter logic per renderer, do not hide zone/tag in MAP, and do not assign tag devices from outside the zone.</p></div>
+
+      <div class="lane"><strong>Area hierarchy</strong></div>
+      <div class="lane"><small>MAP rule</small><p>Geo map can group by account/site, zone, tag, and device set without requiring building or floor.</p></div>
+      <div class="lane"><small>FLOOR_PLAN rule</small><p>Floor plan adds single/multi building and floor context before zone/tag/device placement. Zone/tag semantics remain the same as MAP.</p></div>
+      <div class="lane"><small>Legend</small><p>Lighting flash/color uses the same legend and marker state rules in both renderers.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>Do not create a separate floor-plan-only device state engine. Use the same backend state and active-fault logic.</p></div>
+
+      <div class="lane"><strong>Mode/source</strong></div>
+      <div class="lane"><small>Admin + docs source</small><p><code>Account.form_type=MAP</code>; docs source <code>docs/html/maps.html</code>.</p></div>
+      <div class="lane"><small>Admin + docs source</small><p><code>Account.form_type=FLOOR_PLAN</code>; docs source <code>docs/html/map_floorplan.html</code>.</p></div>
+      <div class="lane"><small>Production owner</small><p><code>backoffice_map_view</code> owns renderer selection and shared payload. <code>zone_floor_plan_view</code> can remain a focused detail route using the same Zone + Tag + Device contract.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>Do not fork separate filter logic for map and floor plan, and do not make renderer choice change account scope, entitlement, issue, or table semantics.</p></div>
+    </div>
+
+    <div class="swimlane" aria-label="Admin frontend shared floor plan logic" style="margin-top:12px">
+      <div class="lane lane-title">Admin / Frontend Rule</div>
+      <div class="lane"><small>Admin source</small><p>Django admin <strong>Customer / site profile</strong> owns <code>Customer type</code>, <code>Map / floor</code>, and <code>Customer size</code>. Zone manager owns create/update/delete zone, create tag inside zone, and assign device with tag scoped to the selected zone.</p></div>
+      <div class="lane"><small>Frontend reuse</small><p><code>/map/</code>, <code>/zones/control/</code>, <code>/map/?view=floor</code>, and <code>/zones/&lt;zone_id&gt;/floor-plan/</code> must use the same Zone + ZoneTag + Device.zone/tag contract. Renderer decides only canvas/position columns.</p></div>
+      <div class="lane"><small>Current schema</small><p>MAP may leave <code>Zone.building_name</code> and <code>Zone.floor_number</code> blank. FLOOR_PLAN uses them for this production slice. Do not introduce Building/Floor tables until there is a separate lifecycle, permission, or reporting need.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>Do not hide zone/tag when the renderer is MAP, do not let floor-plan tags select devices outside their zone, and do not make uploaded image availability decide whether floor-plan mode works.</p></div>
+    </div>
+
+    <div class="grid grid-3" style="margin-top:12px">
+      <article class="card success">
+        <h3>Recommended production shape</h3>
+        <p>Keep one <code>/map/</code> workspace with <code>view=map|floor|heat</code>. Default view should come from <code>Account.form_type</code> when no explicit query is selected. Both Map and Floor mode use <code>zone</code>, optional <code>tag</code>, device set/lot, state, and issue filters. Floor mode additionally uses <code>building</code> and <code>floor</code>.</p>
+      </article>
+      <article class="card warning">
+        <h3>Floor plan prerequisite</h3>
+        <p>Floor Plan mode needs building/floor structure only for its renderer. If the account is single building, create/use a default building. If multi building is selected, require building first, then floor, then zone and tag assignment. MAP mode does not need building/floor but still uses zone/tag.</p>
+      </article>
+      <article class="card danger">
+        <h3>Regression guard</h3>
+        <p>Add markers for <code>data-map-display-mode</code>, <code>data-map-floor-plan-canvas</code>, <code>data-building-mode</code>, and shared selected-device context. Tests must verify floor mode does not require image upload and does not render the Leaflet-only canvas as the primary surface.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Zone Management Natural Flow Contract</h2>
+    <p class="lead"><code>/zones/control/</code> ต้องเริ่มจากการ resolve customer scope ให้ถูกก่อน แล้วใช้ workspace กลางชุดเดียวสำหรับ building/floor/zone/tag/device assignment. Platform Owner, Dealer, และ Customer ต่างกันเฉพาะขั้นตอนก่อนเข้า workspace และขอบเขต issue ที่มองเห็น ไม่ใช่คนละ workflow หลังเลือก customer แล้ว.</p>
+
+    <div class="swimlane" aria-label="Zone role entry swimlane">
+      <div class="lane lane-title">Role</div>
+      <div class="lane lane-title">Entry</div>
+      <div class="lane lane-title">Scope Rule</div>
+      <div class="lane lane-title">Workspace</div>
+      <div class="lane lane-title">Do Not Do</div>
+
+      <div class="lane"><strong>Platform Owner</strong></div>
+      <div class="lane"><small>Step 0</small><p>เลือก parent tree: platform direct customer, dealer, หรือ customer ใต้ dealer. ต้องเห็นว่า customer อยู่ใต้ parent/dealer ใดก่อนเข้า setup.</p></div>
+      <div class="lane"><small>Visible tree</small><p>เห็น issue/warning รวมทั้ง platform tree ตามสิทธิ์ และทุก row ต้อง link กลับไป customer/account หรือ device/fault detail ที่ถูกต้อง.</p></div>
+      <div class="lane"><small>After customer</small><p>เข้า workspace เดียวกับ dealer/customer: building/floor/zone/tag floor-section overview พร้อม counters. Issues แสดงเป็น badge/link ใน zone node ไม่ใช่ sidebar แยก.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>อย่าเริ่มด้วย CRUD zone table โดยยังไม่ได้เลือก customer หรือไม่แสดง parent tree context.</p></div>
+
+      <div class="lane"><strong>Dealer</strong></div>
+      <div class="lane"><small>Step 0</small><p>เลือก customer เฉพาะใน dealer subtree. ถ้ามี child dealer ต้องรักษา tree boundary และไม่ข้าม scope.</p></div>
+      <div class="lane"><small>Dealer subtree</small><p>เห็น issue/warning รวมเฉพาะ customer ใต้ dealer ตัวเอง และ link ต้อง preserve customer scope เดิม.</p></div>
+      <div class="lane"><small>After customer</small><p>ใช้ customer workspace เดียวกัน แต่ไม่มี platform/dealer-wide controls ที่ข้ามสิทธิ์.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>อย่าให้ dealer เห็น direct platform customer หรือ customer ใต้ dealer อื่น.</p></div>
+
+      <div class="lane"><strong>Customer</strong></div>
+      <div class="lane"><small>Direct entry</small><p>ไม่ต้องมี dealer/customer selector. เข้าสู่ own workspace ทันทีด้วย customer account fixed scope.</p></div>
+      <div class="lane"><small>Own account</small><p>เห็น issue/warning เฉพาะ account ตัวเอง และ link ไป zone context, device id, หรือ fault detail ได้ตรง.</p></div>
+      <div class="lane"><small>Same workspace</small><p>สร้าง/แก้ building/floor/zone/tag และ assign device ตาม permission/package gate ของ account.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>อย่าโชว์ account/dealer filter ซ้ำบน customer workspace.</p></div>
+    </div>
+
+    <div class="flow" aria-label="Zone workspace setup flow" style="margin-top:12px">
+      <article class="flow-step">
+        <span class="step-no">1</span>
+        <h3>Resolve customer</h3>
+        <p>Platform Owner/Dealer ต้องเลือก customer จาก visible parent tree ก่อน. Customer login ใช้ own account ทันที. ทุก query หลังจากนี้ต้องใช้ resolved customer account.</p>
+        <p><strong>Zone Control landing rule:</strong> ถ้า Platform Owner/Dealer เปิด <code>/zones/control/</code> โดยไม่มี <code>customer_scope</code> explicit ใน URL หรือ POST ห้ามใช้ persisted session scope เพื่อข้ามขั้นนี้ ต้องแสดง customer selector ก่อนเสมอ.</p>
+        <p><strong>Scoped link rule:</strong> หลังเลือก customer แล้ว ปุ่มไป <code>zone detail</code>, <code>floor plan</code>, <code>device list</code>, <code>map</code>, และกลับ <code>Zone Control</code> ต้อง preserve <code>customer_scope</code> เพื่อไม่ทำให้ operator หลุดกลับไป selector ระหว่างทำงาน.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">2</span>
+        <h3>Choose building mode</h3>
+        <p>ถ้า <code>multi building</code> เปิดอยู่ ให้มี step สร้าง/เลือก building. ถ้าไม่เปิด ให้ใช้ default/current building และไม่กินพื้นที่ด้วย building selector ที่ไม่มีประโยชน์.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">3</span>
+        <h3>Create floor</h3>
+        <p>สร้าง floor/site area ภายใต้ building หรือ default building. Floor เป็น operational boundary สำหรับ floor-plan และ zone grouping.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">4</span>
+        <h3>Create zone</h3>
+        <p>สร้าง zone ใต้ floor. Zone เป็น command/schedule/issue aggregation scope และเป็น source สำหรับ map/floor-plan context. Setup form ต้องเรียง field เป็น <code>Building</code>, <code>Floor</code>, <code>Zone name</code>, <code>Description</code> เพื่อให้ operator คิดจากสถานที่จริงลงมาหา control group.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">5</span>
+        <h3>Create tag</h3>
+        <p>สร้าง tag เป็น subset ของ zone. Tag schedule/control ต้อง override zone ได้ตาม policy และห้ามเลือก device นอก zone.</p>
+      </article>
+      <article class="flow-step">
+        <span class="step-no">6</span>
+        <h3>Assign devices</h3>
+        <p>แสดง device list/table ให้เลือก device id เข้า floor/zone/tag. ต้องแสดงจำนวน unassigned devices และสามารถ filter เฉพาะ device ที่ยังไม่ได้ assign ได้.</p>
+        <p><strong>Single create entry:</strong> View mode แสดง hierarchy/readiness เท่านั้นและมีปุ่มเข้า setup/edit เพียงจุดเดียว. Zone / Tag Setup Tools ต้อง slide in เป็น drawer จากด้านขวา ไม่ใช่ section ยาวใต้หน้า. Drawer UX ต้องเรียงเป็น <code>1 Structure</code>, <code>2 Zones / Tags</code>. ห้ามมี global Create Tag แยกบนสุด เพราะ tag เป็น subset ของ zone และต้องจัดการใต้ zone card. Device assignment ต้องอยู่ในระดับ zone ก่อน: เลือก device id จาก unassigned pool เข้า zone. หลังจาก device อยู่ใน zone แล้วเท่านั้น จึงเลือก tag จาก tag ที่สร้างไว้ใต้ zone นั้นเพื่อผูก device เข้ากับ tag. Floor hierarchy ต้องใช้ floor-section + zone-node row ตาม mock. Quick control, schedule, และ tag schedule ต้องเปิดผ่าน operation drawer จาก row menu ไม่ใช่ panel ยาวที่กิน layout ใต้ hierarchy.</p>
+      </article>
+    </div>
+
+    <div class="grid grid-3" style="margin-top:12px">
+      <article class="card success">
+        <h3>Required counters</h3>
+        <p>Workspace ต้องบอกได้อย่างน้อย: buildings, floors, zones, tags, total devices, unassigned devices, online, fault, warning, scheduled groups. ตัวเลขต้องมาจาก resolved customer scope.</p>
+      </article>
+      <article class="card success">
+        <h3>Hierarchy health</h3>
+        <p>ต้องบอกได้ว่า issue อยู่ตรงไหนผ่าน floor-section และ zone-node เช่น <code>Building A / Floor 2 / Zone Road B / Tags / Issues</code>. Floor, zone, และ tag ควรแสดงสถานะ normal, warning, fault จาก device/fault rows ใต้ตัวเอง โดยไม่ต้องมี issue sidebar แยก.</p>
+      </article>
+      <article class="card warning">
+        <h3>Issue summary is allowed</h3>
+        <p>Platform Owner/Dealer/Customer แสดง issue/warning รวมได้ แต่ต้อง scoped ตามสิทธิ์และทุก item ต้องมี deep link ไป account workspace, zone context, device detail, หรือ fault detail.</p>
+      </article>
+    </div>
+
+    <div class="swimlane" aria-label="Zone issue deep link swimlane" style="margin-top:12px">
+      <div class="lane lane-title">Issue Source</div>
+      <div class="lane lane-title">Visible Context</div>
+      <div class="lane lane-title">Primary Link</div>
+      <div class="lane lane-title">Secondary Link</div>
+      <div class="lane lane-title">Do Not Do</div>
+
+      <div class="lane"><strong>FaultOccurrence</strong></div>
+      <div class="lane"><small>Path</small><p>Role-specific prefix plus building/floor/zone/tag/device path. Platform Owner includes Dealer + Customer; Dealer includes Customer; Customer starts at building/floor.</p></div>
+      <div class="lane"><small>Fault</small><p><code>/faults/&lt;fault_id&gt;/</code> or fault list with preselected fault/customer/zone filters.</p></div>
+      <div class="lane"><small>Device</small><p><code>/devices/&lt;device_id&gt;/</code> and <code>/zones/control/?customer_scope=...&amp;zone=...</code> for context.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>Do not show an issue row without account/customer/device linkage.</p></div>
+
+      <div class="lane"><strong>AlertEvent</strong></div>
+      <div class="lane"><small>Notification</small><p>Show notification status only when it maps to a scoped customer/device/fault/work-order context.</p></div>
+      <div class="lane"><small>Alert center</small><p><code>/backoffice/notifications/</code> with scope/fingerprint filters if available.</p></div>
+      <div class="lane"><small>Related object</small><p>Link to fault, work order, or device when alert payload has that relation.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>Do not make notification feed replace operational fault state.</p></div>
+
+      <div class="lane"><strong>WorkOrder / Maintenance</strong></div>
+      <div class="lane"><small>Active work</small><p>Show active maintenance/repair as warning/maintenance context. Completed work can appear briefly in event feed then move to history.</p></div>
+      <div class="lane"><small>Work order</small><p>Open work-order detail or fault/maintenance command center scoped to the same customer/device.</p></div>
+      <div class="lane"><small>Zone/device</small><p>Keep links to affected zone and device for operator context.</p></div>
+      <div class="lane"><small>Anti-pattern</small><p>Do not mix completed history permanently into active issue rail.</p></div>
+    </div>
+
+    <div class="grid grid-3" style="margin-top:12px">
+      <article class="card">
+        <h3>Production owner</h3>
+        <p><code>zone_control_view</code> owns customer resolution, permission gates, CRUD, schedules, and command dispatch. Layout may split portfolio/customer presentation, but must not fork backend mutation paths.</p>
+      </article>
+      <article class="card">
+        <h3>Docs source</h3>
+        <p><code>docs/html/zones.html</code> is Platform Owner/Dealer portfolio intent. <code>docs/html/zone_customer.html</code> is resolved customer workspace intent.</p>
+      </article>
+      <article class="card danger">
+        <h3>Regression guard</h3>
+        <p>Tests must lock customer-scope resolution, no customer selector for customer login, parent-tree selector for platform/dealer, hierarchy counters, floor-section + zone-node overview, device assignment table, and scoped issue links.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Correct Edit Order</h2>
+    <div class="grid grid-2">
+      <article class="card">
+        <h3>1. Read the target mock</h3>
+        <p>อ่านเฉพาะ <code>docs/html/*.html</code> ที่ตรงกับหน้าที่จะแก้ แล้วแยกสิ่งที่เป็น layout intent ออกจาก mock data. อย่าเริ่มจาก CSS หรือ template โดยยังไม่รู้ว่า mock ต้องการ workflow อะไร.</p>
+      </article>
+      <article class="card">
+        <h3>2. Trace the production route</h3>
+        <p>ตาม route ไปหา template, view, service/helper, context variables, permission gates, package gates, related CSS/JS, และ tests. ถ้า route ไม่ชัด ให้หยุด map ให้ชัดก่อน.</p>
+      </article>
+      <article class="card">
+        <h3>3. Check menu fit and analysis value</h3>
+        <p>ข้อมูลที่จะเอามาแสดงต้องตอบหน้าที่ของเมนูนั้น เช่น dashboard ต้องช่วยดูภาพรวม, report ต้องช่วย export/analyze, device ต้องช่วย drill down/control. ถ้าไม่ช่วย workflow ให้เอาออกหรือ defer.</p>
+      </article>
+      <article class="card">
+        <h3>4. Preserve production shell</h3>
+        <p>ใช้สี, token, sidebar, spacing base, และ white-label behavior เดิมของ production. Header ให้ใช้ <code>templates/includes/frontend_dashboard_header.html</code> หรือ component/shared pattern ที่มีอยู่แล้ว.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Filter Panel Contract</h2>
+    <p class="lead">Production filter panels ต้องใช้ pattern เดียวกันทุกหน้า เว้นแต่มีเหตุผลเฉพาะของ workflow ที่ระบุไว้ใน template marker.</p>
+    <div class="grid grid-3">
+      <article class="card">
+        <h3>One filter group</h3>
+        <p>ใช้ panel เดียวและ group เดียวชื่อ <code>Filters</code> สำหรับหน้าค้นหา/ตารางทั่วไป. Workspace setup ที่มี sequence ชัดเจน เช่น map mode หรือ zone building/floor/zone/tag อาจแยก group ตาม decision step ได้ แต่ต้องไม่ซ้อน card จนกินพื้นที่หรือทำให้ action ไม่ชัด.</p>
+      </article>
+      <article class="card">
+        <h3>One fields grid</h3>
+        <p>ใส่ field ทั้งหมดใน responsive grid เดียว: scope/account, status/state, severity/type, search/date, และ action. Field ต้องใช้ <code>min-width:0</code>, <code>width:100%</code>, และ wrap ตาม container.</p>
+      </article>
+      <article class="card">
+        <h3>Apply only</h3>
+        <p>Default action คือ <code>Apply</code> เท่านั้น. อย่าใส่ <code>Reset</code>/<code>Clear</code> ใน filter panel เว้นแต่หน้านั้นมี requirement ชัดเจนและไม่ทำให้ผู้ใช้เข้าใจผิดว่าข้อมูลถูกล้างจาก backend.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Swimlane Diagram</h2>
+    <div class="swimlane" aria-label="Layout ownership swimlane">
+      <div class="lane lane-title">Layer</div>
+      <div class="lane lane-title">Read</div>
+      <div class="lane lane-title">Decide</div>
+      <div class="lane lane-title">Edit</div>
+      <div class="lane lane-title">Guard</div>
+
+      <div class="lane"><strong>Docs mock</strong></div>
+      <div class="lane"><small>Input</small><code>docs/html/page.html</code><p>Layout order, visual grouping, labels, menu intent, expected analysis workflow.</p></div>
+      <div class="lane"><small>Keep</small><p>Structure, workflow intent, and useful analysis surface.</p></div>
+      <div class="lane"><small>Never direct-copy</small><p>Mock values, fake accounts, hardcoded device rows.</p></div>
+      <div class="lane"><small>Reference</small><p>Internal links must exist. Docs-only files stay classified.</p></div>
+
+      <div class="lane"><strong>Template</strong></div>
+      <div class="lane"><small>Input</small><code>templates/**.html</code><p>Current route shell, form targets, includes, permission gates.</p></div>
+      <div class="lane"><small>Keep</small><p>Shared header component, real Django tags, URLs, CSRF, i18n, backend context variables.</p></div>
+      <div class="lane"><small>Edit</small><p>DOM order, wrappers, section markers, card grouping, useful menu-specific panels.</p></div>
+      <div class="lane"><small>Guard</small><p>Route assertions and marker checks.</p></div>
+
+      <div class="lane"><strong>Static assets</strong></div>
+      <div class="lane"><small>Input</small><code>static/css/**</code><br><code>static/js/**</code><p>Existing shell tokens, route-specific behaviors, chart selectors.</p></div>
+      <div class="lane"><small>Keep</small><p>Production theme, white-label tokens, and existing JS contracts.</p></div>
+      <div class="lane"><small>Edit</small><p>CSS grid, spacing, responsive rules, progressive enhancement only.</p></div>
+      <div class="lane"><small>Guard</small><p><code>node --check</code>, static asset guards, browser screenshots.</p></div>
+
+      <div class="lane"><strong>Backend</strong></div>
+      <div class="lane"><small>Input</small><code>apps/**/views.py</code><br><code>services/helpers</code><p>Scope, permission, package, queries, report/export logic.</p></div>
+      <div class="lane"><small>Keep central</small><p>No template-only authorization or fake computed counters.</p></div>
+      <div class="lane"><small>Edit only if needed</small><p>Add context from existing services or new tested helper.</p></div>
+      <div class="lane"><small>Guard</small><p>Focused Django tests and tenant/scope assertions.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Decision Gates</h2>
+    <div class="decision-grid">
+      <article class="decision yes">
+        <span class="tag ok">copy structure</span>
+        <h3>เอาเข้า production ได้</h3>
+        <ul>
+          <li>Section order and grouping</li>
+          <li>Menu-specific panels that improve analysis or operation</li>
+          <li>Grid vocabulary เช่น <code>span-12</code>, command panel, stat strip</li>
+          <li>Accessible labels and empty-state shape</li>
+          <li>Reusable card/menu/action patterns that map to real behavior</li>
+        </ul>
+      </article>
+      <article class="decision wait">
+        <span class="tag wait">convert first</span>
+        <h3>ต้องแปลงก่อน</h3>
+        <ul>
+          <li>Mock chart becomes empty or backend-driven chart shell</li>
+          <li>Static table row becomes queryset loop</li>
+          <li>Future action becomes disabled/hidden state until backend exists</li>
+          <li>Mock role/scope becomes account-scoped context</li>
+          <li>Mock navigation becomes an existing route or hidden until route exists</li>
+        </ul>
+      </article>
+      <article class="decision no">
+        <span class="tag no">do not copy</span>
+        <h3>ห้ามเอาเข้า</h3>
+        <ul>
+          <li>Fake customer names, fake devices, fake usage numbers</li>
+          <li>Mock-only buttons without server route or permission</li>
+          <li>Cards that do not help the menu's analysis or operation purpose</li>
+          <li>Raw provider secrets or internal payloads</li>
+          <li>Mock color/theme override that breaks white-label shell</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Dots Menu Contract</h2>
+    <div class="grid grid-2">
+      <article class="card">
+        <h3>Dashboard card menu</h3>
+        <p><code>⋮</code> หลัง card actions ใช้สำหรับซ่อน widget card เท่านั้น. Contract คือ <code>data-menu-contract="widget-card-hide-actions"</code> และ restore ต้องอยู่ที่ hidden widget tray/library.</p>
+      </article>
+      <article class="card">
+        <h3>Audit table settings menu</h3>
+        <p><code>⋮</code> หลัง <code>50 rows/page</code> ใช้ตั้งค่าจำนวน rows ต่อหน้า. Contract คือ <code>data-menu-contract="audit-table-page-size-settings"</code> และต้อง preserve filter query เดิมเมื่อเปลี่ยนจำนวนแถว.</p>
+      </article>
+    </div>
+    <p class="lead">ถ้าจะดึงเป็น component กลาง ให้ share เฉพาะ visual affordance, focus state, popover shell, และ accessibility labels. Behavior ต้องเลือกจาก explicit contract/purpose ไม่ใช่จาก icon <code>⋮</code> อย่างเดียว.</p>
+  </section>
+
+  <section>
+    <h2>Artifact Map</h2>
+    <div class="artifact-map">
+      <article class="artifact docs">
+        <h3>1. Docs source</h3>
+        <p><code>docs/html/*.html</code> ใช้เป็น spec. อัปเดต handoff เมื่อ behavior หรือ layout contract เปลี่ยน.</p>
+      </article>
+      <article class="artifact template">
+        <h3>2. Production template</h3>
+        <p><code>templates/**.html</code> ต้องใช้ shared shell, route markers, real URL/forms, i18n, and permission gates.</p>
+      </article>
+      <article class="artifact assets">
+        <h3>3. CSS and JS</h3>
+        <p><code>static/css/**</code> และ <code>static/js/**</code> เก็บ layout behavior แยกจาก template logic.</p>
+      </article>
+      <article class="artifact tests">
+        <h3>4. Tests</h3>
+        <p><code>test_template_shell_guard.py</code>, <code>test_static_asset_guard.py</code>, route tests, and focused app tests lock the slice.</p>
+      </article>
+      <article class="artifact full">
+        <h3>Rule for new docs files</h3>
+        <p>ถ้าเป็น docs-only reference ให้เพิ่มชื่อไฟล์ใน <code>DOCS_ONLY_SPECS</code>. ถ้าเป็น runtime spec ต้องเพิ่ม mapping ใน <code>ROADMAP_PAGES</code> พร้อม production template ที่รับผิดชอบ.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Per-slice Checklist</h2>
+    <div class="grid grid-2">
+      <article class="checklist">
+        <h3>Before edit</h3>
+        <ol>
+          <li>เปิด docs source ของหน้าที่จะแก้ และ production template ข้างกัน.</li>
+          <li>ระบุ route, view, CSS, JS, services, tests, permission gates, และ menu owner ที่เกี่ยวข้อง.</li>
+          <li>เขียน section inventory: keep, convert, remove, defer พร้อมเหตุผลว่าช่วยวิเคราะห์หรือจัดการงานจริงไหม.</li>
+          <li>เช็ก dirty worktree และอย่า revert งานอื่น.</li>
+        </ol>
+      </article>
+      <article class="checklist">
+        <h3>During edit</h3>
+        <ol>
+          <li>แก้ DOM order และ CSS ก่อน logic ใหม่.</li>
+          <li>ใช้ shared header/component/pattern เดิมก่อนสร้าง component ใหม่.</li>
+          <li>สีและ theme ต้องยึด production เดิม ไม่เอาสี mock มาครอบ.</li>
+          <li>เพิ่ม non-visible markers เช่น <code>data-layout-source</code>.</li>
+          <li>ห้าม hardcode mock values เพื่อให้หน้าดูเต็ม.</li>
+        </ol>
+      </article>
+      <article class="checklist">
+        <h3>After edit</h3>
+        <ol>
+          <li>เพิ่ม static guard และ route assertion ที่ตรงกับ contract ใหม่.</li>
+          <li>เช็ก desktop/mobile ว่าไม่มี overlap, scroll trap, หรือปุ่มชนกัน.</li>
+          <li>รัน focused tests, <code>manage.py check</code>, และ <code>git diff --check</code>.</li>
+          <li>อัปเดต handoff หรือ canonical docs เฉพาะ behavior ที่เปลี่ยนจริง.</li>
+        </ol>
+      </article>
+      <article class="checklist">
+        <h3>Definition of done</h3>
+        <ol>
+          <li>Route ใช้ production data/scope/permission ครบ.</li>
+          <li>ข้อมูลบนหน้าสะท้อนเมนูนั้นและมีประโยชน์ต่อ analysis/operation จริง.</li>
+          <li>Header และ theme ใช้ component/token ฝั่ง production เดิม.</li>
+          <li>Layout ใกล้ docs intent โดยไม่ copy mock-only data.</li>
+          <li>Tests guard ทั้ง positive และ negative markers.</li>
+          <li>มีบันทึกว่าอะไรทำแล้ว อะไร intentionally deferred.</li>
+        </ol>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Route Mapping Snapshot</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Docs source</th>
+          <th>Production route/template</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>dashboard.html</code></td><td><code>/dashboard/</code>, dashboard drill-down templates</td><td>Layout locked. Continue backend series and issue behavior only.</td></tr>
+        <tr><td><code>energy.html</code></td><td><code>/backoffice/energy/</code></td><td>Production route exists. Recheck visual parity before deeper finance logic.</td></tr>
+        <tr><td><code>account.html</code></td><td><code>/backoffice/account/</code> and account workflow routes</td><td>Production routes exist. Keep account scope and membership actions server-owned.</td></tr>
+        <tr><td><code>reports.html</code>, <code>customer_report.html</code></td><td><code>/backoffice/reports/</code></td><td>Production route exists. Keep export/report builders backend-owned.</td></tr>
+        <tr><td><code>notifications.html</code>, <code>notifications_customer.html</code></td><td>Notification center, alerts, delivery logs, work orders, SLA report</td><td>Production routes exist. Keep workflow mutations in services/routes.</td></tr>
+        <tr><td><code>setting.html</code>, <code>setting_customer.html</code></td><td><code>/settings/</code> and notification settings routes</td><td>Shared settings exists. Customer-specific shape is a docs reference until route split is approved.</td></tr>
+        <tr><td><code>maps.html</code>, <code>map_floorplan.html</code></td><td><code>/admin/accounts/account/&lt;id&gt;/change/</code>, <code>/map/</code>, zone floor-plan</td><td>Admin <code>Customer / site profile</code> owns <code>Account.form_type</code> through <strong>Map / floor</strong>. Frontend uses it as renderer default only: Geo Map and Floor Plan share scope, zone/tag/device payload, table, alert rail, issue/action logic, and selected device context. MAP omits building/floor requirements; FLOOR_PLAN adds them.</td></tr>
+        <tr><td><code>zones.html</code>, <code>zone_customer.html</code></td><td><code>/zones/control/</code>, resolved customer zone workspace</td><td>Needs correction to the Zone Management Natural Flow Contract: platform/dealer parent-tree customer selection, customer fixed scope, building/floor/zone/tag floor-section + zone-node overview, drawer setup tools, counters, and scoped issue links. Commands stay backend-authorized.</td></tr>
+        <tr><td><code>device.html</code>, <code>device_state_engine.html</code></td><td>Device list/detail/device-set and dashboard signal routes</td><td>Production routes exist. Do not add client-side state inference.</td></tr>
+        <tr><td><code>influx.html</code></td><td>Integration status or diagnostics route, not yet direct-mapped</td><td>Docs-only reference. Needs explicit production target before UI migration.</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

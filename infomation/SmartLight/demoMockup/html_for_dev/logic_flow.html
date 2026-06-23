@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartLight Logic Flow: MQTT, Node-RED, Django Ninja, Channels, InfluxDB</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7faf8;
+      --panel: #ffffff;
+      --panel-soft: #eef7f2;
+      --ink: #14211c;
+      --muted: #63756d;
+      --line: #d5e4dc;
+      --primary: #0f766e;
+      --primary-2: #0ea5a0;
+      --green: #16a34a;
+      --amber: #d97706;
+      --rose: #dc2626;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+      --dark: #0f172a;
+      --shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+      --radius: 26px;
+      --max: 1280px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(14, 165, 160, 0.16), transparent 30rem),
+        radial-gradient(circle at 92% 8%, rgba(124, 58, 237, 0.1), transparent 34rem),
+        linear-gradient(180deg, #fbfefd 0%, var(--bg) 45%, #edf5f0 100%);
+      color: var(--ink);
+      font-family: "Aptos", "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+      line-height: 1.68;
+    }
+
+    a { color: inherit; }
+
+    .page {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 76px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 14px;
+      z-index: 30;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+      padding: 10px 14px 10px 18px;
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 13px;
+      background: conic-gradient(from 220deg, var(--primary), #22c55e, var(--blue), var(--primary));
+      box-shadow: 0 12px 28px rgba(15, 118, 110, 0.28);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .nav a,
+    .pill,
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: #2d4b42;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .nav a:hover { border-color: rgba(15, 118, 110, 0.5); color: var(--primary); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+      gap: 22px;
+      margin-bottom: 26px;
+    }
+
+    .panel,
+    .hero-card,
+    .summary-card,
+    .role-card,
+    .flow-node,
+    .decision-card,
+    .timeline-step,
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card,
+    .panel { padding: clamp(22px, 4vw, 38px); }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      background: #ccfbf1;
+      color: #115e59;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p { margin: 0; }
+
+    h1 {
+      max-width: 900px;
+      font-size: clamp(36px, 5.5vw, 76px);
+      line-height: 0.98;
+      letter-spacing: -0.065em;
+    }
+
+    h2 {
+      font-size: clamp(26px, 3.2vw, 42px);
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+    }
+
+    h3 {
+      font-size: 19px;
+      line-height: 1.18;
+      letter-spacing: -0.018em;
+    }
+
+    p { color: var(--muted); }
+
+    .lead {
+      margin-top: 16px;
+      max-width: 850px;
+      color: #526a60;
+      font-size: clamp(16px, 2vw, 19px);
+    }
+
+    .meta-grid,
+    .grid-2,
+    .grid-3,
+    .grid-4,
+    .role-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .role-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+    .summary-card {
+      padding: 22px;
+      background: linear-gradient(145deg, #fff 0%, #effcf7 100%);
+    }
+
+    .summary-card span,
+    .small-label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .summary-card strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink);
+      font-size: 26px;
+      line-height: 1.08;
+    }
+
+    .section { margin-top: 22px; }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .soft { background: var(--panel-soft); }
+
+    .callout {
+      border-color: rgba(15, 118, 110, 0.28);
+      background: linear-gradient(145deg, #ffffff 0%, #ecfdf5 100%);
+    }
+
+    .warning {
+      border-color: rgba(217, 119, 6, 0.35);
+      background: linear-gradient(145deg, #fff 0%, #fff7ed 100%);
+    }
+
+    .danger {
+      border-color: rgba(220, 38, 38, 0.28);
+      background: linear-gradient(145deg, #fff 0%, #fef2f2 100%);
+    }
+
+    code {
+      border-radius: 8px;
+      background: #e8f1ed;
+      color: #0f332b;
+      padding: 2px 6px;
+      font-size: 0.92em;
+      font-weight: 700;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 16px 0 0;
+      border-radius: 18px;
+      background: var(--dark);
+      color: #e2e8f0;
+      padding: 18px;
+      font-size: 13px;
+      line-height: 1.56;
+    }
+
+    .role-card,
+    .decision-card {
+      padding: 20px;
+      min-height: 100%;
+    }
+
+    .role-card h3,
+    .decision-card h3 { margin-bottom: 8px; }
+
+    .role-card ul,
+    .decision-card ul,
+    .panel ul {
+      margin: 12px 0 0;
+      padding-left: 19px;
+      color: var(--muted);
+    }
+
+    .role-card li,
+    .decision-card li,
+    .panel li { margin: 6px 0; }
+
+    .role-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+      border-radius: 16px;
+      background: #ccfbf1;
+      color: #115e59;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .flow-node {
+      position: relative;
+      padding: 18px;
+      min-height: 132px;
+      box-shadow: 0 12px 34px rgba(15, 23, 42, 0.06);
+    }
+
+    .flow-node:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -13px;
+      width: 14px;
+      height: 2px;
+      background: var(--line);
+    }
+
+    .flow-node:last-child:after { display: none; }
+
+    .flow-node h3 { color: var(--ink); }
+    .flow-node p { margin-top: 8px; font-size: 13px; }
+
+    .node-mqtt { border-color: rgba(37, 99, 235, 0.28); background: #eff6ff; }
+    .node-api { border-color: rgba(15, 118, 110, 0.28); background: #ecfdf5; }
+    .node-db { border-color: rgba(124, 58, 237, 0.24); background: #f5f3ff; }
+    .node-realtime { border-color: rgba(217, 119, 6, 0.28); background: #fff7ed; }
+    .node-ai { border-color: rgba(220, 38, 38, 0.22); background: #fef2f2; }
+
+    .split-flow {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: stretch;
+      margin-top: 18px;
+    }
+
+    .connector {
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      font-weight: 900;
+      font-size: 22px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .timeline-step {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: 16px;
+      padding: 18px;
+      box-shadow: 0 12px 34px rgba(15, 23, 42, 0.06);
+    }
+
+    .step-number {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .table-wrap {
+      overflow: hidden;
+      padding: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 14px 16px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #edf7f3;
+      color: #21483e;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .ok { color: var(--green); font-weight: 900; }
+    .warn { color: var(--amber); font-weight: 900; }
+    .bad { color: var(--rose); font-weight: 900; }
+    .blue { color: var(--blue); font-weight: 900; }
+    .violet { color: var(--violet); font-weight: 900; }
+
+    .badge.ok { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .badge.warn { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .badge.bad { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+
+    .decision-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .mini-diagram {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+      border-radius: 18px;
+      background: #f8fafc;
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #334155;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .footer-note {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1120px) {
+      .hero,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .role-grid,
+      .split-flow { grid-template-columns: 1fr; }
+      .flow-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow-node:after { display: none; }
+    }
+
+    @media (max-width: 680px) {
+      .page { width: min(100% - 20px, var(--max)); padding-top: 14px; }
+      .topbar { position: static; border-radius: 22px; align-items: flex-start; }
+      .nav { justify-content: flex-start; }
+      .flow-row { grid-template-columns: 1fr; }
+      .timeline-step { grid-template-columns: 1fr; }
+      th, td { padding: 12px; }
+      table { min-width: 720px; }
+      .table-wrap { overflow-x: auto; }
+    }
+  
+
+    /* Shared data-region pattern: non-chart cards with tables, queues, feeds, or notification lists must not stretch the page indefinitely. */
+    .table-wrap,
+    .table-scroll {
+      max-height: min(58vh, 620px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .table-wrap table,
+    .table-scroll table {
+      min-width: 920px;
+    }
+    .table-wrap thead th,
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+    }
+    body[data-theme="light"] .table-wrap thead th,
+    body[data-theme="light"] .table-scroll thead th,
+    body.theme-light .table-wrap thead th,
+    body.theme-light .table-scroll thead th {
+      background: rgba(248, 250, 252, 0.96);
+    }
+    .data-scroll-region {
+      max-height: min(44vh, 440px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+    .data-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted, #93a4b8);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-pager__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .data-pager__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text, #e5edf7);
+      white-space: nowrap;
+    }
+    .data-pager__button[aria-current="page"] {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+    }
+    .scroll-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted, #93a4b8);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 760px) {
+      .table-wrap,
+      .table-scroll { max-height: 62vh; }
+      .data-scroll-region { max-height: 52vh; }
+      .data-pager { align-items: flex-start; flex-direction: column; }
+      .data-pager__actions { justify-content: flex-start; }
+    }
+
+
+    /* Shared sortable table pattern: every table can sort rows by clicking a header. */
+    table[data-sortable-table] thead th[data-sort-key] { cursor: pointer; user-select: none; }
+    .sort-button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sort-button:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.72);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+      color: var(--muted, #93a4b8);
+      font-size: 10px;
+      line-height: 1;
+      opacity: 0.72;
+    }
+    th[aria-sort="ascending"] .sort-indicator,
+    th[aria-sort="descending"] .sort-indicator {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.14);
+      color: var(--text, #e5edf7);
+      opacity: 1;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>SmartLight Logic Flow</span></div>
+      <div class="nav">
+        <a href="#summary">สรุป</a>
+        <a href="#roles">บทบาทระบบ</a>
+        <a href="#target-flow">Target Flow</a>
+        <a href="#fault-flow">Fault Logic</a>
+        <a href="device_state_engine.html">Device State Engine</a>
+        <a href="influx.html">InfluxDB Plan</a>
+        <a href="#mcp-ai">MCP / AI</a>
+        <a href="#roadmap">Roadmap</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="hero-card">
+        <span class="eyebrow">Architecture Decision</span>
+        <h1>เพิ่ม InfluxDB ได้ แต่ต้องไม่ทำให้ flow ชนกับ Django Ninja และ Channels</h1>
+        <p class="lead">เอกสารนี้อธิบาย flow ที่เหมาะกับ SmartLight ปัจจุบัน: MQTT/EMQX, Node-RED, Django Ninja, Django Channels, Celery, PostgreSQL, InfluxDB และ MCP/AI โดยแยกหน้าที่ให้ชัดว่าอะไรเป็น source of truth, อะไรเป็น telemetry store, และอะไรเป็น realtime transport.</p>
+      </div>
+      <aside class="panel callout">
+        <span class="small-label">Recommended Decision</span>
+        <h2>ใช้ backend เป็น ingestion authority</h2>
+        <p class="lead">Node-RED ต่อ MQTT ได้ แต่ข้อมูลควรเข้าผ่าน Django Ninja ingestion API หรือ Python MQTT consumer ที่ใช้ service logic เดียวกัน แล้ว backend ค่อยเขียน PostgreSQL, InfluxDB และ broadcast ผ่าน Channels.</p>
+      </aside>
+    </header>
+
+    <section id="summary" class="section panel">
+      <span class="eyebrow">Executive Summary</span>
+      <h2>ข้อสรุปหลัก</h2>
+      <div class="grid-4" style="margin-top:18px">
+        <div class="summary-card"><span>Source of Truth</span><strong>PostgreSQL</strong><p>business data, account scope, latest state, command, fault, ticket</p></div>
+        <div class="summary-card"><span>Time-Series Store</span><strong>InfluxDB</strong><p>raw telemetry, graph history, trend, anomaly, downsample</p></div>
+        <div class="summary-card"><span>API Authority</span><strong>Django Ninja</strong><p>contract สำหรับ frontend, Node-RED, MCP และ integration</p></div>
+        <div class="summary-card"><span>Realtime UI</span><strong>Channels</strong><p>push event หลัง backend validate/update แล้วเท่านั้น</p></div>
+      </div>
+      <pre>Recommended core flow:
+Device -> MQTT/EMQX -> ingestion layer -> Django service logic
+                                  |-> PostgreSQL latest/business/fault
+                                  |-> InfluxDB telemetry history
+                                  |-> Celery async processing
+                                  |-> Django Channels realtime broadcast</pre>
+    </section>
+
+    <section id="current-state" class="section panel soft">
+      <span class="eyebrow">Current State</span>
+      <h2>ระบบเรามีอะไรอยู่แล้ว</h2>
+      <p class="lead">จาก codebase ปัจจุบัน ระบบไม่ได้เริ่มจากศูนย์ เรามี backend surface และ realtime infrastructure แล้ว ดังนั้น InfluxDB ควรเพิ่มเข้ามาเป็น storage layer ไม่ใช่เปลี่ยน architecture ทั้งหมด.</p>
+      <div class="grid-3" style="margin-top:18px">
+        <div class="decision-card"><h3>Django Ninja API</h3><p>มี runtime/device/dashboard/API integration endpoints อยู่แล้ว ใช้เป็น contract กลางสำหรับ query, command, ingestion และ MCP tool ได้.</p></div>
+        <div class="decision-card"><h3>Django Channels</h3><p>มี WebSocket consumers สำหรับ device/fault/notification และ account-scoped group อยู่แล้ว ใช้ broadcast realtime event ไป frontend.</p></div>
+        <div class="decision-card"><h3>Celery + Redis</h3><p>มี task infrastructure อยู่แล้ว เหมาะกับ retry, async fault evaluation, summary rollup, notification และ health checks.</p></div>
+        <div class="decision-card"><h3>PostgreSQL</h3><p>มี device, command, device reading, fault, account, package, zone/tag models อยู่แล้ว เหมาะเป็น business source of truth.</p></div>
+        <div class="decision-card"><h3>Node-RED</h3><p>มี integration guide และ docker service อยู่แล้ว เหมาะเป็น bridge/test/simulator แต่ไม่ควรเป็นสมองหลักของ fault/business rules.</p></div>
+        <div class="decision-card"><h3>MQTT / EMQX</h3><p>เป็น broker สำหรับ telemetry/status/command topic ได้ แต่ broker ไม่ควรตัดสิน business logic เอง.</p></div>
+      </div>
+    </section>
+
+    <section id="roles" class="section panel">
+      <span class="eyebrow">Component Roles</span>
+      <h2>บทบาทที่ควรแยกให้ชัด</h2>
+      <div class="role-grid" style="margin-top:18px">
+        <article class="role-card"><div class="role-icon">N</div><h3>Django Ninja</h3><ul><li>API contract หลัก</li><li>ingestion endpoint</li><li>dashboard query</li><li>device command</li><li>MCP/AI access boundary</li></ul></article>
+        <article class="role-card"><div class="role-icon">C</div><h3>Channels</h3><ul><li>realtime push</li><li>account-scoped groups</li><li>device/fault/notification events</li><li>ไม่ใช่ ingestion core</li></ul></article>
+        <article class="role-card"><div class="role-icon">P</div><h3>PostgreSQL</h3><ul><li>business truth</li><li>latest state</li><li>command audit</li><li>fault/ticket</li><li>permission/account hierarchy</li></ul></article>
+        <article class="role-card"><div class="role-icon">I</div><h3>InfluxDB</h3><ul><li>raw telemetry</li><li>time-series query</li><li>dashboard graph</li><li>retention/downsample</li><li>trend/anomaly</li></ul></article>
+        <article class="role-card"><div class="role-icon">R</div><h3>Node-RED</h3><ul><li>MQTT bridge ช่วงแรก</li><li>simulator/test flow</li><li>manual diagnostics</li><li>ไม่ควรเป็น source of truth</li></ul></article>
+      </div>
+    </section>
+
+    <section id="target-flow" class="section panel callout">
+      <span class="eyebrow">Target Flow</span>
+      <h2>flow ที่แนะนำสำหรับ production-ready architecture</h2>
+      <div class="flow">
+        <div class="flow-row">
+          <div class="flow-node node-mqtt"><h3>1. Device</h3><p>ส่ง telemetry/status ผ่าน MQTT และรับ command ผ่าน topic ที่กำหนด.</p></div>
+          <div class="flow-node node-mqtt"><h3>2. EMQX</h3><p>broker เท่านั้น ทำ routing/topic/auth ไม่ตัดสิน business logic.</p></div>
+          <div class="flow-node node-api"><h3>3. Ingestion</h3><p>Node-RED bridge หรือ Python MQTT consumer รับ payload แล้วเรียก service logic กลาง.</p></div>
+          <div class="flow-node node-api"><h3>4. Django Service</h3><p>validate schema, resolve device/account, normalize metric, dedupe, rule entrypoint.</p></div>
+          <div class="flow-node node-db"><h3>5. Storage</h3><p>PostgreSQL สำหรับ state/business, InfluxDB สำหรับ telemetry history.</p></div>
+          <div class="flow-node node-realtime"><h3>6. Realtime</h3><p>Channels broadcast เฉพาะ event ที่ผ่าน backend แล้ว.</p></div>
+        </div>
+      </div>
+      <div class="mini-diagram">
+        <div>MQTT telemetry -> ingestion service -> normalize/validate</div>
+        <div>normalize/validate -> PostgreSQL latest state + fault/event</div>
+        <div>normalize/validate -> InfluxDB raw telemetry point</div>
+        <div>PostgreSQL update/fault -> Channels group_send(account/device/fault)</div>
+        <div>heavy work -> Celery task -> summary/notification/anomaly follow-up</div>
+      </div>
+    </section>
+
+    <section id="data-ownership" class="section panel">
+      <span class="eyebrow">Data Ownership</span>
+      <h2>ข้อมูลไหนควรอยู่ที่ไหน</h2>
+      <div class="table-wrap" style="margin-top:18px">
+        <table data-sortable>
+          <thead><tr><th>Data</th><th>PostgreSQL</th><th>InfluxDB</th><th>เหตุผล</th></tr></thead>
+          <tbody>
+            <tr><td>Account / Dealer / Customer / Package / Permission</td><td><span class="ok">Primary</span></td><td><span class="bad">No</span></td><td>เป็น business data ต้อง join, enforce permission, audit และใช้ admin ได้.</td></tr>
+            <tr><td>Device master / zone / tag / map/floor placement</td><td><span class="ok">Primary</span></td><td><span class="bad">No</span></td><td>เป็นข้อมูลโครงสร้างระบบ ไม่ใช่ time-series.</td></tr>
+            <tr><td>Latest device state: online, lamp_state, power_w ล่าสุด</td><td><span class="ok">Primary snapshot</span></td><td><span class="warn">Optional latest point</span></td><td>frontend list/map ต้องอ่านเร็วและ join account/zone ได้.</td></tr>
+            <tr><td>Raw telemetry: voltage/current/power/energy/rssi ทุก interval</td><td><span class="warn">Optional short/compat</span></td><td><span class="ok">Primary</span></td><td>ข้อมูลถี่และยาว เหมาะกับ retention/downsample/query แบบ time-series.</td></tr>
+            <tr><td>Command history / correlation id / ack / timeout</td><td><span class="ok">Primary</span></td><td><span class="warn">Optional event metric</span></td><td>ต้อง audit, show admin, trace user/source และเชื่อม fault.</td></tr>
+            <tr><td>Fault / alert / ticket / maintenance action</td><td><span class="ok">Primary</span></td><td><span class="bad">No</span></td><td>เป็น business event ที่ต้องมี lifecycle, acknowledge, notify, permission.</td></tr>
+            <tr><td>Dashboard graph history</td><td><span class="warn">Summary/cache</span></td><td><span class="ok">Primary query</span></td><td>graph query ระยะยาวควรอ่านจาก InfluxDB แล้ว cache summary เท่าที่จำเป็น.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="fault-flow" class="section panel warning">
+      <span class="eyebrow">Fault Logic</span>
+      <h2>ตัวอย่าง logic: สั่ง ON แล้วไฟไม่ติด หรือกระแสตก</h2>
+      <p class="lead">Fault logic ไม่ควรอยู่กระจัดกระจายใน Node-RED, InfluxDB และ frontend พร้อมกัน จุดตัดสินควรเป็น backend service เดียว เพื่อให้ audit, permission, retry และ test ได้.</p>
+      <div class="timeline">
+        <div class="timeline-step"><div class="step-number">1</div><div><h3>ส่ง command</h3><p>ผู้ใช้กด ON/OFF/DIM ผ่าน frontend หรือ API. Django Ninja เรียก command service แล้วสร้าง <code>DeviceCommand</code> ใน PostgreSQL พร้อม correlation id/source/user.</p></div></div>
+        <div class="timeline-step"><div class="step-number">2</div><div><h3>ส่งไป provider/MQTT</h3><p>backend dispatch command ไป provider หรือ MQTT topic. สถานะ command เป็น sent/pending ตาม response.</p></div></div>
+        <div class="timeline-step"><div class="step-number">3</div><div><h3>รอ telemetry feedback</h3><p>device ส่ง telemetry กลับมาทาง MQTT เช่น lamp_state, current_a, power_w, voltage, brightness, rssi.</p></div></div>
+        <div class="timeline-step"><div class="step-number">4</div><div><h3>ingestion ตรวจเงื่อนไข</h3><p>backend service เปรียบเทียบ expected state กับ actual telemetry เช่น command ON แต่ <code>current_a = 0</code> หรือ <code>power_w ต่ำกว่า threshold</code> ภายในเวลา X วินาที.</p></div></div>
+        <div class="timeline-step"><div class="step-number">5</div><div><h3>สร้าง fault/event</h3><p>ถ้าผิดเงื่อนไข สร้าง FaultOccurrence/AlertEvent ใน PostgreSQL และผูกกับ command/device/account.</p></div></div>
+        <div class="timeline-step"><div class="step-number">6</div><div><h3>broadcast และ notify</h3><p>Channels ส่ง event ไป dashboard/device-list/map. Celery ทำ notification, retry, escalation หรือ summary ตาม rule.</p></div></div>
+      </div>
+    </section>
+
+    <section id="api-channel" class="section panel">
+      <span class="eyebrow">Ninja + Channels Design</span>
+      <h2>ใช้ Django Ninja และ Channels อย่างไรไม่ให้ชนกัน</h2>
+      <div class="grid-2" style="margin-top:18px">
+        <div class="decision-card callout"><h3>Django Ninja = request/command/query/ingestion</h3><ul><li>รับข้อมูลจาก Node-RED หรือ external ingestion</li><li>frontend เรียก dashboard/device/map data</li><li>MCP/AI เรียก tool/API ที่ enforce permission</li><li>command write ทุกทางต้องผ่าน service กลาง</li></ul></div>
+        <div class="decision-card warning"><h3>Django Channels = event push เท่านั้น</h3><ul><li>ส่ง device_update หลัง update database แล้ว</li><li>ส่ง fault_detected หลัง backend สร้าง fault แล้ว</li><li>ส่ง command_result หลัง command service ตัดสินแล้ว</li><li>ไม่รับ raw MQTT เป็น business ingestion หลัก</li></ul></div>
+      </div>
+      <pre>Correct:
+POST /api/v1/ingestion/telemetry -> service -> DB/Influx -> Channels group_send
+
+Avoid:
+MQTT raw -> Channels -> frontend decides fault
+MQTT raw -> InfluxDB -> PostgreSQL business state</pre>
+    </section>
+
+    <section id="node-red-options" class="section panel">
+      <span class="eyebrow">Node-RED Options</span>
+      <h2>มี 2 ทางเลือก แต่ควรเริ่มแบบ pragmatic</h2>
+      <div class="grid-2" style="margin-top:18px">
+        <div class="decision-card">
+          <span class="badge ok">Phase 1 Recommended</span>
+          <h3>Node-RED เป็น MQTT bridge</h3>
+          <p>เหมาะกับช่วงแรก เพราะเร็ว เห็น flow ชัด และเราใช้ Node-RED อยู่แล้ว.</p>
+          <ul><li>MQTT in node subscribe telemetry topic</li><li>function node normalize payload เบื้องต้น</li><li>HTTP request POST เข้า Django Ninja ingestion API</li><li>ไม่เขียน PostgreSQL/InfluxDB โดยตรงถ้าไม่จำเป็น</li></ul>
+        </div>
+        <div class="decision-card">
+          <span class="badge warn">Production Target</span>
+          <h3>Python MQTT consumer service</h3>
+          <p>เหมาะระยะยาว เพราะ test, deploy, retry, validation และ tenant security คุมได้ดีกว่า.</p>
+          <ul><li>ใช้ service logic เดียวกับ ingestion API</li><li>รองรับ idempotency/dedupe</li><li>รองรับ structured logging</li><li>ลด dependency ที่ business logic ไปอยู่ใน Node-RED</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="mcp-ai" class="section panel callout">
+      <span class="eyebrow">MCP / AI</span>
+      <h2>MCP/AI ควรเรียกข้อมูลผ่าน backend boundary</h2>
+      <p class="lead">AI ไม่ควรถูกปล่อยให้ query raw PostgreSQL และ InfluxDB โดยตรงแบบไม่มี account scope เพราะระบบเป็น multi-tenant. ควรทำ MCP tools หรือ API ที่ backend รวมข้อมูลให้แล้ว.</p>
+      <div class="split-flow">
+        <div class="flow-node node-ai"><h3>MCP Tool</h3><p>เช่น <code>get_device_health</code>, <code>get_fault_timeline</code>, <code>get_energy_summary</code>.</p></div>
+        <div class="flow-node node-api"><h3>Backend API/Service</h3><p>validate requester, account scope, device visibility, package capability, query policy.</p></div>
+        <div class="flow-node node-db"><h3>PostgreSQL + InfluxDB</h3><p>PostgreSQL ให้ context/business/fault, InfluxDB ให้ historical telemetry.</p></div>
+      </div>
+      <pre>Recommended MCP tools:
+- get_device_health(device_id, account_scope)
+- get_customer_energy_summary(account_id, period)
+- get_fault_timeline(device_id, period)
+- explain_command_failure(command_id)
+- recommend_maintenance_action(device_id)</pre>
+    </section>
+
+    <section id="anti-patterns" class="section panel danger">
+      <span class="eyebrow">Anti Patterns</span>
+      <h2>สิ่งที่ไม่ควรทำ</h2>
+      <div class="grid-3" style="margin-top:18px">
+        <div class="decision-card"><h3>MQTT -> InfluxDB -> PostgreSQL</h3><p>ผิดบทบาท เพราะ InfluxDB ไม่ควรเป็น source of truth สำหรับ business state/fault/permission.</p></div>
+        <div class="decision-card"><h3>Node-RED เขียนทุก DB เอง</h3><p>debug ยาก, test ยาก, logic กระจาย และเสี่ยง bypass account/tenant rules.</p></div>
+        <div class="decision-card"><h3>Frontend ตัดสิน fault เอง</h3><p>ผู้ใช้แต่ละเครื่องเห็นไม่เท่ากัน และไม่มี audit/event lifecycle.</p></div>
+        <div class="decision-card"><h3>Channels รับ raw telemetry โดยตรง</h3><p>Channels ควรเป็น realtime delivery หลัง state ถูก validate แล้ว ไม่ใช่ ingestion engine.</p></div>
+        <div class="decision-card"><h3>เก็บ raw telemetry ทั้งหมดใน PostgreSQL</h3><p>ถ้าข้อมูลถี่มาก dashboard/history จะหนักและ retention จัดการยาก.</p></div>
+        <div class="decision-card"><h3>AI query database ตรง</h3><p>เสี่ยง multi-tenant leak และ business rule ไม่ถูก enforce.</p></div>
+      </div>
+    </section>
+
+    <section id="roadmap" class="section panel">
+      <span class="eyebrow">Implementation Roadmap</span>
+      <h2>แผน implement ที่แนะนำ</h2>
+      <div class="table-wrap" style="margin-top:18px">
+        <table data-sortable>
+          <thead><tr><th>Phase</th><th>สิ่งที่ทำ</th><th>ผลลัพธ์</th><th>ความเสี่ยงที่ลดลง</th></tr></thead>
+          <tbody>
+            <tr><td><strong>0. Contract</strong></td><td>กำหนด telemetry schema, topic naming, metric names, correlation id, device identifier rule.</td><td>ทุก integration พูดภาษาเดียวกัน.</td><td>ลด payload มั่ว/metric ชื่อซ้ำ.</td></tr>
+            <tr><td><strong>1. Ingestion API</strong></td><td>เพิ่ม Django Ninja endpoint สำหรับรับ telemetry batch/single และ service กลาง.</td><td>Node-RED/MQTT bridge ส่งเข้าระบบได้อย่างมี contract.</td><td>ลดการเขียน DB ตรงจาก Node-RED.</td></tr>
+            <tr><td><strong>2. InfluxDB</strong></td><td>เพิ่ม service สำหรับ write/query telemetry, env config, docker service, retention policy.</td><td>dashboard graph อ่านจาก time-series database ได้.</td><td>ลดภาระ PostgreSQL สำหรับ raw history.</td></tr>
+            <tr><td><strong>3. PostgreSQL Snapshot</strong></td><td>update latest state ใน Device, command state, fault/event records.</td><td>device-list/map/admin อ่านเร็วและ join account/zone ได้.</td><td>ลด query หนักในหน้า operation.</td></tr>
+            <tr><td><strong>4. Channels Events</strong></td><td>broadcast device_update, telemetry_summary, fault_detected, command_result.</td><td>dashboard/map/device-list realtime โดยไม่ reload.</td><td>ลด frontend polling.</td></tr>
+            <tr><td><strong>5. Fault Rules</strong></td><td>เพิ่ม rule engine/checker สำหรับ voltage/current/power/command feedback.</td><td>ระบบจับไฟไม่ติด กระแสตก offline และ anomaly ได้.</td><td>ลด manual monitoring.</td></tr>
+            <tr><td><strong>6. MCP Tools</strong></td><td>สร้าง AI tools ที่ query ผ่าน backend service รวม PostgreSQL + InfluxDB.</td><td>AI วิเคราะห์ device/fault/energy ได้แบบมี permission.</td><td>ลดความเสี่ยงข้อมูลข้าม tenant.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="final-decision" class="section panel callout">
+      <span class="eyebrow">Final Decision</span>
+      <h2>คำตอบสุดท้ายของ architecture นี้</h2>
+      <p class="lead">เพิ่ม InfluxDB ควรทำ แต่ต้องเพิ่มเป็น telemetry time-series store ใต้ backend ingestion layer ไม่ใช่ให้ InfluxDB หรือ Node-RED เป็นตัวคุม business logic หลัก.</p>
+      <div class="decision-strip">
+        <span class="badge ok">Django Ninja = API + ingestion boundary</span>
+        <span class="badge ok">PostgreSQL = business source of truth</span>
+        <span class="badge ok">InfluxDB = raw telemetry/time-series</span>
+        <span class="badge ok">Channels = realtime push</span>
+        <span class="badge warn">Node-RED = bridge/test first</span>
+        <span class="badge bad">Do not bypass backend rules</span>
+      </div>
+      <pre>Best target:
+MQTT/EMQX -> backend-controlled ingestion -> PostgreSQL + InfluxDB -> Channels/Celery/API/MCP
+
+Pragmatic first step:
+MQTT/EMQX -> Node-RED bridge -> Django Ninja ingestion API -> PostgreSQL + InfluxDB -> Channels</pre>
+      <p class="footer-note">เอกสารนี้เป็น architecture plan สำหรับตัดสินใจต่อ ไม่ได้แก้ production settings, docker-compose หรือ API implementation.</p>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const tableContainers = document.querySelectorAll('.table-wrap, .table-scroll');
+      tableContainers.forEach((container) => {
+        const table = container.querySelector('table');
+        if (!table || container.nextElementSibling?.classList?.contains('data-pager')) return;
+        const rows = table.querySelectorAll('tbody tr').length || table.querySelectorAll('tr').length || 0;
+        const shown = rows ? Math.min(rows, 10) : 0;
+        const pager = document.createElement('div');
+        pager.className = 'data-pager';
+        pager.setAttribute('data-pagination', 'true');
+        pager.innerHTML = `
+          <span>Showing ${shown ? `1-${shown}` : '0'} of ${rows} row${rows === 1 ? '' : 's'}</span>
+          <span class="data-pager__actions" aria-label="Pagination controls">
+            <span class="data-pager__button">Prev</span>
+            <span class="data-pager__button" aria-current="page">1</span>
+            <span class="data-pager__button">2</span>
+            <span class="data-pager__button">Next</span>
+          </span>`;
+        container.insertAdjacentElement('afterend', pager);
+      });
+
+      const scrollSelectors = [
+        '.action-list', '.feed-list', '.event-feed', '.notification-list', '.records-list',
+        '.queue-list', '.timeline-list', '.audit-list', '.issue-list', '.work-order-list',
+        '.library-grid', '.drawer-list'
+      ];
+      document.querySelectorAll(scrollSelectors.join(',')).forEach((region) => {
+        if (region.closest('svg')) return;
+        region.classList.add('data-scroll-region');
+        if (!region.nextElementSibling?.classList?.contains('scroll-note')) {
+          const note = document.createElement('span');
+          note.className = 'scroll-note';
+          note.textContent = 'Scroll region · keep this card height controlled in the real UI';
+          region.insertAdjacentElement('afterend', note);
+        }
+      });
+    })();
+  </script>
+
+
+  <script>
+    (() => {
+      const skipHeader = /^(action|actions|control|controls|qr|map|open)$/i;
+      const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+      const numericValue = (value) => {
+        const cleaned = value.replace(/[,฿$%]/g, '').match(/-?\d+(?:\.\d+)?/);
+        return cleaned ? Number(cleaned[0]) : Number.NaN;
+      };
+      const compareValues = (a, b) => {
+        const an = numericValue(a);
+        const bn = numericValue(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      };
+      document.querySelectorAll('table').forEach((table) => {
+        if (table.dataset.sortableReady === 'true') return;
+        const tbody = table.tBodies[0];
+        const headerRow = table.tHead?.rows?.[0];
+        if (!tbody || !headerRow || tbody.rows.length < 2) return;
+        table.dataset.sortableReady = 'true';
+        table.dataset.sortableTable = 'true';
+        Array.from(headerRow.cells).forEach((th, index) => {
+          const label = normalize(th.textContent);
+          if (!label || skipHeader.test(label)) return;
+          th.dataset.sortKey = label;
+          th.setAttribute('aria-sort', 'none');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sort-button';
+          button.innerHTML = `<span>${label}</span><span class="sort-indicator" aria-hidden="true">↕</span>`;
+          th.textContent = '';
+          th.appendChild(button);
+          button.addEventListener('click', () => {
+            const current = th.getAttribute('aria-sort');
+            const next = current === 'ascending' ? 'descending' : 'ascending';
+            Array.from(headerRow.cells).forEach((cell) => cell.setAttribute('aria-sort', 'none'));
+            th.setAttribute('aria-sort', next);
+            button.querySelector('.sort-indicator').textContent = next === 'ascending' ? '↑' : '↓';
+            Array.from(headerRow.cells).forEach((cell) => {
+              if (cell !== th) {
+                const indicator = cell.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = '↕';
+              }
+            });
+            const rows = Array.from(tbody.rows).map((row, originalIndex) => ({ row, originalIndex }));
+            rows.sort((left, right) => {
+              const a = normalize(left.row.cells[index]?.textContent || '');
+              const b = normalize(right.row.cells[index]?.textContent || '');
+              const compared = compareValues(a, b) || left.originalIndex - right.originalIndex;
+              return next === 'ascending' ? compared : -compared;
+            });
+            rows.forEach(({ row }) => tbody.appendChild(row));
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
