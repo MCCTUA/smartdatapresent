@@ -27,7 +27,8 @@ import SmartLightStory from './pages/smartlight/Story';
 import SmartLightPitchDeckLegacy from './pages/smartlight/PitchDeckLegacy';
 import SolarPitchDeck from './pages/solar/PitchDeck';
 import SolarLightingReport from './pages/solar/LightingReport';
-import EmergencyPitchDeck from './pages/emergency/PitchDeck';
+import EmergencyStory from './pages/emergency/Story';
+import EmergencyPitchDeckLegacy from './pages/emergency/PitchDeckLegacy';
 
 export default function App() {
   return (
@@ -49,7 +50,8 @@ export default function App() {
             <Route path="/waste-fee" element={<WasteCollectionFee />} />
             <Route path="/elderly-care" element={<ElderlyCareStory />} />
             <Route path="/elderly-care/legacy" element={<ElderlyCareLegacy />} />
-            <Route path="/emergency-mgmt" element={<EmergencyPitchDeck />} />
+            <Route path="/emergency-mgmt" element={<EmergencyStory />} />
+            <Route path="/emergency-mgmt/legacy" element={<EmergencyPitchDeckLegacy />} />
 
             {/* CCTV + AI catalog + 6 detail apps + technical overview */}
             <Route path="/smart-traffic" element={<SmartTraffic />} />

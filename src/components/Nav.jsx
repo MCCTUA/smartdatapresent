@@ -9,6 +9,7 @@ const links = [
   { to: '/waste-fee', label: 'ค่าธรรมเนียมขยะ' },
   { to: '/smart-traffic', label: 'Smart Traffic' },
   { to: '/elderly-care', label: 'ดูแลผู้สูงอายุ' },
+  { to: '/emergency-mgmt', label: 'บริหารเหตุฉุกเฉิน' },
   {
     label: 'อื่นๆ',
     children: [
@@ -16,7 +17,7 @@ const links = [
       { to: '/solar-street-light', label: 'Solar Street Light' },
       { to: '/elderly-care/legacy', label: 'ดูแลผู้สูงอายุ (เวอร์ชันเดิม)' },
       { to: '/smart-street-light/legacy', label: 'Smart Street Light (เวอร์ชันเดิม)' },
-      { to: '/emergency-mgmt', label: 'บริหารเหตุฉุกเฉิน' },
+      { to: '/emergency-mgmt/legacy', label: 'บริหารเหตุฉุกเฉิน (เวอร์ชันเดิม)' },
     ],
   },
 ];
