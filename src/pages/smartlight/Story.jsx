@@ -1,4 +1,21 @@
 import React, { useEffect, useState } from 'react';
+import StoryDeck from '../../components/StoryDeck';
+
+// ชื่อสไลด์สำหรับเมนู "ไปสไลด์…" + จุดไข่ปลา (เรียงตรงกับ <section> ในหน้า)
+const SL_SLIDES = [
+  { k: 'pain',     t: 'ปัญหา · ไฟถนนเสีย-ค่าไฟบาน รู้ช้า' },
+  { k: 'win',      t: 'ทำไมสำคัญ · 3 ฝ่ายได้อะไร' },
+  { k: 'demo',     t: 'เห็นระบบจริง · เปิดดูได้ใน 30 วินาที' },
+  { k: 'solution', t: 'ภาพรวมวิธีแก้ · เข้าใจระบบใน 3 ข้อ' },
+  { k: 'how',      t: 'ทำงานอย่างไร' },
+  { k: 'divider',  t: 'ฮาร์ดแวร์ของเรา' },
+  { k: 'device',   t: 'ฮาร์ดแวร์ · อธิบายแบบเข้าใจง่าย' },
+  { k: 'device',   t: '2 โหมดติดตั้ง · เลือกตามงบ/ระบบเดิม' },
+  { k: 'package',  t: 'เริ่มต้นได้อะไรบ้าง (แพ็กเกจ)' },
+  { k: 'cta',      t: 'ขั้นต่อไป · เริ่มอย่างไร' },
+  { k: 'appendix', t: 'ภาคผนวก' },
+  { k: 'appendix', t: 'ภาคผนวก A · สถาปัตยกรรมระบบ' },
+];
 
 // ---------------------------------------------------------------------------
 // SmartLight/Story.jsx — หน้า Smart Street Light แบบ storytelling เส้นเดียว
@@ -8,7 +25,7 @@ import React, { useEffect, useState } from 'react';
 // ---------------------------------------------------------------------------
 
 const BASE = import.meta.env.BASE_URL;
-const INSTALL = `${BASE}images/smartlight/installation`;
+const SL = `${BASE}images/smartlight`;
 
 // ---------------------------------------------------------------------------
 // Demo modal — เปิดระบบจริงจาก public/ui/smartlight-demo/*.html (7 หน้า + tabs)
@@ -254,6 +271,7 @@ export default function SmartLightStory() {
   return (
     <div className="sl-story">
       <StoryStyles />
+      <StoryDeck rootClass="sl-story" titles={SL_SLIDES} />
       <div className="progress" style={{ width: `${progress}%` }} />
       {demo && <DemoModal initialTab={demo} onClose={() => setDemo(null)} />}
 
@@ -414,7 +432,10 @@ export default function SmartLightStory() {
           <span className="eyebrow accent">ฮาร์ดแวร์ · อธิบายแบบเข้าใจง่าย</span>
           <h2>โคมไฟที่สว่างกว่า ประหยัดกว่า และ "พูดได้"</h2>
           <div className="split">
-            <div className="media"><img src={`${INSTALL}/IMG_5052.jpeg`} alt="โคมไฟ LED ติดตั้งจริงบนเสาไฟถนน" /></div>
+            <div className="media" style={{ flexDirection: 'column', gap: 14 }}>
+              <img src={`${SL}/Gemini_Generated_Image_ykong3ykong3ykon-removebg-preview.png`} alt="โคมไฟ LED อัจฉริยะ มี Node ควบคุมติดบนหัวโคม" />
+              <img src={`${SL}/Gemini_Generated_Image_am4oo4am4oo4am4o.png`} alt="โคมไฟ LED ปรับมุมส่องได้ 90° เห็นแผง LED ประสิทธิภาพสูง" />
+            </div>
             <div>
               <div className="feat"><div className="fi">💡</div><div><b>โคม LED ประสิทธิภาพสูง</b><p>ให้แสงสว่างกว่าโคมเดิม กินไฟน้อยกว่า อายุการใช้งานยาว ปรับมุมส่องได้</p></div></div>
               <div className="feat"><div className="fi">📡</div><div><b>Node สื่อสารบนทุกโคม</b><p>วัดสถานะไฟแต่ละดวงตลอดเวลา ส่งข้อมูลเข้าศูนย์ — นี่คือสิ่งที่ทำให้ "รู้ก่อน" ได้</p></div></div>
@@ -439,28 +460,6 @@ export default function SmartLightStory() {
               <h4>② ควบคุมรายโซน/ตู้ (ประหยัดเริ่มต้น)</h4>
               <p>คุมที่ตู้ควบคุม/โซน — อัปเกรดระบบเดิมได้เร็ว งบเริ่มต้นน้อยกว่า เห็นภาพรวมเป็นโซน เหมาะเริ่มนำร่อง</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============ DIVIDER: ผลงานจริง ============ */}
-      <section className="divider">
-        <div className="wrap">
-          <div className="num">— ผลงานติดตั้งจริง —</div>
-          <h2>ไม่ใช่แค่ภาพ render — เราติดตั้งจริงมาแล้ว</h2>
-          <p>โคมและระบบที่ติดตั้งใช้งานจริงในพื้นที่ — ดูแล้วเชื่อมือได้</p>
-        </div>
-      </section>
-
-      {/* ============ องก์ 6 — gallery ============ */}
-      <section>
-        <div className="wrap">
-          <span className="eyebrow">ติดตั้งใช้งานจริง</span>
-          <h2>ภาพจากการติดตั้งหน้างานจริง</h2>
-          <div className="gallery">
-            <img src={`${INSTALL}/IMG_5052.jpeg`} alt="ติดตั้งโคมไฟถนนจริง 1" />
-            <img src={`${INSTALL}/IMG_6040.jpeg`} alt="ติดตั้งโคมไฟถนนจริง 2" />
-            <img src={`${INSTALL}/IMG_6042.jpeg`} alt="ติดตั้งโคมไฟถนนจริง 3" />
           </div>
         </div>
       </section>

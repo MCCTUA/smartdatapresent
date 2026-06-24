@@ -6,10 +6,10 @@ const links = [
   { to: '/about', label: 'แนะนำตัว' },
   { to: '/overview', label: 'ภาพรวม' },
   { to: '/smart-street-light', label: 'Smart Street Light' },
+  { to: '/emergency-mgmt', label: 'บริหารเหตุฉุกเฉิน' },
+  { to: '/elderly-care', label: 'ดูแลผู้สูงอายุ' },
   { to: '/waste-fee', label: 'ค่าธรรมเนียมขยะ' },
   { to: '/smart-traffic', label: 'Smart Traffic' },
-  { to: '/elderly-care', label: 'ดูแลผู้สูงอายุ' },
-  { to: '/emergency-mgmt', label: 'บริหารเหตุฉุกเฉิน' },
   {
     label: 'อื่นๆ',
     children: [

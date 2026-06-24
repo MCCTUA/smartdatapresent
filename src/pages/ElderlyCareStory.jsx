@@ -1,4 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import StoryDeck from '../components/StoryDeck';
+
+// ชื่อสไลด์สำหรับเมนู "ไปสไลด์…" + จุดไข่ปลา (เรียงตรงกับ <section> ในหน้า)
+const EC_SLIDES = [
+  { k: 'pain',     t: 'ปัญหา · ผู้สูงอายุล้มลำพัง กว่าจะมีคนรู้ก็สาย' },
+  { k: 'win',      t: 'ทำไมสำคัญ · 3 ฝ่ายอุ่นใจ + นโยบายชาติ' },
+  { k: 'demo',     t: 'เห็นระบบจริง · เปิดดูได้ใน 30 วินาที' },
+  { k: 'solution', t: 'ภาพรวมวิธีแก้ · เข้าใจทั้งระบบใน 3 ข้อ' },
+  { k: 'how',      t: 'วิธีใช้งาน · 5 ขั้น ตั้งแต่ติดตั้งถึงช่วยถึงตัว' },
+  { k: 'divider',  t: 'อุปกรณ์หลักของเรา' },
+  { k: 'device',   t: 'อุปกรณ์ ① · เรดาร์จับการล้ม (ในบ้าน)' },
+  { k: 'device',   t: 'อุปกรณ์ ① · กล้อง AI จับล้ม (พื้นที่ส่วนกลาง)' },
+  { k: 'device',   t: 'อุปกรณ์ ② · นาฬิกาเฝ้าหัวใจ (ECG)' },
+  { k: 'divider',  t: 'เครื่องมือสำหรับคนทำงาน' },
+  { k: 'feature',  t: 'ช่วยให้คนทำงานหน้างานเบาลง' },
+  { k: 'package',  t: 'เริ่มต้นได้อะไรบ้าง (แพ็กเกจ)' },
+  { k: 'cta',      t: 'ขั้นต่อไป · เริ่มอย่างไร' },
+  { k: 'appendix', t: 'ภาคผนวก' },
+  { k: 'appendix', t: 'ภาคผนวก A · ค่าทางเทคนิค ECG' },
+  { k: 'appendix', t: 'ภาคผนวก B · โครงสร้างพื้นฐาน + ความเป็นส่วนตัว' },
+];
 
 // ---------------------------------------------------------------------------
 // ElderlyCareStory.jsx — หน้า /elderly-care แบบ storytelling เส้นเดียว
@@ -37,19 +58,22 @@ function DemoModal({ onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: 'min(440px, 100%)', height: 'min(860px, 100%)',
-          background: '#FFF', borderRadius: 20, overflow: 'hidden',
-          boxShadow: '0 30px 80px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column',
+          width: 'min(1320px, 100%)', height: 'min(820px, 100%)',
+          background: '#FFF', borderRadius: 16, overflow: 'hidden',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column',
         }}
       >
-        <div style={{ flexShrink: 0, background: 'var(--ec-primary-deep)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px' }}>
-          <b style={{ fontSize: 15 }}>📱 ตัวอย่างระบบจริง — ศูนย์ดูแลผู้สูงอายุ</b>
+        <div style={{ flexShrink: 0, height: 50, background: 'var(--ec-primary-deep)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, fontWeight: 700 }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#9FE3C0' }} />
+            ตัวอย่างระบบจริง — ศูนย์ดูแลผู้สูงอายุ (เลือกเมนูด้านซ้ายเพื่อดูแต่ละหน้า)
+          </div>
           <button
             onClick={onClose}
             aria-label="ปิด"
-            style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: '7px 16px', borderRadius: 8 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.16)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
           >
-            ปิด ✕
+            ✕ ปิด · กลับสู่การนำเสนอ
           </button>
         </div>
         <iframe
@@ -212,6 +236,7 @@ export default function ElderlyCareStory() {
   return (
     <div className="ec-story">
       <StoryStyles />
+      <StoryDeck rootClass="ec-story" titles={EC_SLIDES} />
       <div className="progress" style={{ width: `${progress}%` }} />
       {demo && <DemoModal onClose={() => setDemo(false)} />}
 

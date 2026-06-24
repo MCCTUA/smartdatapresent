@@ -1,4 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import StoryDeck from '../../components/StoryDeck';
+
+// ชื่อสไลด์สำหรับเมนู "ไปสไลด์…" + จุดไข่ปลา (เรียงตรงกับ <section> ในหน้า)
+const EM_SLIDES = [
+  { k: 'pain',     t: 'ปัญหา · เกิดเหตุฉุกเฉิน กว่าจะรู้-สั่งการก็ช้า' },
+  { k: 'win',      t: 'ทำไมสำคัญ · 3 ฝ่ายได้อะไร' },
+  { k: 'demo',     t: 'เห็นระบบจริง · เปิดดูได้ใน 30 วินาที' },
+  { k: 'solution', t: 'ภาพรวมวิธีแก้ · 3 เสาหลัก' },
+  { k: 'how',      t: 'ทำงานอย่างไร' },
+  { k: 'divider',  t: 'ทำมาแล้วจริง ใช้งานต่อเนื่อง' },
+  { k: 'proof',    t: 'ผลงานอ้างอิง · มาบตาพุด / EIC' },
+  { k: 'divider',  t: 'เริ่มได้ตามบริบทพื้นที่' },
+  { k: 'package',  t: 'เริ่มต้นได้อะไรบ้าง (แพ็กเกจ)' },
+  { k: 'cta',      t: 'ขั้นต่อไป · เริ่มอย่างไร' },
+  { k: 'appendix', t: 'ภาคผนวก' },
+  { k: 'appendix', t: 'ภาคผนวก A · ภาพรวมระบบ + 4 เฟส' },
+  { k: 'appendix', t: 'ภาคผนวก B · Chem Hub (พื้นที่นิคม)' },
+];
 
 // ---------------------------------------------------------------------------
 // emergency/Story.jsx — หน้า /emergency-mgmt แบบ storytelling เส้นเดียว
@@ -39,19 +57,22 @@ function DemoModal({ onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: 'min(440px, 100%)', height: 'min(860px, 100%)',
-          background: '#FFF', borderRadius: 20, overflow: 'hidden',
-          boxShadow: '0 30px 80px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column',
+          width: 'min(1320px, 100%)', height: 'min(820px, 100%)',
+          background: '#FFF', borderRadius: 16, overflow: 'hidden',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column',
         }}
       >
-        <div style={{ flexShrink: 0, background: 'var(--em-primary-deep)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px' }}>
-          <b style={{ fontSize: 15 }}>🖥️ ตัวอย่างระบบจริง — ศูนย์บัญชาการเหตุฉุกเฉิน</b>
+        <div style={{ flexShrink: 0, height: 50, background: 'var(--em-primary-deep)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, fontWeight: 700 }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#9FE3C0' }} />
+            ตัวอย่างระบบจริง — ศูนย์บัญชาการเหตุฉุกเฉิน (เลือกเมนูด้านซ้ายเพื่อดูแต่ละหน้า)
+          </div>
           <button
             onClick={onClose}
             aria-label="ปิด"
-            style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: '7px 16px', borderRadius: 8 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.16)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
           >
-            ปิด ✕
+            ✕ ปิด · กลับสู่การนำเสนอ
           </button>
         </div>
         <iframe
@@ -204,6 +225,7 @@ export default function EmergencyStory() {
   return (
     <div className="em-story">
       <StoryStyles />
+      <StoryDeck rootClass="em-story" titles={EM_SLIDES} />
       <div className="progress" style={{ width: `${progress}%` }} />
       {demo && <DemoModal onClose={() => setDemo(false)} />}
 
