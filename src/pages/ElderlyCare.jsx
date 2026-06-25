@@ -2143,28 +2143,95 @@ function Slide11Ecg() {
               ไม่ใช่เครื่องวินิจฉัย/สั่งรักษา
             </b>
           </p>
+          {/* SPEAKER NOTE — ไม่แสดงผล (สำหรับทีมขายอ่าน):
+              ห้ามพูดว่า AF กี่ครั้ง/เดือน → จี้/กินยา · อ้างอิง 2023 ACC/AHA · 2024 ESC */}
           <WarnBox
             tone="amber"
-            style={{ padding: '18px 22px', borderWidth: 2, flexShrink: 0 }}
+            style={{ padding: '16px 20px', borderWidth: 2, flexShrink: 0 }}
           >
             <div
               style={{
-                fontSize: 17,
+                fontSize: 16,
                 fontWeight: 800,
                 color: '#854F0B',
-                marginBottom: 9,
-                lineHeight: 1.35
+                marginBottom: 6,
+                lineHeight: 1.3
               }}
             >
-              ⚠️ จุดที่ต้องพูดให้ถูก (ตามแนวทาง 2023 ACC/AHA · 2024 ESC)
+              ทำไมต้องเฝ้าระวังหัวใจต่อเนื่อง
             </div>
-            <div style={{ fontSize: 14, lineHeight: 1.7 }}>
-              <b>ไม่มีเกณฑ์ "AF กี่ครั้งต่อเดือน → จี้/กินยา"</b> —
-              การดูแลแยกเป็น 2 เรื่อง: <b>กันสโตรก</b> ตัดสินจากคะแนนความเสี่ยง
-              CHA₂DS₂-VASc (ไม่ใช่จำนวนครั้ง) · <b>การจี้ (ablation)</b>{' '}
-              ตัดสินจากอาการ ชนิดของ AF ยาไม่ได้ผล และหัวใจล้มเหลว (HFrEF) ·{' '}
-              <b>AF burden</b> เป็นข้อมูลประกอบ ยังไม่มี cutoff ตายตัว
+            <p
+              style={{
+                fontSize: 13,
+                color: '#6B4A12',
+                lineHeight: 1.6,
+                marginBottom: 10
+              }}
+            >
+              AF (หัวใจห้องบนสั่นพลิ้ว) มัก <b>“เงียบ ไม่มีอาการ”</b>{' '}
+              แต่เพิ่มความเสี่ยง <b>“สโตรก”</b> หลายเท่า — ตรวจปีละครั้งจึงไม่พอ{' '}
+              <b>ยิ่งรู้เร็ว ยิ่งกันทัน</b>
+            </p>
+            <div
+              style={{
+                fontSize: 13.5,
+                fontWeight: 700,
+                color: '#854F0B',
+                marginBottom: 7
+              }}
+            >
+              กรอบการตัดสินใจ{' '}
+              <span
+                style={{ fontWeight: 400, fontSize: 12, color: '#6B4A12' }}
+              >
+                (แพทย์เป็นผู้วินิจฉัย — นาฬิกาให้ข้อมูลที่ครบ)
+              </span>
             </div>
+            <ul
+              style={{
+                listStyle: 'none',
+                margin: 0,
+                padding: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 6
+              }}
+            >
+              {[
+                [
+                  'ป้องกันสโตรก',
+                  'แพทย์ประเมินจากคะแนนความเสี่ยงรวม (CHA₂DS₂-VASc)'
+                ],
+                [
+                  'เลือกแนวทางรักษา',
+                  'แพทย์ดูอาการ + ชนิดของ AF + ภาระการเกิด AF (burden)'
+                ],
+                [
+                  'นาฬิกา = เฝ้าระวัง 24 ชม. + สรุปรายงานให้แพทย์',
+                  'ตัดสินใจแม่นและทันเวลา'
+                ]
+              ].map((b, i) => (
+                <li
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    gap: 8,
+                    fontSize: 12.5,
+                    color: '#6B4A12',
+                    lineHeight: 1.45
+                  }}
+                >
+                  <span
+                    style={{ color: C.accent, fontWeight: 800, flexShrink: 0 }}
+                  >
+                    ›
+                  </span>
+                  <span>
+                    <b style={{ color: '#854F0B' }}>{b[0]}</b> → {b[1]}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </WarnBox>
           <DeviceTable
             style={{ flex: 1, minHeight: 0 }}
