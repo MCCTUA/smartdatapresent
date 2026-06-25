@@ -9,6 +9,7 @@ import FeeManagement from './pages/FeeManagement';
 import WasteCollectionFee from './pages/WasteCollectionFee';
 import CCTVAI from './pages/CCTVAI';
 import ElderlyCareStory from './pages/ElderlyCareStory';
+import ElderlyCare from './pages/ElderlyCare';
 import ElderlyCareLegacy from './pages/ElderlyCareLegacy';
 import SmartTraffic from './pages/SmartTraffic';
 import AboutUs from './pages/AboutUs';
@@ -48,7 +49,8 @@ export default function App() {
             <Route path="/solar-street-light/report" element={<SolarLightingReport />} />
             <Route path="/fee-management" element={<FeeManagement />} />
             <Route path="/waste-fee" element={<WasteCollectionFee />} />
-            <Route path="/elderly-care" element={<ElderlyCareStory />} />
+            <Route path="/elderly-care" element={<ElderlyCare />} />
+            <Route path="/elderly-care-v2" element={<ElderlyCareStory />} />
             <Route path="/elderly-care/legacy" element={<ElderlyCareLegacy />} />
             <Route path="/emergency-mgmt" element={<EmergencyStory />} />
             <Route path="/emergency-mgmt/legacy" element={<EmergencyPitchDeckLegacy />} />

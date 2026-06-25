@@ -17,6 +17,8 @@
   @keyframes ec-pulseRed { 0%,100% { box-shadow:0 0 0 0 rgba(192,73,47,0.45);} 50% { box-shadow:0 0 0 14px rgba(192,73,47,0);} }
   @keyframes ec-glow { 0%,100% { box-shadow:0 0 0 0 rgba(224,165,38,0.5);} 50% { box-shadow:0 0 0 10px rgba(224,165,38,0);} }
   @keyframes ec-fadeUp { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:translateY(0);} }
+  @keyframes ec-scan { 0% { top:26px;} 50% { top:172px;} 100% { top:26px;} }
+  @keyframes ec-scan2 { 0% { top:22px;} 50% { top:160px;} 100% { top:22px;} }
   ::-webkit-scrollbar { width:10px; height:10px; }
   ::-webkit-scrollbar-thumb { background:#D8D0BE; border-radius:8px; border:2px solid #F7F4EC; }
   .navbtn:hover { background:#F0F4F1 !important; }
@@ -66,6 +68,48 @@ const state = {
   ],
   fallActive: false,
   modules: { health:true, fall:true, emergency:true, report:true, msg:true, ai:false },
+  devices: [
+    { code:'#CS-014', type:'นาฬิกาเฝ้าระวังหัวใจ', owner:'นางบุญมา ศรีสุข', loc:'สวมข้อมือ', batt:'82%', sig:'ปกติ', online:true },
+    { code:'#LR-2071', type:'เซนเซอร์จับการล้ม', owner:'นางบุญมา ศรีสุข', loc:'ห้องน้ำ', batt:'78%', sig:'LoRa ปกติ', online:true },
+    { code:'#SOS-003', type:'ปุ่มขอความช่วยเหลือ', owner:'นายสมชาย รุ่งเรือง', loc:'ห้องนอน', batt:'90%', sig:'ปกติ', online:true },
+  ],
+  scanPhase: null, scanCode: '',
+  recipients: [
+    { kind:'staff', tier:1, name:'สมหญิง พุ่มพวง', role:'อสม.', ch:['LINE'] },
+    { kind:'family', tier:1, name:'น.ส.มะลิ ศรีสุข', role:'บุตรสาว', ch:['LINE','โทร'] },
+    { kind:'staff', tier:2, name:'ประสงค์ ใจดี', role:'เจ้าหน้าที่เทศบาล', ch:['LINE','SMS'] },
+    { kind:'staff', tier:3, name:'ทีมกู้ชีพ 1669', role:'หน่วยกู้ชีพ', ch:['โทร'] },
+  ],
+  parallelFamily: true, timeoutMin: 5,
+  gateways: [
+    { code:'GW-01', name:'ตัวรับกลาง หมู่ 4', power:'ไฟบ้าน + แบตสำรอง', batt:100, nodes:7, uptime:'99.9%', online:true },
+    { code:'GW-02', name:'ตัวรับกลาง หมู่ 7', power:'ไฟบ้าน + แบตสำรอง', batt:96, nodes:5, uptime:'99.7%', online:true },
+  ],
+  pmTasks: [
+    { asset:'#SOS-003', task:'ทดสอบปุ่ม + เปลี่ยนแบตเตอรี่', due:'28 มิ.ย. 69', status:'overdue' },
+    { asset:'#LR-2071', task:'เปลี่ยนแบตเตอรี่เซนเซอร์', due:'05 ก.ค. 69', status:'due' },
+    { asset:'#CS-009', task:'ตรวจการสวมใส่ + สอบเทียบ', due:'20 ก.ค. 69', status:'upcoming' },
+    { asset:'GW-01', task:'ตรวจตัวรับกลาง + แบตสำรอง', due:'15 ส.ค. 69', status:'upcoming' },
+  ],
+  pmNext: { '#CS-014':'20 ก.ค. 69', '#LR-2071':'05 ก.ค. 69', '#SOS-003':'28 มิ.ย. 69' },
+  screeningStep: 1, idRead: false, patientId: '', patientAddr: '',
+  instruments: [
+    { name:'เครื่องวัดความดันโลหิต (ดิจิทัล)', kind:'digital', measures:'ความดัน' },
+    { name:'เครื่องเจาะน้ำตาลปลายนิ้ว', kind:'analog', measures:'น้ำตาล' },
+    { name:'เครื่องชั่งน้ำหนัก (หน้าปัดเข็ม)', kind:'analog', measures:'น้ำหนัก' },
+    { name:'ปรอทวัดไข้แบบดิจิทัล', kind:'digital', measures:'อุณหภูมิ' },
+    { name:'นาฬิกาเฝ้าระวังหัวใจ', kind:'watch', measures:'ชีพจร · ออกซิเจน · ECG' },
+  ],
+  readings: [], ocrCapturing: null,
+  selectedResident: null,
+  residents: [
+    { name:'นางบุญมา ศรีสุข', meta:'อายุ 72 · หมู่ 4', risk:'ติดบ้าน', watch:'#CS-014', hr:78, bp:'128/82', spo2:97, glu:104, afib:true },
+    { name:'นายสมชาย รุ่งเรือง', meta:'อายุ 80 · หมู่ 2', risk:'ติดเตียง', watch:'#CS-021', hr:84, bp:'135/86', spo2:95, glu:120, afib:false },
+    { name:'นายทองดี แก้วมณี', meta:'อายุ 69 · หมู่ 7', risk:'ติดสังคม', watch:'', hr:74, bp:'124/80', spo2:98, glu:108, afib:false },
+    { name:'นางสมพร ทองคำ', meta:'อายุ 75 · หมู่ 4', risk:'ติดบ้าน', watch:'#CS-009', hr:88, bp:'140/90', spo2:96, glu:132, afib:false },
+    { name:'นางมาลี ดวงเดือน', meta:'อายุ 78 · หมู่ 1', risk:'ติดสังคม', watch:'#CS-031', hr:72, bp:'122/78', spo2:98, glu:99, afib:false },
+    { name:'นายประสิทธิ์ ดีงาม', meta:'อายุ 71 · หมู่ 7', risk:'ติดสังคม', watch:'', hr:76, bp:'126/81', spo2:97, glu:110, afib:false },
+  ],
 };
 
 // ---------- helpers ----------
@@ -181,7 +225,52 @@ function toggleModule(key){
 function tog(key){ const on=state.modules[key]; return { trackBg: on?'#1F6B4C':'#D8D0BE', knobX: on?'20px':'2px' }; }
 
 // expose for inline onclick
-window.EC = { go, simulateMeasurement, returnDevice, acceptResponder, openMaps, simulateNoResponse, resetEmergency, simulateFall, exportReport, toggleModule, toggleHint:()=>{ state.hintOpen=!state.hintOpen; render(); } };
+function openScan(){ state.scanPhase='scanning'; render(); setTimeout(function(){ state.scanPhase='detected'; state.scanCode='#LR-2093'; render(); }, 1700); }
+function manualEntry(){ state.scanPhase='detected'; state.scanCode=''; render(); }
+function cancelScan(){ state.scanPhase=null; state.scanCode=''; render(); }
+function confirmAddDevice(){
+  var ce=document.getElementById('dv-code'); var te=document.getElementById('dv-type'); var oe=document.getElementById('dv-owner'); var le=document.getElementById('dv-loc');
+  var code=((ce&&ce.value)||state.scanCode||'#NEW-000').trim();
+  var type=(te&&te.value)||'อุปกรณ์'; var owner=(oe&&oe.value)||'-'; var loc=(le&&le.value)||'-';
+  state.devices.push({ code:code, type:type, owner:owner, loc:loc, batt:'100%', sig:'ปกติ', online:true });
+  state.scanPhase=null; state.scanCode='';
+  showToast('เพิ่มอุปกรณ์ '+code+' · จับคู่กับ '+owner+' · เชื่อมต่อสำเร็จ','success');
+}
+function removeDevice(i){ var d=state.devices[i]; state.devices.splice(i,1); showToast('นำอุปกรณ์ '+(d?d.code:'')+' ออกจากระบบแล้ว','warn'); }
+function addRecipient(){
+  var ne=document.getElementById('rc-name'); var name=((ne&&ne.value)||'').trim();
+  if(!name){ showToast('กรุณากรอกชื่อผู้รับการแจ้งเตือน','warn'); return; }
+  var ke=document.getElementById('rc-kind'); var kind=(ke&&ke.value)||'staff';
+  var re=document.getElementById('rc-role'); var role=((re&&re.value)||'').trim()||(kind==='family'?'ญาติ':'เจ้าหน้าที่');
+  var tee=document.getElementById('rc-tier'); var tier=parseInt((tee&&tee.value)||'1',10);
+  var ch=[]; ['LINE','SMS','โทร'].forEach(function(c){ var el=document.getElementById('rc-ch-'+c); if(el&&el.checked) ch.push(c); });
+  var cons=document.getElementById('rc-consent');
+  if(kind==='family' && !(cons&&cons.checked)){ showToast('กรุณาติ๊กยืนยันความยินยอม (PDPA) สำหรับญาติ','warn'); return; }
+  state.recipients.push({ kind:kind, tier:tier, name:name, role:role, ch: ch.length?ch:['LINE'] });
+  showToast('เพิ่มผู้รับการแจ้งเตือน: '+role+' '+name+' (ชั้น '+tier+')','success');
+}
+function removeRecipient(i){ var r=state.recipients[i]; state.recipients.splice(i,1); showToast('นำ '+(r?r.name:'')+' ออกจากรายชื่อแล้ว','warn'); }
+function moveTier(i,dir){ var r=state.recipients[i]; if(!r) return; r.tier=Math.max(1,Math.min(3,r.tier+dir)); render(); }
+function toggleParallel(){ state.parallelFamily=!state.parallelFamily; showToast(state.parallelFamily?'เปิด: ครอบครัวรู้คู่ขนานทุกชั้น':'ปิด: แจ้งครอบครัวตามลำดับชั้น', state.parallelFamily?'success':'warn'); }
+function testAlert(){ showToast('ส่งการแจ้งทดสอบไปยังผู้รับผิดชอบทุกคนแล้ว — โปรดตรวจสอบที่ LINE/SMS/สายโทร','success'); }
+function doPM(i){ var p=state.pmTasks[i]; if(!p) return; p.status='done'; showToast('บันทึกการบำรุงรักษา: '+p.task+' ('+p.asset+') เรียบร้อย','success'); }
+function readIdCard(){ state.idRead=true; state.screeningStep=2; state.patientName='นางบุญมา ศรีสุข'; state.patientMeta='อายุ 72 · หมู่ 4'; state.patientId='3-1015-0xxxx-xx-x'; state.patientAddr='15 หมู่ 4 ต.สาธิต'; showToast('อ่านบัตรประชาชนสำเร็จ · ดึงข้อมูลผู้รับบริการอัตโนมัติ','success'); }
+function captureOCR(i){ var ins=state.instruments[i]; if(!ins||state.ocrCapturing) return; state.ocrCapturing=ins.name; render(); setTimeout(function(){ var ri=function(a,b){return Math.round(a+Math.random()*(b-a));}; var m=ins.measures, val=''; if(m.indexOf('น้ำตาล')>=0) val=ri(96,150)+' mg/dL'; else if(m.indexOf('น้ำหนัก')>=0) val=ri(48,72)+' kg'; else if(m.indexOf('อุณหภูมิ')>=0) val=(ri(364,375)/10)+' °C'; else if(m.indexOf('ความดัน')>=0) val=ri(118,142)+'/'+ri(74,92); else val=''+ri(60,120); state.screeningStep=3; state.readings.push({measure:ins.measures, value:val, src:'OCR', instrument:ins.name}); state.ocrCapturing=null; showToast('ถ่ายรูป + อ่านค่าด้วย OCR: '+ins.name+' = '+val,'success'); }, 1600); }
+function captureDigital(i){ var ins=state.instruments[i]; if(!ins) return; var ri=function(a,b){return Math.round(a+Math.random()*(b-a));}; var m=ins.measures, val=''; if(m.indexOf('ความดัน')>=0) val=ri(118,142)+'/'+ri(74,92); else if(m.indexOf('อุณหภูมิ')>=0) val=(ri(364,375)/10)+' °C'; else val=''+ri(60,120); state.screeningStep=3; state.readings.push({measure:ins.measures, value:val, src:'ดิจิทัล', instrument:ins.name}); showToast('อ่านค่าจากเครื่องดิจิทัล: '+ins.name+' = '+val,'success'); }
+function readWatchApi(){ var ri=function(a,b){return Math.round(a+Math.random()*(b-a));}; state.screeningStep=3; state.readings.push({measure:'ชีพจร', value:ri(68,99)+' bpm', src:'API', instrument:'นาฬิกาเฝ้าระวังหัวใจ'}); state.readings.push({measure:'ออกซิเจน', value:ri(94,99)+'%', src:'API', instrument:'นาฬิกาเฝ้าระวังหัวใจ'}); showToast('อ่านข้อมูลจากนาฬิกาผ่าน API เรียบร้อย','success'); }
+function removeReading(i){ state.readings.splice(i,1); render(); }
+function saveScreening(){ if(!state.readings.length){ showToast('ยังไม่มีค่าที่วัด — กรุณาตรวจวัดก่อน','warn'); return; } showToast('บันทึกผลคัดกรอง '+state.readings.length+' รายการเข้าระบบ (แก้ไขไม่ได้) · ส่ง JHCIS แล้ว','success'); state.readings=[]; state.idRead=false; state.screeningStep=1; }
+function resetScreening(){ state.readings=[]; state.idRead=false; state.screeningStep=1; render(); }
+function addInstrument(){ var ne=document.getElementById('in-name'); var name=((ne&&ne.value)||'').trim(); if(!name){ showToast('กรุณากรอกชื่อเครื่องมือ','warn'); return; } var ke=document.getElementById('in-kind'); var kind=(ke&&ke.value)||'analog'; var me=document.getElementById('in-measures'); var measures=((me&&me.value)||'').trim()||'-'; state.instruments.push({name:name, kind:kind, measures:measures}); showToast('เพิ่มเครื่องมือ: '+name,'success'); }
+function removeInstrument(i){ var x=state.instruments[i]; state.instruments.splice(i,1); showToast('นำ '+(x?x.name:'')+' ออกจากชุดเครื่องมือ','warn'); }
+function selectResident(i){ state.selectedResident=i; render(); }
+function backResidents(){ state.selectedResident=null; render(); }
+function refreshWatch(i){ var p=state.residents[i]; if(!p) return; var ri=function(a,b){return Math.round(a+Math.random()*(b-a));}; p.hr=ri(68,99); p.spo2=ri(94,99); showToast('อ่านข้อมูลล่าสุดจากนาฬิกา '+(p.watch||'')+' ผ่าน API เรียบร้อย','success'); }
+function sendMonthlyReport(i){ var p=state.residents[i]; if(!p) return; var msg=p.afib?'ส่ง Monthly Report (รอบ 30 วัน): พบ AF 7 ครั้ง · burden 4.2% · ส่งให้แพทย์ผ่านระบบแล้ว':'ส่ง Monthly Report (รอบ 30 วัน): ไม่พบ AF ในรอบนี้ · ส่งให้แพทย์แล้ว'; showToast(msg,'success'); }
+
+
+
+window.EC = { go, simulateMeasurement, returnDevice, acceptResponder, openMaps, simulateNoResponse, resetEmergency, simulateFall, exportReport, toggleModule, toggleHint:()=>{ state.hintOpen=!state.hintOpen; render(); }, openScan, manualEntry, cancelScan, confirmAddDevice, removeDevice, addRecipient, removeRecipient, moveTier, toggleParallel, testAlert, doPM, readIdCard, captureOCR, captureDigital, readWatchApi, removeReading, saveScreening, resetScreening, addInstrument, removeInstrument, selectResident, backResidents, refreshWatch, sendMonthlyReport };
 
 // ---------- view fragments ----------
 const ic = {
@@ -212,10 +301,17 @@ function sidebar(){
     <nav style="padding:14px 12px; display:flex; flex-direction:column; gap:3px; flex:1; overflow-y:auto;">
       <div style="font-size:11px; font-weight:600; color:#A89F8C; letter-spacing:.5px; padding:6px 10px 4px;">เมนูหลัก</div>
       ${navBtn('dashboard','แดชบอร์ดภาพรวม',ic.dash,true)}
-      ${navBtn('screening','คัดกรองสุขภาพ + ยืม-คืน',ic.screen,m.health)}
+      ${navBtn('residents','ผู้สูงอายุในชุมชน','<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',true)}
+      ${navBtn('screening','คัดกรองสุขภาพ',ic.screen,m.health)}
+      ${navBtn('loan','ยืม-คืนอุปกรณ์','<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M3 21v-5h5"></path>',m.health)}
       ${navBtn('emergency','แจ้งเหตุฉุกเฉิน',ic.alert,m.emergency)}
       ${navBtn('fall','เฝ้าระวังการล้ม',ic.home,m.fall)}
       ${navBtn('report','รายงานเบิกงบ',ic.doc,m.report)}
+      <div style="font-size:11px; font-weight:600; color:#A89F8C; letter-spacing:.5px; padding:14px 10px 4px;">จัดการ</div>
+      ${navBtn('instruments','เครื่องมือวัด (ในกระเป๋า)','<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.1 2.1-2.5-2.5z"></path>',true)}
+      ${navBtn('devices','อุปกรณ์ + จับคู่ QR','<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><line x1="14" y1="14" x2="14" y2="21"></line><line x1="21" y1="14" x2="21" y2="21"></line>',true)}
+      ${navBtn('recipients','ผู้รับการแจ้งเตือน','<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>',true)}
+      ${navBtn('assets','ทรัพย์สิน + บำรุงรักษา','<rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9 12l2 2 4-4"></path>',true)}
       <div style="font-size:11px; font-weight:600; color:#A89F8C; letter-spacing:.5px; padding:14px 10px 4px;">ระบบ</div>
       ${navBtn('settings','ตั้งค่าระบบ',ic.gear,true)}
     </nav>
@@ -229,19 +325,31 @@ function sidebar(){
 
 const TITLES = {
   dashboard:['แดชบอร์ดภาพรวม','สรุปสถานการณ์การดูแลผู้สูงอายุในพื้นที่'],
-  screening:['คัดกรองสุขภาพ + วงจรยืม-คืน','เฝ้าระวัง · บันทึก · คัดกรอง ด้วยอุปกรณ์สวมใส่'],
+  residents:['ผู้สูงอายุในชุมชน','คลิกชื่อเพื่อดูผลการวัด + ข้อมูลนาฬิกา (กราฟ)'],
+  screening:['คัดกรองสุขภาพ','อ่านบัตร → ตรวจวัด → อ่านค่า (OCR / นาฬิกา API)'],
+  loan:['ยืม-คืนอุปกรณ์','วงจรยืม-คืนอุปกรณ์สวมใส่ · หมุนเวียนหลายคน'],
   emergency:['แจ้งเหตุฉุกเฉิน','ห่วงโซ่ผู้ตอบสนอง · บันทึกการดำเนินการ'],
   fall:['เฝ้าระวังการล้ม ตามโซน','ดูแลด้วยความเคารพความเป็นส่วนตัว'],
   report:['รายงานเบิกงบ ADL/LTC + JHCIS','สำหรับกองคลังและการตรวจรับ'],
   settings:['ตั้งค่าระบบ','โมดูลที่เปิดใช้งาน · สิทธิ์ผู้ใช้'],
+  devices:['อุปกรณ์ + จับคู่ด้วย QR','เพิ่ม/ดูแลอุปกรณ์ในพื้นที่'],
+  recipients:['ผู้รับการแจ้งเตือน','เจ้าหน้าที่ + ญาติ · ลำดับการแจ้ง 3 ชั้น'],
+  assets:['ทรัพย์สิน + บำรุงรักษา','สถานะอุปกรณ์ · แบตเตอรี่ · แผนบำรุงรักษา (node + gateway)'],
+  instruments:['เครื่องมือวัด (ในกระเป๋า)','ชุดมาตรฐานของเทศบาล · เพิ่ม-ลดได้'],
 };
 const HINTS = {
   dashboard:'ภาพรวมสำหรับนายก/ปลัด — ตัวเลขสรุปและแจ้งเตือนล่าสุด คลิกที่แถวแจ้งเตือนเพื่อเจาะลงไปยังเคสที่เกี่ยวข้องได้ทันที จุดเน้น: ระบบเป็น “ซอฟต์แวร์” ที่รวมข้อมูลทุกอย่างไว้ที่เดียว',
-  screening:'จุดขาย D1 (ข้อมูลเชื่อถือได้): ค่าวัดเข้าระบบเองจากอุปกรณ์ แก้ไม่ได้ → แก้ปัญหา analog จดมือผิด/มั่วตัวเลข กดปุ่ม “จำลองการวัดใหม่จากนาฬิกา” ให้ผู้ชมเห็นค่าใหม่ไหลเข้ากับตา',
+  residents:'จุดขาย “เห็นรายคน”: คลิกชื่อผู้สูงอายุ → เห็นค่าวัดล่าสุด และดึงคลื่นหัวใจ/แนวโน้มจากนาฬิกามาแสดงเป็นกราฟจริง · ตอบโจทย์การติดตามกลุ่มเสี่ยงรายบุคคล',
+  screening:'อธิบาย flow คัดกรอง: อ่านบัตรประชาชน → ตรวจวัด → อ่านค่า (เครื่อง analog ถ่ายรูป OCR · นาฬิกาอ่านผ่าน API) → บันทึก · ค่าที่ได้แก้ไขไม่ได้ ส่ง JHCIS อัตโนมัติ',
   emergency:'จุดขาย D3 (accountability): รู้ว่าเครื่องไหน · อยู่ที่ไหน · ใครรับเคส — ครบในคลิกเดียว กด “รับเรื่อง” เพื่อปลดล็อกปุ่มนำทาง · พิกัดถูกกลบ ±1 กม. ในโหมดสาธิตเพื่อความเป็นส่วนตัว',
   fall:'จุดเน้น: ดูแล ไม่ใช่จับตา — ห้องน้ำใช้เรดาร์ ไม่มีกล้อง เก็บเฉพาะเหตุการณ์ ไม่บันทึกภาพบุคคล กด “จำลองเหตุล้ม” เพื่อโชว์ flow ล้ม → แจ้งเหตุ → นำทาง',
   report:'ปิดการขายกับกองคลัง — เชื่อม JHCIS ส่งออกรายงานเบิกงบ LTC/กปท. ได้ตามรูปแบบราชการ ตรวจรับได้ กองคลังยอมรับ',
+  loan:'อธิบายวงจรยืม-คืน: อุปกรณ์ 1 เครื่องหมุนเวียนหลายคน ลดต้นทุนต่อหัว · กดปุ่มคืนอุปกรณ์ให้เห็น flow และการขอ consent ใหม่ทุกครั้งที่ส่งมอบ',
+  instruments:'จุดขาย ยืดหยุ่นตามหน้างาน — เทศบาลกำหนดชุดเครื่องมือมาตรฐานเองได้ เครื่อง analog ในกระเป๋าใช้ถ่ายรูป OCR · นาฬิกาอ่านผ่าน API · เพิ่ม-ลดได้ตามที่มีจริง',
   settings:'ขายแบบ “ซื้อเท่าที่ต้องการ” — ปิดโมดูลแล้วเมนูใน sidebar หายจริง และโปร่งใสเรื่องต้นทุนค่าส่งข้อความ LINE/SMS ให้เทศบาลเห็นค่าใช้จ่ายของตัวเอง',
+  devices:'จุดขาย “ง่าย” — เพิ่มอุปกรณ์แค่สแกน QR บนตัวเครื่อง ระบบอ่านรหัสให้เอง แล้วจับคู่กับผู้สูงอายุ + เลือกจุดติดตั้ง เจ้าหน้าที่ทำเองได้ ไม่ต้องช่าง',
+  recipients:'จุดขาย “ไม่ตกหล่น” — กำหนดได้ว่าใครรับแจ้งก่อน-หลัง (อสม./ญาติ → เทศบาล → 1669) ตั้งช่องทาง LINE/SMS/โทร และกดทดสอบแจ้งได้ทันที',
+  assets:'จุดขาย “ดูแลยาว ไม่ขาดช่วง” — เห็นสถานะอุปกรณ์ทุกตัว + ตัวรับกลาง (gateway) แบตเตอรี่ และรอบบำรุงรักษาเชิงป้องกัน · ระบบเตือนล่วงหน้าเมื่อแบตต่ำ/ออฟไลน์/ถึงรอบเปลี่ยน — อุปกรณ์พร้อมใช้เสมอ',
 };
 
 function statCard(label, value, unit, sub, subColor, iconBg, iconStroke, iconPath){
@@ -254,6 +362,23 @@ function statCard(label, value, unit, sub, subColor, iconBg, iconStroke, iconPat
 }
 
 function screenDashboard(){
+  var ds_total = state.devices.length + state.gateways.length;
+  var ds_due = state.pmTasks.filter(function(p){return p.status==='overdue'||p.status==='due';});
+  var ds_up = state.pmTasks.filter(function(p){return p.status==='upcoming';});
+  var ds_pa = {}; ds_due.forEach(function(p){ ds_pa[p.asset]=1; });
+  var ds_pmCount = Object.keys(ds_pa).length;
+  var ds_normal = ds_total - ds_pmCount; if(ds_normal<0) ds_normal=0;
+  var ds_badge = { overdue:['เลยกำหนด','#C0492F','#F8E5DF'], due:['ถึงกำหนด','#B5851A','#FBEFD6'], upcoming:['ตามแผน','#8C8576','#F1ECDF'] };
+  var ds_row = function(p){ var b=ds_badge[p.status]||ds_badge.upcoming; return '<div style="display:flex; align-items:center; gap:12px; padding:10px 20px; border-top:1px solid #F4F0E6;"><span style="font-size:13px; font-weight:700; color:#1F6B4C; min-width:74px;">'+esc(p.asset)+'</span><span style="flex:1; min-width:0; font-size:13px; color:#3A3631;">'+esc(p.task)+'</span><span style="font-size:12px; color:#9A927F;">'+esc(p.due)+'</span><span style="font-size:11px; font-weight:600; color:'+b[1]+'; background:'+b[2]+'; padding:3px 9px; border-radius:999px; white-space:nowrap;">'+b[0]+'</span></div>'; };
+  var ds_dueHtml = ds_due.length ? ds_due.map(ds_row).join('') : '<div style="padding:12px 20px; font-size:13px; color:#1F6B4C;">อุปกรณ์ทุกตัวพร้อมใช้งาน — ไม่มีค้าง</div>';
+  var ds_upHtml = ds_up.length ? ('<div style="padding:10px 20px 4px; font-size:12px; font-weight:600; color:#8C8576;">แผนที่จะถึง</div>'+ds_up.map(ds_row).join('')) : '';
+  var deviceStatusPanel = '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden; margin-bottom:22px;">'
+    + '<div style="padding:16px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between;"><span style="font-size:15px; font-weight:700;">สถานะอุปกรณ์ในพื้นที่</span><button onclick="EC.go(\'assets\')" style="font-size:12.5px; font-weight:600; color:#1F6B4C; background:transparent; border:none; cursor:pointer;">ดูแผนบำรุงรักษาทั้งหมด →</button></div>'
+    + '<div style="display:grid; grid-template-columns:190px 1fr;">'
+    + '<div style="padding:18px 20px; border-right:1px solid #F2EEE2; display:flex; flex-direction:column; gap:14px;"><div><div style="font-size:26px; font-weight:700; color:#1F6B4C;">'+ds_normal+'<span style="font-size:14px; color:#9A927F; font-weight:500;">/'+ds_total+'</span></div><div style="font-size:12.5px; color:#6E6757;">ทำงานปกติ</div></div><div><div style="font-size:26px; font-weight:700; color:'+(ds_pmCount?'#C0492F':'#1F6B4C')+';">'+ds_pmCount+'</div><div style="font-size:12.5px; color:#6E6757;">ต้องบำรุงรักษา</div></div></div>'
+    + '<div style="padding:6px 0 10px; min-width:0;"><div style="padding:8px 20px 2px; font-size:12px; font-weight:600; color:#8C8576;">ต้องทำตอนนี้</div>'+ds_dueHtml+ds_upHtml+'</div>'
+    + '</div></div>';
+
   const alerts = [
     ['emergency','#C0492F','นายสมชาย กดปุ่มฉุกเฉิน','หมู่ 2 · อุปกรณ์ #LR-2071','ฉุกเฉิน','#C0492F','#F8E5DF','14:32'],
     ['fall','#E0A526','ตรวจพบการเคลื่อนไหวผิดปกติ ห้องน้ำ','นางบุญมา · หมู่ 4','เฝ้าระวัง','#B5851A','#FBEFD6','13:08'],
@@ -273,6 +398,7 @@ function screenDashboard(){
       ${statCard('แจ้งเตือนวันนี้','5','ครั้ง','ฉุกเฉิน 1 · เฝ้าระวัง 4','#C0492F','#F6DFD9','#C0492F','<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>')}
       ${statCard('อุปกรณ์ที่กำลังยืม','18<span style="font-size:16px;font-weight:500;color:#9A927F">/25</span>','เครื่อง','ว่างพร้อมจ่าย 7 เครื่อง','#8C8576','#E8F1EC','#1F6B4C','<circle cx="12" cy="12" r="7"></circle><polyline points="12 9 12 12 13.5 13.5"></polyline>')}
     </div>
+    ${deviceStatusPanel}
     <div style="display:grid; grid-template-columns:1.15fr 1fr; gap:16px;">
       <div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">
         <div style="padding:16px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between;"><span style="font-size:15px; font-weight:700;">แจ้งเตือนล่าสุด</span><span style="font-size:12px; color:#9A927F;">คลิกเพื่อเปิดเคส</span></div>
@@ -487,13 +613,284 @@ function screenSettings(){
   </div></div>`;
 }
 
+function screenDevices(){
+  var typeColor = function(t){ return t.indexOf('ล้ม')>=0?'#B5851A': (t.indexOf('หัวใจ')>=0?'#C0492F':'#1F6B4C'); };
+  var rows = state.devices.map(function(d,i){ return '<tr style="border-top:1px solid #F2EEE2;">'
+    + '<td style="padding:12px 18px; font-size:13.5px; font-weight:700; color:#1F6B4C;">'+esc(d.code)+'</td>'
+    + '<td style="padding:12px 12px; font-size:13px;"><span style="color:'+typeColor(d.type)+'; font-weight:600;">'+esc(d.type)+'</span></td>'
+    + '<td style="padding:12px 12px; font-size:13px;">'+esc(d.owner)+'</td>'
+    + '<td style="padding:12px 12px; font-size:13px;">'+esc(d.loc)+'</td>'
+    + '<td style="padding:12px 12px; font-size:12.5px;"><span style="color:#1F6B4C;">● </span>'+esc(d.sig)+' · แบต '+esc(d.batt)+'</td>'
+    + '<td style="padding:12px 18px; text-align:center;"><button onclick="EC.removeDevice('+i+')" style="font-size:12px; color:#C0492F; background:transparent; border:none; cursor:pointer; text-decoration:underline;">นำออก</button></td></tr>'; }).join('');
+  var panel='';
+  if(state.scanPhase==='scanning'){
+    var corners=['top:18px;left:18px','top:18px;right:18px','bottom:18px;left:18px','bottom:18px;right:18px'].map(function(p){ return '<div style="position:absolute; '+p+'; width:26px; height:26px; border:3px solid #7FE0B6; '+(p.indexOf('top')>=0?'border-bottom:none;':'border-top:none;')+' '+(p.indexOf('left')>=0?'border-right:none;':'border-left:none;')+' border-radius:4px;"></div>'; }).join('');
+    panel = '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:24px; text-align:center;">'
+      + '<div style="font-size:15px; font-weight:700; margin-bottom:14px;">กำลังสแกน QR บนตัวอุปกรณ์…</div>'
+      + '<div style="position:relative; width:210px; height:210px; margin:0 auto; border-radius:18px; background:#0E2A20; overflow:hidden;">'
+      + '<div style="position:absolute; inset:26px; border:2px solid rgba(255,255,255,0.25); border-radius:12px;"></div>'
+      + '<div style="position:absolute; left:26px; right:26px; top:26px; height:3px; background:#7FE0B6; box-shadow:0 0 12px #7FE0B6; animation:ec-scan 1.4s ease-in-out infinite;"></div>'
+      + corners + '</div>'
+      + '<button onclick="EC.cancelScan()" style="margin-top:18px; font-size:13px; color:#9A927F; background:transparent; border:none; cursor:pointer; text-decoration:underline;">ยกเลิก</button></div>';
+  } else if(state.scanPhase==='detected'){
+    var ownerOpts=['นางบุญมา ศรีสุข','นายสมชาย รุ่งเรือง','นายทองดี แก้วมณี','นางสมพร ทองคำ'].map(function(o){return '<option>'+o+'</option>';}).join('');
+    var typeOpts=['เซนเซอร์จับการล้ม','นาฬิกาเฝ้าระวังหัวใจ','ปุ่มขอความช่วยเหลือ','กล้องพื้นที่ส่วนกลาง'].map(function(o){return '<option>'+o+'</option>';}).join('');
+    var locOpts=['ห้องน้ำ','ห้องนอน','ห้องนั่งเล่น','พื้นที่ส่วนกลาง','สวมข้อมือ'].map(function(o){return '<option>'+o+'</option>';}).join('');
+    var head = state.scanCode ? ('อ่านรหัสอุปกรณ์ได้: '+state.scanCode) : 'กรอกรหัสอุปกรณ์เอง';
+    panel = '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:22px;">'
+      + '<div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">'+svg('<path d="M20 6 9 17l-5-5"></path>','#1F6B4C',18,2.2)+'<span style="font-size:15px; font-weight:700; color:#1F6B4C;">'+head+'</span></div>'
+      + '<div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">'
+      + '<label style="font-size:12.5px; color:#8C8576;">รหัสอุปกรณ์<input id="dv-code" value="'+esc(state.scanCode)+'" placeholder="#LR-xxxx" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;"></label>'
+      + '<label style="font-size:12.5px; color:#8C8576;">ชนิดอุปกรณ์<select id="dv-type" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;">'+typeOpts+'</select></label>'
+      + '<label style="font-size:12.5px; color:#8C8576;">จับคู่กับผู้สูงอายุ<select id="dv-owner" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;">'+ownerOpts+'</select></label>'
+      + '<label style="font-size:12.5px; color:#8C8576;">จุดติดตั้ง<select id="dv-loc" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;">'+locOpts+'</select></label>'
+      + '</div>'
+      + '<div style="display:flex; gap:10px; margin-top:18px;">'
+      + '<button class="pribtn" onclick="EC.confirmAddDevice()" style="display:inline-flex; align-items:center; gap:8px; background:#1F6B4C; color:#fff; border:none; border-radius:10px; padding:10px 18px; font-size:14px; font-weight:600; cursor:pointer;">'+svg('<path d="M20 6 9 17l-5-5"></path>','#fff',16,2)+'ทดสอบเชื่อมต่อ + เพิ่มอุปกรณ์</button>'
+      + '<button onclick="EC.cancelScan()" style="font-size:13px; color:#9A927F; background:transparent; border:none; cursor:pointer;">ยกเลิก</button></div></div>';
+  } else {
+    panel = '<div style="background:linear-gradient(135deg,#1F6B4C,#15543B); border-radius:12px; padding:22px; color:#fff; display:flex; align-items:center; gap:18px; flex-wrap:wrap;">'
+      + '<div style="flex:1; min-width:220px;"><div style="font-size:16px; font-weight:700; margin-bottom:4px;">เพิ่มอุปกรณ์ใหม่</div><div style="font-size:13px; color:rgba(255,255,255,0.85); line-height:1.5;">แค่สแกน QR บนตัวเครื่อง ระบบอ่านรหัสให้เอง แล้วจับคู่กับผู้สูงอายุ</div></div>'
+      + '<button class="pribtn" onclick="EC.openScan()" style="display:inline-flex; align-items:center; gap:9px; background:#fff; color:#1F6B4C; border:none; border-radius:10px; padding:12px 20px; font-size:14.5px; font-weight:700; cursor:pointer;">'+svg('<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><line x1="14" y1="14" x2="14" y2="21"></line><line x1="21" y1="14" x2="21" y2="21"></line>','#1F6B4C',19,1.9)+'สแกน QR เพิ่มอุปกรณ์</button>'
+      + '<button onclick="EC.manualEntry()" style="background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.4); border-radius:10px; padding:12px 16px; font-size:13.5px; font-weight:600; cursor:pointer;">กรอกรหัสเอง</button></div>';
+  }
+  return '<div><div style="margin-bottom:16px;">'+panel+'</div>'
+    + '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">'
+    + '<div style="padding:15px 18px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between;"><span style="font-size:15px; font-weight:700;">อุปกรณ์ในพื้นที่ ('+state.devices.length+')</span><span style="font-size:12px; color:#9A927F;">ออนไลน์ทั้งหมด</span></div>'
+    + '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; min-width:680px;"><thead><tr style="background:#FAF7F0;"><th style="text-align:left; padding:11px 18px; font-size:12px; font-weight:600; color:#8C8576;">รหัส</th><th style="text-align:left; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">ชนิด</th><th style="text-align:left; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">จับคู่กับ</th><th style="text-align:left; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">จุดติดตั้ง</th><th style="text-align:left; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">สถานะ</th><th style="text-align:center; padding:11px 18px; font-size:12px; font-weight:600; color:#8C8576;"></th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+}
+
+function screenRecipients(){
+  var chChip = function(c){ return '<span style="font-size:10.5px; font-weight:600; color:#1F6B4C; background:#E5F0EA; padding:2px 7px; border-radius:999px;">'+c+'</span>'; };
+  var tierLabel = { 1:'ชั้น 1 · ด่านแรก (อสม./ญาติ)', 2:'ชั้น 2 · เทศบาล / รพ.สต.', 3:'ชั้น 3 · กู้ชีพ 1669' };
+  var tierBlocks = [1,2,3].map(function(tt){
+    var items = state.recipients.map(function(r,i){return {r:r,i:i};}).filter(function(x){return x.r.tier===tt;});
+    var cards = items.length ? items.map(function(x){
+      var r=x.r, i=x.i;
+      var kindTag = r.kind==='family' ? '<span style="font-size:10.5px; font-weight:600; color:#B5851A; background:#FBEFD6; padding:2px 7px; border-radius:999px;">ญาติ</span>' : '<span style="font-size:10.5px; font-weight:600; color:#1F6B4C; background:#E5F0EA; padding:2px 7px; border-radius:999px;">เจ้าหน้าที่</span>';
+      return '<div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-top:1px solid #F2EEE2;">'
+        + '<div style="flex:1; min-width:0;"><div style="font-size:13.5px; font-weight:700;">'+esc(r.role)+' '+esc(r.name)+' '+kindTag+'</div><div style="margin-top:4px; display:flex; gap:5px; flex-wrap:wrap;">'+r.ch.map(chChip).join('')+'</div></div>'
+        + '<button onclick="EC.moveTier('+i+',-1)" style="font-size:15px; color:'+(tt===1?'#D8D0BE':'#1F6B4C')+'; background:transparent; border:none; cursor:'+(tt===1?'default':'pointer')+';">▲</button>'
+        + '<button onclick="EC.moveTier('+i+',1)" style="font-size:15px; color:'+(tt===3?'#D8D0BE':'#1F6B4C')+'; background:transparent; border:none; cursor:'+(tt===3?'default':'pointer')+';">▼</button>'
+        + '<button onclick="EC.removeRecipient('+i+')" style="font-size:12px; color:#C0492F; background:transparent; border:none; cursor:pointer; text-decoration:underline;">ลบ</button></div>';
+    }).join('') : '<div style="padding:14px; font-size:12.5px; color:#B0A892;">— ยังไม่มีผู้รับในชั้นนี้ —</div>';
+    return '<div style="border:1px solid #ECE7DB; border-radius:12px; overflow:hidden; margin-bottom:12px;"><div style="padding:11px 14px; background:#FAF7F0; font-size:13px; font-weight:700; color:#3A3631;">'+tierLabel[tt]+'</div>'+cards+'</div>';
+  }).join('');
+  var parBg = state.parallelFamily?'#1F6B4C':'#D8D0BE';
+  var parX = state.parallelFamily?'20px':'2px';
+  return '<div style="display:grid; grid-template-columns:1fr 340px; gap:16px; align-items:start;">'
+    + '<div>'
+    + '<div style="background:#EAF3EE; border:1px solid #C7E0D2; border-radius:12px; padding:13px 16px; margin-bottom:14px; font-size:13px; color:#1A5A3F; line-height:1.5;"><b>ลำดับการแจ้ง 3 ชั้น</b> — ถ้าไม่มีผู้รับใน '+state.timeoutMin+' นาที ระบบเลื่อนไปชั้นถัดไปอัตโนมัติ · ใช้ปุ่ม ▲▼ เพื่อย้ายชั้น</div>'
+    + tierBlocks
+    + '<div style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:14px 18px; margin-top:4px;">'
+    + '<div><div style="font-size:13.5px; font-weight:700;">ครอบครัวรู้คู่ขนานทุกชั้น</div><div style="font-size:12px; color:#9A927F;">แจ้งญาติพร้อมกันเสมอ ไม่ต้องรอเลื่อนชั้น</div></div>'
+    + '<button onclick="EC.toggleParallel()" style="width:44px; height:26px; border-radius:999px; border:none; cursor:pointer; position:relative; flex-shrink:0; background:'+parBg+';"><span style="position:absolute; top:2px; left:'+parX+'; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:left .2s;"></span></button>'
+    + '</div></div>'
+    + '<div style="display:flex; flex-direction:column; gap:16px;">'
+    + '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">'
+    + '<div style="font-size:15px; font-weight:700; margin-bottom:14px;">เพิ่มผู้รับการแจ้งเตือน</div>'
+    + '<div style="display:flex; flex-direction:column; gap:11px;">'
+    + '<label style="font-size:12.5px; color:#8C8576;">ประเภท<select id="rc-kind" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;"><option value="staff">เจ้าหน้าที่</option><option value="family">ญาติ</option></select></label>'
+    + '<label style="font-size:12.5px; color:#8C8576;">ชื่อ-สกุล<input id="rc-name" placeholder="เช่น สมหญิง พุ่มพวง" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;"></label>'
+    + '<label style="font-size:12.5px; color:#8C8576;">ตำแหน่ง / ความสัมพันธ์<input id="rc-role" placeholder="เช่น อสม. / บุตรสาว" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;"></label>'
+    + '<label style="font-size:12.5px; color:#8C8576;">แจ้งในชั้นที่<select id="rc-tier" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;"><option value="1">ชั้น 1 · ด่านแรก</option><option value="2">ชั้น 2 · เทศบาล/รพ.สต.</option><option value="3">ชั้น 3 · กู้ชีพ</option></select></label>'
+    + '<div style="font-size:12.5px; color:#8C8576;">ช่องทางแจ้ง<div style="display:flex; gap:14px; margin-top:7px;">'
+    + '<label style="font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" id="rc-ch-LINE" checked> LINE</label>'
+    + '<label style="font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" id="rc-ch-SMS"> SMS</label>'
+    + '<label style="font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" id="rc-ch-โทร"> โทร</label>'
+    + '</div></div>'
+    + '<label style="font-size:12px; color:#8C8576; display:flex; align-items:flex-start; gap:7px; cursor:pointer; line-height:1.4;"><input type="checkbox" id="rc-consent" style="margin-top:2px;"> ยืนยันได้รับความยินยอมให้รับข้อมูลสุขภาพ (สำหรับญาติ · PDPA)</label>'
+    + '<button class="pribtn" onclick="EC.addRecipient()" style="margin-top:4px; display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#1F6B4C; color:#fff; border:none; border-radius:10px; padding:11px; font-size:14px; font-weight:600; cursor:pointer;">'+svg('<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>','#fff',16,2)+'เพิ่มเข้ารายชื่อ</button>'
+    + '</div></div>'
+    + '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;">'
+    + '<div style="font-size:14px; font-weight:700; margin-bottom:6px;">ทดสอบการแจ้งเตือน</div>'
+    + '<div style="font-size:12px; color:#9A927F; margin-bottom:13px;">ยิงแจ้งทดสอบหาผู้รับผิดชอบทุกคน เพื่อยืนยันว่าตั้งค่าถูก</div>'
+    + '<button onclick="EC.testAlert()" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#fff; color:#1F6B4C; border:1.5px solid #1F6B4C; border-radius:10px; padding:11px; font-size:14px; font-weight:600; cursor:pointer;">'+svg('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>','#1F6B4C',16,1.9)+'ส่งแจ้งทดสอบ</button>'
+    + '</div></div></div>';
+}
+
+function screenAssets(){
+  var nodes = state.devices;
+  var bnum = function(s){ var n=parseInt(s,10); return isNaN(n)?100:n; };
+  var bcol = function(n){ return n>=50?'#1F6B4C':(n>=30?'#B5851A':'#C0492F'); };
+  var totalAssets = nodes.length + state.gateways.length;
+  var lowBatt = nodes.filter(function(d){return bnum(d.batt)<30;}).length + state.gateways.filter(function(g){return g.batt<30;}).length;
+  var offline = nodes.filter(function(d){return !d.online;}).length + state.gateways.filter(function(g){return !g.online;}).length;
+  var pmDue = state.pmTasks.filter(function(p){return p.status==='overdue'||p.status==='due';}).length;
+
+  function card(label,value,sub,subCol){ return '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:16px 18px;"><div style="font-size:12.5px; color:#8C8576;">'+label+'</div><div style="font-size:28px; font-weight:700; margin-top:4px;">'+value+'</div><div style="font-size:12px; color:'+subCol+'; margin-top:4px;">'+sub+'</div></div>'; }
+  var summary = '<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;">'
+    + card('อุปกรณ์ทั้งหมด', totalAssets, nodes.length+' node · '+state.gateways.length+' gateway', '#8C8576')
+    + card('ออนไลน์', (totalAssets-offline)+'/'+totalAssets, offline===0?'พร้อมใช้งานทั้งหมด':'ออฟไลน์ '+offline, offline===0?'#1F6B4C':'#C0492F')
+    + card('แบตเตอรี่ต่ำ', lowBatt, lowBatt===0?'ไม่มีที่ต้องเปลี่ยน':'ต้องเปลี่ยน/ชาร์จ', lowBatt===0?'#1F6B4C':'#C0492F')
+    + card('ถึงรอบบำรุงรักษา', pmDue, pmDue===0?'ไม่มีค้าง':'รอดำเนินการ', pmDue===0?'#1F6B4C':'#B5851A')
+    + '</div>';
+
+  var gw = state.gateways.map(function(g){
+    return '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:16px 18px;">'
+      + '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;"><div><div style="font-size:14.5px; font-weight:700;">'+esc(g.name)+'</div><div style="font-size:12px; color:#9A927F;">'+esc(g.code)+' · '+esc(g.power)+'</div></div><span style="font-size:11px; font-weight:600; color:#1F6B4C; background:#E5F0EA; padding:4px 10px; border-radius:999px;">'+(g.online?'ออนไลน์':'ออฟไลน์')+'</span></div>'
+      + '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">'
+      + '<div style="padding:10px; background:#F0F7F3; border-radius:9px; text-align:center;"><div style="font-size:17px; font-weight:700; color:'+bcol(g.batt)+';">'+g.batt+'%</div><div style="font-size:11px; color:#6E6757;">แบตสำรอง</div></div>'
+      + '<div style="padding:10px; background:#F0F7F3; border-radius:9px; text-align:center;"><div style="font-size:17px; font-weight:700; color:#1F6B4C;">'+g.nodes+'</div><div style="font-size:11px; color:#6E6757;">node ที่เชื่อม</div></div>'
+      + '<div style="padding:10px; background:#F0F7F3; border-radius:9px; text-align:center;"><div style="font-size:17px; font-weight:700; color:#1F6B4C;">'+g.uptime+'</div><div style="font-size:11px; color:#6E6757;">uptime</div></div>'
+      + '</div></div>';
+  }).join('');
+  var gwSection = '<div style="font-size:14px; font-weight:700; margin:4px 0 10px; color:#3A3631;">ตัวรับกลาง (Gateway)</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px;">'+gw+'</div>';
+
+  var nrows = nodes.map(function(d){
+    var n=bnum(d.batt); var pm=state.pmNext[d.code]||'—';
+    return '<tr style="border-top:1px solid #F2EEE2;">'
+      + '<td style="padding:11px 18px; font-size:13px; font-weight:700; color:#1F6B4C;">'+esc(d.code)+'</td>'
+      + '<td style="padding:11px 12px; font-size:12.5px;">'+esc(d.type)+'</td>'
+      + '<td style="padding:11px 12px; font-size:12.5px;">'+esc(d.owner)+' · '+esc(d.loc)+'</td>'
+      + '<td style="padding:11px 12px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:54px; height:7px; background:#EEE9DD; border-radius:99px; overflow:hidden;"><div style="width:'+n+'%; height:100%; background:'+bcol(n)+';"></div></div><span style="font-size:12px; font-weight:600; color:'+bcol(n)+';">'+n+'%</span></div></td>'
+      + '<td style="padding:11px 12px; font-size:12px;"><span style="color:'+(d.online?'#1F6B4C':'#C0492F')+';">● </span>'+(d.online?'ออนไลน์':'ออฟไลน์')+'</td>'
+      + '<td style="padding:11px 18px; font-size:12.5px;">'+pm+'</td></tr>';
+  }).join('');
+  var nodeSection = '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden; margin-bottom:20px;">'
+    + '<div style="padding:14px 18px; border-bottom:1px solid #F0EBDE; font-size:15px; font-weight:700;">อุปกรณ์ปลายทาง (Node)</div>'
+    + '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; min-width:720px;"><thead><tr style="background:#FAF7F0;"><th style="text-align:left; padding:10px 18px; font-size:12px; font-weight:600; color:#8C8576;">รหัส</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">ชนิด</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">จับคู่ / ที่ตั้ง</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">แบตเตอรี่</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">สถานะ</th><th style="text-align:left; padding:10px 18px; font-size:12px; font-weight:600; color:#8C8576;">บำรุงรักษาถัดไป</th></tr></thead><tbody>'+nrows+'</tbody></table></div></div>';
+
+  var pmBadge = { overdue:['เลยกำหนด','#C0492F','#F8E5DF'], due:['ถึงกำหนด','#B5851A','#FBEFD6'], upcoming:['กำลังจะถึง','#8C8576','#F1ECDF'], done:['ทำแล้ว','#1F6B4C','#E5F0EA'] };
+  var prows = state.pmTasks.map(function(p,i){
+    var b=pmBadge[p.status]||pmBadge.upcoming;
+    var action = p.status==='done'
+      ? '<span style="font-size:12px; color:#1F6B4C;">✓ เสร็จสิ้น</span>'
+      : '<button onclick="EC.doPM('+i+')" style="font-size:12.5px; font-weight:600; color:#1F6B4C; background:#fff; border:1.5px solid #1F6B4C; border-radius:8px; padding:6px 12px; cursor:pointer;">บันทึกว่าทำแล้ว</button>';
+    return '<tr style="border-top:1px solid #F2EEE2;">'
+      + '<td style="padding:12px 18px; font-size:13px; font-weight:700; color:#1F6B4C;">'+esc(p.asset)+'</td>'
+      + '<td style="padding:12px 12px; font-size:13px;">'+esc(p.task)+'</td>'
+      + '<td style="padding:12px 12px; font-size:13px;">'+esc(p.due)+'</td>'
+      + '<td style="padding:12px 12px;"><span style="font-size:11.5px; font-weight:600; color:'+b[1]+'; background:'+b[2]+'; padding:3px 10px; border-radius:999px;">'+b[0]+'</span></td>'
+      + '<td style="padding:12px 18px; text-align:right;">'+action+'</td></tr>';
+  }).join('');
+  var pmSection = '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">'
+    + '<div style="padding:14px 18px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between;"><span style="font-size:15px; font-weight:700;">แผนบำรุงรักษาเชิงป้องกัน (Preventive Maintenance)</span><span style="font-size:12px; color:#9A927F;">ระบบเตือนล่วงหน้าอัตโนมัติ</span></div>'
+    + '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; min-width:660px;"><thead><tr style="background:#FAF7F0;"><th style="text-align:left; padding:10px 18px; font-size:12px; font-weight:600; color:#8C8576;">อุปกรณ์</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">รายการ</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">กำหนด</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">สถานะ</th><th style="text-align:right; padding:10px 18px; font-size:12px; font-weight:600; color:#8C8576;"></th></tr></thead><tbody>'+prows+'</tbody></table></div>'
+    + '<div style="padding:12px 18px; border-top:1px solid #F2EEE2; background:#FBF9F3; font-size:12.5px; color:#9A927F;">เมื่อแบตต่ำ · ออฟไลน์เกินกำหนด · หรือถึงรอบบำรุงรักษา ระบบจะแจ้งเตือนเจ้าหน้าที่ให้ดำเนินการล่วงหน้า</div></div>';
+
+  return '<div>'+summary+gwSection+nodeSection+pmSection+'</div>';
+}
+
+function screenScreeningNew(){
+  var sp=''; ['อ่านบัตรประชาชน','ตรวจวัด','อ่านค่า + บันทึก'].forEach(function(l,idx){ var n=idx+1; if(idx>0){ sp+='<div style="flex:1; height:2px; background:'+(state.screeningStep>idx?'#1F6B4C':'#E3DDCE')+'; margin:0 8px 20px;"></div>'; } var on=state.screeningStep>=n; sp+='<div style="display:flex; flex-direction:column; align-items:center; gap:7px; flex:0 0 auto;"><div style="width:36px; height:36px; border-radius:50%; background:'+(on?'#1F6B4C':'#E3DDCE')+'; color:'+(on?'#fff':'#9A927F')+'; display:flex; align-items:center; justify-content:center; font-weight:700;">'+n+'</div><span style="font-size:12.5px; font-weight:600; color:'+(on?'#1F6B4C':'#9A927F')+';">'+l+'</span></div>'; });
+  var stepper='<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:18px 24px; margin-bottom:16px;"><div style="display:flex; align-items:center;">'+sp+'</div></div>';
+
+  var idPanel;
+  if(!state.idRead){
+    idPanel='<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:28px; text-align:center;">'
+      +'<div style="width:64px; height:64px; border-radius:14px; background:#E8F1EC; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">'+svg('<rect x="2" y="5" width="20" height="14" rx="2"></rect><circle cx="8" cy="12" r="2.4"></circle><line x1="13" y1="10" x2="18" y2="10"></line><line x1="13" y1="14" x2="18" y2="14"></line>','#1F6B4C',30,1.8)+'</div>'
+      +'<div style="font-size:16px; font-weight:700; margin-bottom:4px;">เริ่มคัดกรอง — แตะบัตรประชาชนผู้รับบริการ</div>'
+      +'<div style="font-size:13px; color:#9A927F; margin-bottom:18px;">ระบบดึงชื่อ-สกุล อายุ และที่อยู่อัตโนมัติ ไม่ต้องกรอกมือ</div>'
+      +'<button class="pribtn" onclick="EC.readIdCard()" style="display:inline-flex; align-items:center; gap:9px; background:#1F6B4C; color:#fff; border:none; border-radius:10px; padding:12px 22px; font-size:14.5px; font-weight:700; cursor:pointer;">'+svg('<rect x="2" y="5" width="20" height="14" rx="2"></rect><circle cx="8" cy="12" r="2.4"></circle>','#fff',18,1.9)+'อ่านบัตรประชาชน</button></div>';
+  } else {
+    idPanel='<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:18px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:16px;">'
+      +'<div style="width:52px; height:52px; border-radius:50%; background:#E8F1EC; color:#1F6B4C; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px;">'+esc(state.patientName.charAt(0))+'</div>'
+      +'<div style="flex:1; min-width:180px;"><div style="font-size:16px; font-weight:700;">'+esc(state.patientName)+'</div><div style="font-size:12.5px; color:#9A927F;">'+esc(state.patientMeta)+' · เลขบัตร '+esc(state.patientId)+' · '+esc(state.patientAddr)+'</div></div>'
+      +'<span style="font-size:11.5px; font-weight:600; color:#1F6B4C; background:#E1EFE7; padding:5px 12px; border-radius:999px;">อ่านบัตรแล้ว</span>'
+      +'<button onclick="EC.resetScreening()" style="font-size:12.5px; color:#9A927F; background:transparent; border:none; cursor:pointer; text-decoration:underline;">เริ่มรายใหม่</button></div>';
+  }
+  if(!state.idRead) return '<div>'+stepper+idPanel+'</div>';
+  if(state.ocrCapturing){ var oc=['top:14px;left:14px','top:14px;right:14px','bottom:36px;left:14px','bottom:36px;right:14px'].map(function(p){ return '<div style="position:absolute; '+p+'; width:24px; height:24px; border:3px solid #7FE0B6; '+(p.indexOf('top')>=0?'border-bottom:none;':'border-top:none;')+' '+(p.indexOf('left')>=0?'border-right:none;':'border-left:none;')+' border-radius:3px;"></div>'; }).join(''); var capFrame='<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:26px; text-align:center;"><div style="font-size:15px; font-weight:700; margin-bottom:4px;">กำลังถ่ายรูป + อ่านค่า (OCR)…</div><div style="font-size:13px; color:#9A927F; margin-bottom:16px;">'+esc(state.ocrCapturing)+'</div><div style="position:relative; width:280px; height:190px; margin:0 auto; border-radius:14px; background:#0E2A20; overflow:hidden;"><div style="position:absolute; inset:22px; border:2px dashed rgba(255,255,255,0.28); border-radius:10px;"></div><div style="position:absolute; left:22px; right:22px; top:22px; height:3px; background:#7FE0B6; box-shadow:0 0 12px #7FE0B6; animation:ec-scan2 1.3s ease-in-out infinite;"></div>'+oc+'<div style="position:absolute; bottom:12px; left:0; right:0; text-align:center; font-size:12px; color:#9FE1CB;">โฟกัสที่หน้าปัดเครื่องมือ…</div></div></div>'; return '<div>'+stepper+idPanel+capFrame+'</div>'; }
+
+  var kindChip=function(k){ return k==='analog'?'<span style="font-size:10.5px; font-weight:600; color:#B5851A; background:#FBEFD6; padding:2px 8px; border-radius:999px;">อนาล็อก · ถ่ายรูป OCR</span>':(k==='watch'?'<span style="font-size:10.5px; font-weight:600; color:#1F6B4C; background:#E5F0EA; padding:2px 8px; border-radius:999px;">นาฬิกา · API</span>':'<span style="font-size:10.5px; font-weight:600; color:#185A40; background:#E5F0EA; padding:2px 8px; border-radius:999px;">ดิจิทัล</span>'); };
+  var insRows=state.instruments.map(function(ins,i){ var btn;
+    if(ins.kind==='analog') btn='<button class="pribtn" onclick="EC.captureOCR('+i+')" style="display:inline-flex; align-items:center; gap:7px; background:#1F6B4C; color:#fff; border:none; border-radius:9px; padding:8px 13px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">'+svg('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle>','#fff',15,1.9)+'ถ่ายรูป + OCR</button>';
+    else if(ins.kind==='watch') btn='<button class="pribtn" onclick="EC.readWatchApi()" style="display:inline-flex; align-items:center; gap:7px; background:#1F6B4C; color:#fff; border:none; border-radius:9px; padding:8px 13px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">'+svg('<rect x="6" y="6" width="12" height="12" rx="3"></rect><path d="M9 2h6"></path><path d="M9 22h6"></path>','#fff',15,1.9)+'อ่านผ่าน API</button>';
+    else btn='<button onclick="EC.captureDigital('+i+')" style="display:inline-flex; align-items:center; gap:7px; background:#fff; color:#1F6B4C; border:1.5px solid #1F6B4C; border-radius:9px; padding:8px 13px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">อ่านค่า</button>';
+    return '<div style="display:flex; align-items:center; gap:12px; padding:12px 16px; border-top:1px solid #F2EEE2;"><div style="flex:1; min-width:0;"><div style="font-size:13.5px; font-weight:600;">'+esc(ins.name)+'</div><div style="margin-top:3px; display:flex; align-items:center; gap:7px; flex-wrap:wrap;">'+kindChip(ins.kind)+'<span style="font-size:11.5px; color:#9A927F;">วัด: '+esc(ins.measures)+'</span></div></div>'+btn+'</div>'; }).join('');
+  var insCard='<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">'
+    +'<div style="padding:14px 16px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between;"><span style="font-size:14.5px; font-weight:700;">เครื่องมือในกระเป๋า (มาตรฐานเทศบาล)</span><button onclick="EC.go(\'instruments\')" style="font-size:12px; font-weight:600; color:#1F6B4C; background:transparent; border:none; cursor:pointer;">จัดการเครื่องมือ →</button></div>'+insRows+'</div>';
+
+  var srcChip=function(s){ var c=s==='OCR'?['ถ่ายรูป OCR','#B5851A','#FBEFD6']:(s==='API'?['นาฬิกา API','#1F6B4C','#E5F0EA']:['ดิจิทัล','#185A40','#E5F0EA']); return '<span style="font-size:10.5px; font-weight:600; color:'+c[1]+'; background:'+c[2]+'; padding:2px 8px; border-radius:999px;">'+c[0]+'</span>'; };
+  var rrows=state.readings.length? state.readings.map(function(r,i){ return '<tr style="border-top:1px solid #F2EEE2;"><td style="padding:11px 16px; font-size:13px;">'+esc(r.measure)+'</td><td style="padding:11px 12px; font-size:14px; font-weight:700;">'+esc(r.value)+'</td><td style="padding:11px 12px;">'+srcChip(r.src)+'</td><td style="padding:11px 12px; font-size:12px; color:#9A927F;">'+esc(r.instrument)+'</td><td style="padding:11px 16px; text-align:center;"><button onclick="EC.removeReading('+i+')" style="font-size:12px; color:#C0492F; background:transparent; border:none; cursor:pointer;">ลบ</button></td></tr>'; }).join('') : '<tr><td colspan="5" style="padding:18px; text-align:center; font-size:13px; color:#B0A892;">ยังไม่มีค่าที่วัด — เลือกเครื่องมือด้านบนเพื่อตรวจวัด</td></tr>';
+  var resCard='<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">'
+    +'<div style="padding:14px 16px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; gap:10px;"><span style="font-size:14.5px; font-weight:700;">ค่าที่วัดได้</span><span style="display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:#6E6757; background:#F1ECDF; padding:3px 9px; border-radius:999px;">'+svg('<rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>','#6E6757',12,2)+'แก้ไขไม่ได้</span></div>'
+    +'<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; min-width:560px;"><thead><tr style="background:#FAF7F0;"><th style="text-align:left; padding:10px 16px; font-size:12px; font-weight:600; color:#8C8576;">รายการวัด</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">ค่า</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">ที่มา</th><th style="text-align:left; padding:10px 12px; font-size:12px; font-weight:600; color:#8C8576;">เครื่องมือ</th><th style="text-align:center; padding:10px 16px; font-size:12px; font-weight:600; color:#8C8576;"></th></tr></thead><tbody>'+rrows+'</tbody></table></div>'
+    +'<div style="padding:14px 16px; border-top:1px solid #F2EEE2; background:#FBF9F3; display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;"><button onclick="EC.resetScreening()" style="font-size:13.5px; color:#9A927F; background:transparent; border:none; cursor:pointer;">เริ่มใหม่</button><button class="pribtn" onclick="EC.saveScreening()" style="display:inline-flex; align-items:center; gap:8px; background:#1F6B4C; color:#fff; border:none; border-radius:10px; padding:10px 18px; font-size:14px; font-weight:600; cursor:pointer;">'+svg('<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline>','#fff',16,2)+'บันทึกผลคัดกรอง + ส่ง JHCIS</button></div></div>';
+
+  return '<div>'+stepper+idPanel+'<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;">'+insCard+resCard+'</div></div>';
+}
+
+function screenLoan(){
+  var sp=''; ['คัดเลือกผู้รับ','มอบอุปกรณ์ (สวม 7 วัน)','ติดตามผล','หมุนเวียนคืน'].forEach(function(l,idx){ var n=idx+1; if(idx>0){ sp+='<div style="flex:1; height:2px; background:'+(state.step>=n?'#1F6B4C':'#E3DDCE')+'; margin:0 6px 24px;"></div>'; } var act=state.step>=n; sp+='<div style="display:flex; flex-direction:column; align-items:center; gap:8px; flex:0 0 auto;"><div style="width:38px; height:38px; border-radius:50%; background:'+(act?'#1F6B4C':'#E3DDCE')+'; color:'+(act?'#fff':'#9A927F')+'; display:flex; align-items:center; justify-content:center; font-weight:700;">'+n+'</div><span style="font-size:12.5px; font-weight:600; color:'+(act?'#1F6B4C':'#9A927F')+'; text-align:center; max-width:98px;">'+l+'</span></div>'; });
+  return '<div><div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:20px 24px; margin-bottom:18px;"><div style="display:flex; align-items:center;">'+sp+'</div></div>'
+    +'<div style="display:grid; grid-template-columns:320px 1fr; gap:16px; align-items:start;">'
+    +'<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:20px;">'
+      +'<div style="display:flex; align-items:center; gap:13px; margin-bottom:14px;"><div style="width:52px; height:52px; border-radius:50%; background:#E8F1EC; color:#1F6B4C; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px;">'+esc(state.patientName.charAt(0))+'</div><div><div style="font-size:16px; font-weight:700;">'+esc(state.patientName)+'</div><div style="font-size:12.5px; color:#9A927F;">'+esc(state.patientMeta)+'</div></div></div>'
+      +'<div style="display:flex; align-items:center; gap:11px; padding:12px; background:#F4F0E6; border-radius:10px; margin-bottom:12px;">'+svg('<rect x="5" y="2" width="14" height="20" rx="2"></rect><circle cx="12" cy="14" r="3"></circle>','#1F6B4C',22,1.7)+'<div style="flex:1;"><div style="font-size:12px; color:#8C8576;">อุปกรณ์ที่ยืม</div><div style="font-size:14.5px; font-weight:700; color:#1F6B4C;">#CS-014</div></div><span style="font-size:11px; font-weight:600; color:#1F6B4C; background:#E1EFE7; padding:4px 9px; border-radius:999px;">สวมอยู่</span></div>'
+      +'<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"><div style="padding:10px; background:#F8F5EE; border-radius:9px; text-align:center;"><div style="font-size:11px; color:#9A927F;">วันที่สวม</div><div style="font-size:15px; font-weight:700;">5 / 7</div></div><div style="padding:10px; background:#F8F5EE; border-radius:9px; text-align:center;"><div style="font-size:11px; color:#9A927F;">แบตเตอรี่</div><div style="font-size:15px; font-weight:700; color:#1F6B4C;">82%</div></div></div>'
+      +'<div style="margin-top:14px; padding:11px 12px; background:#E1EFE7; border-radius:10px; display:flex; align-items:center; gap:9px;">'+svg('<path d="M20 6 9 17l-5-5"></path>','#1F6B4C',16,2)+'<span style="font-size:12.5px; color:#1F6B4C; font-weight:500;">ได้รับความยินยอม (consent) แล้ว</span></div></div>'
+    +'<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:20px;"><div style="font-size:15px; font-weight:700; margin-bottom:6px;">วงจรยืม-คืนอุปกรณ์สวมใส่</div>'
+      +'<div style="font-size:13px; color:#5C564B; line-height:1.6; margin-bottom:16px;">อุปกรณ์ 1 เครื่องหมุนเวียนดูแลได้หลายคน — ยืมให้กลุ่มเสี่ยงสวมคัดกรอง 7 วัน แล้วคืนเข้าคลังเพื่อส่งต่อรายถัดไป ขอความยินยอมใหม่ทุกครั้งที่ส่งมอบ ช่วยลดต้นทุนต่อหัว</div>'
+      +'<button class="pribtn" onclick="EC.returnDevice()" style="display:inline-flex; align-items:center; gap:8px; background:#1F6B4C; color:#fff; border:none; border-radius:10px; padding:11px 18px; font-size:14px; font-weight:600; cursor:pointer;">'+svg('<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M3 21v-5h5"></path>','#fff',16,2)+'คืนอุปกรณ์ + ส่งต่อคนถัดไป</button>'
+      +'<div style="margin-top:16px; padding:12px 14px; background:#F8F5EE; border-radius:10px; font-size:12.5px; color:#9A927F;">คลังอุปกรณ์: ยืมอยู่ 18 · ว่างพร้อมจ่าย 7 · รวม 25 เครื่อง</div></div>'
+    +'</div></div>';
+}
+
+function screenInstruments(){
+  var kl={ analog:['อนาล็อก · ถ่ายรูป OCR','#B5851A','#FBEFD6'], digital:['ดิจิทัล','#185A40','#E5F0EA'], watch:['นาฬิกา · API','#1F6B4C','#E5F0EA'] };
+  var rows=state.instruments.map(function(ins,i){ var k=kl[ins.kind]||kl.analog; return '<tr style="border-top:1px solid #F2EEE2;"><td style="padding:12px 18px; font-size:13.5px; font-weight:600;">'+esc(ins.name)+'</td><td style="padding:12px 12px;"><span style="font-size:11px; font-weight:600; color:'+k[1]+'; background:'+k[2]+'; padding:3px 9px; border-radius:999px;">'+k[0]+'</span></td><td style="padding:12px 12px; font-size:13px;">'+esc(ins.measures)+'</td><td style="padding:12px 18px; text-align:center;"><button onclick="EC.removeInstrument('+i+')" style="font-size:12px; color:#C0492F; background:transparent; border:none; cursor:pointer; text-decoration:underline;">นำออก</button></td></tr>'; }).join('');
+  return '<div style="display:grid; grid-template-columns:1fr 320px; gap:16px; align-items:start;">'
+    +'<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;">'
+      +'<div style="padding:15px 18px; border-bottom:1px solid #F0EBDE;"><div style="font-size:15px; font-weight:700;">ชุดเครื่องมือมาตรฐานของเทศบาล ('+state.instruments.length+')</div><div style="font-size:12px; color:#9A927F; margin-top:2px;">รายการเครื่องมือที่เจ้าหน้าที่พกในกระเป๋าลงพื้นที่ · เครื่อง analog ใช้ถ่ายรูป OCR</div></div>'
+      +'<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; min-width:560px;"><thead><tr style="background:#FAF7F0;"><th style="text-align:left; padding:11px 18px; font-size:12px; font-weight:600; color:#8C8576;">เครื่องมือ</th><th style="text-align:left; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">ชนิด / วิธีอ่านค่า</th><th style="text-align:left; padding:11px 12px; font-size:12px; font-weight:600; color:#8C8576;">ใช้วัด</th><th style="text-align:center; padding:11px 18px; font-size:12px; font-weight:600; color:#8C8576;"></th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'
+    +'<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); padding:18px 20px;"><div style="font-size:15px; font-weight:700; margin-bottom:14px;">เพิ่มเครื่องมือ</div><div style="display:flex; flex-direction:column; gap:11px;">'
+      +'<label style="font-size:12.5px; color:#8C8576;">ชื่อเครื่องมือ<input id="in-name" placeholder="เช่น เครื่องวัดออกซิเจนปลายนิ้ว" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;"></label>'
+      +'<label style="font-size:12.5px; color:#8C8576;">ชนิด / วิธีอ่านค่า<select id="in-kind" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;"><option value="analog">อนาล็อก (ถ่ายรูป OCR)</option><option value="digital">ดิจิทัล</option><option value="watch">นาฬิกา (API)</option></select></label>'
+      +'<label style="font-size:12.5px; color:#8C8576;">ใช้วัด<input id="in-measures" placeholder="เช่น ออกซิเจน" style="display:block; width:100%; margin-top:5px; font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid #DDD6C6; border-radius:9px; background:#FBF9F3;"></label>'
+      +'<button class="pribtn" onclick="EC.addInstrument()" style="margin-top:4px; display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#1F6B4C; color:#fff; border:none; border-radius:10px; padding:11px; font-size:14px; font-weight:600; cursor:pointer;">'+svg('<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>','#fff',16,2)+'เพิ่มเข้าชุดเครื่องมือ</button>'
+      +'</div></div></div>';
+}
+
+function screenResidents(){
+  var riskBadge=function(r){ var c=r==='ติดเตียง'?['#C0492F','#F8E5DF']:(r==='ติดบ้าน'?['#B5851A','#FBEFD6']:['#1F6B4C','#E5F0EA']); return '<span style="font-size:11px; font-weight:600; color:'+c[0]+'; background:'+c[1]+'; padding:3px 10px; border-radius:999px;">'+r+'</span>'; };
+  if(state.selectedResident===null){
+    var rows=state.residents.map(function(p,i){ var w=p.watch?'<span style="font-size:11px; font-weight:600; color:#1F6B4C; background:#E5F0EA; padding:3px 9px; border-radius:999px;">นาฬิกา '+esc(p.watch)+'</span>':'<span style="font-size:11px; color:#9A927F;">ยังไม่ผูกนาฬิกา</span>';
+      return '<div class="alertrow" onclick="EC.selectResident('+i+')" style="display:flex; align-items:center; gap:13px; padding:13px 20px; border-top:1px solid #F4F0E6; cursor:pointer;"><div style="width:40px; height:40px; border-radius:50%; background:#E8F1EC; color:#1F6B4C; display:flex; align-items:center; justify-content:center; font-weight:700;">'+esc(p.name.charAt(0))+'</div><div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:600;">'+esc(p.name)+'</div><div style="font-size:12.5px; color:#9A927F;">'+esc(p.meta)+'</div></div>'+riskBadge(p.risk)+w+'<div style="text-align:right; min-width:58px;"><div style="font-size:15px; font-weight:700; color:#1F6B4C;">'+p.hr+'</div><div style="font-size:11px; color:#9A927F;">ชีพจร</div></div><span style="color:#C9C2B0; font-size:18px;">›</span></div>'; }).join('');
+    return '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;"><div style="padding:16px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;"><span style="font-size:15px; font-weight:700;">รายชื่อผู้สูงอายุในชุมชน ('+state.residents.length+')</span><span style="font-size:12px; color:#9A927F;">คลิกชื่อเพื่อดูผลการวัด + ข้อมูลนาฬิกา</span></div>'+rows+'</div>';
+  }
+  var p=state.residents[state.selectedResident];
+  var afMon='';
+  if(p.watch){
+    var afEp=p.afib?7:0, afBurden=p.afib?'4.2%':'0%', afLongest=p.afib?'3 ชม. 12 นาที':'—', afColor=p.afib?'#B5851A':'#1F6B4C';
+    afMon='<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden; margin-bottom:18px;">'
+      +'<div style="padding:15px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;"><span style="font-size:15px; font-weight:700;">การเฝ้าระวัง AFib (สรุปรอบเดือน)</span><button class="pribtn" onclick="EC.sendMonthlyReport('+state.selectedResident+')" style="display:inline-flex; align-items:center; gap:7px; background:#1F6B4C; color:#fff; border:none; border-radius:9px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer;">ส่ง Monthly Report</button></div>'
+      +'<div style="padding:16px 20px; display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px;">'
+        +'<div style="background:#FAF7F0; border-radius:10px; padding:13px 15px;"><div style="font-size:12px; color:#8C8576;">จำนวน AF (รอบ 30 วัน)</div><div style="font-size:22px; font-weight:700; color:'+afColor+'; margin-top:3px;">'+afEp+' <span style="font-size:12px; color:#9A927F;">ครั้ง</span></div></div>'
+        +'<div style="background:#FAF7F0; border-radius:10px; padding:13px 15px;"><div style="font-size:12px; color:#8C8576;">AF burden (% เวลา)</div><div style="font-size:22px; font-weight:700; color:'+afColor+'; margin-top:3px;">'+afBurden+'</div></div>'
+        +'<div style="background:#FAF7F0; border-radius:10px; padding:13px 15px;"><div style="font-size:12px; color:#8C8576;">Episode ยาวสุด</div><div style="font-size:17px; font-weight:700; margin-top:6px;">'+afLongest+'</div></div>'
+      +'</div>'
+      +'<div style="margin:0 20px 16px; padding:12px 14px; background:#EAF3EE; border:1px solid #C7E0D2; border-radius:10px; font-size:12px; color:#1A5A3F; line-height:1.65;">ข้อมูลนี้ช่วยให้แพทย์ประเมินภาวะ AFib · การตัดสินใจรักษา (ยา / การจี้ไฟฟ้าหัวใจ) ขึ้นกับ<b>อาการ · ชนิดของ AF · และคะแนนความเสี่ยงหลอดเลือดสมอง (CHA₂DS₂-VASc)</b> ตามแนวทางแพทย์ ไม่ได้ตัดสินจากจำนวนครั้งต่อเดือนเพียงอย่างเดียว — ระบบทำหน้าที่เฝ้าระวัง บันทึก และส่งข้อมูลให้แพทย์</div></div>';
+  }
+  var vc=function(label,val,unit,col){ return '<div style="background:#fff; border:1px solid #ECE7DB; border-radius:11px; padding:14px 16px;"><div style="font-size:12px; color:#8C8576;">'+label+'</div><div style="font-size:22px; font-weight:700; color:'+(col||'#2B2B2B')+'; margin-top:3px;">'+val+' <span style="font-size:12px; font-weight:500; color:#9A927F;">'+unit+'</span></div></div>'; };
+  var afibCard=p.afib?'<div style="background:#FBF1D5; border:1px solid #EAD9A6; border-radius:11px; padding:14px 16px;"><div style="font-size:12px; color:#B5851A;">จังหวะหัวใจ</div><div style="font-size:16px; font-weight:700; color:#B5851A; margin-top:5px;">พบ AFib · เฝ้าระวัง</div></div>':'<div style="background:#fff; border:1px solid #ECE7DB; border-radius:11px; padding:14px 16px;"><div style="font-size:12px; color:#8C8576;">จังหวะหัวใจ</div><div style="font-size:16px; font-weight:700; color:#1F6B4C; margin-top:5px;">ปกติ</div></div>';
+  var vitals='<div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:12px; margin-bottom:18px;">'+vc('ชีพจร',p.hr,'bpm','#1F6B4C')+vc('ความดัน',p.bp,'mmHg')+vc('ออกซิเจน',p.spo2,'%')+vc('น้ำตาล',p.glu,'mg/dL')+afibCard+'</div>';
+  var watchPanel;
+  if(p.watch){
+    watchPanel='<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden; margin-bottom:18px;"><div style="padding:15px 20px; border-bottom:1px solid #F0EBDE; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;"><div style="display:flex; align-items:center; gap:9px;">'+svg('<rect x="6" y="6" width="12" height="12" rx="3"></rect><path d="M9 2h6"></path><path d="M9 22h6"></path>','#1F6B4C',18,1.8)+'<span style="font-size:15px; font-weight:700;">ข้อมูลจากนาฬิกาเฝ้าระวังหัวใจ · '+esc(p.watch)+'</span></div><button class="pribtn" onclick="EC.refreshWatch('+state.selectedResident+')" style="display:inline-flex; align-items:center; gap:7px; background:#1F6B4C; color:#fff; border:none; border-radius:9px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer;">'+svg('<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path>','#fff',15,2)+'อ่านข้อมูลล่าสุด (API)</button></div><div style="padding:16px 20px; display:grid; grid-template-columns:1fr 1fr; gap:16px;"><div style="grid-column:1 / -1;"><div style="font-size:12.5px; font-weight:600; color:#6E6757; margin-bottom:7px;">คลื่นไฟฟ้าหัวใจ (ECG) · จากข้อมูลจริง</div><img src="./img/real_ecg_strip.png" alt="ECG" style="width:100%; border:1px solid #F0EBDE; border-radius:9px; display:block;"></div><div><div style="font-size:12.5px; font-weight:600; color:#6E6757; margin-bottom:7px;">สัญญาณ ECG / PPG</div><img src="./img/real_ecg_ppg.png" alt="PPG" style="width:100%; border:1px solid #F0EBDE; border-radius:9px; display:block;"></div><div><div style="font-size:12.5px; font-weight:600; color:#6E6757; margin-bottom:7px;">แนวโน้มอัตราหัวใจ</div><img src="./img/real_hr_trend.png" alt="HR trend" style="width:100%; border:1px solid #F0EBDE; border-radius:9px; display:block;"></div></div><div style="padding:8px 20px 16px; font-size:11.5px; color:#9A927F;">กราฟจากข้อมูลจริงของอุปกรณ์ · ดึงผ่าน API ของนาฬิกา</div></div>';
+  } else {
+    watchPanel='<div style="background:#F8F5EE; border:1px dashed #DDD6C6; border-radius:12px; padding:18px 20px; margin-bottom:18px; font-size:13.5px; color:#8C8576; line-height:1.6;">ผู้รับบริการรายนี้ยังไม่ได้ผูกนาฬิกาเฝ้าระวังหัวใจ — ใช้การคัดกรองด้วยเครื่องมือในกระเป๋า (เมนูคัดกรองสุขภาพ) · ผูกนาฬิกาได้ที่เมนู "อุปกรณ์ + จับคู่ QR"</div>';
+  }
+  var hist=[['08:12','78','128/82','97','104'],['12:30',''+p.hr,''+p.bp,''+p.spo2,''+p.glu]];
+  var hrows=hist.map(function(r){ return '<tr style="border-top:1px solid #F2EEE2;"><td style="padding:10px 16px; font-size:13px;">'+r[0]+'</td><td style="padding:10px 12px; font-size:13.5px; text-align:right;">'+r[1]+'</td><td style="padding:10px 12px; font-size:13.5px; text-align:right;">'+r[2]+'</td><td style="padding:10px 12px; font-size:13.5px; text-align:right;">'+r[3]+'%</td><td style="padding:10px 16px; font-size:13.5px; text-align:right;">'+r[4]+'</td></tr>'; }).join('');
+  var histCard='<div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; box-shadow:0 1px 3px rgba(43,43,43,0.05); overflow:hidden;"><div style="padding:14px 18px; border-bottom:1px solid #F0EBDE; font-size:14.5px; font-weight:700;">ประวัติการวัดล่าสุด</div><div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; min-width:480px;"><thead><tr style="background:#FAF7F0;"><th style="text-align:left; padding:9px 16px; font-size:12px; color:#8C8576;">เวลา</th><th style="text-align:right; padding:9px 12px; font-size:12px; color:#8C8576;">ชีพจร</th><th style="text-align:right; padding:9px 12px; font-size:12px; color:#8C8576;">ความดัน</th><th style="text-align:right; padding:9px 12px; font-size:12px; color:#8C8576;">ออกซิเจน</th><th style="text-align:right; padding:9px 16px; font-size:12px; color:#8C8576;">น้ำตาล</th></tr></thead><tbody>'+hrows+'</tbody></table></div></div>';
+  return '<div><button onclick="EC.backResidents()" style="display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:#1F6B4C; background:transparent; border:none; cursor:pointer; margin-bottom:14px;">‹ กลับรายชื่อ</button><div style="background:#fff; border:1px solid #ECE7DB; border-radius:12px; padding:18px 20px; margin-bottom:18px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;"><div style="width:54px; height:54px; border-radius:50%; background:#E8F1EC; color:#1F6B4C; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:21px;">'+esc(p.name.charAt(0))+'</div><div style="flex:1; min-width:160px;"><div style="font-size:18px; font-weight:700;">'+esc(p.name)+'</div><div style="font-size:13px; color:#9A927F;">'+esc(p.meta)+'</div></div>'+riskBadge(p.risk)+(p.watch?'<span style="font-size:12px; font-weight:600; color:#1F6B4C; background:#E5F0EA; padding:5px 12px; border-radius:999px;">นาฬิกา '+esc(p.watch)+'</span>':'')+'</div>'+vitals+watchPanel+afMon+histCard+'</div>';
+}
+
 function currentScreen(){
   switch(state.page){
-    case 'screening': return screenScreening();
+    case 'residents': return screenResidents();
+    case 'screening': return screenScreeningNew();
+    case 'loan': return screenLoan();
+    case 'instruments': return screenInstruments();
     case 'emergency': return screenEmergency();
     case 'fall': return screenFall();
     case 'report': return screenReport();
     case 'settings': return screenSettings();
+    case 'devices': return screenDevices();
+    case 'recipients': return screenRecipients();
+    case 'assets': return screenAssets();
     default: return screenDashboard();
   }
 }

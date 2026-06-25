@@ -15,6 +15,7 @@ const links = [
     children: [
       { to: '/cctv-ai', label: 'CCTV + AI' },
       { to: '/solar-street-light', label: 'Solar Street Light' },
+      { to: '/elderly-care-v2', label: 'ดูแลผู้สูงอายุ (v2 · Story)' },
       { to: '/elderly-care/legacy', label: 'ดูแลผู้สูงอายุ (เวอร์ชันเดิม)' },
       { to: '/smart-street-light/legacy', label: 'Smart Street Light (เวอร์ชันเดิม)' },
       { to: '/emergency-mgmt/legacy', label: 'บริหารเหตุฉุกเฉิน (เวอร์ชันเดิม)' },
