@@ -3,7 +3,7 @@ import RotateHint from '../components/RotateHint';
 
 // ---------------------------------------------------------------------------
 // ElderlyCare.jsx — "Software-First" Sales Pitch Deck
-// 20 slides · A4 landscape 1123×794 (√2:1) · print-to-PDF ready (1 slide / page)
+// 20 slides · 16:9 widescreen 1280×720 · print-to-PDF ready (1 slide / page)
 // Design: Civic Trust palette (Forest #0F6E56 + Cream #FAF7EE + Amber #BA7517)
 // Font: Sarabun · no brand names
 // Source: ElderlyCare_Pitch_SoftwareFirst_v2.html (mockup) → rebuilt as React slides
@@ -36,8 +36,8 @@ const C = {
 
 const IMG = 'images/elderly-care';
 const ECG_WATCH = `${IMG}/ECG%20WATCH.png`; // filename has a space → URL-encode
-const SLIDE_W = 1123;
-const SLIDE_H = 794;
+const SLIDE_W = 1280;
+const SLIDE_H = 720;
 const TOTAL_SLIDES = 20; // fallback only — real {num,total} come from SlideCtx (array order)
 
 // Page numbering is automatic: the deck wrapper provides {num,total} via this context
@@ -3230,7 +3230,8 @@ function DeckStyles() {
       .slide-scale { transform-origin: top left; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
 
       @media print {
-        @page { size: A4 landscape; margin: 0; }
+        /* 16:9 page — each PDF page is exactly the 1280×720 design canvas */
+        @page { size: 1280px 720px; margin: 0; }
         * {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
@@ -3240,12 +3241,9 @@ function DeckStyles() {
         nav, .deck-toolbar, .scroll-dots { display: none !important; }
         main { padding-top: 0 !important; }
         .deck-root { background: #fff !important; padding: 0 !important; margin: 0 !important; }
-        /* Size each slide to EXACTLY A4 landscape in mm so the 1123×794px design canvas
-           can't round past the printable page and spill onto a 2nd page. The slide
-           section's own overflow:hidden trims any sub-pixel excess. */
-        .slide-wrapper { margin: 0 !important; width: 297mm !important; height: 210mm !important; overflow: hidden !important; }
-        .slide-scale { transform: none !important; box-shadow: none !important; width: 297mm !important; height: 210mm !important; }
-        .slide-page { width: 297mm !important; height: 210mm !important; box-shadow: none !important; }
+        .slide-wrapper { margin: 0 !important; width: 1280px !important; height: 720px !important; overflow: hidden !important; }
+        .slide-scale { transform: none !important; box-shadow: none !important; width: 1280px !important; height: 720px !important; }
+        .slide-page { width: 1280px !important; height: 720px !important; box-shadow: none !important; }
         /* exactly one slide per page · no trailing blank page */
         .deck-root > div[id^="slide-"] { break-after: page; page-break-after: always; }
         .deck-root > div[id^="slide-"]:last-child { break-after: auto; page-break-after: auto; }
