@@ -3169,13 +3169,19 @@ function DeckStyles() {
           print-color-adjust: exact !important;
           color-adjust: exact !important;
         }
-        html, body { background: #fff !important; }
+        html, body { background: #fff !important; width: auto !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
         nav, .deck-toolbar, .scroll-dots { display: none !important; }
         main { padding-top: 0 !important; }
         .deck-root { background: #fff !important; padding: 0 !important; margin: 0 !important; }
-        .slide-wrapper { margin: 0 !important; width: ${SLIDE_W}px !important; height: ${SLIDE_H}px !important; }
-        .slide-scale { transform: none !important; box-shadow: none !important; page-break-after: always; }
-        .slide-page { box-shadow: none !important; }
+        /* Size each slide to EXACTLY A4 landscape in mm so the 1123×794px design canvas
+           can't round past the printable page and spill onto a 2nd page. The slide
+           section's own overflow:hidden trims any sub-pixel excess. */
+        .slide-wrapper { margin: 0 !important; width: 297mm !important; height: 210mm !important; overflow: hidden !important; }
+        .slide-scale { transform: none !important; box-shadow: none !important; width: 297mm !important; height: 210mm !important; }
+        .slide-page { width: 297mm !important; height: 210mm !important; box-shadow: none !important; }
+        /* exactly one slide per page · no trailing blank page */
+        .deck-root > div[id^="slide-"] { break-after: page; page-break-after: always; }
+        .deck-root > div[id^="slide-"]:last-child { break-after: auto; page-break-after: auto; }
       }
     `}</style>
   );
